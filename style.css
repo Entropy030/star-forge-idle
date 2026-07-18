@@ -422,8 +422,14 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
   z-index: 3;
   overflow: visible;
   margin: 0;
+  padding-top: 200px;
   padding-bottom: 60px;
   box-sizing: border-box;
+  transition: opacity 0.3s ease;
+}
+body:not([data-tab="core"]) .core-canvas {
+  opacity: 0;
+  pointer-events: none !important;
 }
 .canvas-scanner-line {
 position: absolute;
@@ -738,7 +744,7 @@ text-align: center; color: #fff; transition: opacity 0.8s ease; display: none; o
 .currency-prestige-bar { font-size: 0.78rem; margin-bottom: 8px; }
 h1 { font-size: 1.25rem; letter-spacing: 4px; }
 .buy-mode-container { top: calc(10px + var(--sat)); right: 12px; }
-.core-canvas { position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; margin: 0 !important; padding-bottom: 60px !important; }
+.core-canvas { padding-top: 180px !important; padding-bottom: 60px !important; }
 .tab-content { padding-right: 0; }
 }
 
