@@ -723,11 +723,17 @@ renderGenericTierList(containerId, category, costLabelText, displayColor, active
       else row.classList.remove('upgrade-affordable');
       
       const btn = row.querySelector('.upgrade-btn');
-      btn.textContent = `Cost: ${format(state.cost)} ${currentCostLabel}`;
+      btn.textContent = `Cost: ${format(state.cost)}\n${currentCostLabel}`;
       btn.disabled = !isAffordable;
-      btn.style.background = displayColor;
-      btn.style.color = '#fff';
-      btn.style.borderColor = 'transparent';
+      if (isAffordable) {
+        btn.style.background = displayColor;
+        btn.style.color = '#030208';
+        btn.style.borderColor = 'transparent';
+      } else {
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+      }
     }
   }
 },
