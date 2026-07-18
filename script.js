@@ -910,6 +910,19 @@ update() {
   this.updateStardustDisplays();
   const currentEpoch = COSMIC_REGISTRY.universeChronology.epochs[gameState.activeEpoch] || COSMIC_REGISTRY.universeChronology.epochs[3];
   
+  // Programmatic visibility safeguard for era-specific elements
+  const activeEpochNum = gameState.activeEpoch;
+  for (let e = 1; e <= 5; e++) {
+    const isCurrent = (e === activeEpochNum);
+    document.querySelectorAll(`.era${e}-only`).forEach(el => {
+      if (isCurrent) {
+        el.style.setProperty('display', el.classList.contains('visual-hidden') ? 'none' : '', 'important');
+      } else {
+        el.style.setProperty('display', 'none', 'important');
+      }
+    });
+  }
+  
   document.getElementById('active-epoch-name').textContent = currentEpoch.name;
   document.getElementById('btn-buy-mode').textContent = `Buy Mode: ${gameState.buyMode === 'max' ? 'MAX' : 'x' + gameState.buyMode}`;
   
