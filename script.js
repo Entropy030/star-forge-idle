@@ -81,35 +81,35 @@ celestialCards: {
 },
 upgrades: {
   quantum: {
-    gravityForce: { id: "gravityForce", name: "Gravitational Coupling", baseCost: new Decimal(10), costScaling: 1.4, gen: new Decimal(1), densityGen: new Decimal(0.5), desc: "Couples mass metrics. Generates +1 Fluctuation/s and +0.5 Density/s." },
-    weakForce: { id: "weakForce", name: "Weak Nuclear Vector", baseCost: new Decimal(150), costScaling: 1.5, gen: new Decimal(12), densityGen: new Decimal(4), desc: "Triggers gauge boson exchange. Generates +12 Fluctuations/s and +4 Density/s." },
-    electromagneticForce: { id: "electromagneticForce", name: "Electromagnetic Tensor", baseCost: new Decimal(2000), costScaling: 1.6, gen: new Decimal(140), densityGen: new Decimal(30), desc: "Sustains photon field propagation. Generates +140 Fluctuations/s and +30 Density/s." },
-    strongForce: { id: "strongForce", name: "Strong Color Force", baseCost: new Decimal(25000), costScaling: 1.8, gen: new Decimal(1800), densityGen: new Decimal(400), desc: "Binds color charges via gluons. Generates +1800 Fluctuations/s and +400 Density/s." }
+    gravityForce: { id: "gravityForce", name: "🌌 Gravitational Coupling", baseCost: new Decimal(10), costScaling: 1.4, gen: new Decimal(1), densityGen: new Decimal(0.5), desc: "Couples mass metrics. Generates +1 Fluctuation/s and +0.5 Density/s." },
+    weakForce: { id: "weakForce", name: "⚛️ Weak Nuclear Vector", baseCost: new Decimal(150), costScaling: 1.5, gen: new Decimal(12), densityGen: new Decimal(4), desc: "Triggers gauge boson exchange. Generates +12 Fluctuations/s and +4 Density/s." },
+    electromagneticForce: { id: "electromagneticForce", name: "🧲 Electromagnetic Tensor", baseCost: new Decimal(2000), costScaling: 1.6, gen: new Decimal(140), densityGen: new Decimal(30), desc: "Sustains photon field propagation. Generates +140 Fluctuations/s and +30 Density/s." },
+    strongForce: { id: "strongForce", name: "💥 Strong Color Force", baseCost: new Decimal(25000), costScaling: 1.8, gen: new Decimal(1800), densityGen: new Decimal(400), desc: "Binds color charges via gluons. Generates +1800 Fluctuations/s and +400 Density/s." }
   },
   plasma: {
-    quarkCondenser: { id: "quarkCondenser", name: "Quark Condenser", baseCost: new Decimal(20), costScaling: 1.3, gen: new Decimal(2), desc: "Condenses energy variables. Generates +2 Quarks/s." },
-    gluonBinding: { id: "gluonBinding", name: "Gluon Matrix Synthesis", baseCost: new Decimal(120), costScaling: 1.4, gen: new Decimal(1.5), desc: "Binds strong color assets. Generates +1.5 Gluons/s. Requires Quark Condenser Lvl 3." },
-    leptonHarvest: { id: "leptonHarvest", name: "Lepton Collector", baseCost: new Decimal(400), costScaling: 1.45, gen: new Decimal(1), desc: "Extracts fundamental leptons. Generates +1 Lepton/s. Requires Gluon Matrix Lvl 2." },
-    plasmaAutomation: { id: "plasmaAutomation", name: "Auto-Proton Subroutine", baseCost: new Decimal(1500), costScaling: 1.8, gen: new Decimal(0), desc: "Unlocks the physical control switch to fuse Protons passively. Requires Lepton Collector Lvl 1." },
-    baryoRadiator: { id: "baryoRadiator", name: "Baryogenesis Radiator", baseCost: new Decimal(100), costScaling: 1.4, cooling: new Decimal(7500), desc: "Radiates excess thermal mass. Cools Universe by 7,500 K/s. Costs 2 Protons/s." }
+    quarkCondenser: { id: "quarkCondenser", name: "💠 Quark Condenser", baseCost: new Decimal(20), costScaling: 1.3, gen: new Decimal(2), desc: "Condenses energy variables. Generates +2 Quarks/s." },
+    gluonBinding: { id: "gluonBinding", name: "🕸️ Gluon Matrix Synthesis", baseCost: new Decimal(120), costScaling: 1.4, gen: new Decimal(1.5), desc: "Binds strong color assets. Generates +1.5 Gluons/s. Requires Quark Condenser Lvl 3." },
+    leptonHarvest: { id: "leptonHarvest", name: "🔋 Lepton Collector", baseCost: new Decimal(400), costScaling: 1.45, gen: new Decimal(1), desc: "Extracts fundamental leptons. Generates +1 Lepton/s. Requires Gluon Matrix Lvl 2." },
+    plasmaAutomation: { id: "plasmaAutomation", name: "🤖 Auto-Proton Subroutine", baseCost: new Decimal(1500), costScaling: 1.8, gen: new Decimal(0), desc: "Unlocks the physical control switch to fuse Protons passively. Requires Lepton Collector Lvl 1." },
+    baryoRadiator: { id: "baryoRadiator", name: "❄️ Baryogenesis Radiator", baseCost: new Decimal(100), costScaling: 1.4, cooling: new Decimal(7500), desc: "Radiates excess thermal mass. Cools Universe by 7,500 K/s. Costs 2 Protons/s." }
   },
   galaxy: {
-    armStabilization: { id: "armStabilization", name: "Velocity Harmonizers", baseCost: new Decimal(100), costScaling: 1.5, desc: "Insulates velocity vectors. Reduces ambient orbital matrix decay rate by 15% per level." },
-    elementalInjection: { id: "elementalInjection", name: "Heavy Element Injection", baseCost: new Decimal(250), costScaling: 1.6, desc: "Injects forged Carbon & Iron into planetary seeds, doubling Debris generation." }
+    armStabilization: { id: "armStabilization", name: "🌀 Velocity Harmonizers", baseCost: new Decimal(100), costScaling: 1.5, desc: "Insulates velocity vectors. Reduces ambient orbital matrix decay rate by 15% per level." },
+    elementalInjection: { id: "elementalInjection", name: "🧪 Heavy Element Injection", baseCost: new Decimal(250), costScaling: 1.6, desc: "Injects forged Carbon & Iron into planetary seeds, doubling Debris generation." }
   },
   stardust: {
-    fusionDiscount: { id: "fusionDiscount", name: "Efficient Synthesis", max: 5, baseCost: new Decimal(1), currency: "stardust", desc: "Reduces Hydrogen fusions requirement by 2 per level." },
-    thermalInsulation: { id: "thermalInsulation", name: "Thermal Blanket", max: 10, baseCost: new Decimal(1), currency: "stardust", desc: "Increases Compression temp thermal heating by +20% per level." },
-    gravityDiscount: { id: "gravityDiscount", name: "Quantum Harmonics", max: 5, baseCost: new Decimal(2), currency: "stardust", desc: "Slightly reduces cost factor price scaling of Gravity nodes." },
-    flareForecasting: { id: "flareForecasting", name: "Flare Forecasting", max: 5, baseCost: new Decimal(2), currency: "stardust", desc: "Solar Prominences spawn 8% sooner per upgrade level." }
+    fusionDiscount: { id: "fusionDiscount", name: "✨ Efficient Synthesis", max: 5, baseCost: new Decimal(1), currency: "stardust", desc: "Reduces Hydrogen fusions requirement by 2 per level." },
+    thermalInsulation: { id: "thermalInsulation", name: "🔥 Thermal Blanket", max: 10, baseCost: new Decimal(1), currency: "stardust", desc: "Increases Compression temp thermal heating by +20% per level." },
+    gravityDiscount: { id: "gravityDiscount", name: "🪐 Quantum Harmonics", max: 5, baseCost: new Decimal(2), currency: "stardust", desc: "Slightly reduces cost factor price scaling of Gravity nodes." },
+    flareForecasting: { id: "flareForecasting", name: "☀️ Flare Forecasting", max: 5, baseCost: new Decimal(2), currency: "stardust", desc: "Solar Prominences spawn 8% sooner per upgrade level." }
   },
   pulsar: {
-    autoCompress: { id: "autoCompress", name: "Auto-Compressor", max: 10, baseCost: new Decimal(1), currency: "pulsarShards", desc: "Compresses core 1x per second per level if Helium capacity satisfies." },
-    autoSynthesize: { id: "autoSynthesize", name: "Catalytic Synthesizer", max: 10, baseCost: new Decimal(2), currency: "pulsarShards", desc: "Increases processing velocity of Carbon and Iron tiers by +100% per level." }
+    autoCompress: { id: "autoCompress", name: "⚙️ Auto-Compressor", max: 10, baseCost: new Decimal(1), currency: "pulsarShards", desc: "Compresses core 1x per second per level if Helium capacity satisfies." },
+    autoSynthesize: { id: "autoSynthesize", name: "🔬 Catalytic Synthesizer", max: 10, baseCost: new Decimal(2), currency: "pulsarShards", desc: "Increases processing velocity of Carbon and Iron tiers by +100% per level." }
   },
   singularity: {
-    darkGravity: { id: "darkGravity", name: "Dark Matter Gravity", max: 5, baseCost: new Decimal(1), currency: "singularityMass", desc: "Applies structural ^1.05 exponential scaling factor to Hydrogen rates per level." },
-    stellarIgnition: { id: "stellarIgnition", name: "Stellar Ignition", max: 5, baseCost: new Decimal(1), currency: "singularityMass", desc: "Applies a ^1.05 exponential scaling to Core Compression thermal metrics per level." }
+    darkGravity: { id: "darkGravity", name: "🌌 Dark Matter Gravity", max: 5, baseCost: new Decimal(1), currency: "singularityMass", desc: "Applies structural ^1.05 exponential scaling factor to Hydrogen rates per level." },
+    stellarIgnition: { id: "stellarIgnition", name: "🌟 Stellar Ignition", max: 5, baseCost: new Decimal(1), currency: "singularityMass", desc: "Applies a ^1.05 exponential scaling to Core Compression thermal metrics per level." }
   }
 },
 solarEvents: {

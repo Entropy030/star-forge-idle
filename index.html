@@ -7,6 +7,9 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Star Forge Idle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
 </head>
@@ -186,7 +189,10 @@
         <div class="core-canvas">
         <div class="canvas-scanner-line"></div>
         <div id="star-core">
-        <div class="core-inner-glow"></div>
+          <div class="core-inner-glow"></div>
+          <div class="core-orbit orbit-1"></div>
+          <div class="core-orbit orbit-2"></div>
+          <div class="core-orbit orbit-3"></div>
         </div>
         </div>
         
@@ -365,11 +371,11 @@
     </div>
   </main>
   
-  <!-- Vertical Icon Side-Rail for Secondary System Actions (Reference Pattern) -->
-  <aside class="side-rail">
+  <!-- Top-Right Actions Panel -->
+  <div class="top-menu-actions">
     <button id="nav-stats" class="rail-btn" aria-label="Data Hub">📊</button>
     <button id="nav-settings" class="rail-btn" aria-label="Settings">⚙️</button>
-  </aside>
+  </div>
 
   <nav class="tab-menu">
     <button id="nav-core" class="tab-btn active">Forge Core</button>

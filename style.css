@@ -21,11 +21,11 @@
 }
 
 body { 
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   text-align: center; 
   background: var(--void-bg);
   background-image: var(--space-gradient);
-  color: #f5f6fa; 
+  color: #e2e8f0; 
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -82,10 +82,17 @@ body::after {
 /* ==========================================================================
  [CSS-SEC-03] BRAND TYPOGRAPHY SHIMMERS & BANNER CORE TEXTS
  ========================================================================== */
+h1, h2, h3, .stage-text, .section-title, .tier-label {
+  font-family: 'Rajdhani', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 700;
+}
+.resource-box h2, .temp-display, .mult-display, .btn-price, .prestige-estimate-box, .stat-value {
+  font-family: 'Share Tech Mono', monospace;
+}
 h1 {
   font-weight: 800;
-  font-size: 1.6rem;
-  letter-spacing: 6px;
+  font-size: 1.8rem;
+  letter-spacing: 7px;
   margin: 0;
   text-transform: uppercase;
   background: linear-gradient(90deg, #b3a7ff, #00d2ff, #00ecc6, #b3a7ff);
@@ -268,9 +275,11 @@ box-sizing: border-box;
 
 /* SCI-FI UI CARDS - DEFAULT LOCKED / UNAFFORDABLE STATE */
 .cosmic-card {
-  background: rgba(5, 4, 12, 0.35) !important;
-  border: 1px solid rgba(255, 255, 255, 0.02) !important;
-  border-radius: 4px !important;
+  background: rgba(10, 8, 24, 0.6) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  border-radius: 8px !important;
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
   position: relative;
   padding: 14px 18px !important;
@@ -285,7 +294,6 @@ box-sizing: border-box;
   filter: grayscale(0.4);
   transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
   min-height: 64px;
-  font-family: inherit;
 }
 
 .cosmic-card::before {
@@ -400,24 +408,67 @@ pointer-events: none;
 }
 
 #star-core {
-width: 80px;
-height: 80px;
-background: radial-gradient(circle, #ffffff 20%, var(--carbon-glow) 60%, transparent 100%);
-border-radius: 50%;
-box-shadow: 0 0 32px 8px rgba(225, 112, 85, 0.35);
-position: relative;
-cursor: pointer;
-will-change: transform;
-transition: transform 0.08s ease-out;
-animation: balancedPulse 5s ease-in-out infinite;
+  width: 90px;
+  height: 90px;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0%, var(--hydrogen-glow) 45%, #0c0822 95%);
+  border-radius: 50%;
+  box-shadow: 
+    0 0 45px 12px rgba(0, 210, 255, 0.45), 
+    0 0 90px 24px rgba(108, 92, 231, 0.25),
+    inset -10px -10px 25px rgba(0,0,0,0.85),
+    inset 10px 10px 20px rgba(255,255,255,0.45);
+  position: relative;
+  cursor: pointer;
+  will-change: transform;
+  transition: transform 0.08s ease-out;
+  animation: balancedPulse 4s ease-in-out infinite alternate;
 }
 .core-inner-glow {
-position: absolute;
-inset: -12px;
-border-radius: 50%;
-border: 1px solid rgba(255, 255, 255, 0.04);
-background: radial-gradient(circle, transparent 60%, rgba(0, 210, 255, 0.05) 100%);
-animation: deepRotation 30s linear infinite;
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.05);
+  background: radial-gradient(circle, transparent 65%, rgba(0, 210, 255, 0.08) 100%);
+  animation: deepRotation 30s linear infinite;
+}
+.core-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  border: 1px dashed rgba(0, 210, 255, 0.2);
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+.orbit-1 {
+  width: 140px;
+  height: 140px;
+  animation: orbitRotate1 20s linear infinite;
+}
+.orbit-2 {
+  width: 180px;
+  height: 180px;
+  border: 1px dotted rgba(108, 92, 231, 0.22);
+  animation: orbitRotate2 28s linear infinite reverse;
+}
+.orbit-3 {
+  width: 220px;
+  height: 220px;
+  border: 1px solid rgba(0, 236, 198, 0.12);
+  animation: orbitRotate3 38s linear infinite;
+}
+
+@keyframes orbitRotate1 {
+  0% { transform: translate(-50%, -50%) rotateX(75deg) rotateY(15deg) rotateZ(0deg); }
+  100% { transform: translate(-50%, -50%) rotateX(75deg) rotateY(15deg) rotateZ(360deg); }
+}
+@keyframes orbitRotate2 {
+  0% { transform: translate(-50%, -50%) rotateX(60deg) rotateY(-30deg) rotateZ(0deg); }
+  100% { transform: translate(-50%, -50%) rotateX(60deg) rotateY(-30deg) rotateZ(360deg); }
+}
+@keyframes orbitRotate3 {
+  0% { transform: translate(-50%, -50%) rotateX(45deg) rotateY(45deg) rotateZ(0deg); }
+  100% { transform: translate(-50%, -50%) rotateX(45deg) rotateY(45deg) rotateZ(360deg); }
 }
 @keyframes balancedPulse {
 0%, 100% { transform: scale(1); filter: brightness(1); }
@@ -627,36 +678,38 @@ text-align: center; color: #fff; transition: opacity 0.8s ease; display: none; o
 .bg-orange-trans { background: rgba(211, 84, 0, 0.6); }
 .bg-blue { background: #2980b9; }
 
-/* FIXED HIGH-PREMIUM VERTICAL SIDE-RAIL ENGINE (FLOATING WINDOW LAYER) */
-.side-rail {
+/* FIXED HIGH-PREMIUM TOP ACTION BAR PANEL */
+.top-menu-actions {
   position: fixed;
-  right: 12px;
-  top: 40%;
-  transform: translateY(-50%);
+  right: 16px;
+  top: 16px;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  gap: 8px;
   z-index: 1010;
-  pointer-events: none;
 }
 .rail-btn {
-  pointer-events: auto;
   background: var(--glass-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--glass-border);
   color: #fff;
-  width: 46px;
-  height: 44px;
-  border-radius: 4px;
-  font-size: 1.25rem;
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  font-size: 1.1rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
 }
-.rail-btn:active { transform: scale(0.9); }
+.rail-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.rail-btn:active { transform: scale(0.92); }
 .rail-btn.active {
   border-color: var(--neon-teal);
   background: rgba(0, 236, 198, 0.18);
