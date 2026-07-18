@@ -37,7 +37,7 @@ body {
 
 main, header, .dashboard-container {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   contain: layout;
 }
 
@@ -410,14 +410,19 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
 [CSS-SEC-07] INTERACTIVE STARDUST FORGE CANVAS & PULSING ANCHORS
 ========================================================================== */
 .core-canvas {
-  height: 240px;
+  position: fixed;
+  top: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
-  margin: 25px auto;
-  max-width: 340px;
-  contain: layout paint size;
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
+  margin: 0;
 }
 .canvas-scanner-line {
 position: absolute;
@@ -441,6 +446,7 @@ pointer-events: none;
     inset 10px 10px 20px rgba(255,255,255,0.45);
   position: relative;
   cursor: pointer;
+  pointer-events: auto !important;
   will-change: transform;
   transition: transform 0.08s ease-out;
   animation: balancedPulse 4s ease-in-out infinite alternate;
@@ -731,7 +737,7 @@ text-align: center; color: #fff; transition: opacity 0.8s ease; display: none; o
 .currency-prestige-bar { font-size: 0.78rem; margin-bottom: 8px; }
 h1 { font-size: 1.25rem; letter-spacing: 4px; }
 .buy-mode-container { top: calc(10px + var(--sat)); right: 12px; }
-.core-canvas { height: 260px; margin: 35px auto; }
+.core-canvas { position: fixed !important; top: 125px !important; height: 260px !important; margin: 0 auto !important; }
 .tab-content { padding-right: 0; }
 }
 
@@ -752,6 +758,14 @@ h1 { font-size: 1.25rem; letter-spacing: 4px; }
 body[data-epoch="3"] #cosmic-backdrop {
   background: #020105;
 }
+body[data-epoch="3"] #star-core {
+  background: radial-gradient(circle at 35% 35%, #ffffff 10%, #f1c40f 50%, #e67e22 90%) !important;
+  box-shadow: 
+    0 0 50px 15px rgba(241, 196, 15, 0.6), 
+    0 0 100px 30px rgba(230, 126, 34, 0.35),
+    inset -10px -10px 25px rgba(0,0,0,0.85),
+    inset 10px 10px 20px rgba(255,255,255,0.45) !important;
+}
 .stellar-dawn-field {
   position: absolute;
   inset: 0;
@@ -759,7 +773,7 @@ body[data-epoch="3"] #cosmic-backdrop {
 .nebula-blue-layer {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at var(--core-anchor-x, 50%) var(--core-anchor-y, 42%), rgba(0, 210, 255, 0.16) 0%, transparent 65%);
+  background: radial-gradient(circle at var(--core-anchor-x, 50%) var(--core-anchor-y, 42%), rgba(230, 126, 34, 0.15) 0%, transparent 65%);
   opacity: calc(1 - var(--stellar-heat-factor, 0));
   transition: opacity 0.3s ease;
 }

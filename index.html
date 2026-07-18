@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20">
+  <link rel="stylesheet" href="style.css?v=21">
   <link rel="manifest" href="manifest.json">
 </head>
 <body data-epoch="1" data-tab="core">
@@ -70,6 +70,15 @@
       <p class="yield-title">YIELD</p>
       <div id="theatrical-reward" class="reward-highlight"></div>
       <button class="btn-reignite">Reignite Cosmos</button>
+    </div>
+  </div>
+  
+  <!-- Era Transition Overlay -->
+  <div id="era-transition-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(3, 2, 8, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 10000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 30px; box-sizing: border-box;">
+    <div style="max-width: 600px; margin: auto;">
+      <h2 id="trans-title" style="font-family: 'Rajdhani', sans-serif; font-size: 2rem; letter-spacing: 4px; color: var(--hydrogen-glow); margin-bottom: 20px; text-transform: uppercase;"></h2>
+      <p id="trans-desc" style="font-size: 0.95rem; line-height: 1.6; color: #b2bec3; margin-bottom: 30px; min-height: 120px; display: flex; align-items: center; justify-content: center; font-style: italic;"></p>
+      <button id="btn-trans-confirm" class="btn-macro-shift bg-gradient-purple" style="display: none; margin: 0 auto; min-width: 200px; padding: 12px 24px; font-size: 0.9rem; border-radius: 8px;">ENTER NEW ERA</button>
     </div>
   </div>
   
@@ -185,33 +194,30 @@
   </div>
 </div>
   
+  <!-- Visualizer (Background) -->
+  <div class="core-canvas">
+    <div class="canvas-scanner-line"></div>
+    <div id="star-core">
+      <div class="core-inner-glow"></div>
+      <div class="core-orbit orbit-1"></div>
+      <div class="core-orbit orbit-2"></div>
+      <div class="core-orbit orbit-3"></div>
+    </div>
+  </div>
+
   <!-- Main Viewport Screens -->
   <main>
     <div id="tab-content-core" class="tab-content">
-        <div class="core-canvas">
-        <div class="canvas-scanner-line"></div>
-        <div id="star-core">
-          <div class="core-inner-glow"></div>
-          <div class="core-orbit orbit-1"></div>
-          <div class="core-orbit orbit-2"></div>
-          <div class="core-orbit orbit-3"></div>
-        </div>
-        </div>
+        <!-- Fixed Visualizer Spacer -->
+        <div class="core-visual-spacer" style="height: 250px; pointer-events: none;"></div>
         
         <div id="stellar-core-metrics" class="era3-only">
         <div class="temp-display">Core Temp: <span id="temp">0</span> K</div>
         <div class="mult-display">Thermal Multiplier: <span id="multiplier">1.0</span>x</div>
         </div>
         
-        <!-- Era I Action Triggers -->
-        <button id="btn-inflation" class="era1-only btn-macro-shift bg-gradient-purple">TRIGGER COSMIC INFLATION</button>
-        
-        <!-- Era II Action Triggers -->
-        <button id="btn-recombination" class="era2-only btn-macro-shift bg-gradient-purple">INITIATE COSMIC RECOMBINATION</button>
-        
         <!-- Era III Actions -->
         <button id="flare-button" class="era3-only visual-hidden"></button>
-        <button id="btn-toggle-fuser" class="btn-toggle era3-only">Auto-Fuser: ON</button>
        
         <!-- Era IV Accretion Matrix Controller Interface -->
         <div class="era4-only width-full" style="margin-top: 15px;">
@@ -244,8 +250,14 @@
     
     <div id="tab-content-upgrades" class="tab-content">
       <!-- Dynamic Era Upgrades Containers injection points -->
-      <div id="quantum-upgrades-container" class="era1-only upgrade-grid"></div>
-      <div id="plasma-upgrades-container" class="era2-only upgrade-grid"></div>
+      <div class="era1-only">
+        <div id="quantum-upgrades-container" class="upgrade-grid"></div>
+        <button id="btn-inflation" class="btn-macro-shift bg-gradient-purple" style="margin-top: 20px; width: 100%;">TRIGGER COSMIC INFLATION</button>
+      </div>
+      <div class="era2-only">
+        <div id="plasma-upgrades-container" class="upgrade-grid"></div>
+        <button id="btn-recombination" class="btn-macro-shift bg-gradient-purple" style="margin-top: 20px; width: 100%;">INITIATE COSMIC RECOMBINATION</button>
+      </div>
 
       <div class="cosmic-tier-group era3-only">
         <span class="tier-label">Shell I: Fundamental Physics</span>
@@ -383,6 +395,6 @@
   </nav>
   
   <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2"></script>
-  <script src="script.js?v=20"></script>
+  <script src="script.js?v=21"></script>
 </body>
 </html>

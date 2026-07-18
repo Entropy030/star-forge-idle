@@ -288,6 +288,50 @@ if (gameState.resources[key]) {
 // ==========================================================================
 // [SEC-05] VISUAL FORMATTING & AUDIO HELPER ENGINES
 // ==========================================================================
+function startEraTransition(targetEpoch, transitionText, onConfirm) {
+  const overlay = document.getElementById('era-transition-overlay');
+  const titleEl = document.getElementById('trans-title');
+  const descEl = document.getElementById('trans-desc');
+  const confirmBtn = document.getElementById('btn-trans-confirm');
+  
+  if (!overlay || !titleEl || !descEl || !confirmBtn) {
+    onConfirm();
+    return;
+  }
+  
+  overlay.style.display = 'flex';
+  overlay.style.opacity = '0';
+  overlay.style.transition = 'opacity 0.5s ease-in-out';
+  setTimeout(() => overlay.style.opacity = '1', 10);
+  
+  titleEl.textContent = `Era ${targetEpoch === 2 ? 'II' : 'III'} Cosmic Transition`;
+  confirmBtn.style.display = 'none';
+  
+  let i = 0;
+  descEl.textContent = "";
+  clearInterval(window.transTypewriterInterval);
+  window.transTypewriterInterval = setInterval(() => {
+    if (i < transitionText.length) {
+      descEl.textContent += transitionText.charAt(i);
+      i++;
+    } else {
+      clearInterval(window.transTypewriterInterval);
+      confirmBtn.style.display = 'block';
+      confirmBtn.style.opacity = '0';
+      confirmBtn.style.transition = 'opacity 0.5s ease-in-out';
+      setTimeout(() => confirmBtn.style.opacity = '1', 10);
+    }
+  }, 25);
+  
+  confirmBtn.onclick = () => {
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      onConfirm();
+    }, 500);
+  };
+}
+
 function typeWriter(element, text, speed = 25) {
   element.textContent = "";
   let i = 0;
@@ -1061,7 +1105,7 @@ update() {
         COSMIC_REGISTRY.narrativeLogs.era1.nearInflation : COSMIC_REGISTRY.narrativeLogs.era1.initial;
     } else if (gameState.activeEpoch === 2) {
       if (gameState.resources.protons.amount.gte(800000)) activeLog = COSMIC_REGISTRY.narrativeLogs.era2.nearRecomb;
-      else if (gameState.era2 && gameState.era2.plasmaFusersEnabled) activeLog = COSMIC_REGISTRY.narrativeLogs.era2.fuserActive;
+      else if (gameState.upgrades.plasma.plasmaAutomation.level > 0) activeLog = COSMIC_REGISTRY.narrativeLogs.era2.fuserActive;
       else activeLog = COSMIC_REGISTRY.narrativeLogs.era2.initial;
     } else if (gameState.activeEpoch === 3) {
       activeLog = COSMIC_REGISTRY.narrativeLogs.era3.initial;
@@ -1493,20 +1537,21 @@ function triggerInflation() {
   let bonusFactor = new Decimal(1).plus(leftover.div(100000).times(0.1));
   gameState.inflatonMultiplier = (gameState.inflatonMultiplier || new Decimal(1)).times(bonusFactor);
   
-  gameState.activeEpoch = 2;
-  document.body.setAttribute('data-epoch', 2);
-  gameState.plasmaTemperature = new Decimal(10000000); 
-  gameState.cosmicAge = new Decimal(0);
-  
-  const flashElement = document.createElement('div');
-  flashElement.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #fff; z-index: 99999; pointer-events: none; animation: flashEffect 1.2s forwards;";
-  document.body.appendChild(flashElement);
-  setTimeout(() => flashElement.remove(), 1250);
-  
-  Viewport.showToast("✨ INFINITE INFLATION SHIFT DETECTED! Welcome to Era II! ✨");
-  Viewport.switchTab('core');
-  saveGame();
-  isDirty = true;
+  startEraTransition(2, "The infinite expansion cools the temperature of space-time. The violent quantum foam condenses, binding energy variables into the first physical matter: Quarks and Gluons. We enter the Primordial Soup.", () => {
+    gameState.activeEpoch = 2;
+    document.body.setAttribute('data-epoch', 2);
+    gameState.plasmaTemperature = new Decimal(10000000); 
+    gameState.cosmicAge = new Decimal(0);
+    
+    const flashElement = document.createElement('div');
+    flashElement.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #fff; z-index: 99999; pointer-events: none; animation: flashEffect 1.2s forwards;";
+    document.body.appendChild(flashElement);
+    setTimeout(() => flashElement.remove(), 1250);
+    
+    Viewport.switchTab('core');
+    saveGame();
+    isDirty = true;
+  });
 }
   
 // ==========================================================================
@@ -1518,22 +1563,23 @@ function triggerRecombination() {
     return;
   }
   
-  gameState.activeEpoch = 3;
-  document.body.setAttribute('data-epoch', 3);
-  
-  let electronBonus = gameState.resources.electrons.amount;
-  let startingHydrogen = gameState.resources.protons.amount.times(1.5).plus(electronBonus).max(250);
-  gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(startingHydrogen);
-  
-  const flashElement = document.createElement('div');
-  flashElement.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #fff; z-index: 99999; pointer-events: none; animation: flashEffect 1.5s forwards;";
-  document.body.appendChild(flashElement);
-  setTimeout(() => flashElement.remove(), 1550);
-  
-  Viewport.showToast("✨ COSMIC RECOMBINATION: Photons decoupled! Welcome to Era III! ✨");
-  Viewport.switchTab('core');
-  saveGame();
-  isDirty = true;
+  startEraTransition(3, "The soup cools below critical recombination thresholds. Free electrons bind to protons, neutralizing the plasma. The universe becomes transparent. Under gravity, the first gas clouds collapse, igniting stellar fusion. We enter the Stellar Dawn.", () => {
+    gameState.activeEpoch = 3;
+    document.body.setAttribute('data-epoch', 3);
+    
+    let electronBonus = gameState.resources.electrons.amount;
+    let startingHydrogen = gameState.resources.protons.amount.times(1.5).plus(electronBonus).max(250);
+    gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(startingHydrogen);
+    
+    const flashElement = document.createElement('div');
+    flashElement.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #fff; z-index: 99999; pointer-events: none; animation: flashEffect 1.5s forwards;";
+    document.body.appendChild(flashElement);
+    setTimeout(() => flashElement.remove(), 1550);
+    
+    Viewport.switchTab('core');
+    saveGame();
+    isDirty = true;
+  });
 }
   
 function triggerSupernova() {
@@ -1588,7 +1634,6 @@ function triggerSupernova() {
   if (shiftToEra4) {
     gameState.activeEpoch = 4;
     document.body.setAttribute('data-epoch', 4);
-    Viewport.showToast("🌌 THE CORE HAS COLLAPSED INTO AN UTTER SINGULARITY! Welcome to Era IV: The Galactic Matrix! 🌌");
   }
   
   Viewport.switchTab('core');
@@ -2363,11 +2408,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindClick('btn-stabilize-arms', stabilizeArms);
   bindClick('btn-accrete-planet', accretePlanetConfiguration);
   bindClick('flare-button', collectFlare);
-  bindClick('btn-toggle-fuser', () => {
-    initAudio();
-    gameState.era3.fusersEnabled = !gameState.era3.fusersEnabled;
-    isDirty = true;
-  });
+
 
   const btnReignite = document.querySelector('.btn-reignite');
   if (btnReignite) btnReignite.addEventListener('click', closeTheatrical);
