@@ -90,7 +90,7 @@ upgrades: {
     quarkCondenser: { id: "quarkCondenser", name: "💠 Quark Condenser", baseCost: new Decimal(20), costScaling: 1.3, gen: new Decimal(2), desc: "Condenses energy variables. Generates +2 Quarks/s." },
     gluonBinding: { id: "gluonBinding", name: "🕸️ Gluon Matrix Synthesis", baseCost: new Decimal(120), costScaling: 1.4, gen: new Decimal(1.5), desc: "Binds strong color assets. Generates +1.5 Gluons/s. Requires Quark Condenser Lvl 3." },
     leptonHarvest: { id: "leptonHarvest", name: "🔋 Lepton Collector", baseCost: new Decimal(400), costScaling: 1.45, gen: new Decimal(1), desc: "Extracts fundamental leptons. Generates +1 Lepton/s. Requires Gluon Matrix Lvl 2." },
-    plasmaAutomation: { id: "plasmaAutomation", name: "🤖 Auto-Proton Subroutine", baseCost: new Decimal(1500), costScaling: 1.8, gen: new Decimal(0), desc: "Unlocks the physical control switch to fuse Protons passively. Requires Lepton Collector Lvl 1." },
+    plasmaAutomation: { id: "plasmaAutomation", name: "🤖 Proton Synthesizer", baseCost: new Decimal(2000), costScaling: 1.8, gen: new Decimal(0), desc: "Unlocks passive Proton generation based on Quark/Gluon rates as a catalyst. Requires Lepton Collector Lvl 1." },
     baryoRadiator: { id: "baryoRadiator", name: "❄️ Baryogenesis Radiator", baseCost: new Decimal(100), costScaling: 1.4, cooling: new Decimal(7500), desc: "Radiates excess thermal mass. Cools Universe by 7,500 K/s. Costs 2 Protons/s." }
   },
   galaxy: {
@@ -974,23 +974,22 @@ update() {
   else if (gameState.activeEpoch === 2) {
     let pRates = getPlasmaPassiveRates();
     let asymmetryModifier = getBaryonAsymmetryMultiplier();
-    let maxFusionRate = getProtonFusionCap().times(asymmetryModifier);
     
-    let isFuserOn = gameState.era2 && gameState.era2.plasmaFusersEnabled;
-    let actualQuarkLoss = isFuserOn ? Decimal.min(pRates.quarks, maxFusionRate.times(3)) : new Decimal(0);
-    let actualGluonLoss = isFuserOn ? Decimal.min(pRates.gluons, maxFusionRate.times(2)) : new Decimal(0);
-    let protonGainRate = isFuserOn ? Decimal.min(pRates.quarks.div(3), pRates.gluons.div(2), maxFusionRate).floor() : new Decimal(0);
+    let isFuserActive = gameState.upgrades.plasma.plasmaAutomation.level > 0;
+    let actualQuarkLoss = new Decimal(0);
+    let actualGluonLoss = new Decimal(0);
+    let protonGainRate = isFuserActive ? getProtonFusionCap().times(gameState.upgrades.plasma.plasmaAutomation.level).times(asymmetryModifier) : new Decimal(0);
     
     let radiatorLevel = gameState.upgrades.plasma.baryoRadiator.level || 0;
     let radiatorProtonDrain = new Decimal(radiatorLevel * 2);
 
     document.getElementById('label-hydrogen').innerHTML = `PRIMORDIAL QUARKS`;
     document.getElementById('count').textContent = format(gameState.resources.quarks.amount);
-    document.getElementById('auto-rate').innerHTML = `+${format(pRates.quarks)}/s` + (isFuserOn ? ` <span style='color:#ff7675'>(-${format(actualQuarkLoss)})</span>` : '');
+    document.getElementById('auto-rate').innerHTML = `+${format(pRates.quarks)}/s`;
     
     document.getElementById('label-helium').innerHTML = `PRIMORDIAL GLUONS`;
     document.getElementById('helium-count').textContent = format(gameState.resources.gluons.amount);
-    document.getElementById('helium-yield').innerHTML = `+${format(pRates.gluons)}/s` + (isFuserOn ? ` <span style='color:#ff7675'>(-${format(actualGluonLoss)})</span>` : '');
+    document.getElementById('helium-yield').innerHTML = `+${format(pRates.gluons)}/s`;
     
     // Update dedicated Era II elements
     const leptonCountEl = document.getElementById('lepton-count');
@@ -1020,34 +1019,13 @@ update() {
     if (tempRateEl) {
       tempRateEl.innerHTML = pRates.cooling.gt(0) ? `Cooling: -${format(pRates.cooling)} K/s` : `Stable`;
     }
- 
-    const fuseProtonBtn = document.getElementById('btn-fuse-proton');
-    if (fuseProtonBtn) {
-      const canAfford = gameState.resources.quarks.amount.gte(3) && gameState.resources.gluons.amount.gte(2);
-      fuseProtonBtn.disabled = !canAfford;
-      if (canAfford) fuseProtonBtn.classList.add('upgrade-affordable');
-      else fuseProtonBtn.classList.remove('upgrade-affordable');
-    }
-
     const recombBtn = document.getElementById('btn-recombination');
     if (recombBtn) {
       recombBtn.disabled = !(gameState.resources.protons.amount.gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) || gameState.plasmaTemperature.lte(3000));
     }
 
-    const plasmaFuserBtn = document.getElementById('btn-toggle-plasma-fuser');
-    if (plasmaFuserBtn) {
-      if (gameState.upgrades.plasma.plasmaAutomation.level > 0) {
-        plasmaFuserBtn.classList.remove('visual-hidden');
-        plasmaFuserBtn.textContent = isFuserOn ? "Auto-Proton Fuser: ON" : "Auto-Proton Fuser: OFF";
-        plasmaFuserBtn.style.background = isFuserOn ? "rgba(46, 213, 115, 0.15)" : "rgba(255, 76, 76, 0.15)";
-        plasmaFuserBtn.style.borderColor = isFuserOn ? "#2ed573" : "var(--carbon-glow)";
-      } else {
-        plasmaFuserBtn.classList.add('visual-hidden');
-      }
-    }
-    
     if (gameState.activeTab === 'upgrades') {
-      this.renderGenericTierList('plasma-upgrades-container', 'plasma', (k) => k === 'quarkCondenser' ? 'Quarks' : k === 'gluonBinding' ? 'Gluons' : k === 'leptonHarvest' ? 'Gluons' : 'Protons', '#e17055');
+      this.renderGenericTierList('plasma-upgrades-container', 'plasma', (k) => (k === 'quarkCondenser' || k === 'plasmaAutomation') ? 'Quarks' : (k === 'gluonBinding' || k === 'leptonHarvest') ? 'Gluons' : 'Protons', '#e17055');
     }
   } 
   else if (gameState.activeEpoch === 3) {
@@ -1602,24 +1580,7 @@ function spawnFloatingText(text, color, e, offsetX = 0) {
   }, 1000);
 }
 
-function fuseProtonManually() {
-  initAudio();
-  if (gameState.activeEpoch !== 2) return;
-  
-  const quarkCost = new Decimal(3);
-  const gluonCost = new Decimal(2);
-  
-  if (gameState.resources.quarks.amount.gte(quarkCost) && gameState.resources.gluons.amount.gte(gluonCost)) {
-    gameState.resources.quarks.amount = gameState.resources.quarks.amount.minus(quarkCost);
-    gameState.resources.gluons.amount = gameState.resources.gluons.amount.minus(gluonCost);
-    gameState.resources.protons.amount = gameState.resources.protons.amount.plus(1);
-    
-    Viewport.showToast("Proton Synthesized successfully!");
-    isDirty = true;
-  } else {
-    Viewport.showToast("Need 3 Quarks and 2 Gluons!");
-  }
-}
+
 
 function clickCore(e) {
   initAudio();
@@ -1842,30 +1803,10 @@ const Timeline = {
       gameState.resources.electrons.amount = gameState.resources.electrons.amount.plus(electronHarvest);
     }
     
-    if (gameState.era2 && gameState.era2.plasmaFusersEnabled) {
-      if (!window.protonFusionAccumulator) window.protonFusionAccumulator = 0;
+    if (gameState.upgrades.plasma.plasmaAutomation.level > 0) {
       let asymmetryModifier = getBaryonAsymmetryMultiplier();
-      
-      if (gameState.resources.quarks.amount.gt(0) && gameState.resources.gluons.amount.gt(0)) {
-        window.protonFusionAccumulator += getProtonFusionCap().times(dt).times(asymmetryModifier).toNumber();
-      }
-      window.protonFusionAccumulator = Math.min(window.protonFusionAccumulator, 10);
-      
-      let fCap = Math.floor(window.protonFusionAccumulator);
-      if (fCap > 0) {
-        let availByQuarks = gameState.resources.quarks.amount.div(3).floor().toNumber();
-        let availByGluons = gameState.resources.gluons.amount.div(2).floor().toNumber();
-        let executedFusions = Math.min(fCap, availByQuarks, availByGluons);
-        
-        if (executedFusions > 0) {
-           window.protonFusionAccumulator -= executedFusions;
-           gameState.resources.quarks.amount = gameState.resources.quarks.amount.minus(executedFusions * 3);
-           gameState.resources.gluons.amount = gameState.resources.gluons.amount.minus(executedFusions * 2);
-           gameState.resources.protons.amount = gameState.resources.protons.amount.plus(executedFusions);
-        }
-      }
-    } else {
-      window.protonFusionAccumulator = 0;
+      let fusionRate = getProtonFusionCap().times(gameState.upgrades.plasma.plasmaAutomation.level).times(asymmetryModifier);
+      gameState.resources.protons.amount = gameState.resources.protons.amount.plus(fusionRate.times(dt));
     }
   },
 
@@ -2256,8 +2197,6 @@ document.addEventListener('DOMContentLoaded', () => {
   bindClick('btn-buy-mode', toggleBuyMode);
   bindClick('btn-inflation', triggerInflation);
   bindClick('btn-recombination', triggerRecombination);
-  bindClick('btn-fuse-proton', fuseProtonManually);
-  bindClick('btn-toggle-plasma-fuser', togglePlasmaFuser);
   bindClick('btn-supernova', triggerSupernova);
   bindClick('btn-galactic-merge', triggerGalacticMerge);
   bindClick('btn-stabilize-arms', stabilizeArms);
