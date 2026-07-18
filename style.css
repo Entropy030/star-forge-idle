@@ -461,6 +461,7 @@ pointer-events: none;
   border: 1px dashed rgba(0, 210, 255, 0.2);
   pointer-events: none;
   transform-style: preserve-3d;
+  transition: opacity 0.5s ease-in-out;
 }
 .orbit-1 {
   width: 140px;

@@ -912,6 +912,77 @@ renderFlare() {
   }
 },
 
+updateVisualProgression() {
+  const core = document.getElementById('star-core');
+  if (!core) return;
+  
+  const epoch = gameState.activeEpoch;
+  
+  if (epoch === 1) {
+    let gLvl = gameState.upgrades.quantum.gravityForce?.level || 0;
+    let wLvl = gameState.upgrades.quantum.weakForce?.level || 0;
+    let eLvl = gameState.upgrades.quantum.electromagneticForce?.level || 0;
+    let sLvl = gameState.upgrades.quantum.strongForce?.level || 0;
+    let totalLvl = gLvl + wLvl + eLvl + sLvl;
+    
+    // Core size grows from 8px to 30px
+    let coreSize = Math.min(8 + totalLvl * 0.8, 30);
+    core.style.setProperty('width', `${coreSize}px`, 'important');
+    core.style.setProperty('height', `${coreSize}px`, 'important');
+    
+    // Core glow spreads wider
+    let glowSize = Math.min(16 + totalLvl * 1.5, 55);
+    let glowSpread = Math.min(6 + totalLvl * 0.4, 20);
+    core.style.setProperty('box-shadow', `0 0 ${glowSize}px ${glowSpread}px #ffffff`, 'important');
+    
+    // Orbits fade in based on respective forces purchased
+    const orbit1 = document.querySelector('.orbit-1');
+    const orbit2 = document.querySelector('.orbit-2');
+    const orbit3 = document.querySelector('.orbit-3');
+    
+    if (orbit1) orbit1.style.opacity = Math.min(gLvl * 0.15, 0.7);
+    if (orbit2) orbit2.style.opacity = Math.min(eLvl * 0.15, 0.7);
+    if (orbit3) orbit3.style.opacity = Math.min(sLvl * 0.15, 0.7);
+  }
+  else if (epoch === 2) {
+    let qLvl = gameState.upgrades.plasma.quarkCondenser?.level || 0;
+    let gLvl = gameState.upgrades.plasma.gluonBinding?.level || 0;
+    let lLvl = gameState.upgrades.plasma.leptonHarvest?.level || 0;
+    let aLvl = gameState.upgrades.plasma.plasmaAutomation?.level || 0;
+    let rLvl = gameState.upgrades.plasma.baryoRadiator?.level || 0;
+    let totalLvl = qLvl + gLvl + lLvl + aLvl + rLvl;
+    
+    // Core size grows from 84px to 140px
+    let coreSize = Math.min(84 + totalLvl * 1.2, 140);
+    core.style.setProperty('width', `${coreSize}px`, 'important');
+    core.style.setProperty('height', `${coreSize}px`, 'important');
+    
+    // Glow intensifies
+    let glowSize = Math.min(45 + totalLvl * 1.8, 100);
+    let opacity = Math.min(0.45 + totalLvl * 0.015, 0.9);
+    core.style.setProperty('box-shadow', `0 0 ${glowSize}px 15px rgba(255, 107, 107, ${opacity}), inset 0 0 15px rgba(255,255,255,0.6)`, 'important');
+    
+    // Orbits show as force fields
+    const orbit1 = document.querySelector('.orbit-1');
+    const orbit2 = document.querySelector('.orbit-2');
+    const orbit3 = document.querySelector('.orbit-3');
+    if (orbit1) orbit1.style.opacity = Math.min(0.1 + qLvl * 0.04, 0.6);
+    if (orbit2) orbit2.style.opacity = Math.min(0.1 + gLvl * 0.04, 0.6);
+    if (orbit3) orbit3.style.opacity = Math.min(0.1 + lLvl * 0.04, 0.6);
+  } else {
+    // Reset inline overrides for other eras so they use CSS defaults
+    core.style.width = '';
+    core.style.height = '';
+    core.style.boxShadow = '';
+    const orbit1 = document.querySelector('.orbit-1');
+    const orbit2 = document.querySelector('.orbit-2');
+    const orbit3 = document.querySelector('.orbit-3');
+    if (orbit1) orbit1.style.opacity = '';
+    if (orbit2) orbit2.style.opacity = '';
+    if (orbit3) orbit3.style.opacity = '';
+  }
+},
+
 update() {
   this.updateStardustDisplays();
   const currentEpoch = COSMIC_REGISTRY.universeChronology.epochs[gameState.activeEpoch] || COSMIC_REGISTRY.universeChronology.epochs[3];
@@ -1101,6 +1172,7 @@ update() {
   
   if (gameState.activeTab === 'system') this.renderSystemTab();
   this.renderFlare();
+  this.updateVisualProgression();
 }
 };
 
