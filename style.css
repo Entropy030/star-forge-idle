@@ -2,641 +2,799 @@
  [CSS-SEC-01] ROOT CONFIGURATIONS & GLOBAL CORE ENVIRONMENT ANCHORS
  ========================================================================== */
  :root {
-    --void-bg: #030106;
-    --space-gradient: radial-gradient(circle at 50% 40%, #0c0822 0%, #030105 100%);
-    --glass-bg: rgba(9, 6, 20, 0.65);
-    --glass-border: rgba(255, 255, 255, 0.06);
-    --glass-glow: rgba(108, 92, 231, 0.08);
-    
-    --hydrogen-glow: #00d2ff;
-    --helium-glow: #70a1ff;
-    --carbon-glow: #ff6b6b;
-    --iron-glow: #bdc3c7;
-    --stardust-gold: #ffcc00;
-    --singularity-purple: #9b59b6;
-    --neon-teal: #00ecc6;
-    
-    --sat: env(safe-area-inset-top);
-    --sab: env(safe-area-inset-bottom);
-  }
+  --void-bg: #030106;
+  --space-gradient: radial-gradient(circle at 50% 40%, #0c0822 0%, #030105 100%);
+  --glass-bg: rgba(9, 6, 20, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-glow: rgba(108, 92, 231, 0.08);
   
-  body { 
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    text-align: center; 
-    background: var(--void-bg);
-    background-image: var(--space-gradient);
-    color: #f5f6fa; 
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    overflow-x: hidden;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-font-smoothing: antialiased;
-    touch-action: manipulation;
-  }
+  --hydrogen-glow: #00d2ff;
+  --helium-glow: #70a1ff;
+  --carbon-glow: #ff6b6b;
+  --iron-glow: #bdc3c7;
+  --stardust-gold: #ffcc00;
+  --singularity-purple: #9b59b6;
+  --neon-teal: #00ecc6;
   
-  main, header, .dashboard-container {
-    position: relative;
-    z-index: 1;
-    contain: layout;
-  }
-  
-  /* ==========================================================================
-   [CSS-SEC-02] DEEP CANVAS STARS DRIFT FIELD ANIMATIONS
-   ========================================================================== */
-  body::before,
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-  }
-  body::before {
-    background-image:
-      radial-gradient(1px 1px at 30px 40px, #fff, transparent),
-      radial-gradient(1.5px 1.5px at 110px 180px, var(--hydrogen-glow), transparent),
-      radial-gradient(1px 1px at 240px 90px, #fff, transparent),
-      radial-gradient(2px 2px at 80px 280px, var(--neon-teal), transparent);
-    background-size: 320px 320px;
-    opacity: 0.35;
-    animation: driftStarsForward 180s linear infinite;
-  }
-  body::after {
-    background-image:
-      radial-gradient(1px 1px at 70px 120px, #fff, transparent),
-      radial-gradient(1.5px 1.5px at 190px 220px, var(--stardust-gold), transparent);
-    background-size: 400px 400px;
-    opacity: 0.2;
-    animation: driftStarsBackward 260s linear infinite;
-  }
-  @keyframes driftStarsForward {
-    from { transform: translate3d(0, 0, 0); }
-    to { transform: translate3d(-320px, -320px, 0); }
-  }
-  @keyframes driftStarsBackward {
-    from { transform: translate3d(0, 0, 0); }
-    to { transform: translate3d(400px, -400px, 0); }
-  }
-  
-  /* ==========================================================================
-   [CSS-SEC-03] BRAND TYPOGRAPHY SHIMMERS & BANNER CORE TEXTS
-   ========================================================================== */
-  h1 {
-    font-weight: 800;
-    font-size: 1.6rem;
-    letter-spacing: 6px;
-    margin: 0;
-    text-transform: uppercase;
-    background: linear-gradient(90deg, #b3a7ff, #00d2ff, #00ecc6, #b3a7ff);
-    background-size: 300% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: dynamicShimmer 6s linear infinite;
-  }
-  @keyframes dynamicShimmer { 
-    0% { background-position: 0% center; }
-    100% { background-position: 300% center; } 
-  }
-  
-  .test-tag {
-    font-size: 0.55rem;
-    vertical-align: middle;
-    background: rgba(0, 210, 255, 0.15);
-    border: 1px solid var(--hydrogen-glow);
-    color: var(--hydrogen-glow);
-    padding: 2px 6px;
-    border-radius: 4px;
-    letter-spacing: 1px;
-    margin-left: 4px;
-  }
-  
-  .stage-text { 
-    text-transform: uppercase; 
-    letter-spacing: 2.5px; 
-    color: var(--neon-teal); 
-    font-size: 0.72rem; 
-    margin: 6px 0 0 0; 
-    font-weight: 600;
-  }
-  .timeline-banner { color: #fff; opacity: 0.8; }
-  .game-header { padding-top: calc(16px + var(--sat)); margin-bottom: 5px; }
-  
-  /* ==========================================================================
-   [CSS-SEC-04] STICKY HUD HEADERS & METRICS RESOURCE BOX GRIDS
-   ========================================================================== */
-  .dashboard-container {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: linear-gradient(to bottom, rgba(3, 1, 6, 0.96) 80%, rgba(3, 1, 6, 0.0));
-    padding: 12px 16px 20px 16px;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-  }
-  
-  .currency-prestige-bar {
-    color: #a29bfe; 
-    font-weight: 600; 
-    margin-bottom: 12px; 
-    font-size: 0.85rem; 
-    letter-spacing: 0.5px;
-    text-shadow: 0 0 12px rgba(162, 155, 254, 0.4);
-  }
-  
-  .dashboard { 
-    display: flex; 
-    justify-content: center; 
-    gap: 8px; 
-    max-width: 1000px; 
-    margin: 0 auto; 
-  }
-  .resource-box { 
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    padding: 10px 6px; 
-    border-radius: 12px; 
-    flex: 1;
-    min-width: 0;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
-    transition: border-color 0.3s ease;
-  }
-  .resource-box h3 { margin: 0; font-size: 0.6rem; color: #a4b0be; letter-spacing: 0.8px; display: flex; align-items: center; justify-content: center; gap: 2px; }
-  .resource-box h2 { margin: 4px 0; font-size: 1.2rem; color: #fff; font-weight: 600; font-family: monospace; letter-spacing: -0.5px; }
-  .resource-box small { font-size: 0.62rem; display: block; font-family: monospace; font-weight: 700; }
-  
-  .border-blue { border-left: 2px solid var(--hydrogen-glow); }
-  .border-purple { border-left: 2px solid var(--helium-glow); }
-  .border-red { border-left: 2px solid var(--carbon-glow); }
-  .border-grey { border-left: 2px solid var(--iron-glow); }
-  
-  /* ==========================================================================
-   [CSS-SEC-05] FIXED MOBILE NAVIGATION CAPSULE SYSTEM
-   ========================================================================== */
-  .tab-menu {
-    position: fixed;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 24px);
-    max-width: 600px;
-    background: rgba(10, 8, 22, 0.8);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    display: flex;
-    justify-content: flex-start;
-    overflow-x: auto;
-    scroll-behavior: smooth;
-    gap: 6px;
-    padding: 8px;
-    border-radius: 24px;
-    box-sizing: border-box;
-    z-index: 1000;
-    -ms-overflow-style: none;
-    scrollbar-width: none; 
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
-    margin-bottom: var(--sab);
-  }
-  .tab-menu::-webkit-scrollbar { display: none; }
-  
-  .tab-btn {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    padding: 10px 18px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: #a4b0be;
-    border-radius: 18px;
-    white-space: nowrap;
-    min-height: 44px; 
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-  }
-  .tab-btn:active:not(:disabled) {
-    transform: scale(0.95);
-  }
-  .tab-btn.active {
-    background: linear-gradient(135deg, #5f27cd, #341f97);
-    color: #fff;
-    border-color: #7158e2;
-    box-shadow: 0 4px 12px rgba(95, 39, 205, 0.4);
-  }
-  .tab-btn:disabled {
-    opacity: 0.2;
-    cursor: not-allowed;
-    background: transparent;
-    border-color: transparent;
-  }
-  
-  /* ==========================================================================
-   [CSS-SEC-06] TAB SCREENS VIEWPORT & GENERAL CONTAINER CARDS
-   ========================================================================== */
-  .tab-content {
-    display: none;
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 16px 16px calc(110px + var(--sab)) 16px;
-    box-sizing: border-box;
-    animation: viewFadeIn 0.3s ease-out;
-  }
-  @keyframes viewFadeIn {
-    from { opacity: 0; transform: translate3d(0, 8px, 0); }
-    to { opacity: 1; transform: translate3d(0, 0, 0); }
-  }
-  
-  .section-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    text-align: left;
-  }
-  .cosmic-tier-group {
-    position: relative;
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
-    padding-left: 16px;
-    margin-left: 6px;
-    margin-top: 20px;
-    text-align: left;
-  }
-  .tier-label {
-    font-size: 0.65rem;
-    color: var(--stardust-gold);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    display: block;
-    margin-bottom: 10px;
-    font-weight: 700;
-  }
-  
-  #tab-content-upgrades button,
-  #stardust-shop-list > div,
-  #pulsar-shop-list > div,
-  #singularity-shop-list > div,
-  #celestial-cards-list > div,
-  #quantum-upgrades-container > div,
-  #plasma-upgrades-container > div {
-    background: var(--glass-bg) !important;
-    border: 1px solid var(--glass-border) !important;
-    border-radius: 16px;
-    padding: 14px 18px !important;
-    margin: 8px 0 !important;
-    display: flex !important;
-    align-items: center;
-    justify-content: space-between;
-    width: 100% !important;
-    box-sizing: border-box;
-    text-align: left;
-    color: #f5f6fa;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.02);
-    transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-    min-height: 64px;
-    font-family: inherit;
-  }
-  #tab-content-upgrades button:hover:not(:disabled) {
-    border-color: rgba(255,255,255,0.15) !important;
-    background: rgba(20, 15, 40, 0.75) !important;
-  }
-  #tab-content-upgrades button:active:not(:disabled) {
-    transform: scale(0.985);
-    background: rgba(30, 25, 55, 0.85) !important;
-  }
-  #tab-content-upgrades button:disabled {
-    opacity: 0.25;
-    cursor: not-allowed;
-    box-shadow: none !important;
-  }
-  
-  .btn-meta { display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
-  .btn-meta strong { font-size: 0.88rem; color: #fff; font-weight: 600; }
-  .btn-meta small { color: #a4b0be; font-size: 0.72rem; line-height: 1.2; }
-  .btn-price { 
-    font-size: 0.75rem; 
-    font-weight: 700; 
-    padding: 6px 12px; 
-    background: rgba(255,255,255,0.05); 
-    border-radius: 10px; 
-    border: 1px solid rgba(255,255,255,0.08); 
-    pointer-events: none; 
-    white-space: nowrap; 
-    font-family: monospace;
-  }
-  
-  button.btn-toggle, button.btn-danger, .buy-mode-container button {
-    width: auto !important; display: inline-block !important; text-align: center !important; min-height: unset;
-  }
-  
-  .bg-gradient-purple:disabled,
-  .bg-gradient-orange:disabled {
-    opacity: 0.25 !important;
-    cursor: not-allowed !important;
-    background: rgba(255, 255, 255, 0.04) !important;
-    color: #636e72 !important;
-    border: 1px solid rgba(255, 255, 255, 0.05) !important;
-    box-shadow: none !important;
-  }
-  
-  /* ==========================================================================
-   [CSS-SEC-07] INTERACTIVE STARDUST FORGE CANVAS & PULSING ANCHORS
-   ========================================================================== */
-  .core-canvas {
-    height: 240px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    margin: 15px auto;
-    background: radial-gradient(circle, rgba(108, 92, 231, 0.05) 0%, transparent 70%);
-    max-width: 340px;
-    border-radius: 50%;
-  }
-  .canvas-scanner-line {
-    position: absolute;
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(0, 210, 255, 0.2), transparent);
-    top: 50%;
-    left: 0;
-    pointer-events: none;
-  }
-  
-  #star-core {
-    width: 80px;
-    height: 80px;
-    background: radial-gradient(circle, #ffffff 20%, var(--carbon-glow) 60%, transparent 100%);
-    border-radius: 50%;
-    box-shadow: 0 0 32px 8px rgba(225, 112, 85, 0.35);
-    position: relative;
-    cursor: pointer;
-    will-change: transform;
-    transition: transform 0.08s ease-out;
-    animation: balancedPulse 5s ease-in-out infinite;
-  }
-  .core-inner-glow {
-    position: absolute;
-    inset: -12px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    background: radial-gradient(circle, transparent 60%, rgba(0, 210, 255, 0.05) 100%);
-    animation: deepRotation 30s linear infinite;
-  }
-  @keyframes balancedPulse {
-    0%, 100% { transform: scale(1); filter: brightness(1); }
-    50% { transform: scale(1.04); filter: brightness(1.1); }
-  }
-  @keyframes deepRotation { to { transform: rotate(360deg); } }
-  
-  .temp-display { font-size: 1.35rem; color: var(--stardust-gold); font-weight: 700; letter-spacing: 0.5px; margin-top: 10px; font-family: monospace; }
-  .mult-display { color: var(--neon-teal); font-size: 0.78rem; margin-top: 2px; font-weight: 700; font-family: monospace; }
-  
-  .btn-toggle { 
-    background: rgba(255, 76, 76, 0.15); 
-    border: 1px solid var(--carbon-glow); 
-    padding: 10px 22px; 
-    border-radius: 20px; 
-    color: #fff; 
-    cursor: pointer; 
-    font-size: 0.78rem; 
-    font-weight: 700;
-    min-height: 44px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
-  
-  .buy-mode-container { position: absolute; top: calc(14px + var(--sat)); right: 16px; z-index: 105; }
-  .buy-mode-container button { 
-    background: rgba(255,255,255,0.03); 
-    border: 1px solid var(--glass-border); 
-    padding: 8px 14px; 
-    font-size: 0.72rem; 
-    border-radius: 14px; 
-    color: var(--hydrogen-glow); 
-    cursor: pointer; 
-    font-weight: 700;
-    min-height: 36px;
-  }
-  
-  #flare-button {
-    margin: 15px auto 0 auto;
-    padding: 12px 24px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #fff;
-    background: linear-gradient(135deg, #ff7675, #d63031);
-    border: 1px solid #ff7675;
-    border-radius: 22px;
-    cursor: pointer;
-  }
-  
-  .section-desc { font-size: 0.78rem; color: #a4b0be; margin: -2px auto 16px auto; max-width: 480px; line-height: 1.4; text-align: left; }
-  .info-btn { cursor: pointer; color: #a4b0be; margin-left: 2px; font-size: 0.85em; opacity: 0.5; }
-  
-  /* ==========================================================================
-   [CSS-SEC-08] TOAST ALERTS & UTILITY SYSTEM ACTION SHEETS
-   ========================================================================== */
-  .prestige-card-panel, .stats-card, .settings-card, #system-rank-info {
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    padding: 20px;
-    box-sizing: border-box;
-    margin-top: 12px;
-    box-shadow: 0 12px 36px rgba(0,0,0,0.35);
-  }
-  .prestige-estimate-box { 
-    margin: 16px auto; 
-    padding: 14px; 
-    background: rgba(0, 236, 198, 0.04); 
-    border-radius: 14px; 
-    border: 1px dashed rgba(0, 236, 198, 0.2); 
-    font-weight: 700; 
-    color: var(--neon-teal); 
-    font-size: 1.05rem;
-    font-family: monospace;
-  }
-  #btn-supernova { 
-    width: 100%; 
-    border-radius: 14px; 
-    padding: 14px; 
-    font-weight: 700; 
-    font-size: 0.88rem; 
-    cursor: pointer; 
-    border: none;
-    background: linear-gradient(135deg, #ff6b6b, #ee5253);
-    color: white;
-    min-height: 48px;
-  }
-  
-  .stats-card p { margin: 10px 0; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 6px; font-size: 0.85rem; color: #a4b0be; }
-  .stat-value { float: right; color: #fff; font-weight: 700; font-family: monospace; }
-  
-  .data-input-field { box-sizing: border-box; width: 100%; padding: 12px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid var(--glass-border); border-radius: 10px; font-family: monospace; font-size: 0.75rem; margin-bottom: 12px; }
-  .btn-danger { background: rgba(234, 32, 39, 0.12); border: 1px solid #ea2027; color: #ff6b6b; cursor: pointer; padding: 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; min-height: 44px; }
-  
-  #toast-container {
-    position: fixed;
-    top: calc(20px + var(--sat));
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(95, 39, 205, 0.95);
-    border: 1px solid #7158e2;
-    color: #fff;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    z-index: 9999;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-    pointer-events: none;
-    max-width: 88vw;
-  }
-  .toast-hidden { opacity: 0; transform: translate(-50%, -10px) !important; }
-  
- /* ==========================================================================
- [CSS-SEC-09] HIGH PERFORMANCE EPOCH CONDITIONALS VISIBILITY CONTROLS
- ========================================================================== */
- body[data-epoch="1"] .era1-only { display: block !important; }
- body[data-epoch="1"] button.era1-only { display: block !important; }
- body[data-epoch="1"] .era2-only, body[data-epoch="1"] .era3-only, body[data-epoch="1"] .era4-only { display: none !important; }
- 
- body[data-epoch="2"] .era2-only { display: block !important; }
- body[data-epoch="2"] button.era2-only { display: block !important; }
- body[data-epoch="2"] .era1-only, body[data-epoch="2"] .era3-only, body[data-epoch="2"] .era4-only { display: none !important; }
- 
- body[data-epoch="3"] .era3-only { display: block !important; }
- body[data-epoch="3"] button.era3-only { display: inline-block !important; }
- body[data-epoch="3"] .era1-only, body[data-epoch="3"] .era2-only, body[data-epoch="3"] .era4-only { display: none !important; }
+  --sat: env(safe-area-inset-top);
+  --sab: env(safe-area-inset-bottom);
+}
 
- body[data-epoch="4"] .era4-only { display: block !important; }
- body[data-epoch="4"] button.era4-only { display: block !important; }
- body[data-epoch="4"] .era1-only, body[data-epoch="4"] .era2-only, body[data-epoch="4"] .era3-only { display: none !important; }
- 
- body[data-tab="core"] #tab-content-core { display: block; }
- body[data-tab="upgrades"] #tab-content-upgrades { display: block; }
- body[data-tab="system"] #tab-content-system { display: block; }
- body[data-tab="shop"] #tab-content-shop { display: block; }
- body[data-tab="pulsar"] #tab-content-pulsar { display: block; }
- body[data-tab="singularity"] #tab-content-singularity { display: block; }
- body[data-tab="prestige"] #tab-content-prestige { display: block; }
- body[data-tab="stats"] #tab-content-stats { display: block; }
- body[data-tab="settings"] #tab-content-settings { display: block; }
- 
- #star-core[data-canvas-style="singularity-point"] {
- width: 8px !important;
- height: 8px !important;
- background: #ffffff !important;
- box-shadow: 0 0 16px 6px #ffffff !important;
- animation: quantumFlicker 0.08s infinite linear !important;
- }
- #star-core[data-canvas-style="galaxy-wheel"] {
- width: 120px !important;
- height: 120px !important;
- background: radial-gradient(circle, #ffeaa7 10%, #6c5ce7 70%, transparent 100%) !important;
- box-shadow: 0 0 40px 15px rgba(108, 92, 231, 0.6) !important;
- }
- @keyframes quantumFlicker {
- 0%, 100% { transform: scale(1) translate3d(0,0,0); }
- 50% { transform: scale(1.1) translate3d(0.5px, -0.5px, 0); }
- }
- 
- .visual-hidden { display: none !important; }
- .flex-column-gap { display: flex; flex-direction: column; gap: 8px; width: 100%; }
- .width-full { width: 100%; }
- .space-top { margin-top: 24px; }
- .divider-subtle { border: 0; border-top: 1px solid rgba(255,255,255,0.06); margin: 20px 0; }
-  
- /* ==========================================================================
- [CSS-SEC-10] MODALS overlays, DEVS MATRIX, & MEDIA VIEW RESPONSIVENESS
- ========================================================================== */
- .color-blue { color: var(--hydrogen-glow) !important; }
- .color-purple { color: var(--helium-glow) !important; }
- .color-red { color: var(--carbon-glow) !important; }
- .color-grey { color: var(--iron-glow) !important; }
- .color-yellow { color: var(--stardust-gold) !important; }
- .color-teal { color: var(--neon-teal) !important; }
- .color-dark-purple { color: var(--singularity-purple) !important; }
- 
- .bg-gradient-purple { background: linear-gradient(135deg, #6c5ce7, #9b59b6); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 700; width: 100%; }
- .bg-gradient-orange { background: linear-gradient(135deg, #ff7675, #f39c12); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 700; width: 100%; }
- 
- #theatrical-overlay {
- position: fixed; inset: 0; background: rgba(3,1,6,0.99); 
- z-index: 10000; flex-direction: column; justify-content: center; align-items: center; 
- text-align: center; color: #fff; transition: opacity 0.8s ease; display: none; opacity: 0;
- }
- #theatrical-overlay.theatrical-active { display: flex; opacity: 1; }
- 
- .dev-matrix-hidden { display: none; background: rgba(230, 126, 34, 0.08); border: 1px dashed #e67e22; padding: 12px; margin: 12px auto; max-width: 600px; border-radius: 12px; }
- .dev-buttons-wrapper { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
- .btn-dev { padding: 6px 12px; font-size: 11px; color: white; cursor: pointer; border-radius: 6px; border: none; }
- .bg-orange { background: #e67e22; }
- .bg-dark-orange { background: #d35400; }
- .bg-red { background: #e17055; }
- .bg-purple { background: #8e44ad; }
- .bg-orange-trans { background: rgba(211, 84, 0, 0.6); }
- .bg-blue { background: #2980b9; }
- 
- @media (max-width: 580px) {
- .dashboard-container { padding: 10px 12px 14px 12px; }
- .dashboard { gap: 4px; }
- .resource-box { padding: 8px 4px; border-radius: 10px; }
- .resource-box h3 { font-size: 0.55rem; letter-spacing: 0.3px; }
- .resource-box h2 { font-size: 0.95rem; margin: 2px 0; }
- .resource-box small { font-size: 0.58rem; }
- .currency-prestige-bar { font-size: 0.78rem; margin-bottom: 8px; }
- h1 { font-size: 1.25rem; letter-spacing: 4px; }
- .buy-mode-container { top: calc(10px + var(--sat)); right: 12px; }
- .core-canvas { height: 190px; }
- }
- 
- @media (prefers-reduced-motion: reduce) {
- body::before, body::after, h1, #star-core, .core-inner-glow { animation: none !important; }
- }
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  text-align: center; 
+  background: var(--void-bg);
+  background-image: var(--space-gradient);
+  color: #f5f6fa; 
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  touch-action: manipulation;
+}
+
+main, header, .dashboard-container {
+  position: relative;
+  z-index: 1;
+  contain: layout;
+}
 
 /* ==========================================================================
-   [CSS-SEC-11] ERA IV GALACTIC MATRIX VISUAL SYSTEMS
-   ========================================================================== */
-.galaxy-spiral-arms {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    background: transparent;
-    border-radius: 50%;
-    pointer-events: none;
-    will-change: transform;
-    animation: rotateGalaxyArms 40s linear infinite;
+ [CSS-SEC-02] DEEP CANVAS STARS DRIFT FIELD ANIMATIONS
+ ========================================================================== */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+body::before {
+  background-image:
+    radial-gradient(1px 1px at 30px 40px, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 110px 180px, var(--hydrogen-glow), transparent),
+    radial-gradient(1px 1px at 240px 90px, #fff, transparent),
+    radial-gradient(2px 2px at 80px 280px, var(--neon-teal), transparent);
+  background-size: 320px 320px;
+  opacity: 0.35;
+  animation: driftStarsForward 180s linear infinite;
+}
+body::after {
+  background-image:
+    radial-gradient(1px 1px at 70px 120px, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 190px 220px, var(--stardust-gold), transparent);
+  background-size: 400px 400px;
+  opacity: 0.2;
+  animation: driftStarsBackward 260s linear infinite;
+}
+@keyframes driftStarsForward {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-320px, -320px, 0); }
+}
+@keyframes driftStarsBackward {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(400px, -400px, 0); }
 }
 
-#star-core[data-canvas-style="galaxy-wheel"] .galaxy-spiral-arms {
-    box-shadow: 
-        15px 10px 8px #00d2ff, 35px 25px 12px #70a1ff, 60px 45px 16px #9b59b6, 90px 70px 24px rgba(108, 92, 231, 0.4),
-        -15px -10px 8px #00ecc6, -35px -25px 12px #ff6b6b, -60px -45px 16px #ffcc00, -90px -70px 24px rgba(0, 210, 255, 0.4),
-        30px -40px 14px rgba(255,255,255,0.1), -30px 40px 14px rgba(255,255,255,0.1),
-        40px 80px 20px rgba(155, 89, 182, 0.2), -40px -80px 20px rgba(0, 236, 198, 0.2);
+/* ==========================================================================
+ [CSS-SEC-03] BRAND TYPOGRAPHY SHIMMERS & BANNER CORE TEXTS
+ ========================================================================== */
+h1 {
+  font-weight: 800;
+  font-size: 1.6rem;
+  letter-spacing: 6px;
+  margin: 0;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #b3a7ff, #00d2ff, #00ecc6, #b3a7ff);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: dynamicShimmer 6s linear infinite;
+}
+@keyframes dynamicShimmer { 
+  0% { background-position: 0% center; }
+  100% { background-position: 300% center; } 
 }
 
+.stage-text { 
+  text-transform: uppercase; 
+  letter-spacing: 2.5px; 
+  color: var(--neon-teal); 
+  font-size: 0.72rem; 
+  margin: 6px 0 0 0; 
+  font-weight: 600;
+}
+.timeline-banner { color: #fff; opacity: 0.8; }
+.game-header { padding-top: calc(16px + var(--sat)); margin-bottom: 5px; }
+
+/* ==========================================================================
+[CSS-SEC-04] STICKY HUD HEADERS & METRICS RESOURCE BOX GRIDS
+========================================================================== */
+.dashboard-container {
+position: sticky;
+top: 0;
+z-index: 100;
+background: linear-gradient(to bottom, rgba(3, 1, 6, 0.96) 80%, rgba(3, 1, 6, 0.0));
+padding: 12px 16px 20px 16px;
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.currency-prestige-bar {
+color: #a29bfe; 
+font-weight: 600; 
+margin-bottom: 12px; 
+font-size: 0.85rem; 
+letter-spacing: 0.5px;
+text-shadow: 0 0 12px rgba(162, 155, 254, 0.4);
+}
+
+.dashboard { 
+display: flex; 
+justify-content: center; 
+gap: 8px; 
+flex-wrap: wrap;
+max-width: 1000px; 
+margin: 0 auto; 
+}
+.resource-box { 
+background: var(--glass-bg);
+border: 1px solid var(--glass-border);
+padding: 10px 6px; 
+border-radius: 12px; 
+flex: 1 1 calc(25% - 8px);
+min-width: 120px;
+box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
+transition: border-color 0.3s ease;
+box-sizing: border-box;
+}
+.resource-box h3 { margin: 0; font-size: 0.6rem; color: #a4b0be; letter-spacing: 0.8px; display: flex; align-items: center; justify-content: center; gap: 2px; }
+.resource-box h2 { margin: 4px 0; font-size: 1.2rem; color: #fff; font-weight: 600; font-family: monospace; letter-spacing: -0.5px; }
+.resource-box small { font-size: 0.62rem; display: block; font-family: monospace; font-weight: 700; }
+
+.border-blue { border-left: 2px solid var(--hydrogen-glow); }
+.border-purple { border-left: 2px solid var(--helium-glow); }
+.border-red { border-left: 2px solid var(--carbon-glow); }
+.border-grey { border-left: 2px solid var(--iron-glow); }
+.border-orange { border-left: 2px solid #e17055; }
+.border-yellow { border-left: 2px solid var(--stardust-gold); }
+.border-teal { border-left: 2px solid var(--neon-teal); }
+
+/* ==========================================================================
+ [CSS-SEC-05] FIXED MOBILE NAVIGATION CAPSULE SYSTEM
+ ========================================================================== */
+.tab-menu {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 600px;
+  background: rgba(10, 8, 22, 0.8);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: flex-start;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 24px;
+  box-sizing: border-box;
+  z-index: 1000;
+  -ms-overflow-style: none;
+  scrollbar-width: none; 
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
+  margin-bottom: var(--sab);
+}
+.tab-menu::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 10px 18px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #a4b0be;
+  border-radius: 18px;
+  white-space: nowrap;
+  min-height: 44px; 
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.tab-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+.tab-btn.active {
+  background: linear-gradient(135deg, #5f27cd, #341f97);
+  color: #fff;
+  border-color: #7158e2;
+  box-shadow: 0 4px 12px rgba(95, 39, 205, 0.4);
+}
+.tab-btn:disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+  background: transparent;
+  border-color: transparent;
+}
+
+/* ==========================================================================
+ [CSS-SEC-06] TAB SCREENS VIEWPORT & GENERAL CONTAINER CARDS
+ ========================================================================== */
+ .tab-content {
+  display: none;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 16px 16px calc(110px + var(--sab)) 16px;
+  box-sizing: border-box;
+  animation: viewFadeIn 0.3s ease-out;
+}
+@keyframes viewFadeIn {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  text-align: left;
+}
+.cosmic-tier-group {
+  position: relative;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding-left: 16px;
+  margin-left: 6px;
+  margin-top: 20px;
+  text-align: left;
+}
+.tier-label {
+  font-size: 0.65rem;
+  color: var(--stardust-gold);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+/* SCI-FI UI CARDS - DEFAULT LOCKED / UNAFFORDABLE STATE */
+.cosmic-card {
+  background: rgba(5, 4, 12, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.02) !important;
+  border-radius: 4px !important;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+  position: relative;
+  padding: 14px 18px !important;
+  margin: 8px 0 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  width: 100% !important;
+  box-sizing: border-box;
+  text-align: left;
+  opacity: 0.35;
+  filter: grayscale(0.4);
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  min-height: 64px;
+  font-family: inherit;
+}
+
+.cosmic-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20%;
+  height: 50%;
+  width: 3px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.3s ease;
+}
+
+/* ELEGANT & HIGH-PREMIUM NEON HIGHLIGHT FOR BUYABLE ENTRIES */
+.upgrade-affordable {
+  opacity: 1 !important;
+  filter: none !important;
+  border-color: rgba(0, 210, 255, 0.45) !important;
+  background: linear-gradient(135deg, rgba(14, 11, 46, 0.75), rgba(7, 5, 19, 0.95)) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.03) !important;
+}
+.upgrade-affordable::before {
+  background: linear-gradient(to bottom, var(--neon-teal), var(--hydrogen-glow)) !important;
+  box-shadow: 0 0 10px rgba(0, 210, 255, 0.8);
+  height: 60% !important;
+  top: 20% !important;
+  animation: cosmicPulseBreath 2s infinite alternate ease-in-out;
+}
+.upgrade-affordable .upgrade-btn {
+  background: var(--hydrogen-glow) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 10px rgba(0, 210, 255, 0.3);
+}
+.upgrade-affordable .upgrade-btn[data-shop-type="stardust"] {
+  background: var(--stardust-gold) !important;
+  box-shadow: 0 2px 10px rgba(255, 204, 0, 0.3);
+}
+.upgrade-affordable .upgrade-btn[data-shop-type="pulsar"] {
+  background: var(--neon-teal) !important;
+  box-shadow: 0 2px 10px rgba(0, 236, 198, 0.3);
+}
+.upgrade-affordable .upgrade-btn[data-shop-type="singularity"] {
+  background: var(--singularity-purple) !important;
+  box-shadow: 0 2px 10px rgba(155, 89, 182, 0.3);
+}
+
+@keyframes cosmicPulseBreath {
+  0% { opacity: 0.5; filter: brightness(0.8); }
+  100% { opacity: 1; filter: brightness(1.3); }
+}
+
+button.cosmic-card:hover:not(:disabled) {
+  border-color: rgba(255,255,255,0.15) !important;
+  background: rgba(20, 15, 40, 0.75) !important;
+}
+button.cosmic-card:active:not(:disabled) {
+  transform: scale(0.995);
+}
+button.cosmic-card:disabled {
+  box-shadow: none !important;
+  clip-path: none !important;
+}
+
+.btn-meta { display: flex; flex-direction: column; gap: 2px; pointer-events: none; }
+.btn-meta strong { font-size: 0.88rem; color: #fff; font-weight: 600; }
+.btn-meta small { color: #a4b0be; font-size: 0.72rem; line-height: 1.2; }
+.btn-price { 
+  font-size: 0.75rem; 
+  font-weight: 700; 
+  padding: 6px 12px; 
+  background: rgba(255,255,255,0.04); 
+  border-radius: 4px; 
+  border: 1px solid rgba(255,255,255,0.06); 
+  pointer-events: none; 
+  white-space: nowrap; 
+  font-family: monospace;
+}
+
+button.btn-toggle, button.btn-danger, .buy-mode-container button {
+  width: auto !important; display: inline-block !important; text-align: center !important; min-height: unset;
+}
+.bg-gradient-purple:disabled,
+.bg-gradient-orange:disabled {
+  opacity: 0.25 !important;
+  cursor: not-allowed !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #636e72 !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ==========================================================================
+[CSS-SEC-07] INTERACTIVE STARDUST FORGE CANVAS & PULSING ANCHORS
+========================================================================== */
+.core-canvas {
+height: 240px;
+display: flex;
+align-items: center;
+justify-content: center;
+position: relative;
+margin: 15px auto;
+max-width: 340px;
+contain: layout paint size;
+}
+.canvas-scanner-line {
+position: absolute;
+width: 100%;
+height: 1px;
+background: linear-gradient(90deg, transparent, rgba(0, 210, 255, 0.2), transparent);
+top: 50%;
+left: 0;
+pointer-events: none;
+}
+
+#star-core {
+width: 80px;
+height: 80px;
+background: radial-gradient(circle, #ffffff 20%, var(--carbon-glow) 60%, transparent 100%);
+border-radius: 50%;
+box-shadow: 0 0 32px 8px rgba(225, 112, 85, 0.35);
+position: relative;
+cursor: pointer;
+will-change: transform;
+transition: transform 0.08s ease-out;
+animation: balancedPulse 5s ease-in-out infinite;
+}
+.core-inner-glow {
+position: absolute;
+inset: -12px;
+border-radius: 50%;
+border: 1px solid rgba(255, 255, 255, 0.04);
+background: radial-gradient(circle, transparent 60%, rgba(0, 210, 255, 0.05) 100%);
+animation: deepRotation 30s linear infinite;
+}
+@keyframes balancedPulse {
+0%, 100% { transform: scale(1); filter: brightness(1); }
+50% { transform: scale(1.04); filter: brightness(1.1); }
+}
+@keyframes deepRotation { to { transform: rotate(360deg); } }
+
+.temp-display { font-size: 1.35rem; color: var(--stardust-gold); font-weight: 700; letter-spacing: 0.5px; margin-top: 10px; font-family: monospace; }
+.mult-display { color: var(--neon-teal); font-size: 0.78rem; margin-top: 2px; font-weight: 700; font-family: monospace; }
+
+.btn-toggle { 
+background: rgba(255, 76, 76, 0.15); 
+border: 1px solid var(--carbon-glow); 
+padding: 10px 22px; 
+border-radius: 20px; 
+color: #fff; 
+cursor: pointer; 
+font-size: 0.78rem; 
+font-weight: 700;
+min-height: 44px;
+box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.buy-mode-container { position: absolute; top: calc(14px + var(--sat)); right: 16px; z-index: 105; }
+.buy-mode-container button { 
+background: rgba(255,255,255,0.03); 
+border: 1px solid var(--glass-border); 
+padding: 8px 14px; 
+font-size: 0.72rem; 
+border-radius: 14px; 
+color: var(--hydrogen-glow); 
+cursor: pointer; 
+font-weight: 700;
+min-height: 36px;
+}
+
+#flare-button {
+margin: 15px auto 0 auto;
+padding: 12px 24px;
+font-size: 0.85rem;
+font-weight: 700;
+color: #fff;
+background: linear-gradient(135deg, #ff7675, #d63031);
+border: 1px solid #ff7675;
+border-radius: 22px;
+cursor: pointer;
+}
+
+.section-desc { font-size: 0.78rem; color: #a4b0be; margin: -2px auto 16px auto; max-width: 480px; line-height: 1.4; text-align: left; }
+
+/* ==========================================================================
+ [CSS-SEC-08] TOAST ALERTS & UTILITY SYSTEM ACTION SHEETS
+ ========================================================================== */
+.prestige-card-panel, .stats-card, .settings-card, #system-rank-info {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 20px;
+  box-sizing: border-box;
+  margin-top: 12px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.35);
+}
+.prestige-estimate-box { 
+  margin: 16px auto; 
+  padding: 14px; 
+  background: rgba(0, 236, 198, 0.04); 
+  border-radius: 14px; 
+  border: 1px dashed rgba(0, 236, 198, 0.2); 
+  font-weight: 700; 
+  color: var(--neon-teal); 
+  font-size: 1.05rem;
+  font-family: monospace;
+}
+#btn-supernova { 
+  width: 100%; 
+  border-radius: 14px; 
+  padding: 14px; 
+  font-weight: 700; 
+  font-size: 0.88rem; 
+  cursor: pointer; 
+  border: none;
+  background: linear-gradient(135deg, #ff6b6b, #ee5253);
+  color: white;
+  min-height: 48px;
+}
+
+.stats-card p { margin: 10px 0; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 6px; font-size: 0.85rem; color: #a4b0be; }
+.stat-value { float: right; color: #fff; font-weight: 700; font-family: monospace; }
+
+.data-input-field { box-sizing: border-box; width: 100%; padding: 12px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid var(--glass-border); border-radius: 10px; font-family: monospace; font-size: 0.75rem; margin-bottom: 12px; }
+.btn-danger { background: rgba(234, 32, 39, 0.12); border: 1px solid #ea2027; color: #ff6b6b; cursor: pointer; padding: 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; min-height: 44px; }
+
+#toast-container {
+  position: fixed;
+  top: calc(20px + var(--sat));
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(95, 39, 205, 0.95);
+  border: 1px solid #7158e2;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  pointer-events: none;
+  max-width: 88vw;
+}
+.toast-hidden { opacity: 0; transform: translate(-50%, -10px) !important; }
+
+/* ==========================================================================
+[CSS-SEC-09] HIGH PERFORMANCE IRON-CLAD WHITELIST VISIBILITY CONTROLS
+========================================================================== */
+.era1-only, .era2-only, .era3-only, .era4-only { display: none !important; }
+
+body[data-epoch="1"] .era1-only { display: block !important; }
+body[data-epoch="1"] button.era1-only { display: block !important; }
+
+body[data-epoch="2"] .era2-only { display: block !important; }
+body[data-epoch="2"] button.era2-only { display: block !important; }
+
+body[data-epoch="3"] .era3-only { display: block !important; }
+body[data-epoch="3"] button.era3-only { display: inline-block !important; }
+
+body[data-epoch="4"] .era4-only { display: block !important; }
+body[data-epoch="4"] button.era4-only { display: block !important; }
+
+body[data-tab="core"] #tab-content-core { display: block; }
+body[data-tab="upgrades"] #tab-content-upgrades { display: block; }
+body[data-tab="system"] #tab-content-system { display: block; }
+body[data-tab="shop"] #tab-content-shop { display: block; }
+body[data-tab="pulsar"] #tab-content-pulsar { display: block; }
+body[data-tab="singularity"] #tab-content-singularity { display: block; }
+body[data-tab="prestige"] #tab-content-prestige { display: block; }
+body[data-tab="stats"] #tab-content-stats { display: block; }
+body[data-tab="settings"] #tab-content-settings { display: block; }
+
+#star-core[data-canvas-style="singularity-point"] {
+width: 8px !important;
+height: 8px !important;
+background: #ffffff !important;
+box-shadow: 0 0 16px 6px #ffffff !important;
+animation: quantumFlicker 0.08s infinite linear !important;
+}
+#star-core[data-canvas-style="plasma-haze"] {
+width: 84px !important;
+height: 84px !important;
+background: radial-gradient(circle, #fffca8 10%, var(--carbon-glow) 50%, #701b1b 100%) !important;
+box-shadow: 0 0 45px 15px rgba(255, 107, 107, 0.45), inset 0 0 15px rgba(255,255,255,0.6) !important;
+filter: blur(0.6px);
+animation: plasmaCorePulse 3.5s ease-in-out infinite !important;
+}
+#star-core[data-canvas-style="galaxy-wheel"] {
+width: 140px !important;
+height: 140px !important;
+background: radial-gradient(circle, #ffeaa7 15%, #341f97 70%, transparent 100%) !important;
+box-shadow: 0 0 50px 10px rgba(108, 92, 231, 0.5) !important;
+animation: balancedPulse 8s ease-in-out infinite !important;
+}
+
+@keyframes quantumFlicker {
+0%, 100% { transform: scale(1) translate3d(0,0,0); }
+50% { transform: scale(1.1) translate3d(0.5px, -0.5px, 0); }
+}
+@keyframes plasmaCorePulse {
+0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1) blur(0.6px); }
+50% { transform: scale(1.06) rotate(180deg); filter: brightness(1.2) blur(0.9px); }
+}
+
+/* ==========================================================================
+[CSS-SEC-10] MODALS overlays, DEVS MATRIX, & MEDIA VIEW RESPONSIVENESS
+========================================================================== */
+.color-blue { color: var(--hydrogen-glow) !important; }
+.color-purple { color: var(--helium-glow) !important; }
+.color-red { color: var(--carbon-glow) !important; }
+.color-grey { color: var(--iron-glow) !important; }
+.color-yellow { color: var(--stardust-gold) !important; }
+.color-teal { color: var(--neon-teal) !important; }
+.color-dark-purple { color: var(--singularity-purple) !important; }
+.color-orange { color: #e17055 !important; }
+
+.bg-gradient-purple { background: linear-gradient(135deg, #6c5ce7, #9b59b6); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 700; width: 100%; }
+.bg-gradient-orange { background: linear-gradient(135deg, #ff7675, #f39c12); color: #fff; border: none; padding: 12px; border-radius: 12px; font-weight: 700; width: 100%; }
+
+#theatrical-overlay {
+position: fixed; inset: 0; background: rgba(3,1,6,0.99); 
+z-index: 10000; flex-direction: column; justify-content: center; align-items: center; 
+text-align: center; color: #fff; transition: opacity 0.8s ease; display: none; opacity: 0;
+}
+#theatrical-overlay.theatrical-active { display: flex; opacity: 1; }
+
+@keyframes flashEffect {
+  0% { opacity: 1; background: #ffffff; }
+  40% { background: #ffffff; }
+  100% { opacity: 0; background: transparent; }
+}
+
+.dev-matrix-hidden { display: none; background: rgba(230, 126, 34, 0.08); border: 1px dashed #e67e22; padding: 12px; margin: 12px auto; max-width: 600px; border-radius: 12px; }
+.dev-buttons-wrapper { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.btn-dev { padding: 6px 12px; font-size: 11px; color: white; cursor: pointer; border-radius: 6px; border: none; }
+.bg-orange { background: #e67e22; }
+.bg-dark-orange { background: #d35400; }
+.bg-red { background: #e17055; }
+.bg-purple { background: #8e44ad; }
+.bg-orange-trans { background: rgba(211, 84, 0, 0.6); }
+.bg-blue { background: #2980b9; }
+
+/* FIXED HIGH-PREMIUM VERTICAL SIDE-RAIL ENGINE (FLOATING WINDOW LAYER) */
+.side-rail {
+  position: fixed;
+  right: 12px;
+  top: 40%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 1010;
+  pointer-events: none;
+}
+.rail-btn {
+  pointer-events: auto;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: #fff;
+  width: 46px;
+  height: 44px;
+  border-radius: 4px;
+  font-size: 1.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.rail-btn:active { transform: scale(0.9); }
+.rail-btn.active {
+  border-color: var(--neon-teal);
+  background: rgba(0, 236, 198, 0.18);
+  box-shadow: 0 0 14px rgba(0, 236, 198, 0.4);
+}
+
+/* Cosmic Codex Infotainment Layout Cards */
+.codex-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.codex-card {
+  background: rgba(255,255,255,0.01);
+  border: 1px solid rgba(255,255,255,0.03);
+  padding: 12px 16px;
+  border-radius: 4px;
+  text-align: left;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+}
+.codex-card h4 { margin: 0 0 4px 0; font-size: 0.88rem; color: var(--neon-teal); font-weight: 500; }
+.codex-card p { margin: 0; font-size: 0.76rem; color: #b2bec3; line-height: 1.35; }
+
+@media (max-width: 580px) {
+.dashboard-container { padding: 10px 12px 14px 12px; }
+.dashboard { gap: 4px; }
+.resource-box { padding: 8px 4px; border-radius: 10px; }
+.resource-box h3 { font-size: 0.55rem; letter-spacing: 0.3px; }
+.resource-box h2 { font-size: 0.95rem; margin: 2px 0; }
+.resource-box small { font-size: 0.58rem; }
+.currency-prestige-bar { font-size: 0.78rem; margin-bottom: 8px; }
+h1 { font-size: 1.25rem; letter-spacing: 4px; }
+.buy-mode-container { top: calc(10px + var(--sat)); right: 12px; }
+.core-canvas { height: 190px; }
+.tab-content { padding-right: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after, h1, #star-core, .core-inner-glow, .q-string::after, .q-dust,
+  .plasma-fluid-glow, .p-particle { 
+    animation: none !important; 
+  }
+  #star-core[data-canvas-style="singularity-point"],
+  #star-core[data-canvas-style="plasma-haze"] { 
+    filter: none !important; 
+  }
+}
+
+/* ==========================================================================
+ [CSS-SEC-13] HIGH-PERFORMANCE DYNAMIC BLACKBODY INTERPOLATION (ERA III)
+ ========================================================================== */
+body[data-epoch="3"] #cosmic-backdrop {
+  background: #020105;
+}
+.stellar-dawn-field {
+  position: absolute;
+  inset: 0;
+}
+.nebula-blue-layer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--core-anchor-x, 50%) var(--core-anchor-y, 42%), rgba(0, 210, 255, 0.16) 0%, transparent 65%);
+  opacity: calc(1 - var(--stellar-heat-factor, 0));
+  transition: opacity 0.3s ease;
+}
+.corona-heat-layer {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--core-anchor-x, 50%) var(--core-anchor-y, 42%), rgba(255, 107, 107, 0.22) 0%, rgba(234, 32, 39, 0.06) 40%, transparent 70%);
+  opacity: var(--stellar-heat-factor, 0);
+  transition: opacity 0.3s ease;
+}
+.solar-prominence-wave {
+  position: absolute;
+  top: var(--core-anchor-y, 42%);
+  left: var(--core-anchor-x, 50%);
+  width: 70vw;
+  height: 70vw;
+  background: radial-gradient(circle, rgba(255, 204, 0, calc(0.04 * var(--stellar-heat-factor, 0.1))) 0%, transparent 60%);
+  transform: translate(-50%, -50%) rotate(0deg);
+  animation: spinProminence 25s linear infinite;
+  will-change: transform;
+}
+.prominence-2 {
+  width: 85vw;
+  height: 85vw;
+  background: radial-gradient(circle, rgba(225, 112, 85, calc(0.03 * var(--stellar-heat-factor, 0.1))) 0%, transparent 55%);
+  animation: spinProminence 40s linear infinite reverse;
+}
+@keyframes spinProminence {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* ==========================================================================
+ [CSS-SEC-14] FULL-BLEED GALACTIC ACCRETION BACKDROP SYSTEM (ERA IV)
+ ========================================================================== */
+.galaxy-matrix-field {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--core-anchor-x, 50%) var(--core-anchor-y, 42%), rgba(26, 17, 92, 0.2) 0%, #020105 75%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.galaxy-matrix-field .galaxy-spiral-arms {
+  position: absolute;
+  top: var(--core-anchor-y, 42%);
+  left: var(--core-anchor-x, 50%);
+  width: 16px;
+  height: 16px;
+  background: transparent;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform;
+  transform: translate(-50%, -50%) rotate(0deg);
+  animation: rotateGalaxyArms 50s linear infinite;
+  contain: layout paint;
+  box-shadow: 
+      25px 15px 12px #00d2ff, 55px 35px 18px #70a1ff, 95px 65px 24px #9b59b6, 140px 105px 32px rgba(108, 92, 231, 0.4);
+}
 @keyframes rotateGalaxyArms {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 .stability-meter-container {
-    width: 100%;
-    background: rgba(0,0,0,0.4);
-    border: 1px solid var(--glass-border);
-    height: 8px;
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 6px 0 14px 0;
+  width: 100%;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid var(--glass-border);
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 6px 0 14px 0;
 }
-
 .stability-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #ff7675, #00ecc6);
-    width: 100%;
-    transition: width 0.3s ease;
+  height: 100%;
+  background: linear-gradient(90deg, #ff7675, #00ecc6);
+  width: 100%;
+  transition: width 0.3s ease;
 }

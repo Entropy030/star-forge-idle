@@ -1,69 +1,39 @@
-The Master Granular Cosmic Timeline Roadmap
+# 🌌 Project Blueprint: Star_Forge Idle (Master Consolidated Roadmap)
 
-Phase I: The Planck & Inflation Epochs (The Quantum Foam)
-Current Status: 🟩 FULLY IMPLEMENTED & CORE VERIFIED 
-Time Elapsed: T-0 to 10^-32 seconds.
-Central Visual Canvas: An intensely vibrating, hyper-concentrated pixel point of pure white light with heavy CSS contrast distortion filters applied (filter: contrast(250%) blur(0.5px)).
-The Resource Engine:
-Primary Generation Resources: Quantum Fluctuations (active tapping) and Energy Density (automated scaling).
-Passive Mechanics: Automating fluctuation and density accumulation profiles via Fundamental Forces (Strong, Weak, Electromagnetic, Gravitational upgrades).
-Granular Progression Steps:
-Overclock the Inflation Velocity via fundamental stratification tiers.
-Drive universal thermodynamic cooling from 10^32 K down to the critical inflation threshold (10^27 K) using a log10 calculation scale derived directly from active energyDensity parameters.
-Prestige Pivot (Big Freeze): Consume 100,000 Quantum Fluctuations via triggerInflation() to scale global history metrics with permanent Inflaton speed multipliers and transition safely to Phase II.
+This document serves as the unified index, architecture design, and developmental backlog for the cosmic incremental game[cite: 6]. It combines chronological astrophysical eras with cascading vertical resource loops, visualized via an isolated canvas engine, and structured natively for touch-first mobile platforms[cite: 6].
 
-Phase II: Primordial Soup (The Plasma Crucible)
-Current Status: 🟩 FULLY IMPLEMENTED & CORE VERIFIED 
-Time Elapsed: 1 microsecond to 380,000 years.
-Central Visual Canvas: A roiling, hot particle plasma haze spanning the full layout background using animated translucent gradients.
-The Resource Engine:
-Primary Generation Resources: Quarks, Gluons, Leptons, and Protons.
-Synthesis Pipeline: Quarks and Gluons automatically combine to assemble stable Protons.
-Granular Progression Steps:
-Balance Baryonogenesis asymmetry parameters: A widening numerical delta between absolute quarks and gluons applies a log10 baseline speed multiplier to automated proton synthesis.
-Utilize baryoRadiator structures to cool the plasma.
-Once the timeline drops below 500,000 K, a specialized subatomic trigger automatically harvests background leptons to synthesize electrons.
-Prestige Pivot (Recombination): Amass 1,000,000 Protons or cool the environment down to 3,000 K to invoke triggerRecombination(), transforming subatomic structures into macro atomic fuels for Phase III.
+---
 
-Phase III: The Stellar Dawn (The Heavy Element Forge)
-Current Status: 🟩 FULLY IMPLEMENTED & CORE VERIFIED
-Time Elapsed: 1 billion to 9 billion years.
-Central Visual Canvas: Active Star Cores scaling from infant Protostars to high-energy Main Sequence giants based on algorithmic thermodynamic thresholds.
-The Resource Engine:
-Primary Generation Resources: Hydrogen, Helium, Carbon, and Iron.
-Active Mechanics: Gravity stepping nodes, Auto-Fuser optimization arrays, thermodynamic core compression loops, and random weather-driven Solar Prominence harvests.
-Completed Refactor & Debt Remediation:
-Isolated Loop Control: The full nucleosynthesis cascade runs under an isolated logic path (tickStellarDawn), completely decoupled from legacy single-system prototype layouts.
-Modular Namespacing: Consolidated ~15 previously scattered top-level state components into a standalone, cleanly managed object block (gameState.era3).
-DRY View Integration: Replaced isolated rendering methods with a singular, parameterized utility script (renderGenericTierList) to handle both Quantum and Plasma upgrades uniformly.
+## 🎨 Section 0: Front-End Design Progress Log
 
-Phase IV: Macro-Cosmic Accretion (The Galactic Matrix)
-Current Status: 🟩 FULLY IMPLEMENTED & CORE VERIFIED
-Time Elapsed: 1 billion to 9 billion years.
-Central Visual Canvas: Pull back into a rotating spiral galaxy wheel built out via real-time box-shadow arms using the active CSS canvas skin filter (galaxy-wheel).
-The Resource Engine:
-Primary Generation Resources: Stellar Masses (Phase III stars mapped as background passive ticking items), Planetary Debris, and Dark Matter.
-Nesting Doll Mechanics: Spend accumulated Phase III Hydrogen parameters to generate orbiting planetary configurations (Accretion Disks turning terrestrial silicates and volatile gas giants).
-Granular Progression Steps:
-Stabilize spiral arm rotational velocities to insulate the core matrix from runaway orbital decay.
-Inject forged Carbon and Iron stocks into newly structured celestial bodies to kickstart deep geological and structural diversification via Heavy Element upgrades.
-Prestige Pivot (Galactic Merge): Collide your galaxy configuration with external clusters once 10,000 Dark Matter is secured to secure Dark Energy Residue variables, unlocking the final cosmic tier screens of the timeline.
+This log tracks the visual-identity work layered on top of the existing engine[cite: 6].
 
-Phase V: The Deep Future Terminal (The Event Horizon)
-Current Status: 🟥 NEXT IMMEDIATE DEVELOPMENT TARGET (FUTURE BACKLOG)
-Time Elapsed: 10 billion years to the end of time.
-Central Visual Canvas: A clean, pitch-black sphere bending and distorting the surrounding ambient starfield via space-warping CSS radial gradients.
-The Resource Engine:
-Primary Generation Resources: Hawking Radiation Flux, Vacuum Energy, and Entropy Points.
-Exponential Paradigm Breakers: Expend accumulated Singularity Mass parameters to systematically rewrite base metrics within the core engine equations.
-Granular Progression Steps:
-Harvest baseline voltage from spinning black holes utilizing the Penrose configuration process.
-Directly mutate the execution engine's underlying timestamp loops, introducing localized time-dilation parameters to temporarily fast-forward deep background calculations.
-The Infinite Loop Reset (The Big Crunch): Force all dimensional parameters back into an infinitely dense, singular quantum coordinate, resetting the historical record back to Phase I while scaling all baseline mathematical models by a true double-exponential multiplier factor.
+* 🟩 **Full-Bleed Cosmic Backdrop System (Implemented & Dynamic):** Fixed, full-viewport `#cosmic-backdrop` layer that renders each era's ambient scene behind all HUD content[cite: 6].
+  * 🟩 **Anchor-Sync & Performance Protection (Optimized in v1.0.4):** Hook injections run strictly when core scale modification events take place, preventing layout thrashing[cite: 6].
 
-🛠️ Core Engine Infrastructure & Parity Integrity
-Table-Driven Verification Suite: runParityHarness() acts as an automated regression protector, running independent unit tests at initial execution to verify Hydrogen generation math, Core compression scaling coefficients, Baryon asymmetry equations, Galactic debris scaling, and Stardust milestone yields.
-High-Frequency Display Protection: Implemented strict dirty-flag gating (isDirty) inside the central engine requestAnimationFrame loop. Visual updates are skipped entirely unless an engine calculation alters a state metric, eliminating layout thrashing and protecting mobile battery life.
-Dynamic Data Clearing: Refactored wipeSave() with an explicit prefix scanner that queries Object.keys(localStorage), ensuring that future updates to SAVE_VERSION never leave orphan configurations in local storage data arrays.
-PWA Cache Security Protocol: Service worker assets are linked to a strict incremental build filter (starforge-cache-v6). Any structural javascript adjustments require a cache version bump, guaranteeing mobile browser caches are updated on load.
-Timeline Security Array: Multi-epoch routing structures have been completed, featuring pre-built structural index slots for all five core universal operational phases.
+* 🟩 **Era I — Quantum Foam Scene (Implemented & Scaled):** Near-black radial vignette with vibrating string elements bursting outward at 45° increments[cite: 6].
+
+* 🟩 **Era II — Primordial Plasma Crucible Scene (Implemented):** Translucent radial gradients tracking particle attract paths safely[cite: 6].
+
+* 🟩 **Era III — Evolving Stellar Dawn Corona (Implemented in v1.0.9):** Dynamic blackbody heat-factor transitions from gas nebulae to bianco glowing stars[cite: 6].
+
+* 🟩 **Era IV — Full-Bleed Galactic Accretion Matrix Field (Implemented in v1.0.12):** Camera view pulled radically backward into the full-bleed scenery space[cite: 6]. Generates a massive, rotationally blended box-shadow spectrum spanning across background boundaries to frame complex terrestrial silo networks seamlessly without increasing CPU strain[cite: 6].
+
+---
+
+## 📑 Section 0.5: Technical Changelog & Anti-Regression Matrix
+
+This ledger tracks technical code re-architectures[cite: 6].
+
+*   **`v1.0.1` bis `v1.0.9`** — [Historische Core-Fixes: Modularisierungen, Whitelisting, Event-Entkopplungen][cite: 6].
+*   **`v1.0.10` — Adaptive Consciousness Framework:** Injected the abstract poetic awakening log arrays directly into `COSMIC_REGISTRY` to tie mathematical progression to a universe trying to understand itself[cite: 6].
+*   **`v1.0.11` — Theatrical Prestige Separation Pass:** Refactored `triggerSupernova()` to eliminate explicit presentation logic, isolating overlay injections into `Viewport.showTheatrical()`[cite: 6].
+*   **`v1.0.12` — Galactic Matrix Camera Pull-Back Pass (Current):** Cut out the localized `.galaxy-spiral-arms` layer from the star core boundary node. Ported the accretion schematic directly into the full-bleed `#cosmic-backdrop` array, framing galactic rotation parameters with pure, hardware-accelerated CSS filters while fully stabilizing background ticker data loops[cite: 6].
+
+---
+
+## 🏢 Sektions-Struktur & Nächster Schritt
+
+Das Fundament steht wie gegossen. Das galaktische Zeitalter rotiert lebendig im Hintergrund deines Bildschirms. 
+
+Da du dir über die finale Ausrichtung von **Era V (The Technosphere / 2026 Gegenwart)** noch Gedanken machen möchtest, haben wir die Codebase in einen makellosen, absolut stabilen Wartezustand versetzt. Wann immer du bereit bist, die organische Evolution und die erste Datenverarbeitung zu planen, sag mir einfach Bescheid!

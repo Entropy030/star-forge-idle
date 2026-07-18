@@ -10,7 +10,51 @@
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
 </head>
-<body>
+<body data-epoch="1" data-tab="core">
+
+ <!-- Full-Bleed Cosmic Backdrop: era-scoped ambient scene layer, sits behind all HUD content -->
+ <div id="cosmic-backdrop" aria-hidden="true">
+  <!-- Era I: Quantum Foam Fields -->
+  <div class="quantum-string-field era1-only">
+    <span class="q-string q-string-1"></span>
+    <span class="q-string q-string-2"></span>
+    <span class="q-string q-string-3"></span>
+    <span class="q-string q-string-4"></span>
+    <span class="q-string q-string-5"></span>
+    <span class="q-string q-string-6"></span>
+    <span class="q-string q-string-7"></span>
+    <span class="q-string q-string-8"></span>
+    <span class="q-dust q-dust-1"></span>
+    <span class="q-dust q-dust-2"></span>
+    <span class="q-dust q-dust-3"></span>
+    <span class="q-dust q-dust-4"></span>
+  </div>
+
+  <!-- Era II: Primordial Plasma Crucible Soup -->
+  <div class="primordial-soup-field era2-only">
+    <div class="plasma-fluid-glow"></div>
+    <span class="p-particle p-quark-1"></span>
+    <span class="p-particle p-quark-2"></span>
+    <span class="p-particle p-quark-3"></span>
+    <span class="p-particle p-gluon-1"></span>
+    <span class="p-particle p-gluon-2"></span>
+    <span class="p-particle p-lepton-1"></span>
+    <span class="p-particle p-lepton-2"></span>
+  </div>
+
+  <!-- Era III: The Stellar Dawn Evolving Corona -->
+  <div class="stellar-dawn-field era3-only">
+    <div class="nebula-blue-layer"></div>
+    <div class="corona-heat-layer"></div>
+    <span class="solar-prominence-wave prominence-1"></span>
+    <span class="solar-prominence-wave prominence-2"></span>
+  </div>
+
+  <!-- Era IV: Full-Bleed Galactic Accretion Matrix Field -->
+  <div class="galaxy-matrix-field era4-only">
+    <div class="galaxy-spiral-arms"></div>
+  </div>
+</div>
 
   <!-- Theatrical Prestige Overlay -->
   <div id="theatrical-overlay" class="theatrical-hidden">
@@ -22,96 +66,127 @@
       <hr class="divider-dark">
       <p class="yield-title">YIELD</p>
       <div id="theatrical-reward" class="reward-highlight"></div>
-      <button onclick="closeTheatrical()" class="btn-reignite">Reignite Cosmos</button>
+      <button class="btn-reignite">Reignite Cosmos</button>
     </div>
   </div>
   
   <!-- Floating Global Purchase Multiplier Toggle -->
   <div class="buy-mode-container">
-    <button id="btn-buy-mode" onclick="toggleBuyMode()">Buy Mode: x1</button>
+    <button id="btn-buy-mode">Buy Mode: x1</button>
   </div>
   
   <header class="game-header">
-    <h1>STAR FORGE <span class="test-tag" id="warp-tag">WARP SPEED</span></h1>
+    <h1>STAR FORGE</h1>
     <p class="stage-text timeline-banner">TIMELINE: <span id="active-epoch-name">Era I: The Quantum Foam</span></p>
     <p class="stage-text cosmic-phase-banner">Cosmic Phase: <span id="stage">Protostar</span></p>
+    
+    <!-- Deep Narrative Log Delivery Element Hooks -->
+    <div class="neural-log-wrapper" style="max-width:540px; margin: 8px auto 0 auto; padding: 0 16px;">
+      <p id="chrono-neural-log" style="font-size:0.75rem; font-style:italic; color:#b2bec3; letter-spacing:0.5px; line-height:1.4; margin:0; min-height:2.8em; display:flex; align-items:center; justify-content:center;"></p>
+    </div>
   </header>
   
   <div id="toast-container" class="toast-hidden"></div>
   
 <!-- Developer Sandbox Interface -->
 <div id="dev-matrix" class="dev-matrix-hidden">
-    <span class="dev-tag">DEV MATRIX SYSTEM ACTIVE:</span>
-    <div class="dev-buttons-wrapper">
-    <button onclick="devQuantumWarp()" class="btn-dev bg-orange">Dev Income Boost</button>
-    <button onclick="devHeatCore()" class="btn-dev bg-dark-orange">Heat Core (+25M K)</button>
-    <button onclick="devForceFlare()" class="btn-dev bg-red">Force Solar Flare</button>
-    <button onclick="devSetEpoch(1)" class="btn-dev bg-purple">Set Era I</button>
-    <button onclick="devSetEpoch(2)" class="btn-dev bg-orange-trans">Set Era II</button>
-    <button onclick="devSetEpoch(3)" class="btn-dev bg-blue">Set Era III</button>
-    <button onclick="devSetEpoch(4)" class="btn-dev bg-purple">Set Era IV</button>
-    </div>
-    </div>
+  <span class="dev-tag">DEV MATRIX SYSTEM ACTIVE: <span id="warp-tag" style="display: none; color: var(--hydrogen-glow); margin-left: 4px;">[WARP GENERATION OVERCLOCK]</span></span>
+  <div class="dev-buttons-wrapper">
+  <button id="dev-boost" class="btn-dev bg-orange">Dev Income Boost</button>
+  <button id="dev-heat" class="btn-dev bg-dark-orange">Heat Core (+25M K)</button>
+  <button id="dev-flare" class="btn-dev bg-red">Force Solar Flare</button>
+  <button data-set-epoch="1" class="btn-dev bg-purple">Set Era I</button>
+  <button data-set-epoch="2" class="btn-dev bg-orange-trans">Set Era II</button>
+  <button data-set-epoch="3" class="btn-dev bg-blue">Set Era III</button>
+  <button data-set-epoch="4" class="btn-dev bg-purple">Set Era IV</button>
+  </div>
+</div>
   
 <!-- Central Resource Metrics Readout HUD -->
 <div class="dashboard-container">
-    <div class="currency-prestige-bar">
-    ✨ Permanent Stardust: <span id="stardust-count">0</span> (<span id="stardust-boost">0</span>% Boost)
-    <div id="tier2-currencies" class="tier2-hidden">
-    <span>🌀 Pulsar: <span id="pulsar-count">0</span></span> | 
-    <span>🌌 Singularity: <span id="singularity-count">0</span></span>
-    </div>
-    </div>
-    
-    <div class="dashboard">
-    <div class="resource-box border-blue">
-    <h3 id="label-hydrogen">HYDROGEN <span class="info-btn" onclick="showToast('Base fuel.')">ⓘ</span></h3>
-    <h2 id="count">0</h2>
-    <small class="color-blue">+<span id="auto-rate">0</span>/s</small>
-    </div>
-    
-    <div class="resource-box border-purple">
-    <h3 id="label-helium">HELIUM <span class="info-btn" onclick="showToast('Synthesized fuel matrices.')">ⓘ</span></h3>
-    <h2 id="helium-count">0</h2>
-    <small class="color-purple"><span id="helium-yield">0</span></small>
-    </div>
-    
-    <div id="carbon-box" class="resource-box border-red era3-only">
-    <h3 id="label-carbon">CARBON <span class="info-btn" onclick="showToast('Synthesized by Helium fusion.')">ⓘ</span></h3>
-    <h2 id="carbon-count">0</h2>
-    <small class="color-red"><span id="carbon-boost-container">Grav: +<span id="carbon-boost">0</span>%</span></small>
-    </div>
-    
-    <div id="iron-box" class="resource-box border-grey era3-only">
-    <h3 id="label-iron">IRON <span class="info-btn" onclick="showToast('Synthesized by Carbon fusion.')">ⓘ</span></h3>
-    <h2 id="iron-count">0</h2>
-    <small class="color-grey"><span id="iron-boost-container">Heat: +<span id="iron-boost">0</span>%</span></small>
-    </div>
-   
-    <!-- Era IV Galactic Accretion Dashboard Targets -->
-    <div id="debris-box" class="resource-box border-blue era4-only">
-    <h3 id="label-debris">PLANETARY DEBRIS <span class="info-btn" onclick="showToast('Terrestrial silicates and dust fragments.')">ⓘ</span></h3>
-    <h2 id="debris-count">0</h2>
-    <small class="color-blue">+<span id="debris-rate">0</span>/s</small>
-    </div>
-    
-    <div id="darkmatter-box" class="resource-box border-purple era4-only">
-    <h3 id="label-darkmatter">DARK MATTER <span class="info-btn" onclick="showToast('Gravitational scaffolding anchoring the arms.')">ⓘ</span></h3>
-    <h2 id="darkmatter-count">0</h2>
-    <small class="color-purple">+<span id="darkmatter-rate">0</span>/s</small>
-    </div>
-    </div>
-    </div>
+  <div id="prestige-bar" class="currency-prestige-bar">
+  ✨ Synaptic Dust: <span id="stardust-count">0</span> (<span id="stardust-boost">0</span>% Boost)
+  <div id="tier2-currencies" class="tier2-hidden">
+  <span>🌀 Neural Synapse: <span id="pulsar-count">0</span></span> | 
+  <span>🌌 Core Density: <span id="singularity-count">0</span></span>
+  </div>
+  </div>
+  
+  <div class="dashboard">
+  <div class="resource-box border-blue">
+  <h3 id="label-hydrogen">QUANTUM FLUCTUATIONS</h3>
+  <h2 id="count">0</h2>
+  <small class="color-blue"><span id="auto-rate">+0/s</span></small>
+  </div>
+  
+  <div class="resource-box border-purple">
+  <h3 id="label-helium">ENERGY DENSITY</h3>
+  <h2 id="helium-count">0</h2>
+  <small class="color-purple"><span id="helium-yield">Temp: 0 K</span></small>
+  </div>
+
+  <!-- Era II Lepton Generation Tracking Anchor Element -->
+  <div id="lepton-box" class="resource-box border-purple era2-only">
+  <h3>LEPTONS</h3>
+  <h2 id="lepton-count">0</h2>
+  <small class="color-purple"><span id="lepton-rate">+0/s</span></small>
+  </div>
+  
+  <!-- Era II Proton Generation -->
+  <div id="proton-box" class="resource-box border-orange era2-only">
+    <h3>SYNTHESIZED PROTONS</h3>
+    <h2 id="proton-count">0</h2>
+    <small class="color-orange"><span id="proton-rate">+0/s</span></small>
+  </div>
+
+  <!-- Era II Electron Generation -->
+  <div id="electron-box" class="resource-box border-yellow era2-only">
+    <h3>FREE ELECTRONS</h3>
+    <h2 id="electron-count">0</h2>
+    <small class="color-yellow"><span id="electron-rate">+0/s</span></small>
+  </div>
+
+  <!-- Era II Temperature cooling -->
+  <div id="plasma-temp-box" class="resource-box border-red era2-only">
+    <h3>PLASMA TEMPERATURE</h3>
+    <h2 id="plasma-temp-count">0 K</h2>
+    <small class="color-red"><span id="plasma-temp-rate">Stable</span></small>
+  </div>
+
+  <div id="carbon-box" class="resource-box border-red era3-only">
+  <h3>CARBON</h3>
+  <h2 id="carbon-count">0</h2>
+  <small class="color-red"><span id="carbon-boost-container">Grav: +0%</span></small>
+  </div>
+  
+  <div id="iron-box" class="resource-box border-grey era3-only">
+  <h3>IRON</h3>
+  <h2 id="iron-count">0</h2>
+  <small class="color-grey"><span id="iron-boost-container">Heat: +0%</span></small>
+  </div>
+ 
+  <!-- Era IV Galactic Accretion Dashboard Targets -->
+  <div id="debris-box" class="resource-box border-blue era4-only">
+  <h3>PLANETARY DEBRIS</h3>
+  <h2 id="debris-count">0</h2>
+  <small class="color-blue"><span id="debris-rate">+0/s</span></small>
+  </div>
+  
+  <div id="darkmatter-box" class="resource-box border-purple era4-only">
+  <h3>DARK MATTER</h3>
+  <h2 id="darkmatter-count">0</h2>
+  <small class="color-purple"><span id="darkmatter-rate">+0/s</span></small>
+  </div>
+  </div>
+</div>
   
   <!-- Main Viewport Screens -->
   <main>
     <div id="tab-content-core" class="tab-content">
         <div class="core-canvas">
         <div class="canvas-scanner-line"></div>
-        <div id="star-core" onclick="clickCore()">
+        <div id="star-core">
         <div class="core-inner-glow"></div>
-        <!-- Dynamic CSS Rotating Box-Shadow Galactic Arm Layer Hook -->
-        <div class="galaxy-spiral-arms era4-only"></div>
         </div>
         </div>
         
@@ -120,17 +195,16 @@
         <div class="mult-display">Thermal Multiplier: <span id="multiplier">1.0</span>x</div>
         </div>
         
-        <!-- Era I Dynamic View Panel -->
-        <button id="btn-inflation" onclick="triggerInflation()" class="era1-only btn-macro-shift bg-gradient-purple">TRIGGER COSMIC INFLATION</button>
-        <div id="quantum-upgrades-container" class="era1-only upgrade-grid"></div>
+        <!-- Era I Action Triggers -->
+        <button id="btn-inflation" class="era1-only btn-macro-shift bg-gradient-purple">TRIGGER COSMIC INFLATION</button>
         
-        <!-- Era II Dynamic View Panel -->
-        <button id="btn-recombination" onclick="triggerRecombination()" class="era2-only btn-macro-shift bg-gradient-orange">INITIATE COSMIC RECOMBINATION</button>
-        <div id="plasma-upgrades-container" class="era2-only upgrade-grid"></div>
+        <!-- Era II Action Triggers -->
+        <button id="btn-recombination" class="era2-only btn-macro-shift bg-gradient-orange">INITIATE COSMIC RECOMBINATION</button>
+        <button id="btn-toggle-plasma-fuser" class="btn-toggle era2-only visual-hidden" style="margin-top: 12px; width: 100%;">Auto-Proton Fuser: OFF</button>
         
         <!-- Era III Actions -->
-        <button id="flare-button" onclick="collectFlare()" class="era3-only visual-hidden"></button>
-        <button id="btn-toggle-fuser" class="btn-toggle era3-only" onclick="toggleFuser()">Auto-Fuser: ON</button>
+        <button id="flare-button" class="era3-only visual-hidden"></button>
+        <button id="btn-toggle-fuser" class="btn-toggle era3-only">Auto-Fuser: ON</button>
        
         <!-- Era IV Accretion Matrix Controller Interface -->
         <div class="era4-only width-full" style="margin-top: 15px;">
@@ -141,7 +215,7 @@
         <strong style="font-size:0.9rem;">Orbital Arm Stability: <span id="galaxy-stability-val" class="color-teal">100%</span></strong>
         <br><small style="color:#a4b0be; font-size:0.72rem;">Decay scales back automated matrix generation rates.</small>
         </div>
-        <button onclick="stabilizeArms()" class="btn-toggle" style="background:rgba(0, 236, 198, 0.12); border-color:var(--neon-teal); margin:0; padding: 6px 14px; min-height:unset;">Synchronize Velocities</button>
+        <button id="btn-stabilize-arms" class="btn-toggle" style="background:rgba(0, 236, 198, 0.12); border-color:var(--neon-teal); margin:0; padding: 6px 14px; min-height:unset;">Synchronize Velocities</button>
         </div>
         <div class="stability-meter-container"><div id="stability-bar-fill" class="stability-bar"></div></div>
         
@@ -152,46 +226,48 @@
         <strong style="font-size:0.9rem;">Planetary Nodes Formed: <span id="planetary-count-label" class="color-yellow">0</span></strong>
         <br><small style="color:#a4b0be; font-size:0.72rem;">Nesting Doll Shift: Condense 50,000 Hydrogen parameters.</small>
         </div>
-        <button id="btn-accrete-planet" onclick="accretePlanetConfiguration()" class="btn-toggle" style="background:linear-gradient(135deg, #6c5ce7, #341f97); border:none; margin:0; padding: 8px 16px; min-height:unset;">Accrete Mass Node</button>
+        <button id="btn-accrete-planet" class="btn-toggle" style="background:linear-gradient(135deg, #6c5ce7, #341f97); border:none; margin:0; padding: 8px 16px; min-height:unset;">Accrete Mass Node</button>
         </div>
         </div>
         
-        <button id="btn-galactic-merge" onclick="triggerGalacticMerge()" class="btn-macro-shift bg-gradient-purple" style="margin-top:12px;">TRIGGER GALACTIC COLLISION RESET</button>
+        <button id="btn-galactic-merge" class="btn-macro-shift bg-gradient-purple" style="margin-top:12px;">TRIGGER GALACTIC COLLISION RESET</button>
         <div id="galaxy-upgrades-container" class="upgrade-grid" style="margin-top: 12px;"></div>
         </div>
         </div>
     
-    <div id="tab-content-upgrades" class="tab-content era3-only">
-      <div class="section-title">Nucleosynthesis Node Tree</div>
-      
-      <div class="cosmic-tier-group">
+    <div id="tab-content-upgrades" class="tab-content">
+      <!-- Dynamic Era Upgrades Containers injection points -->
+      <div id="quantum-upgrades-container" class="era1-only upgrade-grid"></div>
+      <div id="plasma-upgrades-container" class="era2-only upgrade-grid"></div>
+
+      <div class="cosmic-tier-group era3-only">
         <span class="tier-label">Shell I: Fundamental Physics</span>
-        <button id="btn-gravity" onclick="buyUpgrade('core', 'gravity')">
+        <button id="btn-gravity" class="cosmic-card">
           <span class="btn-meta"><strong>Strengthen Gravity</strong><br><small>Increases base atomic drift</small></span>
           <span class="btn-price">Cost: <span id="cost">10</span> H</span>
         </button>
-        <button id="btn-fuser" onclick="buyUpgrade('core', 'fuser')">
+        <button id="btn-fuser" class="cosmic-card">
           <span class="btn-meta"><strong id="fuser-text">Unlock Auto-Fuser</strong><br><small>Automates conversion steps</small></span>
           <span class="btn-price">Cost: <span id="fuser-cost-label">100 H</span></span>
         </button>
       </div>
       
-      <div class="cosmic-tier-group">
+      <div class="cosmic-tier-group era3-only">
         <span class="tier-label">Shell II: Core Compression</span>
-        <button id="btn-compress" onclick="buyUpgrade('core', 'compress')">
+        <button id="btn-compress" class="cosmic-card">
           <span class="btn-meta"><strong>Compress Core</strong><br><small>Sparks thermodynamic scaling</small></span>
           <span class="btn-price">Cost: <span id="compress-cost">10</span> He</span>
         </button>
-        <button id="btn-carbon" onclick="buyUpgrade('core', 'carbon')">
+        <button id="btn-carbon" class="cosmic-card">
           <span class="btn-meta"><strong id="carbon-text">Unlock Carbon Fusion</strong><br><small>Advanced carbon matrix synthesis</small></span>
           <span class="btn-price">Cost: <span id="carbon-cost-label">Locked</span></span>
         </button>
       </div>
       
-      <div class="cosmic-tier-group">
+      <div class="cosmic-tier-group era3-only">
         <span class="tier-label">Shell III: Heavy Nucleosynthesis</span>
-        <button id="btn-iron" onclick="buyUpgrade('core', 'iron')">
-          <span class="btn-meta"><strong id="iron-text">Unlock Iron Fusion</strong><br><small>Peak elemental generation profile</small></span>
+        <button id="btn-iron" class="cosmic-card">
+          <span class="btn-meta"><strong>Unlock Iron Fusion</strong><br><small>Peak elemental generation profile</small></span>
           <span class="btn-price">Cost: <span id="iron-cost-label">Locked</span></span>
         </button>
       </div>
@@ -208,32 +284,32 @@
     </div>
     
     <div id="tab-content-shop" class="tab-content era3-only">
-      <div class="section-title color-purple">Stardust Perks Marketplace</div>
-      <p class="section-desc">Deploy permanent high-grade Stardust tokens to warp underlying metrics.</p>
+      <div class="section-title color-purple">Synaptic Perks Marketplace</div>
+      <p class="section-desc">Deploy permanent high-grade Memory Traces to warp underlying metrics.</p>
       <div id="stardust-shop-list"></div>
     </div>
     
     <div id="tab-content-pulsar" class="tab-content era3-only">
-      <div class="section-title color-teal">Pulsar Automation Engine</div>
-      <p class="section-desc">Spend raw Pulsar Shards to hardcode structural macro-routines.</p>
+      <div class="section-title color-teal">Neural Synapse Engine</div>
+      <p class="section-desc">Spend raw Pulsar Cores to hardcode structural macro-routines.</p>
       <div id="pulsar-shop-list"></div>
     </div>
     
     <div id="tab-content-singularity" class="tab-content era3-only">
-      <div class="section-title color-dark-purple">Event Horizon Terminal</div>
+      <div class="section-title color-dark-purple">Infinite Core Density Terminal</div>
       <p class="section-desc">Sacrifice absolute mass metrics to invoke exponential calculation shifts.</p>
       <div id="singularity-shop-list"></div>
     </div>
     
     <div id="tab-content-prestige" class="tab-content era3-only">
-      <div class="section-title color-light-red">Supernova Terminal</div>
+      <div class="section-title color-light-red">Supernova Collapse Terminal</div>
       <div class="prestige-card-panel">
         <p>The star's core pressure matrix has scaled past critical thresholds.</p>
-        <p class="prestige-flavor-text">Triggering a manual Supernova collapse entirely resets active physical infrastructure elements.</p>
+        <p class="prestige-flavor-text">Triggering a manual Supernova collapse resets active infrastructure to expand your permanent memory tracks.</p>
         <div class="prestige-estimate-box">
           Estimated Collapse Yield: <br><span id="supernova-gain-estimate">0</span>
         </div>
-        <button id="btn-supernova" onclick="triggerSupernova()">Trigger Supernova</button>
+        <button id="btn-supernova">Trigger Supernova</button>
       </div>
     </div>
     
@@ -241,59 +317,71 @@
       <div class="section-title color-blue">Lifetime Statistics</div>
       <div class="stats-card">
         <p>Supernovas Triggered: <span id="stat-supernovas" class="stat-value">0</span></p>
-        <p>Total Stardust Earned: <span id="stat-stardust" class="stat-value">0</span></p>
+        <p>Total Memory Earned: <span id="stat-stardust" class="stat-value">0</span></p>
         <p>Highest Core Temp: <span id="stat-max-temp" class="stat-value">0 K</span></p>
       </div>
+
+      <!-- Injected Achievements Render Node Mount Point -->
+      <div class="section-title color-yellow space-top">Cosmic Evolution Milestones</div>
+      <div id="achievements-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; width: 100%;"></div>
       
-      <div class="section-title color-yellow space-top">Cosmic Milestones</div>
-      <p class="section-desc">Unlocked system achievements grant permanent structural boosts.</p>
-      <div id="achievements-list" class="flex-column-gap"></div>
+      <!-- Cosmic Codex Infotainment Center -->
+      <div class="section-title color-teal space-top">Cosmic Codex</div>
+      <p class="section-desc">Review real astrophysics logs unlocked by expanding universal fields.</p>
+      <div class="codex-container">
+        <div class="codex-card era1-only">
+          <h4>Planck Time & Quantum Foam (Era I)</h4>
+          <p>At $10^{-43}$ seconds after the Big Bang, the universe was smaller than a subatomic particle. Space-time didn't flow smoothly; it fluctuated violently as highly energetic Quantum Foam.</p>
+        </div>
+        <div class="codex-card era2-only">
+          <h4>Quark-Gluon Plasma (Era II)</h4>
+          <p>Before atoms could form, the cosmos was a trillion-degree soup. Quarks and Gluons flowed entirely unbound as a frictionless, perfect quantum fluid liquid.</p>
+        </div>
+        <div class="codex-card">
+          <h4>Baryon Asymmetry</h4>
+          <p>Matter and Antimatter should have annihilated each other completely during inflation. A tiny asymmetry anomaly—one extra quark per billion antiquarks—built all visible structures in our cosmos.</p>
+        </div>
+      </div>
     </div>
     
     <div id="tab-content-settings" class="tab-content">
       <div id="dev-toggle-container" class="dev-toggle-hidden">
         <div class="section-title">System Configuration</div>
-        <button onclick="toggleDevMatrix()" class="btn-dev-toggle">Toggle Developer Sandbox</button>
+        <button class="btn-dev-toggle">Toggle Developer Sandbox</button>
       </div>
       
       <div class="section-title">Data Management</div>
       <p class="section-desc">Backup, migrate, or clear universe data footprint profiles.</p>
       
       <div class="settings-card">
-        <button onclick="exportSave()" class="btn-settings-action border-blue">Export Universe State (Clipboard)</button>
+        <button id="btn-export" class="btn-settings-action border-blue">Export Universe State (Clipboard)</button>
         <div class="import-wrapper">
           <input type="text" id="import-string" placeholder="Paste Base64 Cosmos Data Matrix Here..." class="data-input-field">
-          <button onclick="importSave()" class="btn-settings-action border-purple">Import Universe State</button>
+          <button id="btn-import" class="btn-settings-action border-purple">Import Universe State</button>
         </div>
         <hr class="divider-subtle">
-        <button class="btn-danger width-full" onclick="wipeSave()">Wipe Universe Tracking Footprint</button>
+        <button id="btn-wipe" class="btn-danger width-full">Wipe Universe Tracking Footprint</button>
       </div>
     </div>
   </main>
   
+  <!-- Vertical Icon Side-Rail for Secondary System Actions (Reference Pattern) -->
+  <aside class="side-rail">
+    <button id="nav-stats" class="rail-btn" aria-label="Data Hub">📊</button>
+    <button id="nav-settings" class="rail-btn" aria-label="Settings">⚙️</button>
+  </aside>
+
   <nav class="tab-menu">
-    <button id="nav-core" class="tab-btn active" onclick="switchTab('core')">Forge Core</button>
-    <button id="nav-upgrades" class="tab-btn" onclick="switchTab('upgrades')">Upgrades</button>
-    <button id="nav-system" class="tab-btn" onclick="switchTab('system')" disabled>System Ranks</button>
-    <button id="nav-shop" class="tab-btn" onclick="switchTab('shop')" disabled>Stardust Shop</button>
-    <button id="nav-pulsar" class="tab-btn" onclick="switchTab('pulsar')" disabled>Pulsar Engine</button>
-    <button id="nav-singularity" class="tab-btn" onclick="switchTab('singularity')" disabled>Event Horizon</button>
-    <button id="nav-prestige" class="tab-btn" onclick="switchTab('prestige')" disabled>Supernova</button>
-    <button id="nav-stats" class="tab-btn" onclick="switchTab('stats')">Data Hub</button>
-    <button id="nav-settings" class="tab-btn" onclick="switchTab('settings')">Settings</button>
+    <button id="nav-core" class="tab-btn active">Forge Core</button>
+    <button id="nav-upgrades" class="tab-btn">Upgrades</button>
+    <button id="nav-system" class="tab-btn" disabled>System Ranks</button>
+    <button id="nav-shop" class="tab-btn" disabled>Stardust Shop</button>
+    <button id="nav-pulsar" class="tab-btn" disabled>Pulsar Engine</button>
+    <button id="nav-singularity" class="tab-btn" disabled>Event Horizon</button>
+    <button id="nav-prestige" class="tab-btn" disabled>Supernova</button>
   </nav>
   
   <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2"></script>
-  <script src="script.js?v=6"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const starCore = document.getElementById('star-core');
-      if (starCore) {
-        starCore.addEventListener('pointerdown', () => { starCore.style.transform = 'scale(0.94)'; });
-        starCore.addEventListener('pointerup', () => { starCore.style.transform = ''; });
-        starCore.addEventListener('pointerleave', () => { starCore.style.transform = ''; });
-      }
-    });
-  </script>
+  <script src="script.js?v=12"></script>
 </body>
 </html>
