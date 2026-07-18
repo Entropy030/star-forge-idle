@@ -408,8 +408,8 @@ pointer-events: none;
 }
 
 #star-core {
-  width: 90px;
-  height: 90px;
+  width: 110px;
+  height: 110px;
   background: radial-gradient(circle at 35% 35%, #ffffff 0%, var(--hydrogen-glow) 45%, #0c0822 95%);
   border-radius: 50%;
   box-shadow: 
@@ -678,43 +678,7 @@ text-align: center; color: #fff; transition: opacity 0.8s ease; display: none; o
 .bg-orange-trans { background: rgba(211, 84, 0, 0.6); }
 .bg-blue { background: #2980b9; }
 
-/* FIXED HIGH-PREMIUM TOP ACTION BAR PANEL */
-.top-menu-actions {
-  position: fixed;
-  right: 16px;
-  top: 16px;
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  z-index: 1010;
-}
-.rail-btn {
-  background: var(--glass-bg);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--glass-border);
-  color: #fff;
-  width: 38px;
-  height: 38px;
-  border-radius: 6px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-  transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
-}
-.rail-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.15);
-}
-.rail-btn:active { transform: scale(0.92); }
-.rail-btn.active {
-  border-color: var(--neon-teal);
-  background: rgba(0, 236, 198, 0.18);
-  box-shadow: 0 0 14px rgba(0, 236, 198, 0.4);
-}
+
 
 /* Cosmic Codex Infotainment Layout Cards */
 .codex-container {
@@ -744,7 +708,7 @@ text-align: center; color: #fff; transition: opacity 0.8s ease; display: none; o
 .currency-prestige-bar { font-size: 0.78rem; margin-bottom: 8px; }
 h1 { font-size: 1.25rem; letter-spacing: 4px; }
 .buy-mode-container { top: calc(10px + var(--sat)); right: 12px; }
-.core-canvas { height: 190px; }
+.core-canvas { height: 260px; }
 .tab-content { padding-right: 0; }
 }
 

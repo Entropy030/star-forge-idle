@@ -883,7 +883,7 @@ renderStellarNodeButtons() {
   const core = document.getElementById('star-core');
   if (core) {
     let coreTempNum = gameState.era3.temperature.lt(1e12) ? gameState.era3.temperature.toNumber() : 1e12;
-    let newSize = Math.min(60 + (coreTempNum / 1500000) * 12, 200); 
+    let newSize = Math.min(100 + (coreTempNum / 1500000) * 15, 220); 
     core.style.width = newSize + 'px';
     core.style.height = newSize + 'px';
   }
@@ -907,6 +907,7 @@ renderFlare() {
 },
 
 update() {
+  this.updateStardustDisplays();
   const currentEpoch = COSMIC_REGISTRY.universeChronology.epochs[gameState.activeEpoch] || COSMIC_REGISTRY.universeChronology.epochs[3];
   
   document.getElementById('active-epoch-name').textContent = currentEpoch.name;
