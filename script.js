@@ -288,6 +288,20 @@ if (gameState.resources[key]) {
 // ==========================================================================
 // [SEC-05] VISUAL FORMATTING & AUDIO HELPER ENGINES
 // ==========================================================================
+function typeWriter(element, text, speed = 25) {
+  element.textContent = "";
+  let i = 0;
+  clearInterval(window.typewriterInterval);
+  window.typewriterInterval = setInterval(() => {
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      i++;
+    } else {
+      clearInterval(window.typewriterInterval);
+    }
+  }, speed);
+}
+
 function format(dec) {
 if (!(dec instanceof Decimal)) dec = new Decimal(dec);
 if (dec.lt(1e6)) return Math.floor(dec.toNumber()).toLocaleString();
@@ -701,19 +715,13 @@ renderGenericTierList(containerId, category, costLabelText, displayColor, active
     }
     
     let currentCostLabel = typeof costLabelText === 'function' ? costLabelText(key) : costLabelText;
-    let actualFunding = activeCurrencyField ? getAmount(activeCurrencyField) : null;
-    if (category === 'plasma') {
-      if (key === 'quarkCondenser') actualFunding = gameState.resources.quarks.amount;
-      else if (key === 'gluonBinding') actualFunding = gameState.resources.gluons.amount;
-      else if (key === 'leptonHarvest') actualFunding = gameState.resources.gluons.amount; 
-      else actualFunding = gameState.resources.protons.amount;
-    } else if (category === 'quantum') {
-      actualFunding = gameState.resources.quantumFluctuations.amount;
-    } else if (category === 'galaxy') {
-      actualFunding = gameState.resources.darkMatter.amount;
-    }
+    const currencyKey = Economy.resolveCurrencyKey(category, key, def);
+    let actualFunding = getAmount(currencyKey);
     
-    let isAffordable = actualFunding.gte(state.cost);
+    const loops = getBuyMultiplierCount(category, key, def, state, currencyKey);
+    const displayCost = getCumulativeCost(state.cost, def.costScaling, loops);
+    
+    let isAffordable = actualFunding.gte(displayCost);
     if (row) {
       row.querySelector('.name-display').textContent = def.name;
       row.querySelector('.lvl-display').textContent = `(Lvl ${state.level})`;
@@ -723,7 +731,7 @@ renderGenericTierList(containerId, category, costLabelText, displayColor, active
       else row.classList.remove('upgrade-affordable');
       
       const btn = row.querySelector('.upgrade-btn');
-      btn.textContent = `Cost: ${format(state.cost)}\n${currentCostLabel}`;
+      btn.textContent = `Cost (x${loops}):\n${format(displayCost)} ${currentCostLabel}`;
       btn.disabled = !isAffordable;
       if (isAffordable) {
         btn.style.background = displayColor;
@@ -912,6 +920,39 @@ renderFlare() {
   }
 },
 
+updateEraProgressBar() {
+  const container = document.getElementById('era-progress-container');
+  const bar = document.getElementById('era-progress-bar');
+  if (!container || !bar) return;
+  
+  const epoch = gameState.activeEpoch;
+  let pct = 0;
+  
+  if (epoch === 1) {
+    pct = gameState.resources.quantumFluctuations.amount.div(COSMIC_REGISTRY.constants.inflationThreshold).times(100).toNumber();
+  } else if (epoch === 2) {
+    let pProgress = gameState.resources.protons.amount.div(COSMIC_REGISTRY.constants.recombinationProtonThreshold).times(100).toNumber();
+    let tStart = 10000000;
+    let tTarget = 3000;
+    let tProgress = (tStart - gameState.plasmaTemperature.toNumber()) / (tStart - tTarget) * 100;
+    pct = Math.max(pProgress, tProgress);
+  } else if (epoch === 3) {
+    pct = gameState.era3.temperature.div(COSMIC_REGISTRY.constants.supernovaTempThreshold).times(100).toNumber();
+  } else if (epoch === 4) {
+    pct = gameState.resources.darkMatter.amount.div(10000).times(100).toNumber();
+  }
+  
+  pct = Math.max(0, Math.min(100, pct));
+  
+  container.style.display = 'block';
+  bar.style.width = `${pct}%`;
+  bar.style.background = epoch === 1 ? 'linear-gradient(90deg, var(--neon-teal), #a29bfe)' :
+                         (epoch === 2 ? 'linear-gradient(90deg, #ff7675, #ffeaa7)' :
+                         (epoch === 3 ? 'linear-gradient(90deg, #fdcb6e, #e17055)' :
+                         'linear-gradient(90deg, #00ecc6, #0984e3)'));
+  bar.style.boxShadow = `0 0 8px ${epoch === 1 ? 'var(--neon-teal)' : (epoch === 2 ? '#ff7675' : (epoch === 3 ? '#fdcb6e' : '#00ecc6'))}`;
+},
+
 updateVisualProgression() {
   const core = document.getElementById('star-core');
   if (!core) return;
@@ -1027,7 +1068,10 @@ update() {
     } else if (gameState.activeEpoch === 4) {
       activeLog = COSMIC_REGISTRY.narrativeLogs.era4.initial;
     }
-    if (logNode.textContent !== activeLog) logNode.textContent = activeLog;
+    if (logNode.getAttribute('data-active-text') !== activeLog) {
+      logNode.setAttribute('data-active-text', activeLog);
+      typeWriter(logNode, activeLog, 25);
+    }
   }
 
   if (gameState.activeEpoch === 1) {
@@ -1172,6 +1216,7 @@ update() {
   
   if (gameState.activeTab === 'system') this.renderSystemTab();
   this.renderFlare();
+  this.updateEraProgressBar();
   this.updateVisualProgression();
 }
 };
@@ -1223,7 +1268,7 @@ const Economy = {
     if (category === 'quantum') return 'quantumFluctuations';
     if (category === 'galaxy') return 'darkMatter';
     if (category === 'plasma') {
-      if (key === 'quarkCondenser') return 'quarks';
+      if (key === 'quarkCondenser' || key === 'plasmaAutomation') return 'quarks';
       if (key === 'gluonBinding' || key === 'leptonHarvest') return 'gluons';
       return 'protons';
     }
@@ -1706,9 +1751,47 @@ function toggleBuyMode() {
 
 function getBuyLoopCount() {
   if (gameState.buyMode === 'max') {
-    return 10000; // Sicherer, hardware-schonender Guard-Deckel
+    return 10000;
   }
   return parseInt(gameState.buyMode, 10) || 1;
+}
+
+function getBuyMultiplierCount(category, key, def, state, currencyKey) {
+  let mode = gameState.buyMode;
+  if (mode === 1) return 1;
+  
+  let maxBuyable = def.max !== undefined ? def.max - state.level : Infinity;
+  if (maxBuyable <= 0) return 0;
+  
+  if (typeof mode === 'number') {
+    return Math.min(mode, maxBuyable);
+  }
+  
+  let balance = getAmount(currencyKey);
+  let cost = new Decimal(state.cost);
+  let scaling = new Decimal(def.costScaling || 2);
+  
+  let count = 0;
+  let tempCost = new Decimal(0);
+  let currentCost = new Decimal(cost);
+  while (balance.gte(tempCost.plus(currentCost)) && count < maxBuyable && count < 1000) {
+    tempCost = tempCost.plus(currentCost);
+    currentCost = currentCost.times(scaling).round();
+    count++;
+  }
+  return Math.max(1, count);
+}
+
+function getCumulativeCost(stateCost, costScaling, count) {
+  if (count <= 1) return new Decimal(stateCost);
+  let scaling = new Decimal(costScaling || 2);
+  let sum = new Decimal(0);
+  let current = new Decimal(stateCost);
+  for (let i = 0; i < count; i++) {
+    sum = sum.plus(current);
+    current = current.times(scaling).round();
+  }
+  return sum;
 }
 
 function togglePlasmaFuser() {
