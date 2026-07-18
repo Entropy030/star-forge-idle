@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=21">
+  <link rel="stylesheet" href="style.css?v=22">
   <link rel="manifest" href="manifest.json">
 </head>
 <body data-epoch="1" data-tab="core">
@@ -211,41 +211,8 @@
         <!-- Fixed Visualizer Spacer -->
         <div class="core-visual-spacer" style="height: 250px; pointer-events: none;"></div>
         
-        <div id="stellar-core-metrics" class="era3-only">
-        <div class="temp-display">Core Temp: <span id="temp">0</span> K</div>
-        <div class="mult-display">Thermal Multiplier: <span id="multiplier">1.0</span>x</div>
-        </div>
-        
         <!-- Era III Actions -->
         <button id="flare-button" class="era3-only visual-hidden"></button>
-       
-        <!-- Era IV Accretion Matrix Controller Interface -->
-        <div class="era4-only width-full" style="margin-top: 15px;">
-        <div class="prestige-card-panel" style="text-align: left; margin-bottom: 12px; padding: 16px;">
-        <span class="tier-label" style="color: var(--neon-teal);">Accretion Disk System Array</span>
-        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <div>
-        <strong style="font-size:0.9rem;">Orbital Arm Stability: <span id="galaxy-stability-val" class="color-teal">100%</span></strong>
-        <br><small style="color:#a4b0be; font-size:0.72rem;">Decay scales back automated matrix generation rates.</small>
-        </div>
-        <button id="btn-stabilize-arms" class="btn-toggle" style="background:rgba(0, 236, 198, 0.12); border-color:var(--neon-teal); margin:0; padding: 6px 14px; min-height:unset;">Synchronize Velocities</button>
-        </div>
-        <div class="stability-meter-container"><div id="stability-bar-fill" class="stability-bar"></div></div>
-        
-        <hr class="divider-subtle" style="margin: 14px 0;">
-        
-        <div style="display:flex; justify-content: space-between; align-items: center;">
-        <div>
-        <strong style="font-size:0.9rem;">Planetary Nodes Formed: <span id="planetary-count-label" class="color-yellow">0</span></strong>
-        <br><small style="color:#a4b0be; font-size:0.72rem;">Nesting Doll Shift: Condense 50,000 Hydrogen parameters.</small>
-        </div>
-        <button id="btn-accrete-planet" class="btn-toggle" style="background:linear-gradient(135deg, #6c5ce7, #341f97); border:none; margin:0; padding: 8px 16px; min-height:unset;">Accrete Mass Node</button>
-        </div>
-        </div>
-        
-        <button id="btn-galactic-merge" class="btn-macro-shift bg-gradient-purple" style="margin-top:12px;">TRIGGER GALACTIC COLLISION RESET</button>
-        <div id="galaxy-upgrades-container" class="upgrade-grid" style="margin-top: 12px;"></div>
-        </div>
         </div>
     
     <div id="tab-content-upgrades" class="tab-content">
@@ -257,6 +224,12 @@
       <div class="era2-only">
         <div id="plasma-upgrades-container" class="upgrade-grid"></div>
         <button id="btn-recombination" class="btn-macro-shift bg-gradient-purple" style="margin-top: 20px; width: 100%;">INITIATE COSMIC RECOMBINATION</button>
+      </div>
+
+      <!-- Era III: Stellar Core Metrics + Upgrades -->
+      <div id="stellar-core-metrics" class="era3-only" style="margin-bottom: 12px;">
+        <div class="temp-display">Core Temp: <span id="temp">0</span> K</div>
+        <div class="mult-display">Thermal Multiplier: <span id="multiplier">1.0</span>x</div>
       </div>
 
       <div class="cosmic-tier-group era3-only">
@@ -384,7 +357,7 @@
 
 
   <nav class="tab-menu">
-    <button id="nav-core" class="tab-btn active">Forge Core</button>
+    <button id="nav-core" class="tab-btn active">Cosmos</button>
     <button id="nav-upgrades" class="tab-btn">Upgrades</button>
     <button id="nav-system" class="tab-btn" disabled>System Ranks</button>
     <button id="nav-shop" class="tab-btn" disabled>Stardust Shop</button>
@@ -395,6 +368,6 @@
   </nav>
   
   <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2"></script>
-  <script src="script.js?v=21"></script>
+  <script src="script.js?v=22"></script>
 </body>
 </html>

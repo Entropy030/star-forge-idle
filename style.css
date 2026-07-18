@@ -420,7 +420,7 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  z-index: 1;
+  z-index: 3;
   overflow: visible;
   margin: 0;
 }
