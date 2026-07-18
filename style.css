@@ -388,14 +388,14 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
 [CSS-SEC-07] INTERACTIVE STARDUST FORGE CANVAS & PULSING ANCHORS
 ========================================================================== */
 .core-canvas {
-height: 240px;
-display: flex;
-align-items: center;
-justify-content: center;
-position: relative;
-margin: 15px auto;
-max-width: 340px;
-contain: layout paint size;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 25px auto;
+  max-width: 340px;
+  contain: layout paint size;
 }
 .canvas-scanner-line {
 position: absolute;
@@ -584,7 +584,7 @@ cursor: pointer;
 /* ==========================================================================
 [CSS-SEC-09] HIGH PERFORMANCE IRON-CLAD WHITELIST VISIBILITY CONTROLS
 ========================================================================== */
-.era1-only, .era2-only, .era3-only, .era4-only { display: none !important; }
+.era1-only, .era2-only, .era3-only, .era4-only, .visual-hidden { display: none !important; }
 
 body[data-epoch="1"] .era1-only { display: block !important; }
 body[data-epoch="1"] button.era1-only { display: block !important; }
@@ -708,7 +708,7 @@ text-align: center; color: #fff; transition: opacity 0.8s ease; display: none; o
 .currency-prestige-bar { font-size: 0.78rem; margin-bottom: 8px; }
 h1 { font-size: 1.25rem; letter-spacing: 4px; }
 .buy-mode-container { top: calc(10px + var(--sat)); right: 12px; }
-.core-canvas { height: 260px; }
+.core-canvas { height: 260px; margin: 35px auto; }
 .tab-content { padding-right: 0; }
 }
 

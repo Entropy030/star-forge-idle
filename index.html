@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=14">
   <link rel="manifest" href="manifest.json">
 </head>
 <body data-epoch="1" data-tab="core">
@@ -317,9 +317,12 @@
         </div>
         <button id="btn-supernova">Trigger Supernova</button>
       </div>
-    </div>
-    
-    <div id="tab-content-stats" class="tab-content">
+    </div>    <div id="tab-content-settings" class="tab-content">
+      <div id="dev-toggle-container" class="dev-toggle-hidden">
+        <div class="section-title">System Configuration</div>
+        <button class="btn-dev-toggle">Toggle Developer Sandbox</button>
+      </div>
+
       <div class="section-title color-blue">Lifetime Statistics</div>
       <div class="stats-card">
         <p>Supernovas Triggered: <span id="stat-supernovas" class="stat-value">0</span></p>
@@ -348,15 +351,8 @@
           <p>Matter and Antimatter should have annihilated each other completely during inflation. A tiny asymmetry anomaly—one extra quark per billion antiquarks—built all visible structures in our cosmos.</p>
         </div>
       </div>
-    </div>
-    
-    <div id="tab-content-settings" class="tab-content">
-      <div id="dev-toggle-container" class="dev-toggle-hidden">
-        <div class="section-title">System Configuration</div>
-        <button class="btn-dev-toggle">Toggle Developer Sandbox</button>
-      </div>
-      
-      <div class="section-title">Data Management</div>
+
+      <div class="section-title color-purple space-top">Data Management</div>
       <p class="section-desc">Backup, migrate, or clear universe data footprint profiles.</p>
       
       <div class="settings-card">
@@ -373,6 +369,7 @@
   
 
 
+
   <nav class="tab-menu">
     <button id="nav-core" class="tab-btn active">Forge Core</button>
     <button id="nav-upgrades" class="tab-btn">Upgrades</button>
@@ -381,11 +378,10 @@
     <button id="nav-pulsar" class="tab-btn" disabled>Pulsar Engine</button>
     <button id="nav-singularity" class="tab-btn" disabled>Event Horizon</button>
     <button id="nav-prestige" class="tab-btn" disabled>Supernova</button>
-    <button id="nav-stats" class="tab-btn">Stats</button>
-    <button id="nav-settings" class="tab-btn">Settings</button>
+    <button id="nav-settings" class="tab-btn">System ⚙️</button>
   </nav>
   
   <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2"></script>
-  <script src="script.js?v=12"></script>
+  <script src="script.js?v=14"></script>
 </body>
 </html>

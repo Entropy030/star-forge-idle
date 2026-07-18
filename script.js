@@ -11,11 +11,11 @@ if (typeof Decimal === 'undefined' && typeof break_infinity !== 'undefined') {
 const COSMIC_REGISTRY = {
 universeChronology: {
   epochs: {
-    1: { id: "quantum_foam", name: "Era I: The Quantum Foam", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "stats", "settings"] },
-    2: { id: "plasma_crucible", name: "Era II: The Primordial Soup", canvasStyle: "plasma-haze", tabs: ["core", "upgrades", "stats", "settings"] },
-    3: { id: "stellar_dawn", name: "Era III: The Stellar Dawn", canvasStyle: "star-core", tabs: ["core", "upgrades", "system", "shop", "pulsar", "singularity", "prestige", "stats", "settings"] },
-    4: { id: "galactic_matrix", name: "Era IV: The Galactic Matrix", canvasStyle: "galaxy-wheel", tabs: ["core", "stats", "settings"] },
-    5: { id: "deep_future", name: "Era V: The Event Horizon", canvasStyle: "singularity-point", tabs: ["core", "stats", "settings"] }
+    1: { id: "quantum_foam", name: "Era I: The Quantum Foam", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "settings"] },
+    2: { id: "plasma_crucible", name: "Era II: The Primordial Soup", canvasStyle: "plasma-haze", tabs: ["core", "upgrades", "settings"] },
+    3: { id: "stellar_dawn", name: "Era III: The Stellar Dawn", canvasStyle: "star-core", tabs: ["core", "upgrades", "system", "shop", "pulsar", "singularity", "prestige", "settings"] },
+    4: { id: "galactic_matrix", name: "Era IV: The Galactic Matrix", canvasStyle: "galaxy-wheel", tabs: ["core", "settings"] },
+    5: { id: "deep_future", name: "Era V: The Event Horizon", canvasStyle: "singularity-point", tabs: ["core", "settings"] }
   }
 },
 resources: {
@@ -530,7 +530,7 @@ switchTab(tabId) {
   if (tabId === 'shop') this.renderShop('stardust'); 
   if (tabId === 'pulsar') this.renderShop('pulsar'); 
   if (tabId === 'singularity') this.renderShop('singularity');
-  if (tabId === 'stats') this.renderStats();
+  if (tabId === 'settings') this.renderStats();
   if (tabId === 'system') this.renderSystemTab();
   isDirty = true;
 },
@@ -913,7 +913,7 @@ update() {
   document.getElementById('active-epoch-name').textContent = currentEpoch.name;
   document.getElementById('btn-buy-mode').textContent = `Buy Mode: ${gameState.buyMode === 'max' ? 'MAX' : 'x' + gameState.buyMode}`;
   
-  const allPossibleTabs = ["core", "upgrades", "system", "shop", "pulsar", "singularity", "prestige", "stats", "settings"];
+  const allPossibleTabs = ["core", "upgrades", "system", "shop", "pulsar", "singularity", "prestige", "settings"];
   allPossibleTabs.forEach(tabId => {
     const navBtn = document.getElementById(`nav-${tabId}`);
     if (navBtn) navBtn.style.display = currentEpoch.tabs.includes(tabId) ? "" : "none";
