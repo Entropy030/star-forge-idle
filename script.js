@@ -1021,6 +1021,14 @@ update() {
       tempRateEl.innerHTML = pRates.cooling.gt(0) ? `Cooling: -${format(pRates.cooling)} K/s` : `Stable`;
     }
  
+    const fuseProtonBtn = document.getElementById('btn-fuse-proton');
+    if (fuseProtonBtn) {
+      const canAfford = gameState.resources.quarks.amount.gte(3) && gameState.resources.gluons.amount.gte(2);
+      fuseProtonBtn.disabled = !canAfford;
+      if (canAfford) fuseProtonBtn.classList.add('upgrade-affordable');
+      else fuseProtonBtn.classList.remove('upgrade-affordable');
+    }
+
     const recombBtn = document.getElementById('btn-recombination');
     if (recombBtn) {
       recombBtn.disabled = !(gameState.resources.protons.amount.gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) || gameState.plasmaTemperature.lte(3000));
@@ -1565,13 +1573,62 @@ function accretePlanetConfiguration() {
 // ==========================================================================
 // [SEC-13] CLICK & TRANSACTION UTILITY IMPLEMENTATION (RECONSTRUCTED)
 // ==========================================================================
-function clickCore() {
+function spawnFloatingText(text, color, e, offsetX = 0) {
+  const canvas = document.querySelector('.core-canvas');
+  if (!canvas) return;
+
+  const particle = document.createElement('div');
+  particle.className = 'floating-text-particle';
+  particle.textContent = text;
+  particle.style.color = color || '#fff';
+
+  let x, y;
+  if (e && e.clientX && e.clientY) {
+    const rect = canvas.getBoundingClientRect();
+    x = e.clientX - rect.left + offsetX;
+    y = e.clientY - rect.top;
+  } else {
+    x = canvas.clientWidth / 2 + offsetX;
+    y = canvas.clientHeight / 2;
+  }
+
+  particle.style.left = `${x}px`;
+  particle.style.top = `${y}px`;
+
+  canvas.appendChild(particle);
+
+  setTimeout(() => {
+    particle.remove();
+  }, 1000);
+}
+
+function fuseProtonManually() {
+  initAudio();
+  if (gameState.activeEpoch !== 2) return;
+  
+  const quarkCost = new Decimal(3);
+  const gluonCost = new Decimal(2);
+  
+  if (gameState.resources.quarks.amount.gte(quarkCost) && gameState.resources.gluons.amount.gte(gluonCost)) {
+    gameState.resources.quarks.amount = gameState.resources.quarks.amount.minus(quarkCost);
+    gameState.resources.gluons.amount = gameState.resources.gluons.amount.minus(gluonCost);
+    gameState.resources.protons.amount = gameState.resources.protons.amount.plus(1);
+    
+    Viewport.showToast("Proton Synthesized successfully!");
+    isDirty = true;
+  } else {
+    Viewport.showToast("Need 3 Quarks and 2 Gluons!");
+  }
+}
+
+function clickCore(e) {
   initAudio();
   
   if (gameState.activeEpoch === 1) {
     let mult = getCardMultiplier("hydrogenGen");
     let gain = new Decimal(1).times(mult);
     gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(gain);
+    spawnFloatingText(`+${format(gain)} Fluctuations`, 'var(--neon-teal)', e);
   } 
   else if (gameState.activeEpoch === 2) {
     let asymmetry = getBaryonAsymmetryMultiplier();
@@ -1580,14 +1637,19 @@ function clickCore() {
     
     gameState.resources.quarks.amount = gameState.resources.quarks.amount.plus(quarkGain);
     gameState.resources.gluons.amount = gameState.resources.gluons.amount.plus(gluonGain);
+    
+    spawnFloatingText(`+${format(quarkGain)} Quarks`, '#ff7675', e, -30);
+    spawnFloatingText(`+${format(gluonGain)} Gluons`, '#ffeaa7', e, 30);
   } 
   else if (gameState.activeEpoch === 3) {
     gameState.era3.temperature = gameState.era3.temperature.plus(10000);
     recalcTempMultiplier();
     updateStatsData();
+    spawnFloatingText(`+10,000 K`, '#fdcb6e', e);
   } 
   else if (gameState.activeEpoch === 4) {
     gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(50);
+    spawnFloatingText(`+50 Hydrogen`, '#0984e3', e);
   }
   
   isDirty = true;
@@ -2194,6 +2256,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindClick('btn-buy-mode', toggleBuyMode);
   bindClick('btn-inflation', triggerInflation);
   bindClick('btn-recombination', triggerRecombination);
+  bindClick('btn-fuse-proton', fuseProtonManually);
   bindClick('btn-toggle-plasma-fuser', togglePlasmaFuser);
   bindClick('btn-supernova', triggerSupernova);
   bindClick('btn-galactic-merge', triggerGalacticMerge);

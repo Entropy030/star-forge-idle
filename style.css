@@ -747,6 +747,39 @@ body[data-epoch="3"] #cosmic-backdrop {
   opacity: var(--stellar-heat-factor, 0);
   transition: opacity 0.3s ease;
 }
+body[data-epoch="3"] #cosmic-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(235, 94, 40, calc(var(--stellar-heat-factor) * 0.15)) 0%, transparent 70%);
+  pointer-events: none;
+  transition: background 0.8s ease-out;
+}
+
+/* ==========================================================================
+ [CSS-SEC-14] FLOATING CLICK TEXT PARTICLE EFFECT SYSTEM
+ ========================================================================== */
+.floating-text-particle {
+  position: absolute;
+  pointer-events: none;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(0,0,0,0.8), 0 0 3px currentColor;
+  z-index: 1000;
+  animation: floatUpAndFade 1.0s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes floatUpAndFade {
+  0% {
+    transform: translate(-50%, -50%) scale(0.85);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -110px) scale(1.1);
+    opacity: 0;
+  }
+}
 .solar-prominence-wave {
   position: absolute;
   top: var(--core-anchor-y, 42%);
