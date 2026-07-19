@@ -455,6 +455,14 @@ function getStardustYield() {
 return gameState.era3.temperature.div(1500000).floor().plus(1);
 }
 
+function getPulsarShardYield() {
+  return gameState.resources.carbon.amount.div(100).floor().plus(1);
+}
+
+function getSingularityMassYield() {
+  return gameState.resources.iron.amount.div(25).floor().plus(1);
+}
+
 function getHydrogenGenRate() {
 let achBaseMult = gameState.achievements.firstSupernova.unlocked ? COSMIC_REGISTRY.achievements.firstSupernova.multiplier : 1.0; 
 let stardustMult = gameState.currencies.stardust.amount.times(0.5).plus(1);
@@ -751,14 +759,14 @@ updateSupernovaOutcome() {
   if (gameState.era3.stage === 'Main Sequence Star' && gameState.era3.carbonYield.gt(0)) {
     outcome = 'Neutron Star';
     outcomeColor = '#00cec9';
-    let pulsarYield = gameState.resources.carbon.amount.div(100).floor().plus(1);
+    let pulsarYield = getPulsarShardYield();
     yields.push(`+${format(pulsarYield)} 🌀 Neural Synapse`);
   }
   
   if (gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) && gameState.era3.ironYield.gt(0)) {
     outcome = 'Black Hole → ERA IV';
     outcomeColor = '#a29bfe';
-    let massYield = gameState.resources.iron.amount.div(25).floor().plus(1);
+    let massYield = getSingularityMassYield();
     yields.push(`+${format(massYield)} 🌌 Core Density`);
   }
   
@@ -853,8 +861,8 @@ updateStardustDisplays() {
   document.getElementById('stardust-boost').textContent = format(gameState.currencies.stardust.amount.times(50));
   
   let estStardust = getStardustYield();
-  let estPulsar = gameState.resources.carbon.amount.gt(0) ? gameState.resources.carbon.amount.div(100).floor().plus(1) : new Decimal(0);
-  let estSingularity = gameState.resources.iron.amount.gt(0) ? gameState.resources.iron.amount.div(25).floor().plus(1) : new Decimal(0);
+  let estPulsar = gameState.resources.carbon.amount.gt(0) ? getPulsarShardYield() : new Decimal(0);
+  let estSingularity = gameState.resources.iron.amount.gt(0) ? getSingularityMassYield() : new Decimal(0);
   let estText = `+${format(estStardust)} ✨`;
   
   if (estPulsar.gt(0)) estText += ` | +${format(estPulsar)} 🌀`;
@@ -1119,18 +1127,7 @@ update() {
   this.updateStardustDisplays();
   const currentEpoch = COSMIC_REGISTRY.universeChronology.epochs[gameState.activeEpoch] || COSMIC_REGISTRY.universeChronology.epochs[3];
   
-  // Programmatic visibility safeguard for era-specific elements
-  const activeEpochNum = gameState.activeEpoch;
-  for (let e = 1; e <= 5; e++) {
-    const isCurrent = (e === activeEpochNum);
-    document.querySelectorAll(`.era${e}-only`).forEach(el => {
-      if (isCurrent) {
-        el.style.setProperty('display', el.classList.contains('visual-hidden') ? 'none' : '', 'important');
-      } else {
-        el.style.setProperty('display', 'none', 'important');
-      }
-    });
-  }
+  // Visibility handled natively by CSS matching body[data-epoch] and body[data-tab]
   
   document.getElementById('active-epoch-name').textContent = currentEpoch.name;
   document.getElementById('btn-buy-mode').textContent = `Buy Mode: ${gameState.buyMode === 'max' ? 'MAX' : 'x' + gameState.buyMode}`;
@@ -1261,10 +1258,19 @@ update() {
     
     document.getElementById('carbon-count').textContent = format(gameState.resources.carbon.amount);
     document.getElementById('carbon-box').style.opacity = gameState.era3.stage === "Main Sequence Star" ? "1" : "0.3";
+    const carbonMult = getCarbonGravityMultiplier();
+    const carbonBoostContainer = document.getElementById('carbon-boost-container');
+    if (carbonBoostContainer) {
+      carbonBoostContainer.textContent = `Grav: +${format(carbonMult.minus(1).times(100))}%`;
+    }
     
     let ironMultiplier = gameState.resources.iron.amount.times(COSMIC_REGISTRY.constants.ironHeatCoefficient).plus(1);
     document.getElementById('iron-count').textContent = format(gameState.resources.iron.amount);
     document.getElementById('iron-box').style.opacity = gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) ? "1" : "0.3";
+    const ironBoostContainer = document.getElementById('iron-boost-container');
+    if (ironBoostContainer) {
+      ironBoostContainer.textContent = `Heat: +${format(ironMultiplier.minus(1).times(100))}%`;
+    }
     
     this.updateStardustDisplays();
     this.renderStellarNodeButtons();
@@ -1439,7 +1445,6 @@ const Economy = {
       Viewport.renderShop('pulsar');
       Viewport.renderShop('singularity');
     }
-    saveGame();
   }
 };
 
@@ -1644,7 +1649,7 @@ function triggerSupernova() {
   if (gameState.era3.stage === "Main Sequence Star" && gameState.era3.carbonYield.gt(0)) {
     outcome = "Neutron Star";
     titleColor = "#00cec9";
-    let gainedPulsar = gameState.resources.carbon.amount.div(100).floor().plus(1);
+    let gainedPulsar = getPulsarShardYield();
     gameState.currencies.pulsarShards.amount = gameState.currencies.pulsarShards.amount.plus(gainedPulsar);
     extraRewardText = `<br><span style="color:#00cec9">+${format(gainedPulsar)} 🌀 Neural Synapse</span>`;
   }
@@ -1652,7 +1657,7 @@ function triggerSupernova() {
   if (gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) && gameState.era3.ironYield.gt(0)) {
     outcome = "Black Hole";
     titleColor = "#a29bfe";
-    let gainedMass = gameState.resources.iron.amount.div(25).floor().plus(1);
+    let gainedMass = getSingularityMassYield();
     gameState.currencies.singularityMass.amount = gameState.currencies.singularityMass.amount.plus(gainedMass);
     extraRewardText += `<br><span style="color:#a29bfe">+${format(gainedMass)} 🌌 Core Density</span>`;
     shiftToEra4 = true;
@@ -2260,8 +2265,16 @@ function importSave() {
     let decoded = atob(input);
     let parsed = JSON.parse(decoded);
     if (parsed && parsed.version === SAVE_VERSION) {
-      localStorage.setItem('starForgeSave_v15', decoded);
-      location.reload();
+      let temp = gameState;
+      try {
+        gameState = parsed;
+        ensureStateShape();
+        let sanitized = serializeState(gameState);
+        localStorage.setItem('starForgeSave_v15', sanitized);
+        location.reload();
+      } finally {
+        gameState = temp;
+      }
     } else { Viewport.showToast("Unsupported timeline formatting configuration."); }
   } catch (e) { Viewport.showToast("Fatal transmission verification corruption."); }
 }
@@ -2416,9 +2429,10 @@ function renderLoop() {
     if (isDirty) {
       try { 
         Viewport.update(); 
-        isDirty = false;
       } catch (err) { 
-        // Graceful handling for layout transitions
+        console.error("Viewport.update() failed:", err);
+      } finally {
+        isDirty = false;
       }
     }
   }
@@ -2430,7 +2444,9 @@ setInterval(function() { saveGame(); }, 5000);
  
 loadGame();
 checkDevMode();
-runParityHarness();
+if (new URLSearchParams(window.location.search).get('dev') === 'true') {
+  runParityHarness();
+}
 Viewport.switchTab(gameState.activeTab);
 
 window.addEventListener('resize', () => Viewport.syncAnchor());

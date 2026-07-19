@@ -2,12 +2,13 @@
 // [SW-SEC-01] ASSET CACHE MATRIX INITIALIZATION & SETUP
 // ==========================================================================
 // Bunted Cache Version string to force service worker updates for returning players
-const CACHE_NAME = 'starforge-cache-v6';
+const CACHE_NAME = 'starforge-cache-v7';
 const urlsToCache = [
   './index.html',
   './style.css',
   './script.js',
-  './manifest.json'
+  './manifest.json',
+  './break_infinity.js'
 ];
 
 self.addEventListener('install', event => {
@@ -39,12 +40,15 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request).then(fetchRes => {
-        return caches.open(CACHE_NAME).then(cache => {
-          if (event.request.url.startsWith('http')) {
-            cache.put(event.request, fetchRes.clone());
-          }
-          return fetchRes;
-        });
+        if (fetchRes && fetchRes.ok && fetchRes.status === 200) {
+          const clone = fetchRes.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            if (event.request.url.startsWith('http')) {
+              cache.put(event.request, clone);
+            }
+          });
+        }
+        return fetchRes;
       });
     })
   );
