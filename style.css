@@ -411,10 +411,11 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
 ========================================================================== */
 .core-canvas {
   position: fixed;
-  top: 0;
+  top: 170px;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: auto;
+  bottom: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -422,10 +423,12 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
   z-index: 3;
   overflow: visible;
   margin: 0;
-  padding-top: 200px;
-  padding-bottom: 60px;
   box-sizing: border-box;
   transition: opacity 0.3s ease;
+}
+body[data-epoch="3"] .core-canvas,
+body[data-epoch="4"] .core-canvas {
+  top: 240px;
 }
 body:not([data-tab="core"]) .core-canvas {
   opacity: 0;
@@ -634,15 +637,12 @@ body[data-epoch="3"] button.era3-only { display: inline-block !important; }
 body[data-epoch="4"] .era4-only { display: block !important; }
 body[data-epoch="4"] button.era4-only { display: block !important; }
 
-body[data-tab="core"] #tab-content-core { display: block; }
-body[data-tab="upgrades"] #tab-content-upgrades { display: block; }
-body[data-tab="system"] #tab-content-system { display: block; }
-body[data-tab="shop"] #tab-content-shop { display: block; }
-body[data-tab="pulsar"] #tab-content-pulsar { display: block; }
-body[data-tab="singularity"] #tab-content-singularity { display: block; }
-body[data-tab="prestige"] #tab-content-prestige { display: block; }
-body[data-tab="stats"] #tab-content-stats { display: block; }
-body[data-tab="settings"] #tab-content-settings { display: block; }
+/* Tab Content Whitelist Isolation (enforces tab-hiding over era-display) */
+.tab-content { display: none !important; }
+body[data-tab="core"] #tab-content-core { display: block !important; }
+body[data-tab="upgrades"] #tab-content-upgrades { display: block !important; }
+body[data-tab="prestige"] #tab-content-prestige { display: block !important; }
+body[data-tab="settings"] #tab-content-settings { display: block !important; }
 
 #star-core[data-canvas-style="singularity-point"] {
 width: 8px !important;
@@ -787,7 +787,11 @@ text-align: center; color: #fff; transition: opacity 0.8s ease; display: none; o
 .currency-prestige-bar { font-size: 0.78rem; margin-bottom: 8px; }
 h1 { font-size: 1.25rem; letter-spacing: 4px; }
 .buy-mode-container { top: calc(10px + var(--sat)); right: 12px; }
-.core-canvas { padding-top: 180px !important; padding-bottom: 60px !important; }
+.core-canvas { top: 130px !important; }
+body[data-epoch="3"] .core-canvas,
+body[data-epoch="4"] .core-canvas {
+  top: 190px !important;
+}
 .tab-content { padding-right: 0; }
 }
 
