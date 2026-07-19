@@ -637,29 +637,55 @@ renderShop(shopId) {
   if (!config) return;
   const shopList = document.getElementById(config.containerId);
   if (!shopList) return;
-  shopList.innerHTML = '';
   
   const upgradesObj = COSMIC_REGISTRY.upgrades[shopId];
+  
+  // Build rows if container is empty
+  if (shopList.children.length === 0) {
+    for (let key in upgradesObj) {
+      let def = upgradesObj[key];
+      const row = document.createElement('div');
+      row.id = `${shopId}-row-${key}`;
+      row.className = 'cosmic-card';
+      row.innerHTML = `
+          <div class="btn-meta">
+            <strong>${def.name} <span class="lvl-display" style="font-size: 0.75em; color:${config.btnColor};"></span></strong>
+            <small>${def.desc}</small>
+          </div>
+          <button class="upgrade-btn" style="padding: 6px 14px; border-radius: 8px; font-weight: bold; font-size:0.78rem; margin:0; width:auto !important; min-height:unset;"></button>
+        `;
+      row.querySelector('.upgrade-btn').addEventListener('click', () => Economy.buy(shopId, key));
+      shopList.appendChild(row);
+    }
+  }
+  
+  // Update rows in place
   for (let key in upgradesObj) {
     let def = upgradesObj[key];
     let state = gameState.upgrades[shopId][key];
     let isMaxed = state.level >= def.max;
     let canAfford = getAmount(config.currency).gte(state.cost) && !isMaxed;
     
-    const row = document.createElement('div');
-    row.className = 'cosmic-card';
-    if (canAfford) row.classList.add('upgrade-affordable');
-    row.innerHTML = `
-        <div class="btn-meta">
-          <strong>${def.name} <span style="font-size: 0.75em; color:${config.btnColor};"> (Lvl ${state.level}/${def.max})</span></strong>
-          <small>${def.desc}</small>
-        </div>
-        <button class="upgrade-btn" data-shop-type="${shopId}" data-shop-key="${key}" ${canAfford ? '' : 'disabled'} style="padding: 6px 14px; border-radius: 8px; font-weight: bold; font-size:0.78rem; background: ${canAfford ? config.btnColor : 'rgba(255,255,255,0.04)'}; color: ${canAfford ? '#fff' : '#636e72'}; border: 1px solid ${canAfford ? 'transparent' : 'rgba(255,255,255,0.05)'}; margin:0; width:auto !important; min-height:unset;">
-          ${isMaxed ? 'MAXED' : 'Cost: ' + format(state.cost) + ' ' + config.label}
-        </button>
-      `;
-    row.querySelector('button').addEventListener('click', () => Economy.buy(shopId, key));
-    shopList.appendChild(row);
+    const row = document.getElementById(`${shopId}-row-${key}`);
+    if (row) {
+      if (canAfford) {
+        row.classList.add('upgrade-affordable');
+      } else {
+        row.classList.remove('upgrade-affordable');
+      }
+      
+      const lvlSpan = row.querySelector('.lvl-display');
+      if (lvlSpan) lvlSpan.textContent = ` (Lvl ${state.level}/${def.max})`;
+      
+      const btn = row.querySelector('.upgrade-btn');
+      if (btn) {
+        btn.textContent = isMaxed ? 'MAXED' : 'Cost: ' + format(state.cost) + ' ' + config.label;
+        btn.disabled = !canAfford;
+        btn.style.background = canAfford ? config.btnColor : 'rgba(255,255,255,0.04)';
+        btn.style.color = canAfford ? '#ffffff' : '#636e72';
+        btn.style.borderColor = canAfford ? 'transparent' : 'rgba(255,255,255,0.05)';
+      }
+    }
   }
 },
 
@@ -2198,51 +2224,65 @@ function saveGame() {
   localStorage.setItem('starForgeSave_v15', JSON.stringify(saveState));
 }
     
+const MIGRATIONS = {
+  14: (legacyState) => {
+    let migrated = getInitialGameState();
+    for (let key in legacyState) {
+      if (migrated[key] !== undefined && typeof legacyState[key] !== 'object') {
+        migrated[key] = legacyState[key];
+      }
+    }
+    let era3Target = getInitialEra3State();
+    for (let property in era3Target) {
+      if (legacyState[property] !== undefined) {
+        migrated.era3[property] = legacyState[property];
+      }
+    }
+    migrated.version = 15;
+    return migrated;
+  }
+};
+
 function loadGame() {
   try {
-    let rawData = localStorage.getItem('starForgeSave_v15');
-    if (rawData) {
-      let parsed = JSON.parse(rawData);
-      if (parsed && parsed.version === SAVE_VERSION) {
-        gameState = deserializeState(parsed.gameState);
-        ensureStateShape();
-        document.body.setAttribute('data-epoch', gameState.activeEpoch);
-        document.body.setAttribute('data-tab', gameState.activeTab);
-        return;
-      }
+    let rawData = localStorage.getItem('starForgeSave_v15') || localStorage.getItem('starForgeSave_v14');
+    if (!rawData) {
+      ensureStateShape();
+      document.body.setAttribute('data-epoch', gameState.activeEpoch);
+      document.body.setAttribute('data-tab', gameState.activeTab);
+      return;
     }
     
-    let oldData = localStorage.getItem('starForgeSave_v14');
-    if (oldData) {
-      let legacyParsed = JSON.parse(oldData);
-      if (legacyParsed && legacyParsed.gameState) {
-        let legacyState = deserializeState(legacyParsed.gameState);
-        gameState = getInitialGameState();
-        
-        for(let key in legacyState) {
-          if (gameState[key] !== undefined && typeof legacyState[key] !== 'object') {
-            gameState[key] = legacyState[key];
-          }
-        }
-        
-        let era3Target = getInitialEra3State();
-        for(let property in era3Target) {
-          if (legacyState[property] !== undefined) {
-            gameState.era3[property] = legacyState[property];
-          }
-        }
-        
-        ensureStateShape();
-        document.body.setAttribute('data-epoch', gameState.activeEpoch);
-        document.body.setAttribute('data-tab', gameState.activeTab);
-        Viewport.showToast("Timeline data migrated to decoupled namespacing structures.");
-        return;
-      }
+    let parsed = JSON.parse(rawData);
+    if (!parsed || !parsed.gameState) {
+      ensureStateShape();
+      document.body.setAttribute('data-epoch', gameState.activeEpoch);
+      document.body.setAttribute('data-tab', gameState.activeTab);
+      return;
     }
     
+    let stateVersion = parsed.version || 14;
+    let loadedState = deserializeState(parsed.gameState);
+    
+    // Chain migrations sequentially
+    while (stateVersion < SAVE_VERSION) {
+      const migrationFn = MIGRATIONS[stateVersion];
+      if (!migrationFn) break;
+      loadedState = migrationFn(loadedState);
+      stateVersion = loadedState.version || (stateVersion + 1);
+    }
+    
+    gameState = loadedState;
     ensureStateShape();
     document.body.setAttribute('data-epoch', gameState.activeEpoch);
     document.body.setAttribute('data-tab', gameState.activeTab);
+  } catch (e) {
+    console.error("Failed to load save:", e);
+    ensureStateShape();
+    document.body.setAttribute('data-epoch', gameState.activeEpoch);
+    document.body.setAttribute('data-tab', gameState.activeTab);
+  }
+}
   } catch (error) {
     ensureStateShape();
   }
@@ -2410,7 +2450,7 @@ function rollFlareType() {
 // ==========================================================================
 // [SEC-19] RUNTIME TIMERS & CORE BOOTSTRAP INITIALIZATION
 // ==========================================================================
-let visualTickAccumulator = 0;
+let simulationAccumulator = 0;
 
 function renderLoop() {
   let now = Date.now();
@@ -2419,11 +2459,10 @@ function renderLoop() {
   if (dt > 1.5) dt = 1.5;
   lastTick = now;
   
-  gameTick(dt);
-  
-  visualTickAccumulator += dt;
-  if (visualTickAccumulator >= 0.10) {
-    visualTickAccumulator = 0;
+  simulationAccumulator += dt;
+  if (simulationAccumulator >= 0.10) {
+    gameTick(simulationAccumulator);
+    simulationAccumulator = 0;
     
     if (isDirty) {
       try { 
