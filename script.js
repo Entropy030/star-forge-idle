@@ -2267,10 +2267,9 @@ function importSave() {
     if (parsed && parsed.version === SAVE_VERSION) {
       let temp = gameState;
       try {
-        gameState = parsed;
+        gameState = deserializeState(parsed.gameState);
         ensureStateShape();
-        let sanitized = serializeState(gameState);
-        localStorage.setItem('starForgeSave_v15', sanitized);
+        localStorage.setItem('starForgeSave_v15', decoded);
         location.reload();
       } finally {
         gameState = temp;
