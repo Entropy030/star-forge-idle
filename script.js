@@ -13,7 +13,7 @@ universeChronology: {
   epochs: {
     1: { id: "quantum_foam", name: "Era I: The Quantum Foam", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "settings"] },
     2: { id: "plasma_crucible", name: "Era II: The Primordial Soup", canvasStyle: "plasma-haze", tabs: ["core", "upgrades", "settings"] },
-    3: { id: "stellar_dawn", name: "Era III: The Stellar Dawn", canvasStyle: "star-core", tabs: ["core", "upgrades", "system", "shop", "pulsar", "singularity", "prestige", "settings"] },
+    3: { id: "stellar_dawn", name: "Era III: The Stellar Dawn", canvasStyle: "star-core", tabs: ["core", "upgrades", "prestige", "settings"] },
     4: { id: "galactic_matrix", name: "Era IV: The Galactic Matrix", canvasStyle: "galaxy-wheel", tabs: ["core", "settings"] },
     5: { id: "deep_future", name: "Era V: The Event Horizon", canvasStyle: "singularity-point", tabs: ["core", "settings"] }
   }
@@ -585,11 +585,17 @@ switchTab(tabId) {
   const targetNav = document.getElementById(`nav-${tabId}`);
   if (targetNav) targetNav.classList.add('active');
   
-  if (tabId === 'shop') this.renderShop('stardust'); 
-  if (tabId === 'pulsar') this.renderShop('pulsar'); 
-  if (tabId === 'singularity') this.renderShop('singularity');
-  if (tabId === 'settings') this.renderStats();
-  if (tabId === 'system') this.renderSystemTab();
+  if (tabId === 'prestige') {
+    this.renderShop('stardust');
+    this.renderShop('pulsar');
+    this.renderShop('singularity');
+    this.renderPrestigeVisibility();
+    this.updateSupernovaOutcome();
+  }
+  if (tabId === 'settings') {
+    this.renderStats();
+    this.renderSystemTab();
+  }
   isDirty = true;
 },
 
@@ -719,6 +725,46 @@ renderSystemTab() {
       }
     }
   }
+},
+
+renderPrestigeVisibility() {
+  const sdSection = document.getElementById('prestige-stardust-section');
+  const plSection = document.getElementById('prestige-pulsar-section');
+  const sgSection = document.getElementById('prestige-singularity-section');
+  if (sdSection) sdSection.style.display = gameState.currencies.stardust.amount.gt(0) ? '' : 'none';
+  if (plSection) plSection.style.display = (gameState.currencies.pulsarShards.amount.gt(0) || gameState.upgrades.pulsar.autoCompress.level > 0) ? '' : 'none';
+  if (sgSection) sgSection.style.display = (gameState.currencies.singularityMass.amount.gt(0) || gameState.upgrades.singularity.darkGravity.level > 0) ? '' : 'none';
+},
+
+updateSupernovaOutcome() {
+  const typeEl = document.getElementById('supernova-outcome-type');
+  const yieldsEl = document.getElementById('supernova-outcome-yields');
+  if (!typeEl || !yieldsEl) return;
+  
+  let outcome = 'White Dwarf';
+  let outcomeColor = '#ffffff';
+  let yields = [];
+  
+  let stardustYield = getStardustYield();
+  yields.push(`+${format(stardustYield)} ✨ Synaptic Dust`);
+  
+  if (gameState.era3.stage === 'Main Sequence Star' && gameState.era3.carbonYield.gt(0)) {
+    outcome = 'Neutron Star';
+    outcomeColor = '#00cec9';
+    let pulsarYield = gameState.resources.carbon.amount.div(100).floor().plus(1);
+    yields.push(`+${format(pulsarYield)} 🌀 Neural Synapse`);
+  }
+  
+  if (gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) && gameState.era3.ironYield.gt(0)) {
+    outcome = 'Black Hole → ERA IV';
+    outcomeColor = '#a29bfe';
+    let massYield = gameState.resources.iron.amount.div(25).floor().plus(1);
+    yields.push(`+${format(massYield)} 🌌 Core Density`);
+  }
+  
+  typeEl.textContent = outcome;
+  typeEl.style.color = outcomeColor;
+  yieldsEl.innerHTML = yields.join('<br>');
 },
 
 renderGenericTierList(containerId, category, costLabelText, displayColor, activeCurrencyField) {
@@ -932,11 +978,12 @@ renderStellarNodeButtons() {
     }
   }
   
-  document.getElementById('nav-prestige').disabled = !(gameState.era3.stage === "Main Sequence Star" || gameState.currencies.stardust.amount.gt(0));
-  document.getElementById('nav-shop').disabled = !gameState.currencies.stardust.amount.gt(0);
-  document.getElementById('nav-pulsar').disabled = !(gameState.currencies.pulsarShards.amount.gt(0) || gameState.upgrades.pulsar.autoCompress.level > 0);
-  document.getElementById('nav-singularity').disabled = !(gameState.currencies.singularityMass.amount.gt(0) || gameState.upgrades.singularity.darkGravity.level > 0);
-  document.getElementById('nav-system').disabled = !(gameState.systemRank > 1 || gameState.currencies.pulsarShards.amount.gt(0));
+  const prestigeBtn = document.getElementById('nav-prestige');
+  if (prestigeBtn) prestigeBtn.disabled = !(gameState.era3.stage === "Main Sequence Star" || gameState.currencies.stardust.amount.gt(0));
+  if (gameState.activeTab === 'prestige') {
+    this.renderPrestigeVisibility();
+    this.updateSupernovaOutcome();
+  }
   
   const core = document.getElementById('star-core');
   if (core) {
@@ -1387,9 +1434,11 @@ const Economy = {
   },
 
   refreshUI() {
-    if (gameState.activeTab === 'shop') Viewport.renderShop('stardust');
-    if (gameState.activeTab === 'pulsar') Viewport.renderShop('pulsar');
-    if (gameState.activeTab === 'singularity') Viewport.renderShop('singularity');
+    if (gameState.activeTab === 'prestige') {
+      Viewport.renderShop('stardust');
+      Viewport.renderShop('pulsar');
+      Viewport.renderShop('singularity');
+    }
     saveGame();
   }
 };
@@ -1632,13 +1681,18 @@ function triggerSupernova() {
   gameState.flares.nextSpawnInSec = rollNextSpawnDelay();
   
   if (shiftToEra4) {
-    gameState.activeEpoch = 4;
-    document.body.setAttribute('data-epoch', 4);
+    startEraTransition(4, "The iron core collapses in milliseconds. Gravity overwhelms all nuclear forces. A singularity forms at the heart of the dying star, bending space-time itself. From the ashes of stellar death, gravitational waves ripple outward, seeding the cosmos with heavy elements. A new epoch begins: The Galactic Matrix.", () => {
+      gameState.activeEpoch = 4;
+      document.body.setAttribute('data-epoch', 4);
+      Viewport.switchTab('core');
+      saveGame();
+      isDirty = true;
+    });
+  } else {
+    Viewport.switchTab('core');
+    saveGame();
+    isDirty = true;
   }
-  
-  Viewport.switchTab('core');
-  saveGame();
-  isDirty = true;
 }
   
 function closeTheatrical() {

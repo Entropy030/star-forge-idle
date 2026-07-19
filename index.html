@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=22">
+  <link rel="stylesheet" href="style.css?v=23">
   <link rel="manifest" href="manifest.json">
 </head>
 <body data-epoch="1" data-tab="core">
@@ -259,51 +259,51 @@
       <div class="cosmic-tier-group era3-only">
         <span class="tier-label">Shell III: Heavy Nucleosynthesis</span>
         <button id="btn-iron" class="cosmic-card">
-          <span class="btn-meta"><strong>Unlock Iron Fusion</strong><br><small>Peak elemental generation profile</small></span>
+          <span class="btn-meta"><strong id="iron-text">Unlock Iron Fusion</strong><br><small>Peak elemental generation profile</small></span>
           <span class="btn-price">Cost: <span id="iron-cost-label">Locked</span></span>
         </button>
       </div>
     </div>
     
-    <div id="tab-content-system" class="tab-content era3-only">
-      <div class="section-title color-yellow">System Ranks & Cosmic Missions</div>
-      <p class="section-desc">Complete deep-space criteria configurations to rank up system structural authority.</p>
-      <div id="system-rank-info"></div>
-      
-      <div class="section-title color-blue space-top">Celestial Card Matrix</div>
-      <p class="section-desc">Acquire permanent performance scaling modifiers.</p>
-      <div id="celestial-cards-list"></div>
-    </div>
-    
-    <div id="tab-content-shop" class="tab-content era3-only">
-      <div class="section-title color-purple">Synaptic Perks Marketplace</div>
-      <p class="section-desc">Deploy permanent high-grade Memory Traces to warp underlying metrics.</p>
-      <div id="stardust-shop-list"></div>
-    </div>
-    
-    <div id="tab-content-pulsar" class="tab-content era3-only">
-      <div class="section-title color-teal">Neural Synapse Engine</div>
-      <p class="section-desc">Spend raw Pulsar Cores to hardcode structural macro-routines.</p>
-      <div id="pulsar-shop-list"></div>
-    </div>
-    
-    <div id="tab-content-singularity" class="tab-content era3-only">
-      <div class="section-title color-dark-purple">Infinite Core Density Terminal</div>
-      <p class="section-desc">Sacrifice absolute mass metrics to invoke exponential calculation shifts.</p>
-      <div id="singularity-shop-list"></div>
-    </div>
-    
+    <!-- Era III: Consolidated Prestige Tab -->
     <div id="tab-content-prestige" class="tab-content era3-only">
-      <div class="section-title color-light-red">Supernova Collapse Terminal</div>
-      <div class="prestige-card-panel">
-        <p>The star's core pressure matrix has scaled past critical thresholds.</p>
-        <p class="prestige-flavor-text">Triggering a manual Supernova collapse resets active infrastructure to expand your permanent memory tracks.</p>
-        <div class="prestige-estimate-box">
-          Estimated Collapse Yield: <br><span id="supernova-gain-estimate">0</span>
+      <!-- Supernova Trigger (top) -->
+      <div class="prestige-section">
+        <div class="section-title color-light-red">Supernova Collapse Terminal</div>
+        <div class="prestige-card-panel">
+          <p>The star's core pressure matrix has scaled past critical thresholds.</p>
+          <div class="supernova-outcome-box" id="supernova-outcome-display">
+            <div class="outcome-label">Expected Outcome</div>
+            <div class="outcome-type" id="supernova-outcome-type">White Dwarf</div>
+            <div class="outcome-yields" id="supernova-outcome-yields"></div>
+          </div>
+          <button id="btn-supernova">Trigger Supernova</button>
         </div>
-        <button id="btn-supernova">Trigger Supernova</button>
       </div>
-    </div>    <div id="tab-content-settings" class="tab-content">
+
+      <!-- Stardust Forge -->
+      <div class="prestige-section" id="prestige-stardust-section" style="display: none;">
+        <div class="section-title color-purple">✨ Stardust Forge</div>
+        <p class="section-desc">Deploy permanent Memory Traces to warp underlying metrics.</p>
+        <div id="stardust-shop-list"></div>
+      </div>
+
+      <!-- Pulsar Engine -->
+      <div class="prestige-section" id="prestige-pulsar-section" style="display: none;">
+        <div class="section-title color-teal">🌀 Pulsar Engine</div>
+        <p class="section-desc">Spend Pulsar Cores to hardcode structural macro-routines.</p>
+        <div id="pulsar-shop-list"></div>
+      </div>
+
+      <!-- Event Horizon -->
+      <div class="prestige-section" id="prestige-singularity-section" style="display: none;">
+        <div class="section-title color-dark-purple">🌌 Event Horizon</div>
+        <p class="section-desc">Sacrifice absolute mass metrics to invoke exponential calculation shifts.</p>
+        <div id="singularity-shop-list"></div>
+      </div>
+    </div>
+
+    <div id="tab-content-settings" class="tab-content">
       <div id="dev-toggle-container" class="dev-toggle-hidden">
         <div class="section-title">System Configuration</div>
         <button class="btn-dev-toggle">Toggle Developer Sandbox</button>
@@ -319,6 +319,17 @@
       <!-- Injected Achievements Render Node Mount Point -->
       <div class="section-title color-yellow space-top">Cosmic Evolution Milestones</div>
       <div id="achievements-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; width: 100%;"></div>
+
+      <!-- System Ranks & Missions (Era 3+) -->
+      <div class="era3-only">
+        <div class="section-title color-yellow space-top">System Ranks & Cosmic Missions</div>
+        <p class="section-desc">Complete deep-space criteria configurations to rank up system structural authority.</p>
+        <div id="system-rank-info"></div>
+      
+        <div class="section-title color-blue space-top">Celestial Card Matrix</div>
+        <p class="section-desc">Acquire permanent performance scaling modifiers.</p>
+        <div id="celestial-cards-list"></div>
+      </div>
       
       <!-- Cosmic Codex Infotainment Center -->
       <div class="section-title color-teal space-top">Cosmic Codex</div>
@@ -359,15 +370,11 @@
   <nav class="tab-menu">
     <button id="nav-core" class="tab-btn active">Cosmos</button>
     <button id="nav-upgrades" class="tab-btn">Upgrades</button>
-    <button id="nav-system" class="tab-btn" disabled>System Ranks</button>
-    <button id="nav-shop" class="tab-btn" disabled>Stardust Shop</button>
-    <button id="nav-pulsar" class="tab-btn" disabled>Pulsar Engine</button>
-    <button id="nav-singularity" class="tab-btn" disabled>Event Horizon</button>
-    <button id="nav-prestige" class="tab-btn" disabled>Supernova</button>
+    <button id="nav-prestige" class="tab-btn" disabled>Prestige</button>
     <button id="nav-settings" class="tab-btn">System ⚙️</button>
   </nav>
   
   <script src="https://cdn.jsdelivr.net/npm/break_infinity.js@2"></script>
-  <script src="script.js?v=22"></script>
+  <script src="script.js?v=23"></script>
 </body>
 </html>
