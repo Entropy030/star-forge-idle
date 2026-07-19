@@ -305,9 +305,9 @@ box-sizing: border-box;
   font-weight: 700 !important;
   font-size: 0.76rem !important;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  color: rgba(255, 255, 255, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(0, 0, 0, 0.4) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
   cursor: not-allowed;
   transition: all 0.2s ease-in-out;
   box-sizing: border-box;
@@ -823,6 +823,7 @@ body[data-epoch="3"] #star-core {
 .stellar-dawn-field {
   position: absolute;
   inset: 0;
+  overflow: hidden; /* Clips prominence waves to prevent auto-scrolling page shifts */
 }
 .nebula-blue-layer {
   position: absolute;

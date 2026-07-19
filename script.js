@@ -1038,10 +1038,10 @@ const Viewport = {
     const btn = document.getElementById('flare-button');
     if (!btn) return;
     if (gameState.flares.active) {
-      btn.classList.remove('visual-hidden');
+      btn.style.setProperty('display', 'block', 'important');
       btn.textContent = `${COSMIC_REGISTRY.solarEvents.flare.fx.emoji} PROMINENCE ACTIVE! (${Math.ceil(gameState.flares.active.expiresInSec.toNumber())}s)`;
     } else {
-      btn.classList.add('visual-hidden');
+      btn.style.setProperty('display', 'none', 'important');
     }
   },
 
