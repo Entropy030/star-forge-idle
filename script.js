@@ -184,7 +184,9 @@ function getInitialEra4State() {
     stability: new Decimal(100),
     orbitalDecayRate: new Decimal(0.8),
     planetaryNodes: new Decimal(0),
-    stellarMassPassiveCount: new Decimal(0)
+    stellarMassPassiveCount: new Decimal(0),
+    act2Notified: false,
+    act3Notified: false
   };
 }
 
@@ -209,7 +211,8 @@ function getInitialGameState() {
       iron: { amount: new Decimal(0) },
       planetaryDebris: { amount: new Decimal(0) },
       darkMatter: { amount: new Decimal(0) },
-      darkEnergyResidue: { amount: new Decimal(0) }
+      darkEnergyResidue: { amount: new Decimal(0) },
+      antimatterResidue: { amount: new Decimal(0) }
     },
     currencies: {
       stardust: { amount: new Decimal(0) },
@@ -1245,6 +1248,18 @@ const Viewport = {
 
     document.getElementById('active-epoch-name').textContent = currentEpoch.name;
 
+    const objNode = document.getElementById('era-objective-text');
+    if (objNode) {
+      const objectives = {
+        1: "Accumulate 100,000 QF & Trigger Cosmic Inflation",
+        2: "Cool Plasma < 3,000 K or Forge 1,000,000 Protons",
+        3: "Heat Stellar Core to 100M K for Supernova",
+        4: "Stabilize Dark Matter Halo & Reach 10,000 Dark Matter",
+        5: "Maximize Bit Encoding before Entropy Reaches 100%"
+      };
+      objNode.textContent = objectives[gameState.activeEpoch] || objectives[1];
+    }
+
     const allPossibleTabs = ["core", "upgrades", "system", "shop", "pulsar", "singularity", "prestige", "settings"];
     allPossibleTabs.forEach(tabId => {
       const navBtn = document.getElementById(`nav-${tabId}`);
@@ -1312,6 +1327,24 @@ const Viewport = {
             tunerBtn.style.color = '#b2bec3';
           }
         }
+      }
+    }
+
+    if (gameState.activeEpoch === 4) {
+      const dm = gameState.resources.darkMatter ? gameState.resources.darkMatter.amount : new Decimal(0);
+      const act2Unlocked = dm.gte(10000);
+      const act3Unlocked = dm.gte(100000);
+
+      document.querySelectorAll('.era4-act2-only').forEach(el => el.style.display = act2Unlocked ? '' : 'none');
+      document.querySelectorAll('.era4-act3-only').forEach(el => el.style.display = act3Unlocked ? '' : 'none');
+
+      if (act2Unlocked && !gameState.era4.act2Notified) {
+        gameState.era4.act2Notified = true;
+        Viewport.showToast("🌌 CRITICAL MASS REACHED: Supermassive Black Hole & Quasar Ignition Unlocked!");
+      }
+      if (act3Unlocked && !gameState.era4.act3Notified) {
+        gameState.era4.act3Notified = true;
+        Viewport.showToast("🌀 CLUSTER COHERENCE ACHIEVED: Multi-Node Cluster Links & Galactic Collision Unlocked!");
       }
     }
 
@@ -1800,6 +1833,11 @@ function triggerRecombination() {
     let electronBonus = gameState.resources.electrons.amount;
     let startingHydrogen = gameState.resources.protons.amount.times(1.5).plus(electronBonus).max(250);
     gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(startingHydrogen);
+
+    if (gameState.resources.antimatterResidue) {
+      let residueGained = gameState.resources.protons.amount.div(1000).clampMin(1).round();
+      gameState.resources.antimatterResidue.amount = gameState.resources.antimatterResidue.amount.plus(residueGained);
+    }
 
     const flashElement = document.createElement('div');
     flashElement.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #fff; z-index: 99999; pointer-events: none; animation: flashEffect 1.5s forwards;";
@@ -2320,6 +2358,10 @@ const Timeline = {
     let decayRate = gameState.era4.orbitalDecayRate || new Decimal(0.8);
     let armStabilizationLvl = gameState.upgrades.galaxy?.armStabilization?.level || 0;
     let dynamicDecay = decayRate.times(1 - (0.15 * armStabilizationLvl));
+
+    if (gameState.resources.antimatterResidue && gameState.resources.antimatterResidue.amount.gt(0)) {
+      dynamicDecay = dynamicDecay.times(0.85);
+    }
 
     gameState.era4.stability = Decimal.max(5, gameState.era4.stability.minus(dynamicDecay.times(dt)));
   }

@@ -2,7 +2,7 @@
 // [SW-SEC-01] ASSET CACHE MATRIX INITIALIZATION & SETUP
 // ==========================================================================
 // Bunted Cache Version string to force service worker updates for returning players
-const CACHE_NAME = 'starforge-cache-v13';
+const CACHE_NAME = 'starforge-cache-v14';
 const urlsToCache = [
   './index.html',
   './style.css',

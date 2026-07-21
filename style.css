@@ -123,6 +123,14 @@ h1 {
   display: inline-block;
   margin-top: 4px;
 }
+.objective-banner {
+  color: #fdcb6e;
+  text-shadow: 0 0 8px rgba(253, 203, 110, 0.4);
+  font-weight: 600;
+  display: block;
+  margin-top: 4px;
+  letter-spacing: 1.5px;
+}
 .game-header { padding-top: calc(16px + var(--sat)); margin-bottom: 5px; }
 
 /* ==========================================================================
