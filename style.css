@@ -861,6 +861,21 @@ body[data-epoch="3"] #cosmic-backdrop::before {
   transition: background 0.8s ease-out;
 }
 
+@keyframes panelGlitchShake {
+  0% { transform: translate(0, 0); filter: hue-rotate(0deg); }
+  20% { transform: translate(-4px, 2px); filter: hue-rotate(90deg) contrast(1.5); }
+  40% { transform: translate(4px, -2px); filter: hue-rotate(180deg); }
+  60% { transform: translate(-3px, -1px); filter: hue-rotate(270deg); }
+  80% { transform: translate(2px, 3px); filter: hue-rotate(180deg); }
+  100% { transform: translate(0, 0); filter: hue-rotate(0deg); }
+}
+
+.panel-glitch-active {
+  animation: panelGlitchShake 0.4s ease-in-out !important;
+  border-color: #e74c3c !important;
+  box-shadow: 0 0 15px rgba(231, 76, 60, 0.6) !important;
+}
+
 /* ==========================================================================
  [CSS-SEC-14] FLOATING CLICK TEXT PARTICLE EFFECT SYSTEM
  ========================================================================== */

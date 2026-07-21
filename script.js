@@ -84,7 +84,8 @@ const COSMIC_REGISTRY = {
       gravityForce: { id: "gravityForce", name: "🌌 Gravitational Coupling", baseCost: new Decimal(10), costScaling: 1.4, gen: new Decimal(1), densityGen: new Decimal(0.5), desc: "Couples mass metrics. Generates +1 Fluctuation/s and +0.5 Density/s." },
       weakForce: { id: "weakForce", name: "⚛️ Weak Nuclear Vector", baseCost: new Decimal(150), costScaling: 1.5, gen: new Decimal(12), densityGen: new Decimal(4), desc: "Triggers gauge boson exchange. Generates +12 Fluctuations/s and +4 Density/s." },
       electromagneticForce: { id: "electromagneticForce", name: "🧲 Electromagnetic Tensor", baseCost: new Decimal(2000), costScaling: 1.6, gen: new Decimal(140), densityGen: new Decimal(30), desc: "Sustains photon field propagation. Generates +140 Fluctuations/s and +30 Density/s." },
-      strongForce: { id: "strongForce", name: "💥 Strong Color Force", baseCost: new Decimal(25000), costScaling: 1.8, gen: new Decimal(1800), densityGen: new Decimal(400), desc: "Binds color charges via gluons. Generates +1800 Fluctuations/s and +400 Density/s." }
+      strongForce: { id: "strongForce", name: "💥 Strong Color Force", baseCost: new Decimal(25000), costScaling: 1.8, gen: new Decimal(1800), densityGen: new Decimal(400), desc: "Binds color charges via gluons. Generates +1800 Fluctuations/s and +400 Density/s." },
+      decoherenceTuner: { id: "decoherenceTuner", name: "🎛️ Decoherence Tuner", baseCost: new Decimal(1000), costScaling: 1.0, max: 1, gen: new Decimal(0), densityGen: new Decimal(0), desc: "Unlocks automated Quantum Decoherence Tuner modes (Safe & Resonance)." }
     },
     plasma: {
       quarkCondenser: { id: "quarkCondenser", name: "💠 Quark Condenser", baseCost: new Decimal(20), costScaling: 1.3, gen: new Decimal(2), desc: "Condenses energy variables. Generates +2 Quarks/s." },
@@ -220,6 +221,10 @@ function getInitialGameState() {
     era3: getInitialEra3State(),
     era4: getInitialEra4State(),
     coherence: new Decimal(0),
+    quantumStorage: new Decimal(0),
+    quantumPhaseTime: 0,
+    quantumTunerUnlocked: false,
+    quantumTunerMode: 'off',
     activeTab: "core",
     buyMode: 1,
     stats: {
@@ -413,9 +418,57 @@ function getQuantumFluctuationRate() {
   for (let key in COSMIC_REGISTRY.upgrades.quantum) {
     let def = COSMIC_REGISTRY.upgrades.quantum[key];
     let state = gameState.upgrades.quantum[key];
-    if (state && state.level > 0) rate = rate.plus(def.gen.times(state.level));
+    if (state && state.level > 0 && def.gen) rate = rate.plus(def.gen.times(state.level));
   }
   return rate.times(gameState.inflatonMultiplier || 1);
+}
+
+function getQuantumAmplitude() {
+  const t = gameState.quantumPhaseTime || 0;
+  const sinVal = Math.sin((2 * Math.PI * t) / 15);
+  const amp = 2.55 + (2.45 * sinVal);
+  return Math.max(0.1, Math.min(5.0, amp));
+}
+
+function measureQuantumSafe() {
+  if (!gameState.quantumStorage || gameState.quantumStorage.lte(0)) return;
+  const amp = getQuantumAmplitude();
+  const yieldAmount = gameState.quantumStorage.times(amp).round();
+  gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(yieldAmount);
+  gameState.coherence = Decimal.min(100, gameState.coherence.plus(0.1));
+  gameState.quantumStorage = new Decimal(0);
+  isDirty = true;
+}
+
+function quantumLeapRisk() {
+  if (!gameState.quantumStorage || gameState.quantumStorage.lte(0)) return;
+  const amp = getQuantumAmplitude();
+  if (amp >= 4.0) {
+    const yieldAmount = gameState.quantumStorage.times(amp).times(5).round();
+    gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(yieldAmount);
+    gameState.coherence = Decimal.min(100, gameState.coherence.plus(1.5));
+    gameState.quantumStorage = new Decimal(0);
+    isDirty = true;
+  } else {
+    gameState.quantumStorage = new Decimal(0);
+    isDirty = true;
+    const panel = document.getElementById('quantum-superposition-panel');
+    if (panel) {
+      panel.classList.remove('panel-glitch-active');
+      void panel.offsetWidth;
+      panel.classList.add('panel-glitch-active');
+      setTimeout(() => panel.classList.remove('panel-glitch-active'), 450);
+    }
+  }
+}
+
+function cycleQuantumTunerMode() {
+  if (!gameState.quantumTunerUnlocked && !(gameState.upgrades.quantum.decoherenceTuner && gameState.upgrades.quantum.decoherenceTuner.level > 0)) return;
+  const modes = ['off', 'safe', 'resonance'];
+  let currentIdx = modes.indexOf(gameState.quantumTunerMode || 'off');
+  let nextIdx = (currentIdx + 1) % modes.length;
+  gameState.quantumTunerMode = modes[nextIdx];
+  isDirty = true;
 }
 
 function getEnergyDensityRate() {
@@ -1191,9 +1244,65 @@ const Viewport = {
     const coreCanvasElement = document.getElementById('star-core');
     if (coreCanvasElement) coreCanvasElement.setAttribute('data-canvas-style', currentEpoch.canvasStyle);
 
-    const cohNode = document.getElementById('coherence-display');
-    if (cohNode) {
-      cohNode.textContent = gameState.coherence.toNumber().toFixed(1) + "%";
+    const panel = document.getElementById('quantum-superposition-panel');
+    if (panel) {
+      const isAct2Unlocked = gameState.activeEpoch === 1 && (gameState.resources.quantumFluctuations.amount.gte(100) || (gameState.quantumStorage && gameState.quantumStorage.gt(0)) || (gameState.upgrades.quantum.gravityForce && gameState.upgrades.quantum.gravityForce.level > 0));
+      panel.style.display = isAct2Unlocked ? 'flex' : 'none';
+
+      if (isAct2Unlocked) {
+        const amp = getQuantumAmplitude();
+        const ampValNode = document.getElementById('quantum-amp-value');
+        if (ampValNode) ampValNode.textContent = amp.toFixed(2) + "x";
+
+        const storageValNode = document.getElementById('quantum-storage-value');
+        if (storageValNode) storageValNode.textContent = format(gameState.quantumStorage || 0) + " QF";
+
+        const ampBarNode = document.getElementById('quantum-amp-bar');
+        if (ampBarNode) {
+          let pct = (amp / 5.0) * 100;
+          ampBarNode.style.width = pct.toFixed(1) + "%";
+          if (amp >= 4.0) {
+            ampBarNode.style.background = 'linear-gradient(90deg, #fdcb6e, #e17055)';
+            ampBarNode.style.boxShadow = '0 0 10px #fdcb6e';
+          } else {
+            ampBarNode.style.background = 'linear-gradient(90deg, #6c5ce7, #00cec9)';
+            ampBarNode.style.boxShadow = 'none';
+          }
+        }
+
+        const badgeNode = document.getElementById('quantum-peak-badge');
+        if (badgeNode) {
+          if (amp >= 4.0) {
+            badgeNode.textContent = "⚡ PEAK WINDOW";
+            badgeNode.style.background = "rgba(253, 203, 110, 0.2)";
+            badgeNode.style.color = "#fdcb6e";
+            badgeNode.style.border = "1px solid #fdcb6e";
+          } else {
+            badgeNode.textContent = "STABLE";
+            badgeNode.style.background = "rgba(255,255,255,0.05)";
+            badgeNode.style.color = "#b2bec3";
+            badgeNode.style.border = "none";
+          }
+        }
+
+        const tunerBtn = document.getElementById('btn-tuner-toggle');
+        if (tunerBtn) {
+          const isUnlocked = gameState.quantumTunerUnlocked || (gameState.upgrades.quantum.decoherenceTuner && gameState.upgrades.quantum.decoherenceTuner.level > 0);
+          tunerBtn.style.display = isUnlocked ? '' : 'none';
+          const mode = gameState.quantumTunerMode || 'off';
+          tunerBtn.textContent = `Tuner: ${mode.toUpperCase()}`;
+          if (mode === 'safe') {
+            tunerBtn.style.borderColor = '#6c5ce7';
+            tunerBtn.style.color = '#a29bfe';
+          } else if (mode === 'resonance') {
+            tunerBtn.style.borderColor = '#fdcb6e';
+            tunerBtn.style.color = '#fdcb6e';
+          } else {
+            tunerBtn.style.borderColor = 'rgba(255,255,255,0.1)';
+            tunerBtn.style.color = '#b2bec3';
+          }
+        }
+      }
     }
 
     const logNode = document.getElementById('chrono-neural-log');
@@ -2214,6 +2323,32 @@ function gameTick(dt) {
       (gameState.upgrades.quantum.electromagneticForce?.level ?? 0) +
       (gameState.upgrades.quantum.strongForce?.level ?? 0);
     gameState.coherence = Decimal.min(100, new Decimal(totalQuantumLevels).times(5));
+
+    gameState.quantumPhaseTime = (gameState.quantumPhaseTime || 0) + dt;
+    const passiveGen = getQuantumFluctuationRate().times(0.10).times(dt);
+    if (passiveGen.gt(0)) {
+      gameState.quantumStorage = (gameState.quantumStorage || new Decimal(0)).plus(passiveGen);
+    }
+
+    if (gameState.upgrades.quantum.decoherenceTuner && gameState.upgrades.quantum.decoherenceTuner.level > 0) {
+      gameState.quantumTunerUnlocked = true;
+    }
+
+    const tunerMode = gameState.quantumTunerMode || 'off';
+    if (tunerMode === 'safe') {
+      if (gameState.quantumStorage && gameState.quantumStorage.gt(0)) {
+        if ((gameState.quantumPhaseTime % 15) < dt) {
+          measureQuantumSafe();
+        }
+      }
+    } else if (tunerMode === 'resonance') {
+      if (gameState.quantumStorage && gameState.quantumStorage.gt(0)) {
+        const amp = getQuantumAmplitude();
+        if (amp >= 4.0) {
+          quantumLeapRisk();
+        }
+      }
+    }
   } else {
     gameState.coherence = new Decimal(100);
   }
@@ -2549,6 +2684,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (el) el.addEventListener('click', fn);
   };
 
+  bindClick('btn-measure-safe', measureQuantumSafe);
+  bindClick('btn-quantum-leap', quantumLeapRisk);
+  bindClick('btn-tuner-toggle', cycleQuantumTunerMode);
   bindClick('btn-inflation', triggerInflation);
   bindClick('btn-recombination', triggerRecombination);
   bindClick('btn-supernova', triggerSupernova);

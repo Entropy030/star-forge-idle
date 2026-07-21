@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="style.css?v=28">
   <link rel="manifest" href="manifest.json">
 </head>
 <body data-epoch="1" data-tab="core">
@@ -209,6 +209,31 @@
         <!-- Fixed Visualizer Spacer -->
         <div class="core-visual-spacer" style="height: 250px; pointer-events: none;"></div>
         
+        <!-- Era I: Quantum Superposition Panel -->
+        <div class="era1-only" style="max-width: 500px; margin: 15px auto 0 auto; width: 100%; box-sizing: border-box; padding: 0 12px;">
+          <div id="quantum-superposition-panel" class="cosmic-card" style="flex-direction: column; align-items: stretch; gap: 10px; opacity: 1; filter: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="section-title color-purple" style="font-size: 0.85rem; letter-spacing: 1.5px; margin: 0;">🌌 QUANTUM SUPERPOSITION</span>
+              <span id="quantum-peak-badge" style="font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #b2bec3;">STABLE</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #dfe6e9;">
+              <span>Amplitude: <strong id="quantum-amp-value" style="color: #6c5ce7;">1.00x</strong></span>
+              <span>Superposition Einsatz: <strong id="quantum-storage-value" style="color: #00cec9;">0 QF</strong></span>
+            </div>
+            
+            <div class="amp-bar-container" style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+              <div id="quantum-amp-bar" style="width: 20%; height: 100%; background: linear-gradient(90deg, #6c5ce7, #00cec9); transition: width 0.1s linear;"></div>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+              <button id="btn-measure-safe" class="upgrade-btn" style="flex: 1; min-width: 110px; background: rgba(108, 92, 231, 0.2); border: 1px solid #6c5ce7; color: #fff;">Collapse (Safe)</button>
+              <button id="btn-quantum-leap" class="upgrade-btn" style="flex: 1; min-width: 110px; background: rgba(0, 206, 201, 0.2); border: 1px solid #00cec9; color: #fff;">Quantum Leap (Risk)</button>
+              <button id="btn-tuner-toggle" class="upgrade-btn" style="flex: 1; min-width: 110px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: #b2bec3; display: none;">Tuner: OFF</button>
+            </div>
+          </div>
+        </div>
+
         <!-- Era III Actions -->
         <button id="flare-button" class="era3-only visual-hidden"></button>
         </div>
@@ -385,6 +410,6 @@
   </nav>
   
   <script src="break_infinity.js"></script>
-  <script src="script.js?v=27"></script>
+  <script src="script.js?v=28"></script>
 </body>
 </html>
