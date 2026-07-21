@@ -876,6 +876,16 @@ body[data-epoch="3"] #cosmic-backdrop::before {
   box-shadow: 0 0 15px rgba(231, 76, 60, 0.6) !important;
 }
 
+#quantum-superposition-panel {
+  position: relative;
+  z-index: 20 !important;
+  pointer-events: auto !important;
+}
+
+#quantum-superposition-panel button {
+  pointer-events: auto !important;
+}
+
 /* ==========================================================================
  [CSS-SEC-14] FLOATING CLICK TEXT PARTICLE EFFECT SYSTEM
  ========================================================================== */

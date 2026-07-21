@@ -924,26 +924,36 @@ const Viewport = {
       const loops = getBuyMultiplierCount(category, key, def, state, currencyKey);
       const displayCost = getCumulativeCost(state.cost, def.costScaling, loops);
 
-      let isAffordable = actualFunding.gte(displayCost);
+      let isMaxed = def.max !== undefined && state.level >= def.max;
+      let isAffordable = !isMaxed && actualFunding.gte(displayCost);
+
       if (row) {
         row.querySelector('.name-display').textContent = def.name;
-        row.querySelector('.lvl-display').textContent = `(Lvl ${state.level})`;
+        row.querySelector('.lvl-display').textContent = isMaxed ? `(MAX)` : `(Lvl ${state.level})`;
         row.querySelector('.desc-display').textContent = def.desc;
 
         if (isAffordable) row.classList.add('upgrade-affordable');
         else row.classList.remove('upgrade-affordable');
 
         const btn = row.querySelector('.upgrade-btn');
-        btn.textContent = `Cost (x${loops}):\n${format(displayCost)} ${currentCostLabel}`;
-        btn.disabled = !isAffordable;
-        if (isAffordable) {
-          btn.style.background = displayColor;
-          btn.style.color = '#030208';
-          btn.style.borderColor = 'transparent';
+        if (isMaxed) {
+          btn.textContent = "MAXED";
+          btn.disabled = true;
+          btn.style.background = 'rgba(255, 255, 255, 0.04)';
+          btn.style.color = '#636e72';
+          btn.style.borderColor = 'rgba(255, 255, 255, 0.05)';
         } else {
-          btn.style.background = '';
-          btn.style.color = '';
-          btn.style.borderColor = '';
+          btn.textContent = `Cost (x${loops}):\n${format(displayCost)} ${currentCostLabel}`;
+          btn.disabled = !isAffordable;
+          if (isAffordable) {
+            btn.style.background = displayColor;
+            btn.style.color = '#030208';
+            btn.style.borderColor = 'transparent';
+          } else {
+            btn.style.background = '';
+            btn.style.color = '';
+            btn.style.borderColor = '';
+          }
         }
       }
     }
