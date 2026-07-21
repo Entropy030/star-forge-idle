@@ -116,6 +116,13 @@ h1 {
   font-weight: 600;
 }
 .timeline-banner { color: #fff; opacity: 0.8; }
+.coherence-banner {
+  color: #a29bfe;
+  text-shadow: 0 0 8px rgba(162, 155, 254, 0.5), 0 0 15px rgba(0, 206, 201, 0.2);
+  font-weight: 700;
+  display: inline-block;
+  margin-top: 4px;
+}
 .game-header { padding-top: calc(16px + var(--sat)); margin-bottom: 5px; }
 
 /* ==========================================================================

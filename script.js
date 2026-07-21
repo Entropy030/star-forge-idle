@@ -219,6 +219,7 @@ function getInitialGameState() {
     era2: getInitialEra2State(),
     era3: getInitialEra3State(),
     era4: getInitialEra4State(),
+    coherence: new Decimal(0),
     activeTab: "core",
     buyMode: 1,
     stats: {
@@ -330,6 +331,31 @@ function startEraTransition(targetEpoch, transitionText, onConfirm) {
       onConfirm();
     }, 500);
   };
+}
+
+function corruptText(cleanText, coherenceValue) {
+  if (!cleanText) return "";
+  let coh = (coherenceValue instanceof Decimal) ? coherenceValue.toNumber() : Number(coherenceValue || 0);
+  coh = Math.max(0, Math.min(100, coh));
+  let corruptionChance = (1 - (coh / 100)) * 0.8;
+  if (corruptionChance <= 0) return cleanText;
+  
+  const pool = ['#', '%', '░', '█', 'Ø', '§', '?', '*', '&'];
+  let result = "";
+  for (let idx = 0; idx < cleanText.length; idx++) {
+    let char = cleanText.charAt(idx);
+    if (char === ' ') {
+      result += ' ';
+    } else {
+      if (Math.random() < corruptionChance) {
+        let randChar = pool[Math.floor(Math.random() * pool.length)];
+        result += randChar;
+      } else {
+        result += char;
+      }
+    }
+  }
+  return result;
 }
 
 function typeWriter(element, text, speed = 25) {
@@ -1167,6 +1193,11 @@ const Viewport = {
     const coreCanvasElement = document.getElementById('star-core');
     if (coreCanvasElement) coreCanvasElement.setAttribute('data-canvas-style', currentEpoch.canvasStyle);
 
+    const cohNode = document.getElementById('coherence-display');
+    if (cohNode) {
+      cohNode.textContent = gameState.coherence.toNumber().toFixed(1) + "%";
+    }
+
     const logNode = document.getElementById('chrono-neural-log');
     if (logNode) {
       let activeLog = "";
@@ -1182,9 +1213,12 @@ const Viewport = {
       } else if (gameState.activeEpoch === 4) {
         activeLog = COSMIC_REGISTRY.narrativeLogs.era4.initial;
       }
-      if (logNode.getAttribute('data-active-text') !== activeLog) {
+      const cohStr = gameState.coherence.toNumber().toFixed(1);
+      if (logNode.getAttribute('data-active-text') !== activeLog || logNode.getAttribute('data-active-coh') !== cohStr) {
         logNode.setAttribute('data-active-text', activeLog);
-        typeWriter(logNode, activeLog, 25);
+        logNode.setAttribute('data-active-coh', cohStr);
+        const corrupted = corruptText(activeLog, gameState.coherence);
+        typeWriter(logNode, corrupted, 25);
       }
     }
 
@@ -2176,6 +2210,16 @@ const Timeline = {
 };
 
 function gameTick(dt) {
+  if (gameState.activeEpoch === 1) {
+    let totalQuantumLevels = 
+      (gameState.upgrades.quantum.gravityForce?.level ?? 0) +
+      (gameState.upgrades.quantum.weakForce?.level ?? 0) +
+      (gameState.upgrades.quantum.electromagneticForce?.level ?? 0) +
+      (gameState.upgrades.quantum.strongForce?.level ?? 0);
+    gameState.coherence = Decimal.min(100, new Decimal(totalQuantumLevels).times(5));
+  } else {
+    gameState.coherence = new Decimal(100);
+  }
   Timeline.process(dt);
   checkAchievements();
   checkMissionProgress();
