@@ -437,6 +437,10 @@ body[data-epoch="3"] .core-canvas,
 body[data-epoch="4"] .core-canvas {
   top: 240px;
 }
+body[data-tab="core"] .core-canvas {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
 body:not([data-tab="core"]) .core-canvas {
   opacity: 0;
   pointer-events: none !important;
@@ -552,15 +556,17 @@ min-height: 36px;
 }
 
 #flare-button {
-margin: 15px auto 0 auto;
-padding: 12px 24px;
-font-size: 0.85rem;
-font-weight: 700;
-color: #fff;
-background: linear-gradient(135deg, #ff7675, #d63031);
-border: 1px solid #ff7675;
-border-radius: 22px;
-cursor: pointer;
+  margin: 15px auto 0 auto;
+  padding: 12px 24px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, #ff7675, #d63031);
+  border: 1px solid #ff7675;
+  border-radius: 22px;
+  cursor: pointer;
+  z-index: 10;
+  position: relative;
 }
 
 .section-desc { font-size: 0.78rem; color: #a4b0be; margin: -2px auto 16px auto; max-width: 480px; line-height: 1.4; text-align: left; }

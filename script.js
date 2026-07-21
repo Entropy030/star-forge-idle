@@ -931,95 +931,94 @@ const Viewport = {
   },
 
   renderStellarNodeButtons() {
-    const btnGravity = document.getElementById('btn-gravity');
-    if (btnGravity) {
-      let canAfford = gameState.resources.hydrogen.amount.gte(gameState.era3.gravityCost);
-      btnGravity.disabled = !canAfford;
-      if (canAfford) btnGravity.classList.add('upgrade-affordable');
-      else btnGravity.classList.remove('upgrade-affordable');
-    }
+    const updateCard = (cardId, btnId, canAfford) => {
+      const card = document.getElementById(cardId);
+      const btn = document.getElementById(btnId);
+      if (card) {
+        if (canAfford) card.classList.add('upgrade-affordable');
+        else card.classList.remove('upgrade-affordable');
+      }
+      if (btn) {
+        btn.disabled = !canAfford;
+        if (canAfford) {
+          btn.style.background = '#fdcb6e';
+          btn.style.color = '#030208';
+          btn.style.borderColor = 'transparent';
+        } else {
+          btn.style.background = '';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }
+      }
+    };
 
-    const btnCompress = document.getElementById('btn-compress');
-    if (btnCompress) {
-      let canAfford = gameState.resources.helium.amount.gte(gameState.era3.compressCost);
-      btnCompress.disabled = !canAfford;
-      if (canAfford) btnCompress.classList.add('upgrade-affordable');
-      else btnCompress.classList.remove('upgrade-affordable');
-    }
+    let gravityAfford = gameState.resources.hydrogen.amount.gte(gameState.era3.gravityCost);
+    updateCard('era3-card-gravity', 'btn-gravity', gravityAfford);
+    const gravLvl = document.getElementById('gravity-lvl');
+    if (gravLvl) gravLvl.textContent = format(gameState.era3.gravity);
 
-    const btnToggleFuser = document.getElementById('btn-toggle-fuser');
-    if (btnToggleFuser) btnToggleFuser.disabled = gameState.era3.fusionYield.eq(0);
+    let compressAfford = gameState.resources.helium.amount.gte(gameState.era3.compressCost);
+    updateCard('era3-card-compress', 'btn-compress', compressAfford);
+    const compLvl = document.getElementById('compress-lvl');
+    if (compLvl) compLvl.textContent = getCompressionsCompleted();
 
     const fuserBtnText = document.getElementById('fuser-text');
     const fuserCostLabel = document.getElementById('fuser-cost-label');
-    const btnFuser = document.getElementById('btn-fuser');
-    if (btnFuser && fuserBtnText && fuserCostLabel) {
-      let canAfford = false;
+    let fuserAfford = false;
+    if (fuserBtnText && fuserCostLabel) {
       if (gameState.era3.fusionYield.eq(0)) {
         fuserBtnText.textContent = "Unlock Auto-Fuser";
         fuserCostLabel.textContent = `${format(gameState.era3.fuserCostHydrogen)} H`;
-        canAfford = gameState.resources.hydrogen.amount.gte(gameState.era3.fuserCostHydrogen);
+        fuserAfford = gameState.resources.hydrogen.amount.gte(gameState.era3.fuserCostHydrogen);
       } else {
-        fuserBtnText.textContent = `Upgrade Fusion Yield (To +${format(gameState.era3.fusionYield.plus(1))})`;
+        fuserBtnText.textContent = `Upgrade Fusion Yield (+${format(gameState.era3.fusionYield.plus(1))})`;
         fuserCostLabel.textContent = `${format(gameState.era3.fuserCostHelium)} He`;
-        canAfford = gameState.resources.helium.amount.gte(gameState.era3.fuserCostHelium);
+        fuserAfford = gameState.resources.helium.amount.gte(gameState.era3.fuserCostHelium);
       }
-      btnFuser.disabled = !canAfford;
-      if (canAfford) btnFuser.classList.add('upgrade-affordable');
-      else btnFuser.classList.remove('upgrade-affordable');
     }
+    updateCard('era3-card-fuser', 'btn-fuser', fuserAfford);
 
-    const carbonBtn = document.getElementById('btn-carbon');
     const carbonCostLabel = document.getElementById('carbon-cost-label');
     const carbonText = document.getElementById('carbon-text');
-    if (carbonBtn && carbonCostLabel) {
+    let carbonAfford = false;
+    if (carbonCostLabel) {
       if (gameState.era3.stage !== "Main Sequence Star" || gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
-        carbonBtn.disabled = true;
-        carbonBtn.classList.remove('upgrade-affordable');
         carbonCostLabel.textContent = `Locked (${format(COSMIC_REGISTRY.resources.carbon.unlockTemp)} K)`;
         if (carbonText) carbonText.textContent = "Unlock Carbon Fusion";
       } else {
-        let canAfford = false;
         if (gameState.era3.carbonYield.eq(0)) {
-          canAfford = gameState.resources.helium.amount.gte(gameState.era3.carbonCostHelium);
+          carbonAfford = gameState.resources.helium.amount.gte(gameState.era3.carbonCostHelium);
           carbonCostLabel.textContent = `${format(gameState.era3.carbonCostHelium)} He`;
           if (carbonText) carbonText.textContent = "Unlock Carbon Fusion";
         } else {
-          canAfford = gameState.resources.carbon.amount.gte(gameState.era3.carbonCostCarbon);
+          carbonAfford = gameState.resources.carbon.amount.gte(gameState.era3.carbonCostCarbon);
           carbonCostLabel.textContent = `${format(gameState.era3.carbonCostCarbon)} C`;
-          if (carbonText) carbonText.textContent = `Upgrade Carbon Yield (To +${format(gameState.era3.carbonYield.plus(1))})`;
+          if (carbonText) carbonText.textContent = `Upgrade Carbon Yield (+${format(gameState.era3.carbonYield.plus(1))})`;
         }
-        carbonBtn.disabled = !canAfford;
-        if (canAfford) carbonBtn.classList.add('upgrade-affordable');
-        else carbonBtn.classList.remove('upgrade-affordable');
       }
     }
+    updateCard('era3-card-carbon', 'btn-carbon', carbonAfford);
 
-    const ironBtn = document.getElementById('btn-iron');
     const ironCostLabel = document.getElementById('iron-cost-label');
     const ironText = document.getElementById('iron-text');
-    if (ironBtn && ironCostLabel) {
+    let ironAfford = false;
+    if (ironCostLabel) {
       if (gameState.era3.stage !== "Main Sequence Star" || gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.iron.unlockTemp)) {
-        ironBtn.disabled = true;
-        ironBtn.classList.remove('upgrade-affordable');
         ironCostLabel.textContent = `Locked (${format(COSMIC_REGISTRY.resources.iron.unlockTemp)} K)`;
         if (ironText) ironText.textContent = "Unlock Iron Fusion";
       } else {
-        let canAfford = false;
         if (gameState.era3.ironYield.eq(0)) {
-          canAfford = gameState.resources.carbon.amount.gte(gameState.era3.ironCostCarbon);
+          ironAfford = gameState.resources.carbon.amount.gte(gameState.era3.ironCostCarbon);
           ironCostLabel.textContent = `${format(gameState.era3.ironCostCarbon)} C`;
           if (ironText) ironText.textContent = "Unlock Iron Fusion";
         } else {
-          canAfford = gameState.resources.iron.amount.gte(gameState.era3.ironCostIron);
+          ironAfford = gameState.resources.iron.amount.gte(gameState.era3.ironCostIron);
           ironCostLabel.textContent = `${format(gameState.era3.ironCostIron)} Fe`;
-          if (ironText) ironText.textContent = `Upgrade Iron Yield (To +${format(gameState.era3.ironYield.plus(1))})`;
+          if (ironText) ironText.textContent = `Upgrade Iron Yield (+${format(gameState.era3.ironYield.plus(1))})`;
         }
-        ironBtn.disabled = !canAfford;
-        if (canAfford) ironBtn.classList.add('upgrade-affordable');
-        else ironBtn.classList.remove('upgrade-affordable');
       }
     }
+    updateCard('era3-card-iron', 'btn-iron', ironAfford);
 
     const supernovaBtn = document.getElementById('btn-supernova');
     if (supernovaBtn) {
@@ -1182,7 +1181,6 @@ const Viewport = {
     // Visibility handled natively by CSS matching body[data-epoch] and body[data-tab]
 
     document.getElementById('active-epoch-name').textContent = currentEpoch.name;
-    document.getElementById('btn-buy-mode').textContent = `Buy Mode: ${gameState.buyMode === 'max' ? 'MAX' : 'x' + gameState.buyMode}`;
 
     const allPossibleTabs = ["core", "upgrades", "system", "shop", "pulsar", "singularity", "prestige", "settings"];
     allPossibleTabs.forEach(tabId => {
@@ -1540,7 +1538,6 @@ function checkMissionProgress() {
     if (gameState.completedMissions.includes(mission.id)) continue;
     if (mission.check()) {
       gameState.completedMissions.push(mission.id);
-      if (!flareSimSuppressed) Viewport.showToast(`Mission Completed: ${mission.desc}`);
       isDirty = true;
     } else {
       allCompleted = false;
@@ -1551,7 +1548,6 @@ function checkMissionProgress() {
     let nextRank = gameState.systemRank + 1;
     if (COSMIC_REGISTRY.systemRanks[nextRank]) {
       gameState.systemRank = nextRank;
-      if (!flareSimSuppressed) Viewport.showToast(`System Rank Up! Now Rank ${gameState.systemRank}: ${COSMIC_REGISTRY.systemRanks[nextRank].name}`);
       isDirty = true;
     }
   }
@@ -1629,10 +1625,11 @@ function devHeatCore() {
   isDirty = true;
 }
 
-function devSetEpoch(epochNum) {
+function devSetEpoch(epochNum, callback) {
   if (COSMIC_REGISTRY.universeChronology.epochs[epochNum]) {
     gameState.activeEpoch = epochNum;
     document.body.setAttribute('data-epoch', epochNum);
+    if (callback) callback();
     isDirty = true;
     Viewport.showToast(`Timeline Shifted to ${COSMIC_REGISTRY.universeChronology.epochs[epochNum].name}`);
   }
@@ -2544,12 +2541,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const core = document.getElementById('star-core');
   if (core) core.addEventListener('click', clickCore);
 
+  const coreCanvas = document.querySelector('.core-canvas');
+  if (coreCanvas) coreCanvas.addEventListener('click', clickCore);
+
   const bindClick = (id, fn) => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('click', fn);
   };
 
-  bindClick('btn-buy-mode', toggleBuyMode);
   bindClick('btn-inflation', triggerInflation);
   bindClick('btn-recombination', triggerRecombination);
   bindClick('btn-supernova', triggerSupernova);

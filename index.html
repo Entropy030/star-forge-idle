@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=26">
+  <link rel="stylesheet" href="style.css?v=27">
   <link rel="manifest" href="manifest.json">
 </head>
 <body data-epoch="1" data-tab="core">
@@ -82,10 +82,7 @@
     </div>
   </div>
   
-  <!-- Floating Global Purchase Multiplier Toggle -->
-  <div class="buy-mode-container">
-    <button id="btn-buy-mode">Buy Mode: x1</button>
-  </div>
+
   
   <header class="game-header">
     <h1>STAR FORGE</h1>
@@ -233,36 +230,48 @@
         <div class="mult-display">Thermal Multiplier: <span id="multiplier">1.0</span>x</div>
       </div>
 
-      <div class="cosmic-tier-group era3-only">
-        <span class="tier-label">Shell I: Fundamental Physics</span>
-        <button id="btn-gravity" class="cosmic-card">
-          <span class="btn-meta"><strong>Strengthen Gravity</strong><br><small>Increases base atomic drift</small></span>
-          <span class="btn-price">Cost: <span id="cost">10</span> H</span>
-        </button>
-        <button id="btn-fuser" class="cosmic-card">
-          <span class="btn-meta"><strong id="fuser-text">Unlock Auto-Fuser</strong><br><small>Automates conversion steps</small></span>
-          <span class="btn-price">Cost: <span id="fuser-cost-label">100 H</span></span>
-        </button>
-      </div>
-      
-      <div class="cosmic-tier-group era3-only">
-        <span class="tier-label">Shell II: Core Compression</span>
-        <button id="btn-compress" class="cosmic-card">
-          <span class="btn-meta"><strong>Compress Core</strong><br><small>Sparks thermodynamic scaling</small></span>
-          <span class="btn-price">Cost: <span id="compress-cost">10</span> He</span>
-        </button>
-        <button id="btn-carbon" class="cosmic-card">
-          <span class="btn-meta"><strong id="carbon-text">Unlock Carbon Fusion</strong><br><small>Advanced carbon matrix synthesis</small></span>
-          <span class="btn-price">Cost: <span id="carbon-cost-label">Locked</span></span>
-        </button>
-      </div>
-      
-      <div class="cosmic-tier-group era3-only">
-        <span class="tier-label">Shell III: Heavy Nucleosynthesis</span>
-        <button id="btn-iron" class="cosmic-card">
-          <span class="btn-meta"><strong id="iron-text">Unlock Iron Fusion</strong><br><small>Peak elemental generation profile</small></span>
-          <span class="btn-price">Cost: <span id="iron-cost-label">Locked</span></span>
-        </button>
+      <div class="era3-only">
+        <div class="section-title color-yellow" style="font-size: 1.0rem; letter-spacing: 2px; margin-bottom: 15px; font-weight: bold;">STELLAR CORE INFRASTRUCTURE</div>
+        
+        <div class="cosmic-card" id="era3-card-gravity">
+          <div class="btn-meta">
+            <strong>Strengthen Gravity <span class="lvl-display" style="font-size: 0.75em; color: #fdcb6e;">(Lvl <span id="gravity-lvl">0</span>)</span></strong>
+            <small>Increases base atomic drift</small>
+          </div>
+          <button id="btn-gravity" class="upgrade-btn">Cost: <span id="cost">10</span> H</button>
+        </div>
+
+        <div class="cosmic-card" id="era3-card-fuser">
+          <div class="btn-meta">
+            <strong id="fuser-text">Unlock Auto-Fuser</strong><br>
+            <small>Automates conversion steps</small>
+          </div>
+          <button id="btn-fuser" class="upgrade-btn">Cost: <span id="fuser-cost-label">100 H</span></button>
+        </div>
+
+        <div class="cosmic-card" id="era3-card-compress">
+          <div class="btn-meta">
+            <strong>Compress Core <span class="lvl-display" style="font-size: 0.75em; color: #fdcb6e;">(Lvl <span id="compress-lvl">0</span>)</span></strong>
+            <small>Sparks thermodynamic scaling</small>
+          </div>
+          <button id="btn-compress" class="upgrade-btn">Cost: <span id="compress-cost">10</span> He</button>
+        </div>
+
+        <div class="cosmic-card" id="era3-card-carbon">
+          <div class="btn-meta">
+            <strong id="carbon-text">Unlock Carbon Fusion</strong><br>
+            <small>Advanced carbon matrix synthesis</small>
+          </div>
+          <button id="btn-carbon" class="upgrade-btn">Cost: <span id="carbon-cost-label">Locked</span></button>
+        </div>
+
+        <div class="cosmic-card" id="era3-card-iron">
+          <div class="btn-meta">
+            <strong id="iron-text">Unlock Iron Fusion</strong><br>
+            <small>Peak elemental generation profile</small>
+          </div>
+          <button id="btn-iron" class="upgrade-btn">Cost: <span id="iron-cost-label">Locked</span></button>
+        </div>
       </div>
     </div>
     
@@ -376,6 +385,6 @@
   </nav>
   
   <script src="break_infinity.js"></script>
-  <script src="script.js?v=26"></script>
+  <script src="script.js?v=27"></script>
 </body>
 </html>
