@@ -274,6 +274,30 @@ function ensureStateShape() {
   const initialState = getInitialGameState();
   deepMergeMissing(gameState, initialState);
   if (gameState.era2 === undefined) gameState.era2 = getInitialEra2State();
+  if (gameState.era3 === undefined) gameState.era3 = getInitialEra3State();
+  if (gameState.era4 === undefined) gameState.era4 = getInitialEra4State();
+
+  if (!(gameState.coherence instanceof Decimal)) gameState.coherence = new Decimal(gameState.coherence || 0);
+  if (!(gameState.quantumStorage instanceof Decimal)) gameState.quantumStorage = new Decimal(gameState.quantumStorage || 0);
+  if (typeof gameState.quantumPhaseTime !== 'number' || isNaN(gameState.quantumPhaseTime)) gameState.quantumPhaseTime = 0;
+  if (typeof gameState.quantumTunerUnlocked !== 'boolean') gameState.quantumTunerUnlocked = Boolean(gameState.quantumTunerUnlocked);
+  if (typeof gameState.quantumTunerMode !== 'string') gameState.quantumTunerMode = 'off';
+
+  for (let resKey in initialState.resources) {
+    if (!gameState.resources[resKey]) {
+      gameState.resources[resKey] = { amount: new Decimal(0) };
+    } else if (!(gameState.resources[resKey].amount instanceof Decimal)) {
+      gameState.resources[resKey].amount = new Decimal(gameState.resources[resKey].amount || 0);
+    }
+  }
+
+  for (let curKey in initialState.currencies) {
+    if (!gameState.currencies[curKey]) {
+      gameState.currencies[curKey] = { amount: new Decimal(0) };
+    } else if (!(gameState.currencies[curKey].amount instanceof Decimal)) {
+      gameState.currencies[curKey].amount = new Decimal(gameState.currencies[curKey].amount || 0);
+    }
+  }
 }
 
 // ==========================================================================
@@ -606,8 +630,19 @@ function getGalacticMergeYield() {
 // [SEC-07] DOM MUTATION INTERFACE ADAPTER (DEEP VIEWPORT MODULE)
 // ==========================================================================
 const Viewport = {
+  elCache: {},
+  getEl(id) {
+    if (!this.elCache[id]) {
+      this.elCache[id] = document.getElementById(id);
+    }
+    return this.elCache[id];
+  },
+  clearElCache() {
+    this.elCache = {};
+  },
+
   syncAnchor() {
-    const core = document.getElementById('star-core');
+    const core = this.getEl('star-core');
     if (core) {
       const rect = core.getBoundingClientRect();
       const centerY = rect.top + (rect.height / 2);
@@ -2057,15 +2092,7 @@ function clickCore(e) {
   isDirty = true;
 }
 
-function toggleBuyMode() {
-  initAudio();
-  if (gameState.buyMode === 1) gameState.buyMode = 10;
-  else if (gameState.buyMode === 10) gameState.buyMode = 100;
-  else if (gameState.buyMode === 100) gameState.buyMode = 'max';
-  else gameState.buyMode = 1;
 
-  isDirty = true;
-}
 
 function getBuyLoopCount() {
   if (gameState.buyMode === 'max') {
