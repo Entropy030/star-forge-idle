@@ -584,7 +584,7 @@ function getFusionCost() {
 
 function getCompressionsCompleted() {
   let logPrimitive = gameState.era3.compressCost.div(10).log10();
-  let exponent = logPrimitive / Math.log10(2);
+  let exponent = logPrimitive / Math.log10(1.75);
   return Math.max(0, Math.round(exponent));
 }
 
@@ -1166,8 +1166,10 @@ const Viewport = {
     if (gameState.flares.active) {
       btn.style.setProperty('display', 'block', 'important');
       btn.textContent = `${COSMIC_REGISTRY.solarEvents.flare.fx.emoji} PROMINENCE ACTIVE! (${Math.ceil(gameState.flares.active.expiresInSec.toNumber())}s)`;
+      document.body.classList.add('flare-active');    // screen-edge glow (Prio 4)
     } else {
       btn.style.setProperty('display', 'none', 'important');
+      document.body.classList.remove('flare-active');
     }
   },
 
@@ -1345,6 +1347,15 @@ const Viewport = {
           }
         }
 
+        // Peak-pulse body class: fires a CSS animation on #star-core at amplitude 5.0x (Prio 1)
+        const amp2 = getQuantumAmplitude();
+        if (amp2 >= 4.99) {
+          if (!document.body.classList.contains('quantum-peak-active')) {
+            document.body.classList.add('quantum-peak-active');
+            setTimeout(() => document.body.classList.remove('quantum-peak-active'), 900);
+          }
+        }
+
         const hasStorage = gameState.quantumStorage && gameState.quantumStorage.gt(0);
         const btnMeasure = document.getElementById('btn-measure-safe');
         const btnLeap = document.getElementById('btn-quantum-leap');
@@ -1473,6 +1484,13 @@ const Viewport = {
       document.getElementById('label-helium').innerHTML = `PRIMORDIAL GLUONS`;
       document.getElementById('helium-count').textContent = format(gameState.resources.gluons.amount);
       document.getElementById('helium-yield').innerHTML = `+${format(pRates.gluons)}/s`;
+
+      // Asymmetry Bonus indicator (Prio 2)
+      const asymBonusPct = ((asymmetryModifier.toNumber() - 1) * 100).toFixed(1);
+      const asymEl = document.getElementById('auto-rate');
+      if (asymEl) {
+        asymEl.innerHTML = `+${format(pRates.quarks)}/s <span style="color:var(--neon-teal);font-size:0.72em;font-weight:700;" title="Baryon Asymmetry: |Quarks-Gluons| log bonus">▲ ${asymBonusPct}% Asym</span>`;
+      }
 
       // Update dedicated Era II elements
       const leptonCountEl = document.getElementById('lepton-count');
@@ -1677,7 +1695,7 @@ const Economy = {
     } else if (key === 'compress') {
       loopBuy('helium', () => gameState.era3.compressCost, () => {
         gameState.era3.temperature = gameState.era3.temperature.plus(getCompressionHeatYield());
-        gameState.era3.compressCost = gameState.era3.compressCost.times(2).floor();
+        gameState.era3.compressCost = gameState.era3.compressCost.times(1.75).floor();
         recalcTempMultiplier();
         if (gameState.era3.temperature.gte(COSMIC_REGISTRY.constants.mainSequenceTempThreshold) && gameState.era3.stage === "Protostar") {
           gameState.era3.stage = "Main Sequence Star";
@@ -2371,7 +2389,7 @@ const Timeline = {
           if (gameState.resources.helium.amount.gte(gameState.era3.compressCost)) {
             gameState.resources.helium.amount = gameState.resources.helium.amount.minus(gameState.era3.compressCost);
             gameState.era3.temperature = gameState.era3.temperature.plus(getCompressionHeatYield());
-            gameState.era3.compressCost = gameState.era3.compressCost.times(2).floor();
+            gameState.era3.compressCost = gameState.era3.compressCost.times(1.75).floor();
             recalcTempMultiplier();
             if (gameState.era3.temperature.gte(COSMIC_REGISTRY.constants.mainSequenceTempThreshold) && gameState.era3.stage === "Protostar") {
               gameState.era3.stage = "Main Sequence Star";
