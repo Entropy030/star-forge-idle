@@ -434,6 +434,22 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
 /* ==========================================================================
 [CSS-SEC-07] INTERACTIVE STARDUST FORGE CANVAS & PULSING ANCHORS
 ========================================================================== */
+/* Task 1: Keyboard focus visibility (focus-visible only — does NOT fire on mouse/touch) */
+.upgrade-btn:focus-visible,
+.tab-btn:focus-visible,
+.btn-dev:focus-visible,
+.btn-macro-shift:focus-visible,
+.btn-danger:focus-visible,
+.btn-settings-action:focus-visible,
+.btn-reignite:focus-visible,
+.btn-dev-toggle:focus-visible,
+#import-string:focus-visible {
+  outline: 2px solid var(--neon-teal);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 236, 198, 0.2);
+}
+
+/* Task 2: Kill residual double-tap-zoom delay on the core clicker (div, not button) */
 .core-canvas {
   position: fixed;
   top: 170px;
@@ -450,6 +466,19 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
   margin: 0;
   box-sizing: border-box;
   transition: opacity 0.3s ease;
+  touch-action: manipulation;
+}
+
+#star-core {
+  touch-action: manipulation;
+}
+@keyframes coreTapPulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.88); }
+  100% { transform: scale(1); }
+}
+.core-tap-active #star-core {
+  animation: coreTapPulse 0.18s ease-out forwards;
 }
 body[data-epoch="3"] .core-canvas,
 body[data-epoch="4"] .core-canvas {
@@ -654,21 +683,33 @@ min-height: 36px;
 /* ==========================================================================
 [CSS-SEC-09] HIGH PERFORMANCE IRON-CLAD WHITELIST VISIBILITY CONTROLS
 ========================================================================== */
-.era1-only, .era2-only, .era3-only, .era4-only, .visual-hidden { display: none !important; }
+/*
+  Task 3 — !important refactor notes:
+  - .era{N}-only base rule uses specificity (0,1,0). The overrides below use
+    body[attr] .era{N}-only = (0,2,0), which outranks the base without !important.
+  - .visual-hidden keeps !important because JS never sets inline display on it,
+    and we need it to win over any other cascaded class — intentional, documented.
+  - .tab-content and body[data-tab] #tab-content-* keep !important because
+    Viewport.update() / switchTab() set inline `element.style.display` which is
+    specificity (1,0,0); without !important those inline values would override
+    tab hiding. Genuine specificity conflict — cannot be resolved without !important.
+*/
+.era1-only, .era2-only, .era3-only, .era4-only { display: none; }
+.visual-hidden { display: none !important; }
 
-body[data-epoch="1"] .era1-only { display: block !important; }
-body[data-epoch="1"] button.era1-only { display: block !important; }
+body[data-epoch="1"] .era1-only { display: block; }
+body[data-epoch="1"] button.era1-only { display: block; }
 
-body[data-epoch="2"] .era2-only { display: block !important; }
-body[data-epoch="2"] button.era2-only { display: block !important; }
+body[data-epoch="2"] .era2-only { display: block; }
+body[data-epoch="2"] button.era2-only { display: block; }
 
-body[data-epoch="3"] .era3-only { display: block !important; }
-body[data-epoch="3"] button.era3-only { display: inline-block !important; }
+body[data-epoch="3"] .era3-only { display: block; }
+body[data-epoch="3"] button.era3-only { display: inline-block; }
 
-body[data-epoch="4"] .era4-only { display: block !important; }
-body[data-epoch="4"] button.era4-only { display: block !important; }
+body[data-epoch="4"] .era4-only { display: block; }
+body[data-epoch="4"] button.era4-only { display: block; }
 
-/* Tab Content Whitelist Isolation (enforces tab-hiding over era-display) */
+/* Tab Content Whitelist Isolation — keeps !important (see note above) */
 .tab-content { display: none !important; }
 body[data-tab="core"] #tab-content-core { display: block !important; pointer-events: none; }
 body[data-tab="upgrades"] #tab-content-upgrades { display: block !important; }

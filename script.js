@@ -2782,11 +2782,20 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => Viewport.switchTab(tabId));
   });
 
-  const core = document.getElementById('star-core');
-  if (core) core.addEventListener('click', clickCore);
-
   const coreCanvas = document.querySelector('.core-canvas');
-  if (coreCanvas) coreCanvas.addEventListener('click', clickCore);
+  if (coreCanvas) {
+    // Use pointerdown (not 'click') so mobile gets immediate response with no 300ms delay.
+    // star-core is a child of coreCanvas so a single listener on the parent covers both.
+    // No touchstart listener needed alongside this — pointerdown fires for both mouse and touch,
+    // preventing double-fire that would occur with both 'touchstart' + 'click' listeners.
+    coreCanvas.addEventListener('pointerdown', (e) => {
+      // Tactile scale-pulse feedback (CSS animation class, no layout reflow)
+      coreCanvas.classList.remove('core-tap-active');
+      void coreCanvas.offsetWidth; // force reflow to restart animation
+      coreCanvas.classList.add('core-tap-active');
+      clickCore(e);
+    });
+  }
 
   const bindClick = (id, fn) => {
     const el = document.getElementById(id);
