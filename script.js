@@ -1345,6 +1345,35 @@ const Viewport = {
           }
         }
 
+        const hasStorage = gameState.quantumStorage && gameState.quantumStorage.gt(0);
+        const btnMeasure = document.getElementById('btn-measure-safe');
+        const btnLeap = document.getElementById('btn-quantum-leap');
+
+        if (btnMeasure) {
+          btnMeasure.disabled = !hasStorage;
+          if (hasStorage) {
+            btnMeasure.style.opacity = '1';
+            btnMeasure.style.cursor = 'pointer';
+            btnMeasure.style.borderColor = '#6c5ce7';
+          } else {
+            btnMeasure.style.opacity = '0.4';
+            btnMeasure.style.cursor = 'not-allowed';
+            btnMeasure.style.borderColor = 'rgba(255,255,255,0.1)';
+          }
+        }
+        if (btnLeap) {
+          btnLeap.disabled = !hasStorage;
+          if (hasStorage) {
+            btnLeap.style.opacity = '1';
+            btnLeap.style.cursor = 'pointer';
+            btnLeap.style.borderColor = '#00cec9';
+          } else {
+            btnLeap.style.opacity = '0.4';
+            btnLeap.style.cursor = 'not-allowed';
+            btnLeap.style.borderColor = 'rgba(255,255,255,0.1)';
+          }
+        }
+
         const tunerBtn = document.getElementById('btn-tuner-toggle');
         if (tunerBtn) {
           const isUnlocked = gameState.quantumTunerUnlocked || (gameState.upgrades.quantum.decoherenceTuner && gameState.upgrades.quantum.decoherenceTuner.level > 0);
@@ -2065,6 +2094,7 @@ function clickCore(e) {
     let mult = getCardMultiplier("hydrogenGen");
     let gain = new Decimal(1).times(mult);
     gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(gain);
+    gameState.quantumStorage = (gameState.quantumStorage || new Decimal(0)).plus(gain.times(0.10));
     spawnFloatingText(`+${format(gain)} Fluctuations`, 'var(--neon-teal)', e);
   }
   else if (gameState.activeEpoch === 2) {

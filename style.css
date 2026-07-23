@@ -35,9 +35,19 @@ body {
   touch-action: manipulation;
 }
 
-main, header, .dashboard-container {
+header {
   position: relative;
-  z-index: 2;
+  z-index: 10;
+  contain: layout;
+}
+.dashboard-container {
+  position: relative;
+  z-index: 100;
+  contain: layout;
+}
+main {
+  position: relative;
+  z-index: 5;
   contain: layout;
 }
 
@@ -660,7 +670,7 @@ body[data-epoch="4"] button.era4-only { display: block !important; }
 
 /* Tab Content Whitelist Isolation (enforces tab-hiding over era-display) */
 .tab-content { display: none !important; }
-body[data-tab="core"] #tab-content-core { display: block !important; }
+body[data-tab="core"] #tab-content-core { display: block !important; pointer-events: none; }
 body[data-tab="upgrades"] #tab-content-upgrades { display: block !important; }
 body[data-tab="prestige"] #tab-content-prestige { display: block !important; }
 body[data-tab="settings"] #tab-content-settings { display: block !important; }
@@ -884,13 +894,19 @@ body[data-epoch="3"] #cosmic-backdrop::before {
   box-shadow: 0 0 15px rgba(231, 76, 60, 0.6) !important;
 }
 
-#quantum-superposition-panel {
-  position: relative;
-  z-index: 20 !important;
+.era1-only {
   pointer-events: auto !important;
 }
 
-#quantum-superposition-panel button {
+#quantum-superposition-panel,
+#flare-button {
+  position: relative;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+}
+
+#quantum-superposition-panel button,
+#flare-button {
   pointer-events: auto !important;
 }
 
