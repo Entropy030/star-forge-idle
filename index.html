@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -9,55 +10,58 @@
   <title>Star Forge Idle</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=34">
   <link rel="manifest" href="manifest.json">
 </head>
+
 <body data-epoch="1" data-tab="core">
 
- <!-- Full-Bleed Cosmic Backdrop: era-scoped ambient scene layer, sits behind all HUD content -->
- <div id="cosmic-backdrop" aria-hidden="true">
-  <!-- Era I: Quantum Foam Fields -->
-  <div class="quantum-string-field era1-only">
-    <span class="q-string q-string-1"></span>
-    <span class="q-string q-string-2"></span>
-    <span class="q-string q-string-3"></span>
-    <span class="q-string q-string-4"></span>
-    <span class="q-string q-string-5"></span>
-    <span class="q-string q-string-6"></span>
-    <span class="q-string q-string-7"></span>
-    <span class="q-string q-string-8"></span>
-    <span class="q-dust q-dust-1"></span>
-    <span class="q-dust q-dust-2"></span>
-    <span class="q-dust q-dust-3"></span>
-    <span class="q-dust q-dust-4"></span>
-  </div>
+  <!-- Full-Bleed Cosmic Backdrop: era-scoped ambient scene layer, sits behind all HUD content -->
+  <div id="cosmic-backdrop" aria-hidden="true">
+    <!-- Era I: Quantum Foam Fields -->
+    <div class="quantum-string-field era1-only">
+      <span class="q-string q-string-1"></span>
+      <span class="q-string q-string-2"></span>
+      <span class="q-string q-string-3"></span>
+      <span class="q-string q-string-4"></span>
+      <span class="q-string q-string-5"></span>
+      <span class="q-string q-string-6"></span>
+      <span class="q-string q-string-7"></span>
+      <span class="q-string q-string-8"></span>
+      <span class="q-dust q-dust-1"></span>
+      <span class="q-dust q-dust-2"></span>
+      <span class="q-dust q-dust-3"></span>
+      <span class="q-dust q-dust-4"></span>
+    </div>
 
-  <!-- Era II: Primordial Plasma Crucible Soup -->
-  <div class="primordial-soup-field era2-only">
-    <div class="plasma-fluid-glow"></div>
-    <span class="p-particle p-quark-1"></span>
-    <span class="p-particle p-quark-2"></span>
-    <span class="p-particle p-quark-3"></span>
-    <span class="p-particle p-gluon-1"></span>
-    <span class="p-particle p-gluon-2"></span>
-    <span class="p-particle p-lepton-1"></span>
-    <span class="p-particle p-lepton-2"></span>
-  </div>
+    <!-- Era II: Primordial Plasma Crucible Soup -->
+    <div class="primordial-soup-field era2-only">
+      <div class="plasma-fluid-glow"></div>
+      <span class="p-particle p-quark-1"></span>
+      <span class="p-particle p-quark-2"></span>
+      <span class="p-particle p-quark-3"></span>
+      <span class="p-particle p-gluon-1"></span>
+      <span class="p-particle p-gluon-2"></span>
+      <span class="p-particle p-lepton-1"></span>
+      <span class="p-particle p-lepton-2"></span>
+    </div>
 
-  <!-- Era III: The Stellar Dawn Evolving Corona -->
-  <div class="stellar-dawn-field era3-only">
-    <div class="nebula-blue-layer"></div>
-    <div class="corona-heat-layer"></div>
-    <span class="solar-prominence-wave prominence-1"></span>
-    <span class="solar-prominence-wave prominence-2"></span>
-  </div>
+    <!-- Era III: The Stellar Dawn Evolving Corona -->
+    <div class="stellar-dawn-field era3-only">
+      <div class="nebula-blue-layer"></div>
+      <div class="corona-heat-layer"></div>
+      <span class="solar-prominence-wave prominence-1"></span>
+      <span class="solar-prominence-wave prominence-2"></span>
+    </div>
 
-  <!-- Era IV: Full-Bleed Galactic Accretion Matrix Field -->
-  <div class="galaxy-matrix-field era4-only">
-    <div class="galaxy-spiral-arms"></div>
+    <!-- Era IV: Full-Bleed Galactic Accretion Matrix Field -->
+    <div class="galaxy-matrix-field era4-only">
+      <div class="galaxy-spiral-arms"></div>
+    </div>
   </div>
-</div>
 
   <!-- Theatrical Prestige Overlay -->
   <div id="theatrical-overlay" class="theatrical-hidden">
@@ -72,127 +76,157 @@
       <button class="btn-reignite">Reignite Cosmos</button>
     </div>
   </div>
-  
+
   <!-- Era Transition Overlay -->
-  <div id="era-transition-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(3, 2, 8, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 10000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 30px; box-sizing: border-box;">
+  <div id="era-transition-overlay"
+    style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(3, 2, 8, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 10000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 30px; box-sizing: border-box;">
     <div style="max-width: 600px; margin: auto;">
-      <h2 id="trans-title" style="font-family: 'Rajdhani', sans-serif; font-size: 2rem; letter-spacing: 4px; color: var(--hydrogen-glow); margin-bottom: 20px; text-transform: uppercase;"></h2>
-      <p id="trans-desc" style="font-size: 0.95rem; line-height: 1.6; color: #b2bec3; margin-bottom: 30px; min-height: 120px; display: flex; align-items: center; justify-content: center; font-style: italic;"></p>
-      <button id="btn-trans-confirm" class="btn-macro-shift bg-gradient-purple" style="display: none; margin: 0 auto; min-width: 200px; padding: 12px 24px; font-size: 0.9rem; border-radius: 8px;">ENTER NEW ERA</button>
+      <h2 id="trans-title"
+        style="font-family: 'Rajdhani', sans-serif; font-size: 2rem; letter-spacing: 4px; color: var(--hydrogen-glow); margin-bottom: 20px; text-transform: uppercase;">
+      </h2>
+      <p id="trans-desc"
+        style="font-size: 0.95rem; line-height: 1.6; color: #b2bec3; margin-bottom: 30px; min-height: 120px; display: flex; align-items: center; justify-content: center; font-style: italic;">
+      </p>
+      <button id="btn-trans-confirm" class="btn-macro-shift bg-gradient-purple"
+        style="display: none; margin: 0 auto; min-width: 200px; padding: 12px 24px; font-size: 0.9rem; border-radius: 8px;">ENTER
+        NEW ERA</button>
     </div>
   </div>
-  
 
-  
+
+
   <header class="game-header">
     <h1>STAR FORGE</h1>
     <p class="stage-text timeline-banner">TIMELINE: <span id="active-epoch-name">Era I: The Quantum Foam</span></p>
     <p class="stage-text cosmic-phase-banner">Cosmic Phase: <span id="stage">Protostar</span></p>
     <p class="stage-text coherence-banner">Vacuum Coherence: <span id="coherence-display">0.0%</span></p>
-    <p class="stage-text objective-banner">CURRENT OBJECTIVE: <span id="era-objective-text">Accumulate 100,000 QF & Trigger Cosmic Inflation</span></p>
-    
+    <p class="stage-text objective-banner">CURRENT OBJECTIVE: <span id="era-objective-text">Accumulate 100,000 QF &
+        Trigger Cosmic Inflation</span></p>
+
     <div class="neural-log-wrapper" style="max-width:540px; margin: 8px auto 0 auto; padding: 0 16px;">
-      <p id="chrono-neural-log" style="font-size:0.75rem; font-style:italic; color:#b2bec3; letter-spacing:0.5px; line-height:1.4; margin:0; min-height:2.8em; display:flex; align-items:center; justify-content:center;"></p>
-      <div id="era-progress-container" style="width: 100%; height: 5px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; margin-top: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.02); display: none;">
-        <div id="era-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-teal), var(--hydrogen-glow)); transition: width 0.3s ease; box-shadow: 0 0 8px var(--neon-teal);"></div>
+      <p id="chrono-neural-log"
+        style="font-size:0.75rem; font-style:italic; color:#b2bec3; letter-spacing:0.5px; line-height:1.4; margin:0; min-height:2.8em; display:flex; align-items:center; justify-content:center;">
+      </p>
+      <div id="era-progress-container"
+        style="width: 100%; height: 5px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; margin-top: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.02); display: none;">
+        <div id="era-progress-bar"
+          style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-teal), var(--hydrogen-glow)); transition: width 0.3s ease; box-shadow: 0 0 8px var(--neon-teal);">
+        </div>
       </div>
     </div>
   </header>
-  
+
   <div id="toast-container" class="toast-hidden"></div>
-  
-<!-- Developer Sandbox Interface -->
-<div id="dev-matrix" class="dev-matrix-hidden">
-  <span class="dev-tag">DEV MATRIX SYSTEM ACTIVE: <span id="warp-tag" style="display: none; color: var(--hydrogen-glow); margin-left: 4px;">[WARP GENERATION OVERCLOCK]</span></span>
-  <div class="dev-buttons-wrapper">
-  <button id="dev-boost" class="btn-dev bg-orange">Dev Income Boost</button>
-  <button id="dev-heat" class="btn-dev bg-dark-orange">Heat Core (+25M K)</button>
-  <button id="dev-flare" class="btn-dev bg-red">Force Solar Flare</button>
-  <button data-set-epoch="1" class="btn-dev bg-purple">Set Era I</button>
-  <button data-set-epoch="2" class="btn-dev bg-orange-trans">Set Era II</button>
-  <button data-set-epoch="3" class="btn-dev bg-blue">Set Era III</button>
-  <button data-set-epoch="4" class="btn-dev bg-purple">Set Era IV</button>
-  </div>
-</div>
-  
-<!-- Central Resource Metrics Readout HUD -->
-<div class="dashboard-container">
-  <div id="prestige-bar" class="currency-prestige-bar">
-  ✨ Synaptic Dust: <span id="stardust-count">0</span> (<span id="stardust-boost">0</span>% Boost)
-  <div id="tier2-currencies" class="tier2-hidden">
-  <span>🌀 Neural Synapse: <span id="pulsar-count">0</span></span> | 
-  <span>🌌 Core Density: <span id="singularity-count">0</span></span>
-  </div>
-  </div>
-  
-  <div class="dashboard">
-  <div class="resource-box border-blue">
-  <h3 id="label-hydrogen">QUANTUM FLUCTUATIONS</h3>
-  <h2 id="count">0</h2>
-  <small class="color-blue"><span id="auto-rate">+0/s</span></small>
-  </div>
-  
-  <div class="resource-box border-purple">
-  <h3 id="label-helium">ENERGY DENSITY</h3>
-  <h2 id="helium-count">0</h2>
-  <small class="color-purple"><span id="helium-yield">Temp: 0 K</span></small>
+
+  <!-- Developer Sandbox Interface -->
+  <div id="dev-matrix" class="dev-matrix-hidden">
+    <span class="dev-tag">DEV MATRIX SYSTEM ACTIVE: <span id="warp-tag"
+        style="display: none; color: var(--hydrogen-glow); margin-left: 4px;">[WARP GENERATION OVERCLOCK]</span></span>
+    <div class="dev-buttons-wrapper">
+      <button id="dev-boost" class="btn-dev bg-orange">Dev Income Boost</button>
+      <button id="dev-heat" class="btn-dev bg-dark-orange">Heat Core (+25M K)</button>
+      <button id="dev-flare" class="btn-dev bg-red">Force Solar Flare</button>
+      <button data-set-epoch="1" class="btn-dev bg-purple">Set Era I</button>
+      <button data-set-epoch="2" class="btn-dev bg-orange-trans">Set Era II</button>
+      <button data-set-epoch="3" class="btn-dev bg-blue">Set Era III</button>
+      <button data-set-epoch="4" class="btn-dev bg-purple">Set Era IV</button>
+    </div>
   </div>
 
-  <!-- Era II Lepton Generation Tracking Anchor Element -->
-  <div id="lepton-box" class="resource-box border-purple era2-only">
-  <h3>LEPTONS</h3>
-  <h2 id="lepton-count">0</h2>
-  <small class="color-purple"><span id="lepton-rate">+0/s</span></small>
-  </div>
-  
-  <!-- Era II Proton Generation -->
-  <div id="proton-box" class="resource-box border-orange era2-only">
-    <h3>SYNTHESIZED PROTONS</h3>
-    <h2 id="proton-count">0</h2>
-    <small class="color-orange"><span id="proton-rate">+0/s</span></small>
-  </div>
-
-  <!-- Era II Electron Generation -->
-  <div id="electron-box" class="resource-box border-yellow era2-only">
-    <h3>FREE ELECTRONS</h3>
-    <h2 id="electron-count">0</h2>
-    <small class="color-yellow"><span id="electron-rate">+0/s</span></small>
+  <div id="ai-dev-controls" class="dev-matrix-hidden" style="position: fixed; top: 10px; left: 10px; z-index: 9999; display: flex; gap: 5px; align-items: center;">
+    <button id="btn-ai-state"
+      style="background: #00ecc6; color: #000; font-weight: bold; padding: 6px 10px; border-radius: 6px; border: none; cursor: pointer;">
+      📋 Copy AI State
+    </button>
+    <button id="btn-bot-start"
+      style="background: #6c5ce7; color: #fff; font-weight: bold; padding: 6px 10px; border-radius: 6px; border: none; cursor: pointer;">
+      🤖 Start Bot (10x)
+    </button>
+    <button id="btn-bot-sim"
+      style="background: #e17055; color: #fff; font-weight: bold; padding: 6px 10px; border-radius: 6px; border: none; cursor: pointer;">
+      ⚡ Sim 1h Headless
+    </button>
+    <span id="playtest-status-text" style="font-size: 0.75rem; font-family: monospace; color: #b2bec3; margin-left: 5px;"></span>
   </div>
 
-  <!-- Era II Temperature cooling -->
-  <div id="plasma-temp-box" class="resource-box border-red era2-only">
-    <h3>PLASMA TEMPERATURE</h3>
-    <h2 id="plasma-temp-count">0 K</h2>
-    <small class="color-red"><span id="plasma-temp-rate">Stable</span></small>
+  <!-- Central Resource Metrics Readout HUD -->
+  <div class="dashboard-container">
+    <div id="prestige-bar" class="currency-prestige-bar">
+      ✨ Synaptic Dust: <span id="stardust-count">0</span> (<span id="stardust-boost">0</span>% Boost)
+      <div id="tier2-currencies" class="tier2-hidden">
+        <span>🌀 Neural Synapse: <span id="pulsar-count">0</span></span> |
+        <span>🌌 Core Density: <span id="singularity-count">0</span></span>
+      </div>
+    </div>
+
+    <div class="dashboard">
+      <div class="resource-box border-blue">
+        <h3 id="label-hydrogen">QUANTUM FLUCTUATIONS</h3>
+        <h2 id="count">0</h2>
+        <small class="color-blue"><span id="auto-rate">+0/s</span></small>
+      </div>
+
+      <div class="resource-box border-purple">
+        <h3 id="label-helium">ENERGY DENSITY</h3>
+        <h2 id="helium-count">0</h2>
+        <small class="color-purple"><span id="helium-yield">Temp: 0 K</span></small>
+      </div>
+
+      <!-- Era II Lepton Generation Tracking Anchor Element -->
+      <div id="lepton-box" class="resource-box border-purple era2-only">
+        <h3>LEPTONS</h3>
+        <h2 id="lepton-count">0</h2>
+        <small class="color-purple"><span id="lepton-rate">+0/s</span></small>
+      </div>
+
+      <!-- Era II Proton Generation -->
+      <div id="proton-box" class="resource-box border-orange era2-only">
+        <h3>SYNTHESIZED PROTONS</h3>
+        <h2 id="proton-count">0</h2>
+        <small class="color-orange"><span id="proton-rate">+0/s</span></small>
+      </div>
+
+      <!-- Era II Electron Generation -->
+      <div id="electron-box" class="resource-box border-yellow era2-only">
+        <h3>FREE ELECTRONS</h3>
+        <h2 id="electron-count">0</h2>
+        <small class="color-yellow"><span id="electron-rate">+0/s</span></small>
+      </div>
+
+      <!-- Era II Temperature cooling -->
+      <div id="plasma-temp-box" class="resource-box border-red era2-only">
+        <h3>PLASMA TEMPERATURE</h3>
+        <h2 id="plasma-temp-count">0 K</h2>
+        <small class="color-red"><span id="plasma-temp-rate">Stable</span></small>
+      </div>
+
+      <div id="carbon-box" class="resource-box border-red era3-only">
+        <h3>CARBON</h3>
+        <h2 id="carbon-count">0</h2>
+        <small class="color-red"><span id="carbon-boost-container">Grav: +0%</span></small>
+      </div>
+
+      <div id="iron-box" class="resource-box border-grey era3-only">
+        <h3>IRON</h3>
+        <h2 id="iron-count">0</h2>
+        <small class="color-grey"><span id="iron-boost-container">Heat: +0%</span></small>
+      </div>
+
+      <!-- Era IV Galactic Accretion Dashboard Targets -->
+      <div id="debris-box" class="resource-box border-blue era4-only">
+        <h3>PLANETARY DEBRIS</h3>
+        <h2 id="debris-count">0</h2>
+        <small class="color-blue"><span id="debris-rate">+0/s</span></small>
+      </div>
+
+      <div id="darkmatter-box" class="resource-box border-purple era4-only">
+        <h3>DARK MATTER</h3>
+        <h2 id="darkmatter-count">0</h2>
+        <small class="color-purple"><span id="darkmatter-rate">+0/s</span></small>
+      </div>
+    </div>
   </div>
 
-  <div id="carbon-box" class="resource-box border-red era3-only">
-  <h3>CARBON</h3>
-  <h2 id="carbon-count">0</h2>
-  <small class="color-red"><span id="carbon-boost-container">Grav: +0%</span></small>
-  </div>
-  
-  <div id="iron-box" class="resource-box border-grey era3-only">
-  <h3>IRON</h3>
-  <h2 id="iron-count">0</h2>
-  <small class="color-grey"><span id="iron-boost-container">Heat: +0%</span></small>
-  </div>
- 
-  <!-- Era IV Galactic Accretion Dashboard Targets -->
-  <div id="debris-box" class="resource-box border-blue era4-only">
-  <h3>PLANETARY DEBRIS</h3>
-  <h2 id="debris-count">0</h2>
-  <small class="color-blue"><span id="debris-rate">+0/s</span></small>
-  </div>
-  
-  <div id="darkmatter-box" class="resource-box border-purple era4-only">
-  <h3>DARK MATTER</h3>
-  <h2 id="darkmatter-count">0</h2>
-  <small class="color-purple"><span id="darkmatter-rate">+0/s</span></small>
-  </div>
-  </div>
-</div>
-  
   <!-- Visualizer (Background) -->
   <div class="core-canvas">
     <div class="canvas-scanner-line"></div>
@@ -207,47 +241,70 @@
   <!-- Main Viewport Screens -->
   <main>
     <div id="tab-content-core" class="tab-content">
-        <!-- Fixed Visualizer Spacer -->
-        <div class="core-visual-spacer" style="height: 250px; pointer-events: none;"></div>
-        
-        <!-- Era I: Quantum Superposition Panel -->
-        <div class="era1-only" style="max-width: 500px; margin: 15px auto 0 auto; width: 100%; box-sizing: border-box; padding: 0 12px;">
-          <div id="quantum-superposition-panel" class="cosmic-card" style="flex-direction: column; align-items: stretch; gap: 10px; opacity: 1; filter: none;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span class="section-title color-purple" style="font-size: 0.85rem; letter-spacing: 1.5px; margin: 0;">🌌 QUANTUM SUPERPOSITION</span>
-              <span id="quantum-peak-badge" style="font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #b2bec3;">STABLE</span>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #dfe6e9;">
-              <span>Amplitude: <strong id="quantum-amp-value" style="color: #6c5ce7;">1.00x</strong></span>
-              <span>Superposition Einsatz: <strong id="quantum-storage-value" style="color: #00cec9;">0 QF</strong></span>
-            </div>
-            
-            <div class="amp-bar-container" style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
-              <div id="quantum-amp-bar" style="width: 20%; height: 100%; background: linear-gradient(90deg, #6c5ce7, #00cec9); transition: width 0.1s linear;"></div>
-            </div>
+      <!-- Fixed Visualizer Spacer -->
+      <div class="core-visual-spacer" style="height: 250px; pointer-events: none;"></div>
 
-            <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
-              <button id="btn-measure-safe" class="upgrade-btn" style="flex: 1; min-width: 110px; background: rgba(108, 92, 231, 0.2); border: 1px solid #6c5ce7; color: #fff;">Collapse (Safe)</button>
-              <button id="btn-quantum-leap" class="upgrade-btn" style="flex: 1; min-width: 110px; background: rgba(0, 206, 201, 0.2); border: 1px solid #00cec9; color: #fff;">Quantum Leap (Risk)</button>
-              <button id="btn-tuner-toggle" class="upgrade-btn" style="flex: 1; min-width: 110px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: #b2bec3; display: none;">Tuner: OFF</button>
+      <!-- Era I: Quantum Superposition Panel -->
+      <div class="era1-only"
+        style="max-width: 500px; margin: 15px auto 0 auto; width: 100%; box-sizing: border-box; padding: 0 12px;">
+        <div id="quantum-superposition-panel" class="cosmic-card"
+          style="flex-direction: column; align-items: stretch; gap: 10px; opacity: 1; filter: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="section-title color-purple" style="font-size: 0.85rem; letter-spacing: 1.5px; margin: 0;">🌌
+              QUANTUM SUPERPOSITION</span>
+            <span id="quantum-peak-badge"
+              style="font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #b2bec3;">STABLE</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #dfe6e9;">
+            <span>Amplitude: <strong id="quantum-amp-value" style="color: #6c5ce7;">1.00x</strong></span>
+            <span>Superposition Einsatz: <strong id="quantum-storage-value" style="color: #00cec9;">0 QF</strong></span>
+          </div>
+
+          <div class="amp-bar-container"
+            style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+            <div id="quantum-amp-bar"
+              style="width: 20%; height: 100%; background: linear-gradient(90deg, #6c5ce7, #00cec9); transition: width 0.1s linear;">
             </div>
           </div>
-        </div>
 
-        <!-- Era III Actions -->
-        <button id="flare-button" class="era3-only visual-hidden"></button>
+          <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+            <button id="btn-measure-safe" class="upgrade-btn"
+              style="flex: 1; min-width: 110px; background: rgba(108, 92, 231, 0.2); border: 1px solid #6c5ce7; color: #fff;">Collapse
+              (Safe)</button>
+            <button id="btn-quantum-leap" class="upgrade-btn"
+              style="flex: 1; min-width: 110px; background: rgba(0, 206, 201, 0.2); border: 1px solid #00cec9; color: #fff;">Quantum
+              Leap (Risk)</button>
+            <button id="btn-tuner-toggle" class="upgrade-btn"
+              style="flex: 1; min-width: 110px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: #b2bec3; display: none;">Tuner:
+              OFF</button>
+          </div>
         </div>
-    
+      </div>
+
+      <!-- Era III Actions -->
+      <button id="flare-button" class="era3-only visual-hidden"></button>
+    </div>
+
     <div id="tab-content-upgrades" class="tab-content">
       <!-- Dynamic Era Upgrades Containers injection points -->
       <div class="era1-only">
         <div id="quantum-upgrades-container" class="upgrade-grid"></div>
-        <button id="btn-inflation" class="btn-macro-shift bg-gradient-purple" style="margin-top: 20px; width: 100%;">TRIGGER COSMIC INFLATION</button>
+        <button id="btn-inflation" class="btn-macro-shift bg-gradient-purple"
+          style="margin-top: 20px; width: 100%;">TRIGGER COSMIC INFLATION</button>
       </div>
       <div class="era2-only">
         <div id="plasma-upgrades-container" class="upgrade-grid"></div>
-        <button id="btn-recombination" class="btn-macro-shift bg-gradient-purple" style="margin-top: 20px; width: 100%;">INITIATE COSMIC RECOMBINATION</button>
+        <button id="btn-recombination" class="btn-macro-shift bg-gradient-purple"
+          style="margin-top: 20px; width: 100%;">INITIATE COSMIC RECOMBINATION</button>
+      </div>
+      <div class="era4-only">
+        <div id="galaxy-upgrades-container" class="upgrade-grid"></div>
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+          <button id="btn-accrete-planet" class="btn-macro-shift bg-gradient-orange" style="width: 100%;">ACCRETE PLANETARY NODE (1,000 DEBRIS)</button>
+          <button id="btn-stabilize-arms" class="btn-macro-shift bg-gradient-purple" style="width: 100%;">SYNCHRONIZE ORBITAL STABILITY (100%)</button>
+          <button id="btn-galactic-merge" class="btn-macro-shift bg-gradient-purple" style="width: 100%;">TRIGGER GALACTIC COLLISION (10,000 DM)</button>
+        </div>
       </div>
 
       <!-- Era III: Stellar Core Metrics + Upgrades -->
@@ -257,11 +314,14 @@
       </div>
 
       <div class="era3-only">
-        <div class="section-title color-yellow" style="font-size: 1.0rem; letter-spacing: 2px; margin-bottom: 15px; font-weight: bold;">STELLAR CORE INFRASTRUCTURE</div>
-        
+        <div class="section-title color-yellow"
+          style="font-size: 1.0rem; letter-spacing: 2px; margin-bottom: 15px; font-weight: bold;">STELLAR CORE
+          INFRASTRUCTURE</div>
+
         <div class="cosmic-card" id="era3-card-gravity">
           <div class="btn-meta">
-            <strong>Strengthen Gravity <span class="lvl-display" style="font-size: 0.75em; color: #fdcb6e;">(Lvl <span id="gravity-lvl">0</span>)</span></strong>
+            <strong>Strengthen Gravity <span class="lvl-display" style="font-size: 0.75em; color: #fdcb6e;">(Lvl <span
+                  id="gravity-lvl">0</span>)</span></strong>
             <small>Increases base atomic drift</small>
           </div>
           <button id="btn-gravity" class="upgrade-btn">Cost: <span id="cost">10</span> H</button>
@@ -277,7 +337,8 @@
 
         <div class="cosmic-card" id="era3-card-compress">
           <div class="btn-meta">
-            <strong>Compress Core <span class="lvl-display" style="font-size: 0.75em; color: #fdcb6e;">(Lvl <span id="compress-lvl">0</span>)</span></strong>
+            <strong>Compress Core <span class="lvl-display" style="font-size: 0.75em; color: #fdcb6e;">(Lvl <span
+                  id="compress-lvl">0</span>)</span></strong>
             <small>Sparks thermodynamic scaling</small>
           </div>
           <button id="btn-compress" class="upgrade-btn">Cost: <span id="compress-cost">10</span> He</button>
@@ -300,7 +361,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- Era III: Consolidated Prestige Tab -->
     <div id="tab-content-prestige" class="tab-content era3-only">
       <!-- Supernova Trigger (top) -->
@@ -354,44 +415,49 @@
 
       <!-- Injected Achievements Render Node Mount Point -->
       <div class="section-title color-yellow space-top">Cosmic Evolution Milestones</div>
-      <div id="achievements-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; width: 100%;"></div>
+      <div id="achievements-list"
+        style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; width: 100%;"></div>
 
       <!-- System Ranks & Missions (Era 3+) -->
       <div class="era3-only">
         <div class="section-title color-yellow space-top">System Ranks & Cosmic Missions</div>
         <p class="section-desc">Complete deep-space criteria configurations to rank up system structural authority.</p>
         <div id="system-rank-info"></div>
-      
+
         <div class="section-title color-blue space-top">Celestial Card Matrix</div>
         <p class="section-desc">Acquire permanent performance scaling modifiers.</p>
         <div id="celestial-cards-list"></div>
       </div>
-      
+
       <!-- Cosmic Codex Infotainment Center -->
       <div class="section-title color-teal space-top">Cosmic Codex</div>
       <p class="section-desc">Review real astrophysics logs unlocked by expanding universal fields.</p>
       <div class="codex-container">
         <div class="codex-card era1-only">
           <h4>Planck Time & Quantum Foam (Era I)</h4>
-          <p>At $10^{-43}$ seconds after the Big Bang, the universe was smaller than a subatomic particle. Space-time didn't flow smoothly; it fluctuated violently as highly energetic Quantum Foam.</p>
+          <p>At $10^{-43}$ seconds after the Big Bang, the universe was smaller than a subatomic particle. Space-time
+            didn't flow smoothly; it fluctuated violently as highly energetic Quantum Foam.</p>
         </div>
         <div class="codex-card era2-only">
           <h4>Quark-Gluon Plasma (Era II)</h4>
-          <p>Before atoms could form, the cosmos was a trillion-degree soup. Quarks and Gluons flowed entirely unbound as a frictionless, perfect quantum fluid liquid.</p>
+          <p>Before atoms could form, the cosmos was a trillion-degree soup. Quarks and Gluons flowed entirely unbound
+            as a frictionless, perfect quantum fluid liquid.</p>
         </div>
         <div class="codex-card">
           <h4>Baryon Asymmetry</h4>
-          <p>Matter and Antimatter should have annihilated each other completely during inflation. A tiny asymmetry anomaly—one extra quark per billion antiquarks—built all visible structures in our cosmos.</p>
+          <p>Matter and Antimatter should have annihilated each other completely during inflation. A tiny asymmetry
+            anomaly—one extra quark per billion antiquarks—built all visible structures in our cosmos.</p>
         </div>
       </div>
 
       <div class="section-title color-purple space-top">Data Management</div>
       <p class="section-desc">Backup, migrate, or clear universe data footprint profiles.</p>
-      
+
       <div class="settings-card">
         <button id="btn-export" class="btn-settings-action border-blue">Export Universe State (Clipboard)</button>
         <div class="import-wrapper">
-          <input type="text" id="import-string" placeholder="Paste Base64 Cosmos Data Matrix Here..." class="data-input-field">
+          <input type="text" id="import-string" placeholder="Paste Base64 Cosmos Data Matrix Here..."
+            class="data-input-field">
           <button id="btn-import" class="btn-settings-action border-purple">Import Universe State</button>
         </div>
         <hr class="divider-subtle">
@@ -399,7 +465,7 @@
       </div>
     </div>
   </main>
-  
+
 
 
 
@@ -409,8 +475,10 @@
     <button id="nav-prestige" class="tab-btn" disabled>Prestige</button>
     <button id="nav-settings" class="tab-btn">System ⚙️</button>
   </nav>
-  
+
   <script src="break_infinity.js"></script>
   <script src="script.js?v=34"></script>
+  <script src="playtestBot.js?v=35"></script>
 </body>
+
 </html>
