@@ -40,12 +40,10 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request).then(fetchRes => {
-        if (fetchRes && fetchRes.ok && fetchRes.status === 200) {
+        if (fetchRes && fetchRes.ok && fetchRes.status === 200 && event.request.url.origin === location.origin) {
           const clone = fetchRes.clone();
           caches.open(CACHE_NAME).then(cache => {
-            if (event.request.url.startsWith('http')) {
-              cache.put(event.request, clone);
-            }
+            cache.put(event.request, clone);
           });
         }
         return fetchRes;

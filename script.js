@@ -6,26 +6,29 @@ if (typeof Decimal === 'undefined' && typeof break_infinity !== 'undefined') {
 }
 
 if (typeof Decimal !== 'undefined') {
-  if (typeof Decimal.affordGeometricSeries !== 'function') {
-    Decimal.affordGeometricSeries = function(resources, cost, ratio, currentLvl) {
-      let r = new Decimal(resources);
-      let c = new Decimal(cost);
-      let k = new Decimal(ratio);
-      if (c.lte(0) || r.lt(c)) return new Decimal(0);
-      let num = r.times(k.minus(1)).div(c).plus(1);
-      if (num.lte(0)) return new Decimal(0);
-      return num.log10().div(k.log10()).floor();
-    };
-  }
-  if (typeof Decimal.sumGeometricSeries !== 'function') {
-    Decimal.sumGeometricSeries = function(numItems, cost, ratio, currentLvl) {
-      let n = new Decimal(numItems);
-      let c = new Decimal(cost);
-      let k = new Decimal(ratio);
-      if (n.lte(0)) return new Decimal(0);
-      return c.times(k.pow(n).minus(1)).div(k.minus(1));
-    };
-  }
+  Decimal.affordGeometricSeries = function(resources, cost, ratio, currentLvl) {
+    let r = new Decimal(resources);
+    let c = new Decimal(cost);
+    let k = new Decimal(ratio);
+    if (c.lte(0) || r.lt(c)) return new Decimal(0);
+    if (k.minus(1).abs().lt(1e-9)) return r.div(c).floor();
+    let num = r.times(k.minus(1)).div(c).plus(1);
+    if (num.lte(0)) return new Decimal(0);
+    let logNum = num.log10();
+    let logK = k.log10();
+    if (isNaN(logNum) || isNaN(logK) || logK === 0) return r.div(c).floor();
+    return logNum.div(logK).floor();
+  };
+
+  Decimal.sumGeometricSeries = function(numItems, cost, ratio, currentLvl) {
+    let n = new Decimal(numItems);
+    let c = new Decimal(cost);
+    let k = new Decimal(ratio);
+    if (n.lte(0)) return new Decimal(0);
+    if (k.minus(1).abs().lt(1e-9)) return n.times(c);
+    return c.times(k.pow(n).minus(1)).div(k.minus(1));
+  };
+
   Decimal.prototype.affordGeometricSeries = function(cost, ratio, currentLvl) {
     return Decimal.affordGeometricSeries(this, cost, ratio, currentLvl);
   };
@@ -2114,12 +2117,24 @@ const Viewport = {
       return;
     }
     ActManager.evaluate();
-    ArtifactManager.renderBar();
+    if (gameState.activeTab === 'artifacts') {
+      ArtifactManager.renderBar();
+    }
     this.updateStardustDisplays();
     const currentEpoch = COSMIC_REGISTRY.universeChronology.epochs[gameState.activeEpoch] || COSMIC_REGISTRY.universeChronology.epochs[3];
 
-    document.body.setAttribute('data-era1-act', gameState.era1Act || 1);
-    document.body.setAttribute('data-era2-act', gameState.era2Act || 1);
+    const targetEra1Act = String(gameState.era1Act || 1);
+    if (document.body.getAttribute('data-era1-act') !== targetEra1Act) {
+      document.body.setAttribute('data-era1-act', targetEra1Act);
+    }
+    const targetEra2Act = String(gameState.era2Act || 1);
+    if (document.body.getAttribute('data-era2-act') !== targetEra2Act) {
+      document.body.setAttribute('data-era2-act', targetEra2Act);
+    }
+    const targetTab = String(gameState.activeTab || 'core');
+    if (document.body.getAttribute('data-tab') !== targetTab) {
+      document.body.setAttribute('data-tab', targetTab);
+    }
 
     document.getElementById('active-epoch-name').textContent = currentEpoch.name;
 

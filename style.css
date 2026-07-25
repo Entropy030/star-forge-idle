@@ -475,11 +475,11 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
 /* Task 2: Kill residual double-tap-zoom delay on the core clicker (div, not button) */
 .core-canvas {
   position: fixed;
-  top: var(--header-height, 140px);
-  bottom: var(--nav-height, 70px);
+  top: calc(var(--sat, 0px) + 120px);
+  bottom: calc(var(--sab, 0px) + 70px);
   left: 0;
   width: 100vw;
-  height: calc(100vh - var(--header-height, 140px) - var(--nav-height, 70px));
+  height: calc(100vh - 190px - var(--sat, 0px) - var(--sab, 0px));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -527,9 +527,35 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
 .core-tap-active #star-core {
   animation: coreTapPulse 0.18s ease-out forwards;
 }
-body[data-epoch="3"] .core-canvas,
-body[data-epoch="4"] .core-canvas {
-  top: 240px;
+
+#star-core::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2px solid var(--neon-teal);
+  box-shadow: 0 0 20px var(--neon-teal);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: none;
+}
+
+@keyframes shockwavePulse {
+  0% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.2);
+  }
+}
+
+.core-tap-active #star-core::after {
+  animation: shockwavePulse 0.35s ease-out forwards;
 }
 body[data-tab="core"] .core-canvas {
   pointer-events: auto !important;
@@ -1602,24 +1628,38 @@ body {
   padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
+/* Explicit Modal Z-Index Overlays */
+#artifact-picker-modal,
+.artifact-modal-overlay,
+#dev-matrix {
+  z-index: 2000 !important;
+}
+
 /* Responsive Layout Adaptation for Small Screens (<= 600px) */
 @media (max-width: 600px) {
   .dashboard {
+    display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px !important;
     padding: 0 8px !important;
+    flex-wrap: unset !important;
   }
 
   .resource-box {
-    padding: 8px 10px !important;
+    padding: 4px 6px !important;
+    max-height: 48px !important;
   }
 
   .resource-box h3 {
-    font-size: 0.65rem !important;
+    font-size: 0.55rem !important;
   }
 
   .resource-box h2 {
-    font-size: 1.1rem !important;
+    font-size: 0.95rem !important;
+  }
+
+  .resource-box small {
+    font-size: 0.58rem !important;
   }
 
   .artifact-slots-wrapper {

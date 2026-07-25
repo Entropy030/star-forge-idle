@@ -107,22 +107,6 @@
         }
       }
 
-      // --- QUANTUM SUPERPOSITION STRATEGY (ERA 1) ---
-      if (epoch === 1 && storage.gt(0)) {
-        if (amp >= 4.0) {
-          // Trigger Risk Leap during Peak Window
-          window.runAIAction({ action: "quantumLeap" });
-          this.stats.totalLeaps++;
-          this.logMilestone("First Quantum Leap Executed", `(Amp: ${amp.toFixed(2)}x)`);
-          return;
-        } else if (gameState.quantumTunerMode === 'off' && amp <= 1.2 && storage.gte(50)) {
-          // Trigger Safe Measure if storage is high and amp is low
-          window.runAIAction({ action: "measureSafe" });
-          this.stats.totalSafeCollapses++;
-          return;
-        }
-      }
-
       // --- UPGRADE PURCHASING STRATEGY ---
       let boughtSomething = false;
 
@@ -141,7 +125,7 @@
 
       if (epoch === 1) {
         // Priority order for Era I
-        const priorityKeys = ['gravityForce', 'weakForce', 'electromagneticForce', 'strongForce', 'decoherenceTuner'];
+        const priorityKeys = ['gravityForce', 'weakForce', 'electromagneticForce', 'strongForce'];
         for (let key of priorityKeys) {
           const upState = gameState.upgrades?.quantum?.[key];
           const def = COSMIC_REGISTRY.upgrades.quantum[key];
