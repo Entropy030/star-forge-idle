@@ -177,14 +177,16 @@ flex-wrap: wrap;
 max-width: 1000px; 
 margin: 0 auto; 
 }
-/* Initial Boot Hydration FOUC Prevention */
+/* Initial Boot Hydration FOUC Prevention & Smooth 1.5s Fade-In */
+body.hydrating #star-core,
 body.hydrating .core-canvas,
 body.hydrating main,
 body.hydrating .dashboard-container {
   opacity: 0 !important;
+  transform: scale(0.9) !important;
 }
-.core-canvas, main, .dashboard-container {
-  transition: opacity 0.25s ease-in-out;
+#star-core, .core-canvas, main, .dashboard-container {
+  transition: opacity 1.5s ease-out, transform 1.5s ease-out, filter 0.3s ease-out;
 }
 
 .resource-box { 
@@ -498,16 +500,18 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 420px;
-  height: 420px;
-  margin-top: -210px;
-  margin-left: -210px;
+  width: 320px;
+  height: 320px;
+  margin-top: -160px;
+  margin-left: -160px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, rgba(108, 92, 231, 0.08) 45%, transparent 70%);
+  background: radial-gradient(circle, rgba(0, 240, 255, 0.22) 0%, rgba(108, 92, 231, 0.10) 45%, transparent 70%);
   pointer-events: none;
   z-index: -1;
   animation: rotateAura 24s linear infinite;
   transform-origin: center center;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 @keyframes rotateAura {
@@ -557,13 +561,37 @@ button.btn-toggle, button.btn-danger, .buy-mode-container button {
 .core-tap-active #star-core::after {
   animation: shockwavePulse 0.35s ease-out forwards;
 }
+
 body[data-tab="core"] .core-canvas {
+  opacity: 1 !important;
+  filter: none !important;
   pointer-events: auto !important;
   cursor: pointer;
 }
+
 body:not([data-tab="core"]) .core-canvas {
-  opacity: 0;
+  opacity: 0.35 !important;
+  filter: blur(4px) !important;
   pointer-events: none !important;
+}
+
+@keyframes logGlowPulse {
+  0% {
+    box-shadow: 0 0 0px transparent;
+    border-color: rgba(255,255,255,0.05);
+  }
+  40% {
+    box-shadow: 0 0 20px var(--neon-teal);
+    border-color: var(--neon-teal);
+  }
+  100% {
+    box-shadow: 0 0 0px transparent;
+    border-color: rgba(255,255,255,0.05);
+  }
+}
+
+.log-pulse-active {
+  animation: logGlowPulse 1.2s ease-out forwards;
 }
 .canvas-scanner-line {
 position: absolute;

@@ -798,6 +798,7 @@ const ActManager = {
         if (targetAct === 2 && gameState.unfold) {
           gameState.unfold.hasUnlocked10QF = true;
         }
+        this.triggerActPunctuation(1, targetAct);
         isDirty = true;
       }
       this.syncActAttribute(gameState.era1.currentAct);
@@ -816,11 +817,30 @@ const ActManager = {
 
       if (targetAct !== gameState.era2.currentAct) {
         gameState.era2.currentAct = targetAct;
+        this.triggerActPunctuation(2, targetAct);
         isDirty = true;
       }
       this.syncActAttribute(gameState.era2.currentAct);
     } else {
       this.syncActAttribute(1);
+    }
+  },
+
+  triggerActPunctuation(epochNum, actNum) {
+    const actTitles = {
+      1: { 1: "ACT I: QUANTUM INITIATION", 2: "ACT II: FLUCTUATION HARVEST", 3: "ACT III: INFLATION SINGULARITY" },
+      2: { 1: "ACT I: PRIMORDIAL SOUP", 2: "ACT II: HADRON SYNTHESIS", 3: "ACT III: PLASMA RECOMBINATION" }
+    };
+    const title = actTitles[epochNum]?.[actNum] || `ACT ${actNum}: PHASE SHIFT`;
+    if (typeof Viewport !== 'undefined' && Viewport.log) {
+      Viewport.log(`✨ [STORY EVENT] ${title}`);
+    }
+    const logWrapper = document.querySelector('.neural-log-wrapper') || document.getElementById('chrono-neural-log');
+    if (logWrapper) {
+      logWrapper.classList.remove('log-pulse-active');
+      requestAnimationFrame(() => {
+        logWrapper.classList.add('log-pulse-active');
+      });
     }
   },
 
