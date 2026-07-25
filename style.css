@@ -854,8 +854,15 @@ body[data-epoch="2"][data-era2-act="2"] #btn-recombination {
 .tab-content { display: none !important; }
 body[data-tab="core"] #tab-content-core { display: block !important; pointer-events: none; }
 body[data-tab="upgrades"] #tab-content-upgrades { display: block !important; }
+body[data-tab="artifacts"] #tab-content-artifacts { display: block !important; }
 body[data-tab="prestige"] #tab-content-prestige { display: block !important; }
 body[data-tab="settings"] #tab-content-settings { display: block !important; }
+
+#star-core:focus-visible {
+  outline: 2px solid var(--neon-teal) !important;
+  outline-offset: 6px !important;
+  box-shadow: 0 0 25px var(--neon-teal) !important;
+}
 
 #star-core[data-canvas-style="singularity-point"] {
 width: 8px !important;
@@ -1400,7 +1407,7 @@ body.flare-active::after {
 .artifact-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 2000;
   background: rgba(3, 2, 8, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);

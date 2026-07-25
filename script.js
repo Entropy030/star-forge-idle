@@ -91,9 +91,9 @@ const COSMIC_REGISTRY = {
     epochs: {
       1: { id: "quantum_foam", name: "Era I: The Quantum Foam", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "artifacts", "settings"] },
       2: { id: "plasma_crucible", name: "Era II: The Primordial Soup", canvasStyle: "plasma-haze", tabs: ["core", "upgrades", "artifacts", "settings"] },
-      3: { id: "stellar_dawn", name: "Era III: The Stellar Dawn", canvasStyle: "star-core", tabs: ["core", "upgrades", "artifacts", "settings"] },
-      4: { id: "galactic_matrix", name: "Era IV: The Galactic Matrix", canvasStyle: "galaxy-wheel", tabs: ["core", "upgrades", "artifacts", "settings"] },
-      5: { id: "deep_future", name: "Era V: The Event Horizon", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "artifacts", "settings"] }
+      3: { id: "stellar_dawn", name: "Era III: The Stellar Dawn", canvasStyle: "star-core", tabs: ["core", "upgrades", "artifacts", "prestige", "settings"] },
+      4: { id: "galactic_matrix", name: "Era IV: The Galactic Matrix", canvasStyle: "galaxy-wheel", tabs: ["core", "upgrades", "artifacts", "prestige", "settings"] },
+      5: { id: "deep_future", name: "Era V: The Event Horizon", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "artifacts", "prestige", "settings"] }
     }
   },
   resources: {
@@ -1041,7 +1041,7 @@ const ArtifactManager = {
             <div class="artifact-picker-desc">${def.description}</div>
           </div>
         </div>
-        <button class="artifact-equip-btn" onclick="ArtifactManager.openPicker(0)">${isEquipped ? 'VERWALTEN' : 'AUSRÜSTEN'}</button>
+        <button class="artifact-equip-btn" onclick="ArtifactManager.openPicker(0)">${isEquipped ? 'MANAGE' : 'EQUIP'}</button>
       `;
       invEl.appendChild(item);
     }
@@ -1073,7 +1073,7 @@ const ArtifactManager = {
               <div class="artifact-picker-desc">${def.description}</div>
             </div>
           </div>
-          <button class="artifact-equip-btn" style="border-color: #ff7675; color: #ff7675; background: rgba(255, 118, 117, 0.15);" onclick="ArtifactManager.unequip(${currentSlot})">ABLEGEN</button>
+          <button class="artifact-equip-btn" style="border-color: #ff7675; color: #ff7675; background: rgba(255, 118, 117, 0.15);" onclick="ArtifactManager.unequip(${currentSlot})">UNEQUIP</button>
         `;
         listEl.appendChild(item);
       }
@@ -1098,7 +1098,7 @@ const ArtifactManager = {
             <div class="artifact-picker-desc">${def.description}</div>
           </div>
         </div>
-        <button class="artifact-equip-btn" onclick="ArtifactManager.equip(${currentSlot}, '${id}')">${isEquippedElsewhere ? 'VERSCHIEBEN' : 'AUSRÜSTEN'}</button>
+        <button class="artifact-equip-btn" onclick="ArtifactManager.equip(${currentSlot}, '${id}')">${isEquippedElsewhere ? 'MOVE' : 'EQUIP'}</button>
       `;
       listEl.appendChild(item);
     }
@@ -3729,6 +3729,22 @@ document.addEventListener('DOMContentLoaded', () => {
         coreCanvas.classList.add('core-tap-active');
       });
       clickCore(e);
+    });
+  }
+
+  const starCoreEl = document.getElementById('star-core') || coreCanvas;
+  if (starCoreEl) {
+    starCoreEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (coreCanvas) {
+          coreCanvas.classList.remove('core-tap-active');
+          requestAnimationFrame(() => {
+            coreCanvas.classList.add('core-tap-active');
+          });
+        }
+        clickCore(e);
+      }
     });
   }
 
