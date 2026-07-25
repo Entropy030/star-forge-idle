@@ -108,9 +108,13 @@
         style="font-size:0.75rem; font-style:italic; color:#b2bec3; letter-spacing:0.5px; line-height:1.4; margin:0; min-height:2.8em; display:flex; align-items:center; justify-content:center;">
       </p>
       <div id="era-progress-container"
-        style="width: 100%; height: 5px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; margin-top: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.02); display: none;">
+        style="width: 100%; height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; margin-top: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: none; position: relative;">
         <div id="era-progress-bar"
           style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-teal), var(--hydrogen-glow)); transition: width 0.3s ease; box-shadow: 0 0 8px var(--neon-teal);">
+        </div>
+        <div id="era3-progress-nodes" style="display: none; position: absolute; inset: 0; pointer-events: none;">
+          <div style="position: absolute; left: 33.33%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.4);" title="100M K: Supernova"></div>
+          <div style="position: absolute; left: 66.66%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.4);" title="500M K: Carbon"></div>
         </div>
       </div>
     </div>
@@ -318,13 +322,14 @@
           style="font-size: 1.0rem; letter-spacing: 2px; margin-bottom: 15px; font-weight: bold;">STELLAR CORE
           INFRASTRUCTURE</div>
 
-        <div class="cosmic-card" id="era3-card-gravity">
-          <div class="btn-meta">
+        <div class="cosmic-card" id="era3-card-gravity" style="flex-wrap: wrap; gap: 8px;">
+          <div class="btn-meta" style="flex: 1; min-width: 180px;">
             <strong>Strengthen Gravity <span class="lvl-display" style="font-size: 0.75em; color: #fdcb6e;">(Lvl <span
                   id="gravity-lvl">0</span>)</span></strong>
-            <small>Increases base atomic drift</small>
+            <small id="gravity-desc">Increases base atomic drift</small>
           </div>
           <button id="btn-gravity" class="upgrade-btn">Cost: <span id="cost">10</span> H</button>
+          <button id="btn-autobuy-hydrogen" class="upgrade-btn" style="display: none; width: 100% !important; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #b2bec3; margin-top: 4px; font-size: 0.75rem; padding: 4px 8px;">[ Auto-Buy Hydrogen: OFF ]</button>
         </div>
 
         <div class="cosmic-card" id="era3-card-fuser">
@@ -358,6 +363,18 @@
             <small>Peak elemental generation profile</small>
           </div>
           <button id="btn-iron" class="upgrade-btn">Cost: <span id="iron-cost-label">Locked</span></button>
+        </div>
+
+        <div class="cosmic-card" id="era3-card-gateway" style="border: 1px solid #a29bfe !important; flex-direction: column; align-items: stretch; gap: 10px;">
+          <div class="btn-meta" style="width: 100%;">
+            <strong style="color: #a29bfe; font-size: 0.95rem; letter-spacing: 1px;">🌌 GALACTIC IGNITION (ERA IV GATEWAY)</strong>
+            <small style="color: #b2bec3;">Iron core collapse creating an interstellar supernova & transition into The Galactic Matrix.</small>
+          </div>
+          <div style="font-size: 0.78rem; font-family: monospace; text-align: left; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+            <div>• Core Temperature: <span id="gateway-temp-status" style="color: #ff7675;">0 / 2,000M K</span></div>
+            <div>• Accumulated Iron: <span id="gateway-iron-status" style="color: #ff7675;">0 / 1,000 Fe</span></div>
+          </div>
+          <button id="btn-trigger-hypernova" class="btn-macro-shift bg-gradient-purple" style="width: 100%; font-size: 0.85rem; padding: 10px;" disabled>[ Trigger Hypernova & Enter Era IV ]</button>
         </div>
       </div>
     </div>
@@ -445,8 +462,7 @@
         </div>
         <div class="codex-card">
           <h4>Baryon Asymmetry</h4>
-          <p>Matter and Antimatter should have annihilated each other completely during inflation. A tiny asymmetry
-            anomaly—one extra quark per billion antiquarks—built all visible structures in our cosmos.</p>
+          <p title="A subtle imbalance—the dominance of matter over antimatter—serves as a catalyst for your yield.">Matter and Antimatter should have annihilated each other completely during inflation. A subtle imbalance—the dominance of matter over antimatter—serves as a catalyst for your yield.</p>
         </div>
       </div>
 

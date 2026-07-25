@@ -709,6 +709,35 @@ body[data-epoch="3"] button.era3-only { display: inline-block; }
 body[data-epoch="4"] .era4-only { display: block; }
 body[data-epoch="4"] button.era4-only { display: block; }
 
+/* Era 1 Unfolding Act Rules */
+body[data-epoch="1"][data-era1-act="1"] #quantum-superposition-panel,
+body[data-epoch="1"][data-era1-act="1"] #btn-tuner-toggle {
+  display: none !important;
+}
+body[data-epoch="1"][data-era1-act="2"] #btn-tuner-toggle {
+  display: none !important;
+}
+
+/* Era 2 Unfolding Act Rules */
+body[data-epoch="2"][data-era2-act="1"] #lepton-box,
+body[data-epoch="2"][data-era2-act="1"] #proton-box,
+body[data-epoch="2"][data-era2-act="1"] #electron-box,
+body[data-epoch="2"][data-era2-act="1"] #plasma-temp-box,
+body[data-epoch="2"][data-era2-act="1"] #plasma-row-gluonBinding,
+body[data-epoch="2"][data-era2-act="1"] #plasma-row-leptonHarvest,
+body[data-epoch="2"][data-era2-act="1"] #plasma-row-plasmaAutomation,
+body[data-epoch="2"][data-era2-act="1"] #plasma-row-baryoRadiator,
+body[data-epoch="2"][data-era2-act="1"] #btn-recombination {
+  display: none !important;
+}
+
+body[data-epoch="2"][data-era2-act="2"] #proton-box,
+body[data-epoch="2"][data-era2-act="2"] #electron-box,
+body[data-epoch="2"][data-era2-act="2"] #plasma-row-plasmaAutomation,
+body[data-epoch="2"][data-era2-act="2"] #btn-recombination {
+  display: none !important;
+}
+
 /* Tab Content Whitelist Isolation — keeps !important (see note above) */
 .tab-content { display: none !important; }
 body[data-tab="core"] #tab-content-core { display: block !important; pointer-events: none; }

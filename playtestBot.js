@@ -12,6 +12,8 @@
       this.botTimer = null;
       this.logTimer = null;
       
+      this.targetNode = '100M'; // '100M' (100M K), '500M' (500M K / Carbon), or '2B' (2B K / Iron / Gateway)
+      
       // Telemetry Data
       this.stats = {
         startTime: 0,
@@ -84,8 +86,16 @@
           window.runAIAction({ action: "collectFlare" });
           this.stats.totalFlaresCollected++;
         }
-        if (gameState.era3 && gameState.era3.temperature && gameState.era3.temperature.gte(COSMIC_REGISTRY.constants.supernovaTempThreshold)) {
-          this.logMilestone("Era III Complete (Supernova Ready)");
+        let currentTemp = gameState.era3?.temperature || new Decimal(0);
+        let targetThreshold = 100000000; // default 100M K
+        if (this.targetNode === '500M' || this.targetNode === 'TARGET_NODE_500M') {
+          targetThreshold = 500000000; // 500M K (Carbon Synthesis)
+        } else if (this.targetNode === '2B' || this.targetNode === 'TARGET_NODE_2B') {
+          targetThreshold = 2000000000; // 2B K (Iron Core / Gateway)
+        }
+
+        if (currentTemp.gte(targetThreshold)) {
+          this.logMilestone(`Era III Complete (Supernova Ready @ ${this.targetNode})`);
           window.runAIAction({ action: "triggerSupernova" });
           return;
         }

@@ -6,6 +6,42 @@ if (typeof Decimal === 'undefined' && typeof break_infinity !== 'undefined') {
 }
 
 // ==========================================================================
+// [SEC-01.5] CENTRAL i18n DICTIONARY ARCHITECTURE
+// ==========================================================================
+const i18n = {
+  en: {
+    log_era1_initial: "t=0.000... ░▒▓ E-R-R-O-R ▓▒░ I have mass. I am severed from nothingness. The first fluctuation pierces the void.",
+    toast_superposition_unlock: "🌌 Critical Energy Density Reached! Wave functions collapse. Quantum Superposition has awakened!",
+    toast_era1_to_era2: "⚛️ Era II: The Primordial Soup begins. Energy cools. Quarks form building blocks, glued together by Gluons.",
+    toast_plasma_cooling: "⚡ Plasma Cooling Successful (3,000 K)! Recombination releases free electrons to form primordial atoms.",
+    toast_carbon_synthesis: "🔥 Carbon Synthesis Initiated (500M K)! The Triple-Alpha Process ignites. The path to the 2B K Iron Core is open!",
+    baryon_asymmetry_label: "Baryon Asymmetry (+{val}%)",
+    baryon_asymmetry_tooltip: "A subtle imbalance—the dominance of matter over antimatter—serves as a catalyst for your yield.",
+    milestone_tooltip: "Next Milestone (Lvl {lvl}): +5% Global Yield",
+    autobuy_hydrogen: "[ Auto-Buy Hydrogen: {state} ]",
+    gateway_title: "🌌 GALACTIC IGNITION (ERA IV GATEWAY)",
+    gateway_req_temp: "Core Temperature: >= 2,000M K (2.0B K)",
+    gateway_req_iron: "Accumulated Iron: >= 1,000 Fe",
+    gateway_btn: "[ Trigger Hypernova & Enter Era IV ]",
+    header_stellar_core: "STELLAR CORE INFRASTRUCTURE",
+    header_prestige_stardust: "✨ Synaptic Dust Infusion Matrix",
+    header_prestige_pulsar: "🌀 Neural Synapse Resonator",
+    header_prestige_singularity: "🌌 Core Density Event Horizon",
+    header_galactic_accretion: "MACRO GALACTIC ACCRETION NETWORK",
+    btn_supernova_ready: "Trigger Supernova Collapse",
+    btn_supernova_locked: "Requires 100M K (Current: {temp} K)"
+  }
+};
+
+function t(key, params = {}) {
+  let text = (i18n.en && i18n.en[key]) ? i18n.en[key] : key;
+  for (let p in params) {
+    text = text.replace(new RegExp(`\\{${p}\\}`, 'g'), params[p]);
+  }
+  return text;
+}
+
+// ==========================================================================
 // [SEC-02] CENTRAL COSMIC REGISTRY (CONFIGURATION OBJECTS)
 // ==========================================================================
 const COSMIC_REGISTRY = {
@@ -126,7 +162,7 @@ const COSMIC_REGISTRY = {
   },
   narrativeLogs: {
     era1: {
-      initial: "CHRONO_LOG // Darkness. Chaotic high-frequency noise. I do not think yet; I fluctuate.",
+      initial: t("log_era1_initial"),
       nearInflation: "CHRONO_LOG // Quantum fluctuation thresholds saturated. This tiny singularity cannot sustain my expanse. I must shatter the horizon."
     },
     era2: {
@@ -170,6 +206,7 @@ function getInitialEra3State() {
     compressCost: new Decimal(10),
     tempMultiplier: new Decimal(1.0),
     stage: "Protostar",
+    lifetimeCarbonThisRun: new Decimal(0),
     carbonYield: new Decimal(0),
     carbonCostHelium: new Decimal(500),
     carbonCostCarbon: new Decimal(5),
@@ -220,6 +257,12 @@ function getInitialGameState() {
       singularityMass: { amount: new Decimal(0) }
     },
     upgrades: { quantum: {}, plasma: {}, stardust: {}, pulsar: {}, singularity: {}, galaxy: {} },
+    era1Act: 1,
+    era1Act2Notified: false,
+    era1Collapses: 0,
+    era2Act: 1,
+    era2CoolingNotified: false,
+    era3CarbonNotified: false,
     era2: getInitialEra2State(),
     era3: getInitialEra3State(),
     era4: getInitialEra4State(),
@@ -230,6 +273,9 @@ function getInitialGameState() {
     quantumTunerMode: 'off',
     activeTab: "core",
     buyMode: 1,
+    autoBuyer: {
+      hydrogen: { active: false }
+    },
     stats: {
       supernovas: new Decimal(0),
       totalStardust: new Decimal(0),
@@ -273,9 +319,19 @@ let flareSimSuppressed = false;
 function ensureStateShape() {
   const initialState = getInitialGameState();
   deepMergeMissing(gameState, initialState);
+  if (typeof gameState.era1Act !== 'number') gameState.era1Act = 1;
+  if (typeof gameState.era1Act2Notified !== 'boolean') gameState.era1Act2Notified = false;
+  if (typeof gameState.era1Collapses !== 'number') gameState.era1Collapses = 0;
+  if (typeof gameState.era2Act !== 'number') gameState.era2Act = 1;
+  if (typeof gameState.era2CoolingNotified !== 'boolean') gameState.era2CoolingNotified = false;
+  if (typeof gameState.era3CarbonNotified !== 'boolean') gameState.era3CarbonNotified = false;
   if (gameState.era2 === undefined) gameState.era2 = getInitialEra2State();
   if (gameState.era3 === undefined) gameState.era3 = getInitialEra3State();
-  if (gameState.era4 === undefined) gameState.era4 = getInitialEra4State();
+  if (!(gameState.era3.lifetimeCarbonThisRun instanceof Decimal)) {
+    gameState.era3.lifetimeCarbonThisRun = new Decimal(gameState.era3.lifetimeCarbonThisRun || 0);
+  }
+  if (!gameState.autoBuyer) gameState.autoBuyer = { hydrogen: { active: false } };
+  if (!gameState.autoBuyer.hydrogen) gameState.autoBuyer.hydrogen = { active: false };
 
   if (!(gameState.coherence instanceof Decimal)) gameState.coherence = new Decimal(gameState.coherence || 0);
   if (!(gameState.quantumStorage instanceof Decimal)) gameState.quantumStorage = new Decimal(gameState.quantumStorage || 0);
@@ -445,12 +501,20 @@ function playSupernovaSound() {
 // ==========================================================================
 // [SEC-06] MATHEMATICAL MATH RULES & PRODUCTION FORMULAS
 // ==========================================================================
+function getMilestoneMultiplier(level) {
+  let milestones = Math.floor((level || 0) / 25);
+  return 1.0 + (milestones * 0.05);
+}
+
 function getQuantumFluctuationRate() {
   let rate = new Decimal(0);
   for (let key in COSMIC_REGISTRY.upgrades.quantum) {
     let def = COSMIC_REGISTRY.upgrades.quantum[key];
     let state = gameState.upgrades.quantum[key];
-    if (state && state.level > 0 && def.gen) rate = rate.plus(def.gen.times(state.level));
+    if (state && state.level > 0 && def.gen) {
+      let mult = getMilestoneMultiplier(state.level);
+      rate = rate.plus(def.gen.times(state.level).times(mult));
+    }
   }
   return rate.times(gameState.inflatonMultiplier || 1);
 }
@@ -467,8 +531,9 @@ function measureQuantumSafe() {
   const amp = getQuantumAmplitude();
   const yieldAmount = gameState.quantumStorage.times(amp).round();
   gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(yieldAmount);
-  gameState.coherence = Decimal.min(100, gameState.coherence.plus(0.1));
+  gameState.coherence = Decimal.min(100, gameState.coherence.plus(1.0));
   gameState.quantumStorage = new Decimal(0);
+  gameState.era1Collapses = (gameState.era1Collapses || 0) + 1;
   isDirty = true;
 }
 
@@ -478,8 +543,9 @@ function quantumLeapRisk() {
   if (amp >= 4.0) {
     const yieldAmount = gameState.quantumStorage.times(amp).times(5).round();
     gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(yieldAmount);
-    gameState.coherence = Decimal.min(100, gameState.coherence.plus(1.5));
+    gameState.coherence = Decimal.max(0, gameState.coherence.minus(2.5));
     gameState.quantumStorage = new Decimal(0);
+    gameState.era1Collapses = (gameState.era1Collapses || 0) + 1;
     isDirty = true;
   } else {
     gameState.quantumStorage = new Decimal(0);
@@ -508,7 +574,10 @@ function getEnergyDensityRate() {
   for (let key in COSMIC_REGISTRY.upgrades.quantum) {
     let def = COSMIC_REGISTRY.upgrades.quantum[key];
     let state = gameState.upgrades.quantum[key];
-    if (state && state.level > 0) rate = rate.plus(def.densityGen.times(state.level));
+    if (state && state.level > 0 && def.densityGen) {
+      let mult = getMilestoneMultiplier(state.level);
+      rate = rate.plus(def.densityGen.times(state.level).times(mult));
+    }
   }
   return rate;
 }
@@ -563,11 +632,35 @@ function getCardMultiplier(target) {
 }
 
 function getStardustYield() {
-  return gameState.era3.temperature.div(1500000).floor().plus(1);
+  const temp = gameState.era3.temperature || new Decimal(0);
+  if (temp.lt(COSMIC_REGISTRY.constants.supernovaTempThreshold)) return new Decimal(0);
+  
+  // Base yield at 100M K: ~1
+  let baseYield = temp.div(100000000);
+  
+  // Steep exponential scaling past 100M K: (temp / 100M K) ^ 1.6
+  let exponentScaler = baseYield.pow(1.6);
+  return exponentScaler.floor().max(1);
 }
 
 function getPulsarShardYield() {
-  return gameState.resources.carbon.amount.div(100).floor().plus(1);
+  const carbonTotal = gameState.era3.lifetimeCarbonThisRun || gameState.resources.carbon.amount;
+  const temp = gameState.era3.temperature || new Decimal(0);
+  
+  if (carbonTotal.lte(0)) return new Decimal(0);
+  
+  // Base yield from total carbon produced this run
+  let basePulsar = carbonTotal.div(100);
+  
+  // Steep scaling multiplier for reaching 500M K (Carbon) and 2B K (Iron)
+  let tempMultiplier = new Decimal(1);
+  if (temp.gte(2000000000)) {
+    tempMultiplier = new Decimal(8); // 100+ total yield potential at 2B K
+  } else if (temp.gte(500000000)) {
+    tempMultiplier = new Decimal(3); // 15+ total yield potential at 500M K
+  }
+  
+  return basePulsar.times(tempMultiplier).floor().max(1);
 }
 
 function getSingularityMassYield() {
@@ -578,7 +671,9 @@ function getHydrogenGenRate() {
   let achBaseMult = gameState.achievements.firstSupernova.unlocked ? COSMIC_REGISTRY.achievements.firstSupernova.multiplier : 1.0;
   let stardustMult = gameState.currencies.stardust.amount.times(0.5).plus(1);
   let carbonBoost = getCarbonGravityMultiplier();
-  let baseGen = gameState.era3.gravity.times(carbonBoost).times(gameState.era3.tempMultiplier).times(stardustMult).times(achBaseMult).times(COSMIC_REGISTRY.resources.hydrogen.baseGen);
+  let gravityLevel = gameState.era3.gravity ? gameState.era3.gravity.toNumber() : 1;
+  let milestoneMult = getMilestoneMultiplier(gravityLevel);
+  let baseGen = gameState.era3.gravity.times(milestoneMult).times(carbonBoost).times(gameState.era3.tempMultiplier).times(stardustMult).times(achBaseMult).times(COSMIC_REGISTRY.resources.hydrogen.baseGen);
   let exponent = new Decimal(1).plus(new Decimal(0.05).times(gameState.upgrades.singularity.darkGravity.level));
   return baseGen.pow(exponent).times(getCardMultiplier("hydrogenGen")).round();
 }
@@ -594,10 +689,12 @@ function getCompressionsCompleted() {
 }
 
 function getCompressionHeatYield() {
+  let compressLevel = getCompressionsCompleted();
+  let milestoneMult = getMilestoneMultiplier(compressLevel);
   let shopMultiplier = new Decimal(1.0 + ((gameState.upgrades.stardust.thermalInsulation?.level ?? 0) * 0.20));
   let ironMultiplier = gameState.resources.iron.amount.times(COSMIC_REGISTRY.constants.ironHeatCoefficient).plus(1);
-  let runGrowth = new Decimal(COSMIC_REGISTRY.constants.compressionScaling).pow(getCompressionsCompleted());
-  let baseHeat = new Decimal(COSMIC_REGISTRY.constants.baseCompressionHeat).times(shopMultiplier).times(ironMultiplier).times(runGrowth);
+  let runGrowth = new Decimal(COSMIC_REGISTRY.constants.compressionScaling).pow(compressLevel);
+  let baseHeat = new Decimal(COSMIC_REGISTRY.constants.baseCompressionHeat).times(milestoneMult).times(shopMultiplier).times(ironMultiplier).times(runGrowth);
   let exponent = new Decimal(1).plus(new Decimal(0.05).times(gameState.upgrades.singularity.stellarIgnition.level));
   return baseHeat.pow(exponent).times(getCardMultiplier("compressionHeat")).round();
 }
@@ -973,7 +1070,9 @@ const Viewport = {
       if (row) {
         row.querySelector('.name-display').textContent = def.name;
         row.querySelector('.lvl-display').textContent = isMaxed ? `(MAX)` : `(Lvl ${state.level})`;
-        row.querySelector('.desc-display').textContent = def.desc;
+        let nextMilestoneLvl = (Math.floor(state.level / 25) + 1) * 25;
+        let milestoneText = def.max !== undefined ? "" : ` • ${t("milestone_tooltip", { lvl: nextMilestoneLvl })}`;
+        row.querySelector('.desc-display').textContent = def.desc + milestoneText;
 
         if (isAffordable) row.classList.add('upgrade-affordable');
         else row.classList.remove('upgrade-affordable');
@@ -1061,7 +1160,31 @@ const Viewport = {
     let gravityAfford = gameState.resources.hydrogen.amount.gte(gameState.era3.gravityCost);
     updateCard('era3-card-gravity', 'btn-gravity', gravityAfford);
     const gravLvl = document.getElementById('gravity-lvl');
+    const gravLvlVal = gameState.era3.gravity ? gameState.era3.gravity.toNumber() : 0;
     if (gravLvl) gravLvl.textContent = format(gameState.era3.gravity);
+
+    const gravDesc = document.getElementById('gravity-desc');
+    if (gravDesc) {
+      let nextMilestoneLvl = (Math.floor(gravLvlVal / 25) + 1) * 25;
+      gravDesc.textContent = `Increases base atomic drift • ${t("milestone_tooltip", { lvl: nextMilestoneLvl })}`;
+    }
+
+    const btnAutoBuyH = document.getElementById('btn-autobuy-hydrogen');
+    if (btnAutoBuyH) {
+      const isUnlocked = gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp);
+      btnAutoBuyH.style.display = isUnlocked ? 'block' : 'none';
+      const isActive = gameState.autoBuyer && gameState.autoBuyer.hydrogen && gameState.autoBuyer.hydrogen.active;
+      btnAutoBuyH.textContent = t("autobuy_hydrogen", { state: isActive ? 'ON' : 'OFF' });
+      if (isActive) {
+        btnAutoBuyH.style.background = 'rgba(0, 236, 198, 0.2)';
+        btnAutoBuyH.style.borderColor = 'var(--neon-teal)';
+        btnAutoBuyH.style.color = '#fff';
+      } else {
+        btnAutoBuyH.style.background = 'rgba(255,255,255,0.05)';
+        btnAutoBuyH.style.borderColor = 'rgba(255,255,255,0.1)';
+        btnAutoBuyH.style.color = '#b2bec3';
+      }
+    }
 
     let compressAfford = gameState.resources.helium.amount.gte(gameState.era3.compressCost);
     updateCard('era3-card-compress', 'btn-compress', compressAfford);
@@ -1143,6 +1266,29 @@ const Viewport = {
       }
     }
 
+    const gatewayTempStatus = document.getElementById('gateway-temp-status');
+    const gatewayIronStatus = document.getElementById('gateway-iron-status');
+    const btnHypernova = document.getElementById('btn-trigger-hypernova');
+    if (gatewayTempStatus && gatewayIronStatus && btnHypernova) {
+      const tempOk = gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp);
+      const ironOk = gameState.resources.iron.amount.gte(1000);
+
+      gatewayTempStatus.textContent = `${format(gameState.era3.temperature)} / 2,000 M K`;
+      gatewayTempStatus.style.color = tempOk ? "#2ed573" : "#ff7675";
+
+      gatewayIronStatus.textContent = `${format(gameState.resources.iron.amount)} / 1,000 Fe`;
+      gatewayIronStatus.style.color = ironOk ? "#2ed573" : "#ff7675";
+
+      btnHypernova.disabled = !(tempOk && ironOk);
+      if (tempOk && ironOk) {
+        btnHypernova.style.opacity = "1";
+        btnHypernova.style.cursor = "pointer";
+      } else {
+        btnHypernova.style.opacity = "0.4";
+        btnHypernova.style.cursor = "not-allowed";
+      }
+    }
+
     const prestigeBtn = document.getElementById('nav-prestige');
     if (prestigeBtn) prestigeBtn.disabled = !(gameState.era3.stage === "Main Sequence Star" || gameState.currencies.stardust.amount.gt(0));
     if (gameState.activeTab === 'prestige') {
@@ -1195,12 +1341,25 @@ const Viewport = {
       let tProgress = (tStart - gameState.plasmaTemperature.toNumber()) / (tStart - tTarget) * 100;
       pct = Math.max(pProgress, tProgress);
     } else if (epoch === 3) {
-      pct = gameState.era3.temperature.div(COSMIC_REGISTRY.constants.supernovaTempThreshold).times(100).toNumber();
+      const t = gameState.era3.temperature.toNumber();
+      // Segment 1: 0 to 100M K (0% to 33.33%)
+      // Segment 2: 100M K to 500M K (33.33% to 66.66%)
+      // Segment 3: 500M K to 2,000M K (66.66% to 100%)
+      if (t <= 100000000) {
+        pct = (t / 100000000) * 33.33;
+      } else if (t <= 500000000) {
+        pct = 33.33 + ((t - 100000000) / 400000000) * 33.33;
+      } else {
+        pct = 66.66 + Math.min(1.0, (t - 500000000) / 1500000000) * 33.34;
+      }
     } else if (epoch === 4) {
       pct = gameState.resources.darkMatter.amount.div(10000).times(100).toNumber();
     }
 
     pct = Math.max(0, Math.min(100, pct));
+
+    const era3Nodes = document.getElementById('era3-progress-nodes');
+    if (era3Nodes) era3Nodes.style.display = epoch === 3 ? 'block' : 'none';
 
     container.style.display = 'block';
     bar.style.width = `${pct}%`;
@@ -1286,7 +1445,8 @@ const Viewport = {
     this.updateStardustDisplays();
     const currentEpoch = COSMIC_REGISTRY.universeChronology.epochs[gameState.activeEpoch] || COSMIC_REGISTRY.universeChronology.epochs[3];
 
-    // Visibility handled natively by CSS matching body[data-epoch] and body[data-tab]
+    document.body.setAttribute('data-era1-act', gameState.era1Act || 1);
+    document.body.setAttribute('data-era2-act', gameState.era2Act || 1);
 
     document.getElementById('active-epoch-name').textContent = currentEpoch.name;
 
@@ -1313,7 +1473,7 @@ const Viewport = {
 
     const panel = document.getElementById('quantum-superposition-panel');
     if (panel) {
-      const isAct2Unlocked = gameState.activeEpoch === 1 && (gameState.resources.quantumFluctuations.amount.gte(100) || (gameState.quantumStorage && gameState.quantumStorage.gt(0)) || (gameState.upgrades.quantum.gravityForce && gameState.upgrades.quantum.gravityForce.level > 0));
+      const isAct2Unlocked = gameState.activeEpoch === 1 && gameState.era1Act >= 2;
       panel.style.display = isAct2Unlocked ? 'flex' : 'none';
 
       if (isAct2Unlocked) {
@@ -1494,7 +1654,7 @@ const Viewport = {
       const asymBonusPct = ((asymmetryModifier.toNumber() - 1) * 100).toFixed(1);
       const asymEl = document.getElementById('auto-rate');
       if (asymEl) {
-        asymEl.innerHTML = `+${format(pRates.quarks)}/s <span style="color:var(--neon-teal);font-size:0.72em;font-weight:700;" title="Baryon Asymmetry: |Quarks-Gluons| log bonus">▲ ${asymBonusPct}% Asym</span>`;
+        asymEl.innerHTML = `+${format(pRates.quarks)}/s <span style="color:var(--neon-teal);font-size:0.72em;font-weight:700;" title="${t('baryon_asymmetry_tooltip')}">${t('baryon_asymmetry_label', { val: asymBonusPct })}</span>`;
       }
 
       // Update dedicated Era II elements
@@ -1547,7 +1707,10 @@ const Viewport = {
       document.getElementById('auto-rate').innerHTML = `+${format(getHydrogenGenRate())}/s`;
       document.getElementById('cost').textContent = format(gameState.era3.gravityCost);
       document.getElementById('helium-count').textContent = format(gameState.resources.helium.amount);
-      document.getElementById('helium-yield').innerHTML = `Yield: ${format(gameState.era3.fusionYield)}/f`;
+      const stardustBoost = gameState.currencies.stardust.amount.times(0.25).plus(1);
+      const baseYieldPerFusion = gameState.era3.fusionYield.times(getFusionSurgeMultiplier());
+      const effectiveYieldPerFusion = baseYieldPerFusion.times(stardustBoost);
+      document.getElementById('helium-yield').innerHTML = `Yield: ${format(effectiveYieldPerFusion)}/f`;
       document.getElementById('temp').textContent = format(gameState.era3.temperature);
       document.getElementById('multiplier').textContent = format(gameState.era3.tempMultiplier) + "x";
       document.getElementById('compress-cost').textContent = format(gameState.era3.compressCost);
@@ -1898,6 +2061,7 @@ function triggerInflation() {
     document.body.appendChild(flashElement);
     setTimeout(() => flashElement.remove(), 1250);
 
+    Viewport.showToast(t("toast_era1_to_era2"));
     Viewport.switchTab('core');
     saveGame();
     isDirty = true;
@@ -2288,13 +2452,15 @@ function buyCelestialCard(key) {
 // ==========================================================================
 const Timeline = {
   process(dt) {
-    const TICK_CHUNK_SIZE = 1.0;
-    let timeRemaining = dt;
+    if (dt <= 0) return;
+    // Analytical offline progress chunking:
+    // Max 120 stepped chunks to guarantee <= 50ms execution time even for 12 hours (43,200s) of offline time.
+    const MAX_STEPS = 120;
+    const stepCount = Math.min(MAX_STEPS, Math.ceil(dt / 1.0));
+    const chunkDt = dt / stepCount;
 
-    while (timeRemaining > 0) {
-      let currentDt = Math.min(timeRemaining, TICK_CHUNK_SIZE);
-      this.simulate(currentDt);
-      timeRemaining -= currentDt;
+    for (let i = 0; i < stepCount; i++) {
+      this.simulate(chunkDt);
     }
   },
 
@@ -2360,6 +2526,15 @@ const Timeline = {
     let autoRate = getHydrogenGenRate().times(dt);
     gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(autoRate);
 
+    if (gameState.autoBuyer && gameState.autoBuyer.hydrogen && gameState.autoBuyer.hydrogen.active) {
+      if (gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
+        if (gameState.resources.hydrogen.amount.gte(gameState.era3.gravityCost)) {
+          let loops = getBuyLoopCount();
+          Economy.buyCoreNodes('gravity', loops);
+        }
+      }
+    }
+
     if (gameState.era3.fusersEnabled && gameState.era3.fusionYield.gt(0)) {
       let costPerYield = getFusionCost();
       let maxPossibleFusions = gameState.resources.hydrogen.amount.div(costPerYield).floor();
@@ -2367,7 +2542,9 @@ const Timeline = {
 
       if (targetFusions.gt(0)) {
         gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.minus(targetFusions.times(costPerYield));
-        gameState.resources.helium.amount = gameState.resources.helium.amount.plus(targetFusions.times(getFusionSurgeMultiplier()));
+        const stardustBoost = gameState.currencies.stardust.amount.times(0.25).plus(1);
+        const totalHeliumYield = targetFusions.times(getFusionSurgeMultiplier()).times(stardustBoost);
+        gameState.resources.helium.amount = gameState.resources.helium.amount.plus(totalHeliumYield);
       }
     }
 
@@ -2397,6 +2574,7 @@ const Timeline = {
       let velocityMult = new Decimal(1).plus(synthLvl);
       let carbonGen = gameState.era3.carbonYield.times(velocityMult).times(dt);
       gameState.resources.carbon.amount = gameState.resources.carbon.amount.plus(carbonGen);
+      gameState.era3.lifetimeCarbonThisRun = (gameState.era3.lifetimeCarbonThisRun || new Decimal(0)).plus(carbonGen);
 
       if (gameState.era3.ironYield.gt(0) && gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp)) {
         let ironGen = gameState.era3.ironYield.times(velocityMult).times(dt);
@@ -2441,7 +2619,10 @@ function gameTick(dt) {
       (gameState.upgrades.quantum.weakForce?.level ?? 0) +
       (gameState.upgrades.quantum.electromagneticForce?.level ?? 0) +
       (gameState.upgrades.quantum.strongForce?.level ?? 0);
-    gameState.coherence = Decimal.min(100, new Decimal(totalQuantumLevels).times(5));
+    // Baseline passive equilibrium recovery in Era 1
+    if (gameState.coherence.lt(100)) {
+      gameState.coherence = Decimal.min(100, gameState.coherence.plus(new Decimal(0.1).times(dt)));
+    }
 
     gameState.quantumPhaseTime = (gameState.quantumPhaseTime || 0) + dt;
     const passiveGen = getQuantumFluctuationRate().times(0.10).times(dt);
@@ -2451,6 +2632,22 @@ function gameTick(dt) {
 
     if (gameState.upgrades.quantum.decoherenceTuner && gameState.upgrades.quantum.decoherenceTuner.level > 0) {
       gameState.quantumTunerUnlocked = true;
+    }
+
+    // Era 1 Act unfolding progression logic
+    if (gameState.era1Act < 2) {
+      if (gameState.resources.energyDensity.amount.gte(20) || gameState.resources.quantumFluctuations.amount.gte(100)) {
+        gameState.era1Act = 2;
+      }
+    }
+    if (gameState.era1Act >= 2 && !gameState.era1Act2Notified) {
+      gameState.era1Act2Notified = true;
+      Viewport.showToast(t("toast_superposition_unlock"));
+    }
+    if (gameState.era1Act < 3) {
+      if ((gameState.quantumStorage && gameState.quantumStorage.gte(50)) || (gameState.era1Collapses || 0) >= 2) {
+        gameState.era1Act = 3;
+      }
     }
 
     const tunerMode = gameState.quantumTunerMode || 'off';
@@ -2470,8 +2667,47 @@ function gameTick(dt) {
         }
       }
     }
+  } else if (gameState.activeEpoch === 2) {
+    // Era 2 Coherence Equilibrium: high temp (>8M K) slightly drains coherence, cooling (<500k K) recovers it toward 100%
+    if (gameState.plasmaTemperature.gt(8000000)) {
+      gameState.coherence = Decimal.max(10, gameState.coherence.minus(new Decimal(0.2).times(dt)));
+    } else if (gameState.coherence.lt(100)) {
+      gameState.coherence = Decimal.min(100, gameState.coherence.plus(new Decimal(0.5).times(dt)));
+    }
+
+    // Era 2 Act unfolding progression logic
+    if (gameState.era2Act < 2) {
+      if (gameState.resources.quarks.amount.gte(300) || (gameState.upgrades.plasma.quarkCondenser && gameState.upgrades.plasma.quarkCondenser.level >= 3)) {
+        gameState.era2Act = 2;
+      }
+    }
+    if (gameState.era2Act < 3) {
+      if (gameState.plasmaTemperature.lte(5000000) || (gameState.upgrades.plasma.leptonHarvest && gameState.upgrades.plasma.leptonHarvest.level >= 1)) {
+        gameState.era2Act = 3;
+      }
+    }
+
+    if (gameState.plasmaTemperature.lte(3000) && !gameState.era2CoolingNotified) {
+      gameState.era2CoolingNotified = true;
+      Viewport.showToast(t("toast_plasma_cooling"));
+    }
+  } else if (gameState.activeEpoch === 3) {
+    // Era 3 Coherence Equilibrium: extreme temp (>1.5B K) causes subtle coherence stress, normal operation recovers it
+    if (gameState.era3.temperature.gt(1500000000)) {
+      gameState.coherence = Decimal.max(20, gameState.coherence.minus(new Decimal(0.1).times(dt)));
+    } else if (gameState.coherence.lt(100)) {
+      gameState.coherence = Decimal.min(100, gameState.coherence.plus(new Decimal(0.5).times(dt)));
+    }
+
+    if (gameState.era3.temperature.gte(500000000) && !gameState.era3CarbonNotified) {
+      gameState.era3CarbonNotified = true;
+      Viewport.showToast(t("toast_carbon_synthesis"));
+    }
   } else {
-    gameState.coherence = new Decimal(100);
+    // Era 4 Stability Integration: Coherence tracks Era 4 Galaxy Stability
+    if (gameState.era4 && gameState.era4.stability) {
+      gameState.coherence = Decimal.min(100, Decimal.max(0, gameState.era4.stability));
+    }
   }
   Timeline.process(dt);
   checkAchievements();
@@ -2620,6 +2856,14 @@ function importSave() {
       }
     } else { Viewport.showToast("Unsupported timeline formatting configuration."); }
   } catch (e) { Viewport.showToast("Fatal transmission verification corruption."); }
+}
+
+function wipeSave() {
+  if (confirm("Are you sure you want to reset all universe progression? This cannot be undone.")) {
+    localStorage.removeItem('starForgeSave_v15');
+    localStorage.removeItem('starForgeSave_v14');
+    location.reload();
+  }
 }
 
 // ==========================================================================
@@ -2847,9 +3091,16 @@ document.addEventListener('DOMContentLoaded', () => {
   bindClick('btn-recombination', triggerRecombination);
   bindClick('btn-supernova', triggerSupernova);
   bindClick('btn-galactic-merge', triggerGalacticMerge);
+  bindClick('btn-trigger-hypernova', triggerGalacticMerge);
   bindClick('btn-stabilize-arms', stabilizeArms);
   bindClick('btn-accrete-planet', accretePlanetConfiguration);
   bindClick('flare-button', collectFlare);
+  bindClick('btn-autobuy-hydrogen', () => {
+    if (!gameState.autoBuyer) gameState.autoBuyer = { hydrogen: { active: false } };
+    if (!gameState.autoBuyer.hydrogen) gameState.autoBuyer.hydrogen = { active: false };
+    gameState.autoBuyer.hydrogen.active = !gameState.autoBuyer.hydrogen.active;
+    isDirty = true;
+  });
 
 
   const btnReignite = document.querySelector('.btn-reignite');
@@ -3014,6 +3265,12 @@ window.runAIAction = function (cmd) {
       const count = cmd.count || 1;
       for (let i = 0; i < count; i++) clickCore();
       console.log(`🤖 Action: Clicked core ${count}x`);
+      break;
+
+    case "clickCore":
+      clickCore();
+      isDirty = true;
+      console.log("🤖 Action: clickCore (single)");
       break;
 
     case "buy":
