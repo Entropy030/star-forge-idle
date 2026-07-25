@@ -94,7 +94,7 @@
           targetThreshold = 2000000000; // 2B K (Iron Core / Gateway)
         }
 
-        if (currentTemp.gte(targetThreshold)) {
+        if (currentTemp.gte(targetThreshold) && gameState.era3 && (gameState.era3.supernovaUnlocked || gameState.era3.currentAct >= 3)) {
           this.logMilestone(`Era III Complete (Supernova Ready @ ${this.targetNode})`);
           window.runAIAction({ action: "triggerSupernova" });
           return;

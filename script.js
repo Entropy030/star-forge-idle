@@ -3674,6 +3674,7 @@ requestAnimationFrame(renderLoop);
 // [SEC-20] IRON-CLAD DECOUPLED RUNTIME EVENT BINDING INITIALIZER
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
+  document.body.classList.remove('hydrating');
   initFloatingTextPool();
   ArtifactManager.recalculateArtifactModifiers();
   Viewport.syncAnchor(true);

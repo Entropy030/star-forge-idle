@@ -177,22 +177,36 @@ flex-wrap: wrap;
 max-width: 1000px; 
 margin: 0 auto; 
 }
-.resource-box { 
-background: rgba(8, 14, 28, 0.75);
-backdrop-filter: blur(12px);
--webkit-backdrop-filter: blur(12px);
-border: 1px solid rgba(0, 240, 255, 0.25);
-padding: 10px 6px; 
-border-radius: 12px; 
-flex: 1 1 calc(25% - 8px);
-min-width: 120px;
-box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-transition: all 0.3s ease;
-box-sizing: border-box;
+/* Initial Boot Hydration FOUC Prevention */
+body.hydrating .core-canvas,
+body.hydrating main,
+body.hydrating .dashboard-container {
+  opacity: 0 !important;
 }
-.resource-box h3 { margin: 0; font-size: 0.62rem; color: #74b9ff; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 2px; font-weight: 700; }
-.resource-box h2 { margin: 4px 0; font-size: 1.25rem; color: #fff; font-weight: 700; font-family: 'Share Tech Mono', monospace; letter-spacing: -0.5px; text-shadow: 0 0 10px rgba(0, 240, 255, 0.5); }
-.resource-box small { font-size: 0.65rem; display: block; font-family: 'Share Tech Mono', monospace; font-weight: 700; color: #00ecc6; }
+.core-canvas, main, .dashboard-container {
+  transition: opacity 0.25s ease-in-out;
+}
+
+.resource-box { 
+  background: rgba(8, 14, 28, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  padding: 6px 8px; 
+  border-radius: 10px; 
+  flex: 1 1 calc(25% - 8px);
+  min-width: 100px;
+  max-height: 52px;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.resource-box h3 { margin: 0; font-size: 0.60rem; color: #74b9ff; letter-spacing: 0.8px; display: flex; align-items: center; justify-content: center; gap: 2px; font-weight: 700; white-space: nowrap; }
+.resource-box h2 { margin: 2px 0; font-size: 1.05rem; color: #fff; font-weight: 700; font-family: 'Share Tech Mono', monospace; letter-spacing: -0.5px; text-shadow: 0 0 8px rgba(0, 240, 255, 0.4); line-height: 1; }
+.resource-box small { font-size: 0.62rem; display: block; font-family: 'Share Tech Mono', monospace; font-weight: 700; color: #00ecc6; line-height: 1; }
 
 .border-blue { border-left: 2px solid var(--hydrogen-glow); }
 .border-purple { border-left: 2px solid var(--helium-glow); }

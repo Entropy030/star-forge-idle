@@ -148,21 +148,7 @@
     </div>
   </div>
 
-  <div id="ai-dev-controls" class="dev-matrix-hidden" style="position: fixed; top: 10px; left: 10px; z-index: 9999; display: flex; gap: 5px; align-items: center;">
-    <button id="btn-ai-state"
-      style="background: #00ecc6; color: #000; font-weight: bold; padding: 6px 10px; border-radius: 6px; border: none; cursor: pointer;">
-      📋 Copy AI State
-    </button>
-    <button id="btn-bot-start"
-      style="background: #6c5ce7; color: #fff; font-weight: bold; padding: 6px 10px; border-radius: 6px; border: none; cursor: pointer;">
-      🤖 Start Bot (10x)
-    </button>
-    <button id="btn-bot-sim"
-      style="background: #e17055; color: #fff; font-weight: bold; padding: 6px 10px; border-radius: 6px; border: none; cursor: pointer;">
-      ⚡ Sim 1h Headless
-    </button>
-    <span id="playtest-status-text" style="font-size: 0.75rem; font-family: monospace; color: #b2bec3; margin-left: 5px;"></span>
-  </div>
+
 
   <!-- Minimal Persistent Primary Metrics Readout HUD -->
   <div class="dashboard-container">
@@ -469,6 +455,25 @@
         <hr class="divider-subtle">
         <button id="btn-wipe" class="btn-danger width-full">Wipe Universe Tracking Footprint</button>
       </div>
+
+      <!-- Developer & Bot Control Sandbox (Strictly relative inside Settings tab) -->
+      <div id="ai-dev-controls" class="dev-matrix-hidden" style="position: relative; margin-top: 20px; padding: 14px; background: rgba(8, 14, 28, 0.7); border: 1px solid var(--glass-border); border-radius: 8px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center;">
+        <button id="btn-ai-state"
+          style="background: #00ecc6; color: #000; font-weight: bold; padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer;">
+          📋 Copy AI State
+        </button>
+        <button id="btn-bot-start"
+          style="background: #6c5ce7; color: #fff; font-weight: bold; padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer;">
+          🤖 Start Bot (10x)
+        </button>
+        <button id="btn-bot-sim"
+          style="background: #e17055; color: #fff; font-weight: bold; padding: 8px 12px; border-radius: 6px; border: none; cursor: pointer;">
+          ⚡ Sim 1h Headless
+        </button>
+        <span id="playtest-status-text" style="font-size: 0.75rem; font-family: monospace; color: #b2bec3; width: 100%; text-align: center; margin-top: 4px;"></span>
+      </div>
+    </div>
+
     <!-- Tab 3: Artifacts (Equipment Loadout & Unlocked Inventory) -->
     <div id="tab-content-artifacts" class="tab-content">
       <div class="section-title color-teal"><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg> FORGE ARTIFACT LOADOUT</div>
