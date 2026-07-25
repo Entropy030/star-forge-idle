@@ -1,14 +1,47 @@
 # 🌌 Game Design Document: Eras & Progression Mechanics
 
-## Ära I: The Quantum Foam (Der Urknall & Quantenschaum)
-* **Narrativ:** "Ich habe Masse. Ich bin getrennt vom Nichts."
-* **Kern-Ressourcen:** Quantum Fluctuations, Energy Density.
-* **Aktives Sub-System (Quanten-Superposition & Vacuum Coherence):**
-  * Oszillation der Amplitude (0.1x bis 5.0x im 15s-Takt).
-  * **Sicherer Kollaps:** Verlässlicher Ertrag + stetige Coherence-Regeneration (+1.0%).
-  * **Quantensprung (Risiko):** Payout bei Amplitude $\ge$ 4.0x liefert 500% Ertrag, verringert aber die Vacuum Coherence um -2.5%.
-  * **Text-Corruptor Engine:** Je niedriger die Coherence, desto stärker werden HUD-Logs und UI-Texte verzerrt (<80% leicht, <50% mittel + CSS-Glitch, <20% schwer).
-* **Decoherence Tuner:** Schaltet automatische Kollaps-Modi frei (Safe & Resonance).
+## Ära I: The Quantum Foam (Cinematic Intro, Permanent Unfold, 5-50-5-50 Pacing & Engine Hardening)
+* **Quantum Superposition Architektonische Bereinigung:**
+  * Vollständige Entfernung des ungenutzten Quantum Superposition Mechanismus (`measureQuantumSafe()`, `quantumLeapRisk()`, `quantumStorage`, `getQuantumAmplitude()`, `quantumPhaseTime`).
+  * Era I ist hyper-fokussiert auf Core Clicks, Fluctuation Upgrades und den sauberen Entfaltungs-Hain.
+* **5-50-5-50 Pacing & Kostenkurven-Rebalancierung:**
+  * Geglätteter Fortschrittsverlauf im Bereich 0 bis 100.000 QF:
+    * `gravityForce`: Base Cost 10 QF (Scaling 1.35)
+    * `weakForce`: Base Cost 120 QF (Scaling 1.40)
+    * `electromagneticForce`: Base Cost 1,500 QF (Scaling 1.45)
+    * `vacuumResonance`: Interim-Upgrade bei 5,000 QF (Scaling 1.50, +450 QF/s, +100 Density/s) schließt das Pacing-Loch vor der starken Kraft.
+    * `strongForce`: Base Cost 18,000 QF (Scaling 1.55)
+  * Zusätzliche chronologische Terminal-Logeinträge bei 500, 2,500, 10,000 und 25,000 QF halten die diegetische Immersion aufrecht.
+* **Black Screen Cinematic Intro Overlay & Automated Pre-Cosmic Vacuum Narrative:**
+  * Bei neuem Spielstart / Reset wird die Glassmorphism Story Card (`#intro-screen-overlay` / `#intro-story-card`) ab Frame 1 zu 100% sichtbar gerendert.
+  * Sequenzielle, vollautomatisierte Schreibmaschinen-Zeilen (ohne dass der Nutzer klicken muss):
+    1. `t = -0.00000000001s :: PRE-COSMIC VACUUM STATE`
+    2. `No space. No time. Only infinite probability density dormant in pure nothingness.`
+    3. `A single observer awakens. Your first glance collapses the void and ignites the Star Forge.`
+  * Der Aktions-Button `[ INITIALIZE OBSERVER PROTOCOL ]` erscheint erst nach Beendigung der letzten Zeile (oder bei optionalem Skip-Klick) und startet die Ära I Beobachtung.
+* **Permanente Unfold State Flags (`gameState.unfold`):**
+  * Entkopplung der UI-Sichtbarkeit von der aktuellen Währungsbilanz.
+  * Verwendet permanente Flags (`hasUnlocked1QF`, `hasUnlocked10QF`, `hasUnlocked100QF`). Einmal freigeschaltete Panels (z. B. Upgrade-Karten ab 10 QF) bleiben permanent geöffnet, selbst wenn QF beim Kauf auf 0 sinkt.
+* **Erweiterter Star Core Hitbox Radius:**
+  * Großzügige Klickzone (`#star-core::before` mit ~280px-300px Durchmesser, 2.5x-3x des visuellen Kerns).
+  * Garantiert fehlerfreies Klicken in der gesamten zentralen Kernregion ohne präzises Zielen.
+  * Durchgängiger `cursor: pointer` und instantanes haptisches Skalier-Feedback.
+* **Holographic Sci-Fi & Glassmorphism Design Standard:**
+  * **Farbschema & Visuals:** Dominantes Cyan/Neon-System (`background: var(--glass-bg)`, `border: 1px solid var(--glass-border)`, `backdrop-filter: blur(var(--glass-blur))`).
+  * **Hero Core Visualizer:** Der zentrale `#star-core` Canvas steht als visueller Held im Zentrum mit einer ambienten radialen Aura (`background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, transparent 70%)`).
+* **Universelles 3-Akt-Designprinzip & Vacuum Coherence Engine:**
+  * **Akt 1 (Erwachen / Ignition):** Cold Boot Zustand. Manuelle Klicks (`unfoldCount`) erzeugen Quantenschaum (`quantumFoam`) und stabilisieren schrittweise die Kohärenz (`vacuumCoherence`: 0.0 $\rightarrow$ 1.0). Terminal-Logs durchlaufen bei $Coherence < 1.0$ die `corruptText` Glitch-Engine. UI-Elemente bleiben 100% lesbar. Visuals: Minimalistisch (`data-act="1"`).
+  * **Akt 2 (Expansion / Equilibrium):** Trigger bei `quantumFoam >= 100` AND `vacuumCoherence >= 1.0`. Fluctuation Condenser öffnet permanent. Terminal-Logs werden vollkommen klar (`data-act="2"`). Automatisierte Generatoren übernehmen.
+  * **Akt 3 (Klimax / Critical Mass):** Trigger bei `quantumFoam >= 10000`. Overdrive-Visuals aktivieren einen pulsierenden orange/weißen Glow (`data-act="3"`) für das bevorstehende Cosmic Inflation Event bei 100,000 QF.
+* **Forge Artifacts System (Balatro-inspired Collectibles):**
+  * **Die 3 Goldenen Regeln:** Maximal 3 equipped Slots, streng strukturierte Farb-Kategorien (Produktion = Blau `#00d2ff`, Effizienz = Grün `#00ff88`, Synergie = Violett `#a855f7`), präzise Ein-Satz-Effekte.
+  * **Initial-Pool der 6 Artefakte:**
+    1. `quantum_lens` (Blau, Common): +25% Quantum Foam Ertrag (`productionMult: 1.25`).
+    2. `density_compressor` (Grün, Common): 10% Ersparnis auf alle Generator-Kosten (`costDiscount: 0.10`).
+    3. `pulse_coupler` (Violett, Uncommon): Jeder Core-Klick erhöht die Passiv-Produktion für 3s um +10% (`clickPassiveBoost: 0.10`).
+    4. `singularity_core` (Blau, Uncommon): +50% Ertrag in Akt 3 (`act3Multiplier: 1.50`).
+    5. `vacuum_stabilizer` (Grün, Rare): Setzt Coherence dauerhaft auf 1.0 (schützt vor Glitches).
+    6. `big_bang_catalyst` (Violett, Rare): +1 zusätzliche Prestige-Währung bei Aufstieg zu Ära II.
 
 ---
 

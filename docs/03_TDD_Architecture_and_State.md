@@ -18,10 +18,13 @@ Das Spiel folgt einem entkoppelten **Registry-State-Engine** Muster:
 
 ---
 
-## 3. DOM & Viewport Optimierung
+## 3. DOM & Viewport Optimierung & Performance Hardening
 
 * **Lazy DOM Caching (`Viewport.getEl()`):** Um DOM-Thrashing zu vermeiden, werden Element-Referenzen lazily in einem Dictionary gespeichert.
-* **Dirty-Checking Flag (`isDirty`):** UI-Renderings (`Viewport.update()`) werden nur dann ausgeführt, wenn sich im Spielzustand tatsächlich Werte verändert haben.
+* **Cached Layout Anchors (`_coreAnchorCache`):** `getBoundingClientRect()` wurde vollständig aus dem 100ms `Viewport.update()` Hot-Path entfernt. Anker-Koordinaten (`--core-anchor-x`, `--core-anchor-y`) werden ausschließlich beim Boot und in einem `resize`-EventListener aktualisiert.
+* **Selektives Dirty-Checking (`isDirty`):** `isDirty = true` wird nicht mehr pauschal in jedem Tick gesetzt, sondern nur wenn Ressourcen-Schwellen überschritten werden oder Nutzer-Aktionen stattfinden.
+* **DOM Object Pool für Partikel (`floatingTextPool`):** 30 `.floating-text-particle` DOM-Knoten werden beim Start prä-allokiert und im Ringpuffer wiederverwendet. Eliminierte Garbage Collection (GC) Thrashing beim schnellen Tappen.
+* **Card Row Caching (`row._cache`):** In `renderGenericTierList()` werden Kindelemente (`name`, `lvl`, `desc`, `btn`) direkt am Row-Knoten gecached, um wiederholtes `querySelector()` zu vermeiden.
 * **CSS Whitelist Isolation:** Visuelle Sichtbarkeiten von Ären und Tabs werden primär über CSS-Attribute am `<body>` Tag gesteuert (`data-epoch`, `data-tab`).
 
 ---
@@ -47,17 +50,48 @@ Das Spiel folgt einem entkoppelten **Registry-State-Engine** Muster:
   * Falls `antimatterResidue` > 0: $dynamicDecay = dynamicDecay \times 0.85$.
   * Stability Untergrenze: $Stability = \max(5, Stability - dynamicDecay \times dt)$.
 * **Meilenstein-Synergie Formel**:
-  $$MilestoneMult = 1.0 + \left\lfloor \frac{Level}{25} \right\rfloor \times 0.05$$
-  (angewendet auf Ära I Quanten-Upgrades sowie Ära III Gravitations- & Kompressions-Knoten).
+  $$MilestoneMult = 1.0 + \left\lfloor \frac{Level}{10} \right\rfloor \times 0.05$$
+  (angewendet auf Ära I Quanten-Upgrades sowie Ära III Gravitations- & Kompressions-Knoten alle 10 Stufen).
+* **Typewriter Single-Push Event Queue (`data-active-text`)**:
+  * `typeWriter(logNode, text, speed)` wird ausschließlich dann getriggert, wenn `logNode.getAttribute('data-active-text') !== activeLog`.
+  * Verhindert kontinuierliche Wiederholungen oder Rerender-Schleifen während des regulären Tick-Loops.
+* **`gameState.unfold` Permanente State-Shape Spezifikation**:
+  * `hasUnlocked1QF` (Boolean): Wird einmalig `true`, sobald das Konto jemals $\ge 1$ QF erreicht hat. Hält den Quanten-Zähler im HUD dauerhaft sichtbar.
+  * `hasUnlocked10QF` (Boolean): Wird einmalig `true`, sobald das Konto jemals $\ge 10$ QF erreicht hat. Hält die Upgrade-Karten und Navigationstabs dauerhaft sichtbar (auch bei Kontostand = 0 QF).
+  * `hasUnlocked100QF` (Boolean): Wird einmalig `true`, sobald das Konto jemals $\ge 100$ QF erreicht hat.
+  * `introCompleted` (Boolean): Speichert den Abschluss der Cinematic Black Screen Intro-Overlay Sequenz.
+* **`Viewport.update()` Intro DOM Guard & Async Narrative Streamer Engine**:
+  * `Viewport.update()` startet mit einem strikten Guard Clause (`if (!gameState.unfold?.introCompleted && overlay.style.display !== 'none') return;`), um jegliche Mutation an `#intro-narrative-text` während des aktiven Intro-Overlays zu verhindern.
+  * Das Intro verwendet einen entkoppelten `async/await` Streamer (`playIntroNarrative()`), der Zeile für Zeile Zeichen in `<p class="intro-line">` injiziert.
+  * Ein Klick auf `#intro-story-card` setzt `target.dataset.skipped = "true"`, wodurch die Zeilen ohne Verzögerung vervollständigt werden und der Button `#btn-intro-complete` freigeschaltet wird.
+  * Ein Guard-Flag `overlay.dataset.initialized = "true"` stellt die Single-Execution sicher und wird beim Reset via `delete overlay.dataset.initialized` gereinigt.
+* **Z-Index Layering Hierarchy Rules**:
+  * `z-index: 10001`: `#intro-screen-overlay` (Top modal gate, sits above all elements).
+  * `z-index: 10000`: `#era-transition-overlay` (Macro Era shift prompts).
+  * `z-index: 9998`: `#toast-container` (Glassmorphic system toasts).
+  * `z-index: 9997`: `#ai-dev-controls` (Developer overlay matrix).
+  * `z-index: 1000`: `#nav-tab-menu` (Fixed mobile navigation capsule system).
+  * `z-index: 100`: `.dashboard-container` (Sticky header and HUD resource metric boxes).
+  * `z-index: 3`: `.core-canvas` (Central hero star core interactive visualizer).
+* **Rotating Solar Flare Aura Positioning & Concentric Canvas Origin**:
+  * Canvas Dynamic Center Origin: `cx = canvas.clientWidth / 2`, `cy = canvas.clientHeight / 2`.
+  * `#star-core` Radial Gradient Origin: `radial-gradient(circle at 50% 50%, ...)` zentriert alle glühenden Coronas und orbitalen Partikel ohne diagonale Versätze.
+  * Solar Flare Aura (`.core-canvas::before`): Positioniert als zentriertes `$420px \times 420px$` Element (`top: 50%`, `left: 50%`, `margin-top: -210px`, `margin-left: -210px`) direkt hinter `.core-canvas`.
+  * Verwendet `radial-gradient(circle, rgba(0, 240, 255, 0.15) 0%, rgba(108, 92, 231, 0.08) 45%, transparent 70%)`.
+  * Rotiert kontinuierlich via `@keyframes rotateAura` (24s linear infinite) mit `transform-origin: center center`, 100% konzentrisch zentriert bei allen Viewport-Breiten.
 * **`gameState.autoBuyer.hydrogen.active`**: Booleanscher Umschalter für die automatische Ausführung von `Economy.buyCoreNodes('gravity')` im Tick-Loop von `Timeline.stellarDawn(dt)`, sobald $T \ge 500M K$ erreicht ist.
-* **Vacuum Coherence Dynamik & Formeln**:
-  * **Ära I:** `quantumLeapRisk()` $\rightarrow \Delta Coherence = -2.5\%$, `measureQuantumSafe()` $\rightarrow \Delta Coherence = +1.0\%$, Passive Regeneration $\Delta Coherence = +0.1\% \times dt$.
-  * **Ära II:** $T > 8\text{M K} \rightarrow \Delta Coherence = -0.2\% \times dt$; Kühlung/Stabilität $\rightarrow \Delta Coherence = +0.5\% \times dt$.
-  * **Ära III:** $T > 1.5\text{B K} \rightarrow \Delta Coherence = -0.1\% \times dt$; Normalbetrieb $\rightarrow \Delta Coherence = +0.5\% \times dt$.
-  * **Ära IV:** $Coherence = \min(100, \max(0, HaloStability))$.
-* **Text-Corruptor Engine (`corruptText`)**:
-  * $Chance = \left(1 - \frac{Coherence}{100}\right) \times 0.8$.
-  * Schwellenwerte: $<80\%$ (subtile Zeichen-Glitches 5%), $<50\%$ (mittlere Glitch-Texte & CSS-Effekte 15%), $<20\%$ (schwere Korruption 35%).
+* **`gameState.artifacts` Schema & $O(1)$ `ArtifactManager` Cache Pipeline**:
+  * **Schema:** `artifacts: { equipped: [null, null, null], unlocked: [...], modifiers: { productionMult: 1.0, costDiscount: 0.0, clickCoherenceBonus: 0.0, clickPassiveBoost: 0.0, act3Multiplier: 1.0 } }`
+  * **$O(1)$ Evaluator:** `recalculateArtifactModifiers()` wird **ausschließlich** getriggert, wenn Artefakte ausgerüstet oder abgelegt werden. Modifikatoren fließen in `getQuantumFluctuationRate()` und `Economy.buy()` ein.
+  * **UI-Events:** Sockel-Klicks öffnen den `.artifact-picker` Drawer für schwebende Interaktionen ohne Re-Render-Schleifen.
+* **$O(1)$ `ActManager` Evaluator & Attributes**:
+  * `ActManager.evaluate()` führt in $O(1)$ Zeit State-Checks durch und setzt `currentAct` (1, 2, 3) für die jeweilige Ära.
+  * Das HTML-Attribut `data-act="1|2|3"` wird automatisch am Container / `body` aktualisiert.
+* **Text-Corruptor Engine (`corruptText(text, coherence)`)**:
+  * Werden Zeichen in `chrono-neural-log` Terminal-Einträgen ersetzt durch Symbols `['#', '%', '░', '█', 'Ø', '§', 'Δ', 'X', '0']`.
+  * Schaltet stumm (`cleanText`), wenn `prestige.autoStabilizer === true` ODER `vacuumCoherence >= 1.0` ODER `currentAct > 1`.
+  * Leerzeichen und Zeilenumbrüche bleiben stets unberührt.
+  * Alle Buttons, Klickzähler, Tooltips und Kosten bleiben strikt unberührt.
 
 ---
 

@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#030208">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -17,7 +17,7 @@
   <link rel="manifest" href="manifest.json">
 </head>
 
-<body data-epoch="1" data-tab="core">
+<body id="app-root" data-epoch="1" data-tab="core" data-act="1">
 
   <!-- Full-Bleed Cosmic Backdrop: era-scoped ambient scene layer, sits behind all HUD content -->
   <div id="cosmic-backdrop" aria-hidden="true">
@@ -93,6 +93,33 @@
     </div>
   </div>
 
+  <!-- Black Screen Cinematic Intro Overlay -->
+  <div id="intro-screen-overlay"
+    style="display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: #030208; z-index: 10001; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 40px 20px 80px 20px; box-sizing: border-box; transition: opacity 1.2s ease-out;">
+    <div id="intro-story-card" class="cosmic-card"
+      style="max-width: 620px; width: 100%; margin: auto; padding: 28px 24px; box-sizing: border-box; background: rgba(8, 14, 28, 0.9) !important; border: 1px solid rgba(0, 240, 255, 0.3) !important; box-shadow: 0 0 30px rgba(0, 240, 255, 0.2); flex-direction: column; align-items: center; gap: 20px; opacity: 1; filter: none;">
+      <div style="font-family: 'Rajdhani', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 2px; color: var(--neon-teal); text-transform: uppercase;">
+        🌌 OBSERVER INITIATION PROTOCOL
+      </div>
+      <div id="intro-narrative-text"
+        style="font-family: 'Share Tech Mono', monospace; font-size: 1.05rem; line-height: 1.7; color: var(--hydrogen-glow); letter-spacing: 1.5px; margin: 0; width: 100%; text-shadow: 0 0 10px rgba(0, 210, 255, 0.4);">
+      </div>
+      <button id="btn-intro-complete" class="upgrade-btn bg-gradient-purple"
+        style="display: none; margin-top: 10px; width: 100% !important; max-width: 360px; padding: 14px 20px !important; font-size: 0.85rem !important; border-radius: 8px; cursor: pointer; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 0 20px rgba(108, 92, 231, 0.5);">
+        [ INITIALIZE OBSERVER PROTOCOL ]
+      </button>
+    </div>
+  <!-- Forge Artifacts Selection Drawer Modal -->
+  <div id="artifact-picker-modal" class="artifact-modal-overlay" style="display: none;">
+    <div class="artifact-modal-card cosmic-card">
+      <div class="artifact-modal-header">
+        <span class="artifact-modal-title"><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg> SELECT ARTIFACT (SLOT <span id="picker-slot-num">1</span>)</span>
+        <button class="artifact-close-btn" onclick="ArtifactManager.closePicker()">&times;</button>
+      </div>
+      <div id="artifact-picker-list" class="artifact-picker-list"></div>
+    </div>
+  </div>
+
 
 
   <header class="game-header">
@@ -156,10 +183,10 @@
   <!-- Central Resource Metrics Readout HUD -->
   <div class="dashboard-container">
     <div id="prestige-bar" class="currency-prestige-bar">
-      ✨ Synaptic Dust: <span id="stardust-count">0</span> (<span id="stardust-boost">0</span>% Boost)
+      <svg class="ui-icon icon-yellow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" fill="currentColor"/></svg> Synaptic Dust: <span id="stardust-count">0</span> (<span id="stardust-boost">0</span>% Boost)
       <div id="tier2-currencies" class="tier2-hidden">
-        <span>🌀 Neural Synapse: <span id="pulsar-count">0</span></span> |
-        <span>🌌 Core Density: <span id="singularity-count">0</span></span>
+        <span><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15,9 22,12 15,15 12,22 9,15 2,12 9,9"/></svg> Neural Synapse: <span id="pulsar-count">0</span></span> |
+        <span><svg class="ui-icon icon-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Core Density: <span id="singularity-count">0</span></span>
       </div>
     </div>
 
@@ -229,6 +256,18 @@
         <small class="color-purple"><span id="darkmatter-rate">+0/s</span></small>
       </div>
     </div>
+
+    <!-- Forge Artifacts Capsule Bar (3 Equipped Slots) -->
+    <div id="artifact-bar" class="artifact-bar-container">
+      <div class="artifact-bar-header">
+        <span class="artifact-bar-title"><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg> FORGE ARTIFACTS</span>
+      </div>
+      <div class="artifact-slots-wrapper">
+        <div class="artifact-slot" data-slot="0" onclick="ArtifactManager.openPicker(0)"></div>
+        <div class="artifact-slot" data-slot="1" onclick="ArtifactManager.openPicker(1)"></div>
+        <div class="artifact-slot" data-slot="2" onclick="ArtifactManager.openPicker(2)"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Visualizer (Background) -->
@@ -245,47 +284,6 @@
   <!-- Main Viewport Screens -->
   <main>
     <div id="tab-content-core" class="tab-content">
-      <!-- Fixed Visualizer Spacer -->
-      <div class="core-visual-spacer" style="height: 250px; pointer-events: none;"></div>
-
-      <!-- Era I: Quantum Superposition Panel -->
-      <div class="era1-only"
-        style="max-width: 500px; margin: 15px auto 0 auto; width: 100%; box-sizing: border-box; padding: 0 12px;">
-        <div id="quantum-superposition-panel" class="cosmic-card"
-          style="flex-direction: column; align-items: stretch; gap: 10px; opacity: 1; filter: none;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span class="section-title color-purple" style="font-size: 0.85rem; letter-spacing: 1.5px; margin: 0;">🌌
-              QUANTUM SUPERPOSITION</span>
-            <span id="quantum-peak-badge"
-              style="font-size: 0.7rem; font-weight: bold; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.05); color: #b2bec3;">STABLE</span>
-          </div>
-
-          <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: #dfe6e9;">
-            <span>Amplitude: <strong id="quantum-amp-value" style="color: #6c5ce7;">1.00x</strong></span>
-            <span>Superposition Einsatz: <strong id="quantum-storage-value" style="color: #00cec9;">0 QF</strong></span>
-          </div>
-
-          <div class="amp-bar-container"
-            style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.05); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
-            <div id="quantum-amp-bar"
-              style="width: 20%; height: 100%; background: linear-gradient(90deg, #6c5ce7, #00cec9); transition: width 0.1s linear;">
-            </div>
-          </div>
-
-          <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
-            <button id="btn-measure-safe" class="upgrade-btn"
-              style="flex: 1; min-width: 110px; background: rgba(108, 92, 231, 0.2); border: 1px solid #6c5ce7; color: #fff;">Collapse
-              (Safe)</button>
-            <button id="btn-quantum-leap" class="upgrade-btn"
-              style="flex: 1; min-width: 110px; background: rgba(0, 206, 201, 0.2); border: 1px solid #00cec9; color: #fff;">Quantum
-              Leap (Risk)</button>
-            <button id="btn-tuner-toggle" class="upgrade-btn"
-              style="flex: 1; min-width: 110px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: #b2bec3; display: none;">Tuner:
-              OFF</button>
-          </div>
-        </div>
-      </div>
-
       <!-- Era III Actions -->
       <button id="flare-button" class="era3-only visual-hidden"></button>
     </div>
@@ -397,21 +395,21 @@
 
       <!-- Stardust Forge -->
       <div class="prestige-section" id="prestige-stardust-section" style="display: none;">
-        <div class="section-title color-purple">✨ Stardust Forge</div>
+        <div class="section-title color-purple"><svg class="ui-icon icon-yellow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" fill="currentColor"/></svg> Stardust Forge</div>
         <p class="section-desc">Deploy permanent Memory Traces to warp underlying metrics.</p>
         <div id="stardust-shop-list"></div>
       </div>
 
       <!-- Pulsar Engine -->
       <div class="prestige-section" id="prestige-pulsar-section" style="display: none;">
-        <div class="section-title color-teal">🌀 Pulsar Engine</div>
+        <div class="section-title color-teal"><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15,9 22,12 15,15 12,22 9,15 2,12 9,9"/></svg> Pulsar Engine</div>
         <p class="section-desc">Spend Pulsar Cores to hardcode structural macro-routines.</p>
         <div id="pulsar-shop-list"></div>
       </div>
 
       <!-- Event Horizon -->
       <div class="prestige-section" id="prestige-singularity-section" style="display: none;">
-        <div class="section-title color-dark-purple">🌌 Event Horizon</div>
+        <div class="section-title color-dark-purple"><svg class="ui-icon icon-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Event Horizon</div>
         <p class="section-desc">Sacrifice absolute mass metrics to invoke exponential calculation shifts.</p>
         <div id="singularity-shop-list"></div>
       </div>

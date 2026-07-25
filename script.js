@@ -5,31 +5,70 @@ if (typeof Decimal === 'undefined' && typeof break_infinity !== 'undefined') {
   window.Decimal = break_infinity.Decimal || break_infinity.default || break_infinity;
 }
 
+if (typeof Decimal !== 'undefined') {
+  if (typeof Decimal.affordGeometricSeries !== 'function') {
+    Decimal.affordGeometricSeries = function(resources, cost, ratio, currentLvl) {
+      let r = new Decimal(resources);
+      let c = new Decimal(cost);
+      let k = new Decimal(ratio);
+      if (c.lte(0) || r.lt(c)) return new Decimal(0);
+      let num = r.times(k.minus(1)).div(c).plus(1);
+      if (num.lte(0)) return new Decimal(0);
+      return num.log10().div(k.log10()).floor();
+    };
+  }
+  if (typeof Decimal.sumGeometricSeries !== 'function') {
+    Decimal.sumGeometricSeries = function(numItems, cost, ratio, currentLvl) {
+      let n = new Decimal(numItems);
+      let c = new Decimal(cost);
+      let k = new Decimal(ratio);
+      if (n.lte(0)) return new Decimal(0);
+      return c.times(k.pow(n).minus(1)).div(k.minus(1));
+    };
+  }
+  Decimal.prototype.affordGeometricSeries = function(cost, ratio, currentLvl) {
+    return Decimal.affordGeometricSeries(this, cost, ratio, currentLvl);
+  };
+  Decimal.prototype.sumGeometricSeries = function(cost, ratio, currentLvl) {
+    return Decimal.sumGeometricSeries(this, cost, ratio, currentLvl);
+  };
+}
+
 // ==========================================================================
 // [SEC-01.5] CENTRAL i18n DICTIONARY ARCHITECTURE
 // ==========================================================================
 const i18n = {
   en: {
     log_era1_initial: "t=0.000... ░▒▓ E-R-R-O-R ▓▒░ I have mass. I am severed from nothingness. The first fluctuation pierces the void.",
-    toast_superposition_unlock: "🌌 Critical Energy Density Reached! Wave functions collapse. Quantum Superposition has awakened!",
-    toast_era1_to_era2: "⚛️ Era II: The Primordial Soup begins. Energy cools. Quarks form building blocks, glued together by Gluons.",
-    toast_plasma_cooling: "⚡ Plasma Cooling Successful (3,000 K)! Recombination releases free electrons to form primordial atoms.",
-    toast_carbon_synthesis: "🔥 Carbon Synthesis Initiated (500M K)! The Triple-Alpha Process ignites. The path to the 2B K Iron Core is open!",
+    toast_superposition_unlock: "Critical Energy Density Reached! Wave functions collapse. Quantum Superposition has awakened!",
+    toast_era1_to_era2: "Era II: The Primordial Soup begins. Energy cools. Quarks form building blocks, glued together by Gluons.",
+    toast_plasma_cooling: "Plasma Cooling Successful (3,000 K)! Recombination releases free electrons to form primordial atoms.",
+    toast_carbon_synthesis: "Carbon Synthesis Initiated (500M K)! The Triple-Alpha Process ignites. The path to the 2B K Iron Core is open!",
     baryon_asymmetry_label: "Baryon Asymmetry (+{val}%)",
     baryon_asymmetry_tooltip: "A subtle imbalance—the dominance of matter over antimatter—serves as a catalyst for your yield.",
     milestone_tooltip: "Next Milestone (Lvl {lvl}): +5% Global Yield",
     autobuy_hydrogen: "[ Auto-Buy Hydrogen: {state} ]",
-    gateway_title: "🌌 GALACTIC IGNITION (ERA IV GATEWAY)",
+    gateway_title: "GALACTIC IGNITION (ERA IV GATEWAY)",
     gateway_req_temp: "Core Temperature: >= 2,000M K (2.0B K)",
     gateway_req_iron: "Accumulated Iron: >= 1,000 Fe",
     gateway_btn: "[ Trigger Hypernova & Enter Era IV ]",
     header_stellar_core: "STELLAR CORE INFRASTRUCTURE",
-    header_prestige_stardust: "✨ Synaptic Dust Infusion Matrix",
-    header_prestige_pulsar: "🌀 Neural Synapse Resonator",
-    header_prestige_singularity: "🌌 Core Density Event Horizon",
+    header_prestige_stardust: "Synaptic Dust Infusion Matrix",
+    header_prestige_pulsar: "Neural Synapse Resonator",
+    header_prestige_singularity: "Core Density Event Horizon",
     header_galactic_accretion: "MACRO GALACTIC ACCRETION NETWORK",
     btn_supernova_ready: "Trigger Supernova Collapse",
-    btn_supernova_locked: "Requires 100M K (Current: {temp} K)"
+    btn_supernova_locked: "Requires 100M K (Current: {temp} K)",
+    label_quantum_fluctuations: "QUANTUM FLUCTUATIONS",
+    label_energy_density: "ENERGY DENSITY",
+    label_primordial_quarks: "PRIMORDIAL QUARKS",
+    label_primordial_gluons: "PRIMORDIAL GLUONS",
+    label_hydrogen: "HYDROGEN",
+    label_helium: "HELIUM",
+    label_carbon: "CARBON",
+    label_iron: "IRON",
+    label_accumulated_hydrogen: "ACCUMULATED HYDROGEN",
+    label_stellar_mass_index: "STELLAR MASS INDEX"
   }
 };
 
@@ -117,36 +156,36 @@ const COSMIC_REGISTRY = {
   },
   upgrades: {
     quantum: {
-      gravityForce: { id: "gravityForce", name: "🌌 Gravitational Coupling", baseCost: new Decimal(10), costScaling: 1.4, gen: new Decimal(1), densityGen: new Decimal(0.5), desc: "Couples mass metrics. Generates +1 Fluctuation/s and +0.5 Density/s." },
-      weakForce: { id: "weakForce", name: "⚛️ Weak Nuclear Vector", baseCost: new Decimal(150), costScaling: 1.5, gen: new Decimal(12), densityGen: new Decimal(4), desc: "Triggers gauge boson exchange. Generates +12 Fluctuations/s and +4 Density/s." },
-      electromagneticForce: { id: "electromagneticForce", name: "🧲 Electromagnetic Tensor", baseCost: new Decimal(2000), costScaling: 1.6, gen: new Decimal(140), densityGen: new Decimal(30), desc: "Sustains photon field propagation. Generates +140 Fluctuations/s and +30 Density/s." },
-      strongForce: { id: "strongForce", name: "💥 Strong Color Force", baseCost: new Decimal(25000), costScaling: 1.8, gen: new Decimal(1800), densityGen: new Decimal(400), desc: "Binds color charges via gluons. Generates +1800 Fluctuations/s and +400 Density/s." },
-      decoherenceTuner: { id: "decoherenceTuner", name: "🎛️ Decoherence Tuner", baseCost: new Decimal(1000), costScaling: 1.0, max: 1, gen: new Decimal(0), densityGen: new Decimal(0), desc: "Unlocks automated Quantum Decoherence Tuner modes (Safe & Resonance)." }
+      gravityForce: { id: "gravityForce", name: "Gravitational Coupling", baseCost: new Decimal(10), costScaling: 1.35, gen: new Decimal(1), densityGen: new Decimal(0.5), desc: "Couples mass metrics. Generates +1 Fluctuation/s and +0.5 Density/s." },
+      weakForce: { id: "weakForce", name: "Weak Nuclear Vector", baseCost: new Decimal(120), costScaling: 1.4, gen: new Decimal(12), densityGen: new Decimal(4), desc: "Triggers gauge boson exchange. Generates +12 Fluctuations/s and +4 Density/s." },
+      electromagneticForce: { id: "electromagneticForce", name: "Electromagnetic Tensor", baseCost: new Decimal(1500), costScaling: 1.45, gen: new Decimal(140), densityGen: new Decimal(30), desc: "Sustains photon field propagation. Generates +140 Fluctuations/s and +30 Density/s." },
+      vacuumResonance: { id: "vacuumResonance", name: "Vacuum Resonance Field", baseCost: new Decimal(5000), costScaling: 1.5, gen: new Decimal(450), densityGen: new Decimal(100), desc: "Establishes macro quantum resonance. Generates +450 Fluctuations/s and +100 Density/s." },
+      strongForce: { id: "strongForce", name: "Strong Color Force", baseCost: new Decimal(18000), costScaling: 1.55, gen: new Decimal(1800), densityGen: new Decimal(400), desc: "Binds color charges via gluons. Generates +1800 Fluctuations/s and +400 Density/s." }
     },
     plasma: {
-      quarkCondenser: { id: "quarkCondenser", name: "💠 Quark Condenser", baseCost: new Decimal(20), costScaling: 1.3, gen: new Decimal(2), desc: "Condenses energy variables. Generates +2 Quarks/s." },
-      gluonBinding: { id: "gluonBinding", name: "🕸️ Gluon Matrix Synthesis", baseCost: new Decimal(120), costScaling: 1.4, gen: new Decimal(1.5), desc: "Binds strong color assets. Generates +1.5 Gluons/s. Requires Quark Condenser Lvl 3." },
-      leptonHarvest: { id: "leptonHarvest", name: "🔋 Lepton Collector", baseCost: new Decimal(400), costScaling: 1.45, gen: new Decimal(1), desc: "Extracts fundamental leptons. Generates +1 Lepton/s. Requires Gluon Matrix Lvl 2." },
-      plasmaAutomation: { id: "plasmaAutomation", name: "🤖 Proton Synthesizer", baseCost: new Decimal(2000), costScaling: 1.8, gen: new Decimal(0), desc: "Unlocks passive Proton generation based on Quark/Gluon rates as a catalyst. Requires Lepton Collector Lvl 1." },
-      baryoRadiator: { id: "baryoRadiator", name: "❄️ Baryogenesis Radiator", baseCost: new Decimal(100), costScaling: 1.4, cooling: new Decimal(7500), desc: "Radiates excess thermal mass. Cools Universe by 7,500 K/s. Costs 2 Protons/s." }
+      quarkCondenser: { id: "quarkCondenser", name: "Quark Condenser", baseCost: new Decimal(20), costScaling: 1.3, gen: new Decimal(2), desc: "Condenses energy variables. Generates +2 Quarks/s." },
+      gluonBinding: { id: "gluonBinding", name: "Gluon Matrix Synthesis", baseCost: new Decimal(120), costScaling: 1.4, gen: new Decimal(1.5), desc: "Binds strong color assets. Generates +1.5 Gluons/s. Requires Quark Condenser Lvl 3." },
+      leptonHarvest: { id: "leptonHarvest", name: "Lepton Collector", baseCost: new Decimal(400), costScaling: 1.45, gen: new Decimal(1), desc: "Extracts fundamental leptons. Generates +1 Lepton/s. Requires Gluon Matrix Lvl 2." },
+      plasmaAutomation: { id: "plasmaAutomation", name: "Proton Synthesizer", baseCost: new Decimal(2000), costScaling: 1.8, gen: new Decimal(0), desc: "Unlocks passive Proton generation based on Quark/Gluon rates as a catalyst. Requires Lepton Collector Lvl 1." },
+      baryoRadiator: { id: "baryoRadiator", name: "Baryogenesis Radiator", baseCost: new Decimal(100), costScaling: 1.4, cooling: new Decimal(7500), desc: "Radiates excess thermal mass. Cools Universe by 7,500 K/s. Costs 2 Protons/s." }
     },
     galaxy: {
-      armStabilization: { id: "armStabilization", name: "🌀 Velocity Harmonizers", baseCost: new Decimal(100), costScaling: 1.5, desc: "Insulates velocity vectors. Reduces ambient orbital matrix decay rate by 15% per level." },
-      elementalInjection: { id: "elementalInjection", name: "🧪 Heavy Element Injection", baseCost: new Decimal(250), costScaling: 1.6, desc: "Injects forged Carbon & Iron into planetary seeds, doubling Debris generation." }
+      armStabilization: { id: "armStabilization", name: "Velocity Harmonizers", baseCost: new Decimal(100), costScaling: 1.5, desc: "Insulates velocity vectors. Reduces ambient orbital matrix decay rate by 15% per level." },
+      elementalInjection: { id: "elementalInjection", name: "Heavy Element Injection", baseCost: new Decimal(250), costScaling: 1.6, desc: "Injects forged Carbon & Iron into planetary seeds, doubling Debris generation." }
     },
     stardust: {
-      fusionDiscount: { id: "fusionDiscount", name: "✨ Efficient Synthesis", max: 5, baseCost: new Decimal(1), currency: "stardust", desc: "Reduces Hydrogen fusions requirement by 2 per level." },
-      thermalInsulation: { id: "thermalInsulation", name: "🔥 Thermal Blanket", max: 10, baseCost: new Decimal(1), currency: "stardust", desc: "Increases Compression temp thermal heating by +20% per level." },
-      gravityDiscount: { id: "gravityDiscount", name: "🪐 Quantum Harmonics", max: 5, baseCost: new Decimal(2), currency: "stardust", desc: "Slightly reduces cost factor price scaling of Gravity nodes." },
-      flareForecasting: { id: "flareForecasting", name: "☀️ Flare Forecasting", max: 5, baseCost: new Decimal(2), currency: "stardust", desc: "Solar Prominences spawn 8% sooner per upgrade level." }
+      fusionDiscount: { id: "fusionDiscount", name: "Efficient Synthesis", max: 5, baseCost: new Decimal(1), currency: "stardust", desc: "Reduces Hydrogen fusions requirement by 2 per level." },
+      thermalInsulation: { id: "thermalInsulation", name: "Thermal Blanket", max: 10, baseCost: new Decimal(1), currency: "stardust", desc: "Increases Compression temp thermal heating by +20% per level." },
+      gravityDiscount: { id: "gravityDiscount", name: "Quantum Harmonics", max: 5, baseCost: new Decimal(2), currency: "stardust", desc: "Slightly reduces cost factor price scaling of Gravity nodes." },
+      flareForecasting: { id: "flareForecasting", name: "Flare Forecasting", max: 5, baseCost: new Decimal(2), currency: "stardust", desc: "Solar Prominences spawn 8% sooner per upgrade level." }
     },
     pulsar: {
-      autoCompress: { id: "autoCompress", name: "⚙️ Auto-Compressor", max: 10, baseCost: new Decimal(1), currency: "pulsarShards", desc: "Compresses core 1x per second per level if Helium capacity satisfies." },
-      autoSynthesize: { id: "autoSynthesize", name: "🔬 Catalytic Synthesizer", max: 10, baseCost: new Decimal(2), currency: "pulsarShards", desc: "Increases processing velocity of Carbon and Iron tiers by +100% per level." }
+      autoCompress: { id: "autoCompress", name: "Auto-Compressor", max: 10, baseCost: new Decimal(1), currency: "pulsarShards", desc: "Compresses core 1x per second per level if Helium capacity satisfies." },
+      autoSynthesize: { id: "autoSynthesize", name: "Catalytic Synthesizer", max: 10, baseCost: new Decimal(2), currency: "pulsarShards", desc: "Increases processing velocity of Carbon and Iron tiers by +100% per level." }
     },
     singularity: {
-      darkGravity: { id: "darkGravity", name: "🌌 Dark Matter Gravity", max: 5, baseCost: new Decimal(1), currency: "singularityMass", desc: "Applies structural ^1.05 exponential scaling factor to Hydrogen rates per level." },
-      stellarIgnition: { id: "stellarIgnition", name: "🌟 Stellar Ignition", max: 5, baseCost: new Decimal(1), currency: "singularityMass", desc: "Applies a ^1.05 exponential scaling to Core Compression thermal metrics per level." }
+      darkGravity: { id: "darkGravity", name: "Dark Matter Gravity", max: 5, baseCost: new Decimal(1), currency: "singularityMass", desc: "Applies structural ^1.05 exponential scaling factor to Hydrogen rates per level." },
+      stellarIgnition: { id: "stellarIgnition", name: "Stellar Ignition", max: 5, baseCost: new Decimal(1), currency: "singularityMass", desc: "Applies a ^1.05 exponential scaling to Core Compression thermal metrics per level." }
     }
   },
   solarEvents: {
@@ -185,13 +224,99 @@ const SHOP_CONFIGS = {
   singularity: { containerId: "singularity-shop-list", currency: "singularityMass", btnColor: "var(--singularity-purple)", label: "🌌 Density" }
 };
 
+const ICONS = {
+  createSVG(path, defaultClass = '') {
+    return `<svg class="ui-icon ${defaultClass}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+  },
+  get foam() { return this.createSVG('<ellipse cx="12" cy="12" rx="8" ry="3" transform="rotate(-30 12 12)"/><ellipse cx="12" cy="12" rx="8" ry="3" transform="rotate(30 12 12)"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/>', 'icon-cyan'); },
+  get starlight() { return this.createSVG('<path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" fill="currentColor"/>', 'icon-yellow'); },
+  get coherence() { return this.createSVG('<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>', 'icon-green'); },
+  get fusion() { return this.createSVG('<circle cx="12" cy="6" r="2" fill="currentColor"/><circle cx="6" cy="16" r="2" fill="currentColor"/><circle cx="18" cy="16" r="2" fill="currentColor"/><path d="M12 8a6 6 0 0 1 5.2 3M16.8 17.5a6 6 0 0 1 -9.6 0M6.8 11a6 6 0 0 1 5.2 -3" stroke-dasharray="2 2"/>', 'icon-purple'); },
+  get socket() { return this.createSVG('<polygon points="12,2 22,12 12,22 2,12" stroke-width="1.5"/><rect x="8" y="8" width="8" height="8" rx="1"/>', 'icon-grey'); },
+  get lock() { return this.createSVG('<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>', 'icon-red'); },
+  get bolt() { return this.createSVG('<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/>', 'icon-cyan'); },
+  get trophy() { return this.createSVG('<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z" fill="currentColor"/>', 'icon-yellow'); },
+  get pin() { return this.createSVG('<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3" fill="currentColor"/>', 'icon-purple'); },
+  get gear() { return this.createSVG('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>', 'icon-grey'); },
+  get singularity() { return this.createSVG('<circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>', 'icon-purple'); },
+  get pulsar() { return this.createSVG('<polygon points="12,2 15,9 22,12 15,15 12,22 9,15 2,12 9,9"/>', 'icon-cyan'); }
+};
+
+const ARTIFACT_DEFINITIONS = {
+  quantum_lens: {
+    id: 'quantum_lens',
+    name: 'Quantum Lens',
+    type: 'production',
+    rarity: 'Common',
+    color: '#00d2ff',
+    image: 'assets/artifacts/quantum_lens.png',
+    description: '+25% Quantum Foam Ertrag.',
+    effect: { type: 'productionMult', value: 1.25 }
+  },
+  density_compressor: {
+    id: 'density_compressor',
+    name: 'Density Compressor',
+    type: 'efficiency',
+    rarity: 'Common',
+    color: '#00ff88',
+    image: 'assets/artifacts/density_compressor.png',
+    description: '10% Ersparnis auf alle Generator-Kosten.',
+    effect: { type: 'costDiscount', value: 0.10 }
+  },
+  pulse_coupler: {
+    id: 'pulse_coupler',
+    name: 'Pulse Coupler',
+    type: 'synergy',
+    rarity: 'Uncommon',
+    color: '#a855f7',
+    image: 'assets/artifacts/pulse_coupler.png',
+    description: 'Jeder Core-Klick erhöht die Passiv-Produktion für 3s um +10%.',
+    effect: { type: 'clickPassiveBoost', value: 0.10, durationSec: 3 }
+  },
+  singularity_core: {
+    id: 'singularity_core',
+    name: 'Singularity Core',
+    type: 'production',
+    rarity: 'Uncommon',
+    color: '#00d2ff',
+    image: 'assets/artifacts/singularity_core.png',
+    description: '+50% Ertrag in Akt 3.',
+    effect: { type: 'act3Multiplier', value: 1.50 }
+  },
+  vacuum_stabilizer: {
+    id: 'vacuum_stabilizer',
+    name: 'Vacuum Stabilizer',
+    type: 'efficiency',
+    rarity: 'Rare',
+    color: '#00ff88',
+    image: 'assets/artifacts/vacuum_stabilizer.png',
+    description: 'Setzt Coherence dauerhaft auf 1.0 (schützt vor Glitches).',
+    effect: { type: 'vacuumCoherenceLock', value: 1.0 }
+  },
+  big_bang_catalyst: {
+    id: 'big_bang_catalyst',
+    name: 'Big Bang Catalyst',
+    type: 'synergy',
+    rarity: 'Rare',
+    color: '#a855f7',
+    image: 'assets/artifacts/big_bang_catalyst.png',
+    description: '+1 zusätzliche Prestige-Währung bei Aufstieg zu Ära II.',
+    effect: { type: 'extraPrestige', value: 1 }
+  }
+};
+
 // ==========================================================================
 // [SEC-03] ENGINE STATE ENGINE INITIALIZATION TREE
 // ==========================================================================
 const SAVE_VERSION = 15;
 
 function getInitialEra2State() {
-  return { plasmaFusersEnabled: false };
+  return {
+    currentAct: 1,
+    starlightEnergy: 0,
+    fusionStage: "H",
+    plasmaFusersEnabled: false
+  };
 }
 
 function getInitialEra3State() {
@@ -257,8 +382,23 @@ function getInitialGameState() {
       singularityMass: { amount: new Decimal(0) }
     },
     upgrades: { quantum: {}, plasma: {}, stardust: {}, pulsar: {}, singularity: {}, galaxy: {} },
-    era1Act: 1,
+    unfold: {
+      hasUnlocked1QF: false,
+      hasUnlocked10QF: false,
+      hasUnlocked100QF: false,
+      introCompleted: false
+    },
+    era1: {
+      currentAct: 1,
+      quantumFoam: 0,
+      vacuumCoherence: 0.0,
+      unfoldCount: 0
+    },
     era1Act2Notified: false,
+    era1Step0Logged: false,
+    era1Step1Logged: false,
+    era1Step2Logged: false,
+    era1Step3Logged: false,
     era1Collapses: 0,
     era2Act: 1,
     era2CoolingNotified: false,
@@ -266,11 +406,22 @@ function getInitialGameState() {
     era2: getInitialEra2State(),
     era3: getInitialEra3State(),
     era4: getInitialEra4State(),
+    prestige: {
+      autoStabilizer: false
+    },
+    artifacts: {
+      equipped: [null, null, null],
+      unlocked: ["quantum_lens", "density_compressor", "pulse_coupler", "singularity_core", "vacuum_stabilizer", "big_bang_catalyst"],
+      modifiers: {
+        productionMult: 1.0,
+        costDiscount: 0.0,
+        clickCoherenceBonus: 0.0,
+        clickPassiveBoost: 0.0,
+        act3Multiplier: 1.0,
+        activeClickBoostSec: 0
+      }
+    },
     coherence: new Decimal(0),
-    quantumStorage: new Decimal(0),
-    quantumPhaseTime: 0,
-    quantumTunerUnlocked: false,
-    quantumTunerMode: 'off',
     activeTab: "core",
     buyMode: 1,
     autoBuyer: {
@@ -318,14 +469,59 @@ let flareSimSuppressed = false;
 
 function ensureStateShape() {
   const initialState = getInitialGameState();
-  deepMergeMissing(gameState, initialState);
+  if (!gameState.unfold) {
+    gameState.unfold = { hasUnlocked1QF: false, hasUnlocked10QF: false, hasUnlocked100QF: false, introCompleted: false };
+  }
+  if (typeof gameState.unfold.hasUnlocked1QF !== 'boolean') gameState.unfold.hasUnlocked1QF = false;
+  if (typeof gameState.unfold.hasUnlocked10QF !== 'boolean') gameState.unfold.hasUnlocked10QF = false;
+  if (typeof gameState.unfold.hasUnlocked100QF !== 'boolean') gameState.unfold.hasUnlocked100QF = false;
+  if (typeof gameState.unfold.introCompleted !== 'boolean') gameState.unfold.introCompleted = false;
+  if (!gameState.era1) {
+    gameState.era1 = { currentAct: 1, quantumFoam: 0, vacuumCoherence: 0.0, unfoldCount: 0 };
+  }
+  if (typeof gameState.era1.currentAct !== 'number') gameState.era1.currentAct = 1;
+  if (typeof gameState.era1.quantumFoam !== 'number') gameState.era1.quantumFoam = 0;
+  if (typeof gameState.era1.vacuumCoherence !== 'number') gameState.era1.vacuumCoherence = 0.0;
+  if (typeof gameState.era1.unfoldCount !== 'number') gameState.era1.unfoldCount = 0;
+
+  if (!gameState.era2 || typeof gameState.era2 !== 'object') {
+    gameState.era2 = getInitialEra2State();
+  }
+  if (typeof gameState.era2.currentAct !== 'number') gameState.era2.currentAct = 1;
+  if (typeof gameState.era2.starlightEnergy !== 'number') gameState.era2.starlightEnergy = 0;
+  if (typeof gameState.era2.fusionStage !== 'string') gameState.era2.fusionStage = "H";
+
+  if (!gameState.prestige) {
+    gameState.prestige = { autoStabilizer: false };
+  }
+  if (typeof gameState.prestige.autoStabilizer !== 'boolean') gameState.prestige.autoStabilizer = false;
+
+  if (!gameState.artifacts || typeof gameState.artifacts !== 'object') {
+    gameState.artifacts = {
+      equipped: [null, null, null],
+      unlocked: ["quantum_lens", "density_compressor", "pulse_coupler", "singularity_core", "vacuum_stabilizer", "big_bang_catalyst"],
+      modifiers: { productionMult: 1.0, costDiscount: 0.0, clickCoherenceBonus: 0.0, clickPassiveBoost: 0.0, act3Multiplier: 1.0, activeClickBoostSec: 0 }
+    };
+  }
+  if (!Array.isArray(gameState.artifacts.equipped)) gameState.artifacts.equipped = [null, null, null];
+  while (gameState.artifacts.equipped.length < 3) gameState.artifacts.equipped.push(null);
+  if (!Array.isArray(gameState.artifacts.unlocked)) {
+    gameState.artifacts.unlocked = ["quantum_lens", "density_compressor", "pulse_coupler", "singularity_core", "vacuum_stabilizer", "big_bang_catalyst"];
+  }
+  if (!gameState.artifacts.modifiers) {
+    gameState.artifacts.modifiers = { productionMult: 1.0, costDiscount: 0.0, clickCoherenceBonus: 0.0, clickPassiveBoost: 0.0, act3Multiplier: 1.0, activeClickBoostSec: 0 };
+  }
+
   if (typeof gameState.era1Act !== 'number') gameState.era1Act = 1;
   if (typeof gameState.era1Act2Notified !== 'boolean') gameState.era1Act2Notified = false;
+  if (typeof gameState.era1Step0Logged !== 'boolean') gameState.era1Step0Logged = false;
+  if (typeof gameState.era1Step1Logged !== 'boolean') gameState.era1Step1Logged = false;
+  if (typeof gameState.era1Step2Logged !== 'boolean') gameState.era1Step2Logged = false;
+  if (typeof gameState.era1Step3Logged !== 'boolean') gameState.era1Step3Logged = false;
   if (typeof gameState.era1Collapses !== 'number') gameState.era1Collapses = 0;
   if (typeof gameState.era2Act !== 'number') gameState.era2Act = 1;
   if (typeof gameState.era2CoolingNotified !== 'boolean') gameState.era2CoolingNotified = false;
   if (typeof gameState.era3CarbonNotified !== 'boolean') gameState.era3CarbonNotified = false;
-  if (gameState.era2 === undefined) gameState.era2 = getInitialEra2State();
   if (gameState.era3 === undefined) gameState.era3 = getInitialEra3State();
   if (!(gameState.era3.lifetimeCarbonThisRun instanceof Decimal)) {
     gameState.era3.lifetimeCarbonThisRun = new Decimal(gameState.era3.lifetimeCarbonThisRun || 0);
@@ -334,10 +530,6 @@ function ensureStateShape() {
   if (!gameState.autoBuyer.hydrogen) gameState.autoBuyer.hydrogen = { active: false };
 
   if (!(gameState.coherence instanceof Decimal)) gameState.coherence = new Decimal(gameState.coherence || 0);
-  if (!(gameState.quantumStorage instanceof Decimal)) gameState.quantumStorage = new Decimal(gameState.quantumStorage || 0);
-  if (typeof gameState.quantumPhaseTime !== 'number' || isNaN(gameState.quantumPhaseTime)) gameState.quantumPhaseTime = 0;
-  if (typeof gameState.quantumTunerUnlocked !== 'boolean') gameState.quantumTunerUnlocked = Boolean(gameState.quantumTunerUnlocked);
-  if (typeof gameState.quantumTunerMode !== 'string') gameState.quantumTunerMode = 'off';
 
   for (let resKey in initialState.resources) {
     if (!gameState.resources[resKey]) {
@@ -377,6 +569,109 @@ function deduct(key, amount) {
 // ==========================================================================
 // [SEC-05] VISUAL FORMATTING & AUDIO HELPER ENGINES
 // ==========================================================================
+async function playIntroNarrative() {
+  const target = document.getElementById('intro-narrative-text');
+  const btn = document.getElementById('btn-intro-complete');
+  if (!target || target.dataset.playing === "true") return;
+  target.dataset.playing = "true";
+
+  const lines = [
+    "t = -0.00000000001s :: PRE-COSMIC VACUUM STATE",
+    "No space. No time. Only infinite probability density dormant in pure nothingness.",
+    "A single observer awakens. Your first glance collapses the void and ignites the Star Forge."
+  ];
+
+  target.innerHTML = "";
+  for (const line of lines) {
+    if (target.dataset.skipped === "true") break;
+    const p = document.createElement('p');
+    p.className = 'intro-line';
+    p.style.margin = "0 0 12px 0";
+    target.appendChild(p);
+    for (let i = 0; i < line.length; i++) {
+      if (target.dataset.skipped === "true") break;
+      p.textContent += line[i];
+      await new Promise(r => setTimeout(r, 25));
+    }
+    if (target.dataset.skipped === "true") break;
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  if (target.dataset.skipped === "true") {
+    target.innerHTML = "";
+    lines.forEach(line => {
+      const p = document.createElement('p');
+      p.className = 'intro-line';
+      p.style.margin = "0 0 12px 0";
+      p.textContent = line;
+      target.appendChild(p);
+    });
+  }
+
+  if (btn) {
+    btn.style.display = 'inline-block';
+    btn.classList.remove('hidden');
+    btn.style.opacity = '1';
+  }
+}
+
+function showIntroScreenCinematic(onComplete) {
+  const overlay = document.getElementById('intro-screen-overlay');
+  const storyCard = document.getElementById('intro-story-card');
+  const textEl = document.getElementById('intro-narrative-text');
+  const completeBtn = document.getElementById('btn-intro-complete');
+  if (!overlay || !textEl) {
+    if (onComplete) onComplete();
+    return;
+  }
+  if (overlay.dataset.initialized === "true") return;
+  overlay.dataset.initialized = "true";
+
+  if (window.playtestHarness && window.playtestHarness.isRunning) {
+    if (onComplete) onComplete();
+    return;
+  }
+
+  let isDone = false;
+
+  overlay.style.display = 'flex';
+  overlay.style.opacity = '1';
+  if (storyCard) {
+    storyCard.style.display = 'flex';
+    storyCard.style.opacity = '1';
+    storyCard.style.filter = 'none';
+  }
+  if (completeBtn) completeBtn.style.display = 'none';
+
+  function finishIntro() {
+    if (isDone) return;
+    isDone = true;
+    overlay.style.opacity = '0';
+    setTimeout(() => {
+      overlay.style.display = 'none';
+      if (gameState.unfold) gameState.unfold.introCompleted = true;
+      isDirty = true;
+      if (onComplete) onComplete();
+    }, 1200);
+  }
+
+  if (completeBtn) {
+    completeBtn.onclick = (e) => {
+      e.stopPropagation();
+      finishIntro();
+    };
+  }
+
+  if (storyCard) {
+    storyCard.onclick = () => {
+      textEl.dataset.skipped = "true";
+      playIntroNarrative();
+    };
+  }
+
+  playIntroNarrative();
+}
+
 function startEraTransition(targetEpoch, transitionText, onConfirm) {
   const overlay = document.getElementById('era-transition-overlay');
   const titleEl = document.getElementById('trans-title');
@@ -428,17 +723,41 @@ function startEraTransition(targetEpoch, transitionText, onConfirm) {
 
 function corruptText(cleanText, coherenceValue) {
   if (!cleanText) return "";
-  let coh = (coherenceValue instanceof Decimal) ? coherenceValue.toNumber() : Number(coherenceValue || 0);
-  coh = Math.max(0, Math.min(100, coh));
-  let corruptionChance = (1 - (coh / 100)) * 0.8;
+
+  // Strictly check exemption rules
+  if (gameState.prestige && gameState.prestige.autoStabilizer === true) {
+    return cleanText;
+  }
+  if (gameState.era1) {
+    if (gameState.era1.currentAct > 1 || gameState.era1.vacuumCoherence >= 1.0) {
+      return cleanText;
+    }
+  }
+
+  let coh = 0.0;
+  if (typeof coherenceValue === 'number') {
+    coh = coherenceValue;
+  } else if (coherenceValue instanceof Decimal) {
+    coh = coherenceValue.toNumber();
+  } else if (gameState.era1 && typeof gameState.era1.vacuumCoherence === 'number') {
+    coh = gameState.era1.vacuumCoherence;
+  }
+
+  // Normalize if coh passed in 0..100 range
+  if (coh > 1.0) coh = coh / 100.0;
+  coh = Math.max(0.0, Math.min(1.0, coh));
+
+  if (coh >= 1.0) return cleanText;
+
+  let corruptionChance = (1.0 - coh) * 0.8;
   if (corruptionChance <= 0) return cleanText;
 
-  const pool = ['#', '%', '░', '█', 'Ø', '§', '?', '*', '&'];
+  const pool = ['#', '%', '░', '█', 'Ø', '§', 'Δ', 'X', '0'];
   let result = "";
   for (let idx = 0; idx < cleanText.length; idx++) {
     let char = cleanText.charAt(idx);
-    if (char === ' ') {
-      result += ' ';
+    if (char === ' ' || char === '\n' || char === '\r' || char === '\t') {
+      result += char;
     } else {
       if (Math.random() < corruptionChance) {
         let randChar = pool[Math.floor(Math.random() * pool.length)];
@@ -451,7 +770,262 @@ function corruptText(cleanText, coherenceValue) {
   return result;
 }
 
-function typeWriter(element, text, speed = 25) {
+const ActManager = {
+  evaluate() {
+    if (!gameState) return;
+
+    if (gameState.activeEpoch === 1) {
+      if (!gameState.era1) {
+        gameState.era1 = { currentAct: 1, quantumFoam: 0, vacuumCoherence: 0.0, unfoldCount: 0 };
+      }
+      const qf = gameState.resources.quantumFluctuations ? gameState.resources.quantumFluctuations.amount : new Decimal(0);
+      gameState.era1.quantumFoam = qf.toNumber();
+
+      let targetAct = 1;
+      if (qf.gte(10000)) {
+        targetAct = 3;
+      } else if (qf.gte(100) && gameState.era1.vacuumCoherence >= 1.0) {
+        targetAct = 2;
+      } else if (gameState.unfold && gameState.unfold.hasUnlocked100QF && gameState.era1.vacuumCoherence >= 1.0) {
+        targetAct = 2;
+      }
+
+      if (targetAct !== gameState.era1.currentAct) {
+        gameState.era1.currentAct = targetAct;
+        if (targetAct === 2 && gameState.unfold) {
+          gameState.unfold.hasUnlocked10QF = true;
+        }
+        isDirty = true;
+      }
+      this.syncActAttribute(gameState.era1.currentAct);
+
+    } else if (gameState.activeEpoch === 2) {
+      if (!gameState.era2) {
+        gameState.era2 = getInitialEra2State();
+      }
+      let targetAct = 1;
+      const protons = gameState.resources.protons ? gameState.resources.protons.amount : new Decimal(0);
+      if (protons.gte(800000) || (gameState.plasmaTemperature && gameState.plasmaTemperature.lte(3000))) {
+        targetAct = 3;
+      } else if (gameState.upgrades.plasma && gameState.upgrades.plasma.plasmaAutomation && gameState.upgrades.plasma.plasmaAutomation.level > 0) {
+        targetAct = 2;
+      }
+
+      if (targetAct !== gameState.era2.currentAct) {
+        gameState.era2.currentAct = targetAct;
+        isDirty = true;
+      }
+      this.syncActAttribute(gameState.era2.currentAct);
+    } else {
+      this.syncActAttribute(1);
+    }
+  },
+
+  syncActAttribute(actNum) {
+    const actStr = String(actNum || 1);
+    if (document.body && document.body.getAttribute('data-act') !== actStr) {
+      document.body.setAttribute('data-act', actStr);
+    }
+    const appRoot = document.getElementById('app-root');
+    if (appRoot && appRoot.getAttribute('data-act') !== actStr) {
+      appRoot.setAttribute('data-act', actStr);
+    }
+  }
+};
+
+const ArtifactManager = {
+  activeSlotForPicker: null,
+
+  recalculateArtifactModifiers() {
+    if (!gameState) return;
+    if (!gameState.artifacts) {
+      gameState.artifacts = {
+        equipped: [null, null, null],
+        unlocked: ["quantum_lens", "density_compressor", "pulse_coupler", "singularity_core", "vacuum_stabilizer", "big_bang_catalyst"],
+        modifiers: { productionMult: 1.0, costDiscount: 0.0, clickCoherenceBonus: 0.0, clickPassiveBoost: 0.0, act3Multiplier: 1.0, activeClickBoostSec: 0 }
+      };
+    }
+
+    const mods = {
+      productionMult: 1.0,
+      costDiscount: 0.0,
+      clickCoherenceBonus: 0.0,
+      clickPassiveBoost: 0.0,
+      act3Multiplier: 1.0,
+      hasVacuumStabilizer: false,
+      extraPrestige: 0,
+      activeClickBoostSec: gameState.artifacts.modifiers ? (gameState.artifacts.modifiers.activeClickBoostSec || 0) : 0
+    };
+
+    const equipped = gameState.artifacts.equipped || [null, null, null];
+    for (let i = 0; i < 3; i++) {
+      const id = equipped[i];
+      if (!id) continue;
+      const def = ARTIFACT_DEFINITIONS[id];
+      if (!def || !def.effect) continue;
+
+      const eff = def.effect;
+      if (eff.type === 'productionMult') mods.productionMult *= eff.value;
+      if (eff.type === 'costDiscount') mods.costDiscount = Math.min(0.9, mods.costDiscount + eff.value);
+      if (eff.type === 'clickPassiveBoost') mods.clickPassiveBoost += eff.value;
+      if (eff.type === 'act3Multiplier') mods.act3Multiplier *= eff.value;
+      if (eff.type === 'vacuumCoherenceLock') {
+        mods.hasVacuumStabilizer = true;
+        if (gameState.era1) gameState.era1.vacuumCoherence = 1.0;
+      }
+      if (eff.type === 'extraPrestige') mods.extraPrestige += eff.value;
+    }
+
+    gameState.artifacts.modifiers = mods;
+    isDirty = true;
+    this.renderBar();
+  },
+
+  equip(slotIndex, artifactId) {
+    if (slotIndex < 0 || slotIndex > 2) return;
+    if (!gameState.artifacts) this.recalculateArtifactModifiers();
+
+    const equipped = gameState.artifacts.equipped;
+    const existingIndex = equipped.indexOf(artifactId);
+    if (existingIndex !== -1) {
+      equipped[existingIndex] = null;
+    }
+
+    equipped[slotIndex] = artifactId;
+    this.recalculateArtifactModifiers();
+    this.closePicker();
+  },
+
+  unequip(slotIndex) {
+    if (slotIndex < 0 || slotIndex > 2) return;
+    if (!gameState.artifacts) this.recalculateArtifactModifiers();
+
+    gameState.artifacts.equipped[slotIndex] = null;
+    this.recalculateArtifactModifiers();
+    this.closePicker();
+  },
+
+  unlock(artifactId) {
+    if (!gameState.artifacts) this.recalculateArtifactModifiers();
+    if (!gameState.artifacts.unlocked.includes(artifactId)) {
+      gameState.artifacts.unlocked.push(artifactId);
+      isDirty = true;
+    }
+  },
+
+  openPicker(slotIndex) {
+    this.activeSlotForPicker = slotIndex;
+    const modal = document.getElementById('artifact-picker-modal');
+    const slotNum = document.getElementById('picker-slot-num');
+    if (slotNum) slotNum.textContent = String(slotIndex + 1);
+
+    this.renderPicker();
+    if (modal) modal.style.display = 'flex';
+  },
+
+  closePicker() {
+    this.activeSlotForPicker = null;
+    const modal = document.getElementById('artifact-picker-modal');
+    if (modal) modal.style.display = 'none';
+  },
+
+  renderBar() {
+    const bar = document.getElementById('artifact-bar');
+    if (!bar) return;
+
+    const isUnlockedUI = (gameState.era1 && gameState.era1.currentAct >= 2) || gameState.activeEpoch > 1 || (gameState.unfold && gameState.unfold.hasUnlocked10QF);
+    bar.style.display = isUnlockedUI ? 'flex' : 'none';
+
+    const equipped = gameState.artifacts ? (gameState.artifacts.equipped || [null, null, null]) : [null, null, null];
+
+    for (let i = 0; i < 3; i++) {
+      const slotEl = document.querySelector(`.artifact-slot[data-slot="${i}"]`);
+      if (!slotEl) continue;
+
+      const artId = equipped[i];
+      if (!artId) {
+        slotEl.removeAttribute('data-type');
+        slotEl.innerHTML = `<span class="artifact-slot-empty">+ SLOT ${i + 1}</span>`;
+      } else {
+        const def = ARTIFACT_DEFINITIONS[artId];
+        if (def) {
+          slotEl.setAttribute('data-type', def.type);
+          slotEl.innerHTML = `
+            <div class="artifact-card">
+              <div class="artifact-card-img-wrapper">
+                <img src="${def.image}" alt="${def.name}" class="artifact-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="artifact-card-fallback" style="display:none; color:${def.color};">${ICONS.socket}</div>
+              </div>
+              <div class="artifact-card-content">
+                <div class="artifact-card-name">${def.name}</div>
+                <div class="artifact-card-desc">${def.description}</div>
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
+  },
+
+  renderPicker() {
+    const listEl = document.getElementById('artifact-picker-list');
+    if (!listEl) return;
+
+    listEl.innerHTML = '';
+    const unlocked = gameState.artifacts ? (gameState.artifacts.unlocked || []) : [];
+    const equipped = gameState.artifacts ? (gameState.artifacts.equipped || [null, null, null]) : [null, null, null];
+    const currentSlot = this.activeSlotForPicker;
+
+    if (equipped[currentSlot]) {
+      const currentId = equipped[currentSlot];
+      const def = ARTIFACT_DEFINITIONS[currentId];
+      if (def) {
+        const item = document.createElement('div');
+        item.className = 'artifact-picker-item';
+        item.innerHTML = `
+          <div class="artifact-picker-item-left">
+            <div class="artifact-picker-thumb">
+              <img src="${def.image}" alt="${def.name}" class="artifact-picker-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+              <div class="artifact-picker-fallback" style="display:none; color:${def.color};">${ICONS.socket}</div>
+            </div>
+            <div class="artifact-picker-info">
+              <div class="artifact-picker-name" style="color: ${def.color};">${ICONS.pin} EQUIPPED: ${def.name}</div>
+              <div class="artifact-picker-desc">${def.description}</div>
+            </div>
+          </div>
+          <button class="artifact-equip-btn" style="border-color: #ff7675; color: #ff7675; background: rgba(255, 118, 117, 0.15);" onclick="ArtifactManager.unequip(${currentSlot})">ABLEGEN</button>
+        `;
+        listEl.appendChild(item);
+      }
+    }
+
+    for (let id of unlocked) {
+      if (equipped[currentSlot] === id) continue;
+      const def = ARTIFACT_DEFINITIONS[id];
+      if (!def) continue;
+
+      const isEquippedElsewhere = equipped.includes(id);
+      const item = document.createElement('div');
+      item.className = 'artifact-picker-item';
+      item.innerHTML = `
+        <div class="artifact-picker-item-left">
+          <div class="artifact-picker-thumb">
+            <img src="${def.image}" alt="${def.name}" class="artifact-picker-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            <div class="artifact-picker-fallback" style="display:none; color:${def.color};">${ICONS.socket}</div>
+          </div>
+          <div class="artifact-picker-info">
+            <div class="artifact-picker-name" style="color: ${def.color};">${def.name} <small style="opacity: 0.6;">(${def.rarity})</small></div>
+            <div class="artifact-picker-desc">${def.description}</div>
+          </div>
+        </div>
+        <button class="artifact-equip-btn" onclick="ArtifactManager.equip(${currentSlot}, '${id}')">${isEquippedElsewhere ? 'VERSCHIEBEN' : 'AUSRÜSTEN'}</button>
+      `;
+      listEl.appendChild(item);
+    }
+  }
+};
+
+function typeWriter(element, text, speed = 25, onComplete = null) {
   element.textContent = "";
   let i = 0;
   clearInterval(window.typewriterInterval);
@@ -461,6 +1035,9 @@ function typeWriter(element, text, speed = 25) {
       i++;
     } else {
       clearInterval(window.typewriterInterval);
+      if (typeof onComplete === 'function') {
+        onComplete();
+      }
     }
   }, speed);
 }
@@ -502,7 +1079,7 @@ function playSupernovaSound() {
 // [SEC-06] MATHEMATICAL MATH RULES & PRODUCTION FORMULAS
 // ==========================================================================
 function getMilestoneMultiplier(level) {
-  let milestones = Math.floor((level || 0) / 25);
+  let milestones = Math.floor((level || 0) / 10);
   return 1.0 + (milestones * 0.05);
 }
 
@@ -516,58 +1093,22 @@ function getQuantumFluctuationRate() {
       rate = rate.plus(def.gen.times(state.level).times(mult));
     }
   }
-  return rate.times(gameState.inflatonMultiplier || 1);
-}
-
-function getQuantumAmplitude() {
-  const t = gameState.quantumPhaseTime || 0;
-  const sinVal = Math.sin((2 * Math.PI * t) / 15);
-  const amp = 2.55 + (2.45 * sinVal);
-  return Math.max(0.1, Math.min(5.0, amp));
-}
-
-function measureQuantumSafe() {
-  if (!gameState.quantumStorage || gameState.quantumStorage.lte(0)) return;
-  const amp = getQuantumAmplitude();
-  const yieldAmount = gameState.quantumStorage.times(amp).round();
-  gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(yieldAmount);
-  gameState.coherence = Decimal.min(100, gameState.coherence.plus(1.0));
-  gameState.quantumStorage = new Decimal(0);
-  gameState.era1Collapses = (gameState.era1Collapses || 0) + 1;
-  isDirty = true;
-}
-
-function quantumLeapRisk() {
-  if (!gameState.quantumStorage || gameState.quantumStorage.lte(0)) return;
-  const amp = getQuantumAmplitude();
-  if (amp >= 4.0) {
-    const yieldAmount = gameState.quantumStorage.times(amp).times(5).round();
-    gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(yieldAmount);
-    gameState.coherence = Decimal.max(0, gameState.coherence.minus(2.5));
-    gameState.quantumStorage = new Decimal(0);
-    gameState.era1Collapses = (gameState.era1Collapses || 0) + 1;
-    isDirty = true;
-  } else {
-    gameState.quantumStorage = new Decimal(0);
-    isDirty = true;
-    const panel = document.getElementById('quantum-superposition-panel');
-    if (panel) {
-      panel.classList.remove('panel-glitch-active');
-      void panel.offsetWidth;
-      panel.classList.add('panel-glitch-active');
-      setTimeout(() => panel.classList.remove('panel-glitch-active'), 450);
+  let artifactMult = 1.0;
+  if (gameState.artifacts && gameState.artifacts.modifiers) {
+    const mods = gameState.artifacts.modifiers;
+    artifactMult *= (mods.productionMult || 1.0);
+    if (gameState.era1 && gameState.era1.currentAct === 3) {
+      artifactMult *= (mods.act3Multiplier || 1.0);
+    }
+    if (mods.activeClickBoostSec && mods.activeClickBoostSec > 0) {
+      artifactMult *= (1.0 + (mods.clickPassiveBoost || 0.0));
     }
   }
+
+  return rate.times(gameState.inflatonMultiplier || 1).times(artifactMult);
 }
 
-function cycleQuantumTunerMode() {
-  if (!gameState.quantumTunerUnlocked && !(gameState.upgrades.quantum.decoherenceTuner && gameState.upgrades.quantum.decoherenceTuner.level > 0)) return;
-  const modes = ['off', 'safe', 'resonance'];
-  let currentIdx = modes.indexOf(gameState.quantumTunerMode || 'off');
-  let nextIdx = (currentIdx + 1) % modes.length;
-  gameState.quantumTunerMode = modes[nextIdx];
-  isDirty = true;
-}
+
 
 function getEnergyDensityRate() {
   let rate = new Decimal(0);
@@ -733,6 +1274,7 @@ function getGalacticMergeYield() {
 // ==========================================================================
 const Viewport = {
   elCache: {},
+  diffCache: {},
   getEl(id) {
     if (!this.elCache[id]) {
       this.elCache[id] = document.getElementById(id);
@@ -741,25 +1283,64 @@ const Viewport = {
   },
   clearElCache() {
     this.elCache = {};
+    this.diffCache = {};
   },
 
-  syncAnchor() {
-    const core = this.getEl('star-core');
-    if (core) {
-      const rect = core.getBoundingClientRect();
-      const centerY = rect.top + (rect.height / 2);
-      const centerX = rect.left + (rect.width / 2);
-      document.documentElement.style.setProperty('--core-anchor-y', `${centerY}px`);
-      document.documentElement.style.setProperty('--core-anchor-x', `${centerX}px`);
+  setTextContent(idOrEl, text) {
+    const el = typeof idOrEl === 'string' ? this.getEl(idOrEl) : idOrEl;
+    if (!el) return;
+    const cacheKey = el.id ? `text_${el.id}` : null;
+    const str = String(text);
+    if (cacheKey) {
+      if (this.diffCache[cacheKey] === str) return;
+      this.diffCache[cacheKey] = str;
+    }
+    if (el.textContent !== str) {
+      el.textContent = str;
+    }
+  },
 
-      let totalProgress = 0;
+  setInnerHTML(idOrEl, html) {
+    const el = typeof idOrEl === 'string' ? this.getEl(idOrEl) : idOrEl;
+    if (!el) return;
+    const cacheKey = el.id ? `html_${el.id}` : null;
+    const str = String(html);
+    if (cacheKey) {
+      if (this.diffCache[cacheKey] === str) return;
+      this.diffCache[cacheKey] = str;
+    }
+    if (!str.includes('<')) {
+      if (el.textContent !== str) el.textContent = str;
+    } else {
+      if (el.innerHTML !== str) el.innerHTML = str;
+    }
+  },
+
+  _coreAnchorCache: null,
+  syncAnchor(force = false) {
+    const core = this.getEl('star-core');
+    if (!core) return;
+    if (!force && this._coreAnchorCache && (Date.now() - this._coreAnchorCache.time < 500)) {
+      return;
+    }
+    const rect = core.getBoundingClientRect();
+    const centerY = rect.top + (rect.height / 2);
+    const centerX = rect.left + (rect.width / 2);
+    this._coreAnchorCache = { x: centerX, y: centerY, time: Date.now() };
+    document.documentElement.style.setProperty('--core-anchor-y', `${centerY}px`);
+    document.documentElement.style.setProperty('--core-anchor-x', `${centerX}px`);
+
+    let totalProgress = 0;
+    if (gameState.upgrades) {
       for (let cat of ['quantum', 'plasma']) {
-        for (let key in gameState.upgrades[cat]) {
-          totalProgress += (gameState.upgrades[cat][key].level || 0);
+        if (gameState.upgrades[cat]) {
+          for (let key in gameState.upgrades[cat]) {
+            totalProgress += (gameState.upgrades[cat][key].level || 0);
+          }
         }
       }
-      document.documentElement.style.setProperty('--cosmic-progress', totalProgress);
     }
+    document.documentElement.style.setProperty('--cosmic-progress', totalProgress);
   },
 
   showToast(message, duration = 4000) {
@@ -1039,7 +1620,14 @@ const Viewport = {
           </div>
           <button class="upgrade-btn" style="padding: 6px 14px; border-radius: 8px; font-weight: bold; font-size:0.78rem; margin:0; width:auto !important; min-height:unset;"></button>
         `;
-        row.querySelector('.upgrade-btn').addEventListener('click', () => Economy.buy(category, key));
+        const btn = row.querySelector('.upgrade-btn');
+        btn.addEventListener('click', () => Economy.buy(category, key));
+        row._cache = {
+          name: row.querySelector('.name-display'),
+          lvl: row.querySelector('.lvl-display'),
+          desc: row.querySelector('.desc-display'),
+          btn: btn
+        };
         container.appendChild(row);
       }
     }
@@ -1050,7 +1638,23 @@ const Viewport = {
       if (!state) continue;
 
       const row = document.getElementById(`${category}-row-${key}`);
-      if (category === 'plasma' && row) {
+      if (!row) continue;
+      if (!row._cache) {
+        row._cache = {
+          name: row.querySelector('.name-display'),
+          lvl: row.querySelector('.lvl-display'),
+          desc: row.querySelector('.desc-display'),
+          btn: row.querySelector('.upgrade-btn')
+        };
+      }
+
+      if (category === 'quantum') {
+        const hasUnlocked10 = gameState.unfold && gameState.unfold.hasUnlocked10QF;
+        if (!hasUnlocked10 && key !== 'gravityForce' && state.level === 0) { row.style.display = 'none'; continue; }
+        else { row.style.display = 'flex'; }
+      }
+
+      if (category === 'plasma') {
         if (key === 'gluonBinding' && gameState.upgrades.plasma.quarkCondenser.level < 3) { row.style.display = 'none'; continue; }
         else if (key === 'leptonHarvest' && gameState.upgrades.plasma.gluonBinding.level < 2) { row.style.display = 'none'; continue; }
         else if (key === 'plasmaAutomation' && gameState.upgrades.plasma.leptonHarvest.level < 1) { row.style.display = 'none'; continue; }
@@ -1061,41 +1665,42 @@ const Viewport = {
       const currencyKey = Economy.resolveCurrencyKey(category, key, def);
       let actualFunding = getAmount(currencyKey);
 
+      const discount = gameState.artifacts?.modifiers?.costDiscount || 0.0;
+      const discountedCost = discount > 0 ? state.cost.times(1.0 - discount).floor() : state.cost;
+
       const loops = getBuyMultiplierCount(category, key, def, state, currencyKey);
-      const displayCost = getCumulativeCost(state.cost, def.costScaling, loops);
+      const displayCost = getCumulativeCost(discountedCost, def.costScaling, loops);
 
       let isMaxed = def.max !== undefined && state.level >= def.max;
       let isAffordable = !isMaxed && actualFunding.gte(displayCost);
 
-      if (row) {
-        row.querySelector('.name-display').textContent = def.name;
-        row.querySelector('.lvl-display').textContent = isMaxed ? `(MAX)` : `(Lvl ${state.level})`;
-        let nextMilestoneLvl = (Math.floor(state.level / 25) + 1) * 25;
-        let milestoneText = def.max !== undefined ? "" : ` • ${t("milestone_tooltip", { lvl: nextMilestoneLvl })}`;
-        row.querySelector('.desc-display').textContent = def.desc + milestoneText;
+      row._cache.name.textContent = def.name;
+      row._cache.lvl.textContent = isMaxed ? `(MAX)` : `(Lvl ${state.level})`;
+      let nextMilestoneLvl = (Math.floor(state.level / 10) + 1) * 10;
+      let milestoneText = def.max !== undefined ? "" : ` • ${t("milestone_tooltip", { lvl: nextMilestoneLvl })}`;
+      row._cache.desc.textContent = def.desc + milestoneText;
 
-        if (isAffordable) row.classList.add('upgrade-affordable');
-        else row.classList.remove('upgrade-affordable');
+      if (isAffordable) row.classList.add('upgrade-affordable');
+      else row.classList.remove('upgrade-affordable');
 
-        const btn = row.querySelector('.upgrade-btn');
-        if (isMaxed) {
-          btn.textContent = "MAXED";
-          btn.disabled = true;
-          btn.style.background = 'rgba(255, 255, 255, 0.04)';
-          btn.style.color = '#636e72';
-          btn.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+      const btn = row._cache.btn;
+      if (isMaxed) {
+        btn.textContent = "MAXED";
+        btn.disabled = true;
+        btn.style.background = 'rgba(255, 255, 255, 0.04)';
+        btn.style.color = '#a0a8b0';
+        btn.style.borderColor = 'rgba(255, 255, 255, 0.05)';
+      } else {
+        btn.textContent = `Cost (x${loops}):\n${format(displayCost)} ${currentCostLabel}`;
+        btn.disabled = !isAffordable;
+        if (isAffordable) {
+          btn.style.background = displayColor;
+          btn.style.color = '#030208';
+          btn.style.borderColor = 'transparent';
         } else {
-          btn.textContent = `Cost (x${loops}):\n${format(displayCost)} ${currentCostLabel}`;
-          btn.disabled = !isAffordable;
-          if (isAffordable) {
-            btn.style.background = displayColor;
-            btn.style.color = '#030208';
-            btn.style.borderColor = 'transparent';
-          } else {
-            btn.style.background = '';
-            btn.style.color = '';
-            btn.style.borderColor = '';
-          }
+          btn.style.background = '';
+          btn.style.color = '';
+          btn.style.borderColor = '';
         }
       }
     }
@@ -1114,31 +1719,31 @@ const Viewport = {
       }
     }
 
-    document.getElementById('stardust-count').textContent = format(gameState.currencies.stardust.amount);
-    document.getElementById('stardust-boost').textContent = format(gameState.currencies.stardust.amount.times(50));
+    this.setTextContent('stardust-count', format(gameState.currencies.stardust.amount));
+    this.setTextContent('stardust-boost', format(gameState.currencies.stardust.amount.times(50)));
 
     let estStardust = getStardustYield();
     let estPulsar = gameState.resources.carbon.amount.gt(0) ? getPulsarShardYield() : new Decimal(0);
     let estSingularity = gameState.resources.iron.amount.gt(0) ? getSingularityMassYield() : new Decimal(0);
-    let estText = `+${format(estStardust)} ✨`;
+    let estText = `+${format(estStardust)} ${ICONS.starlight}`;
 
-    if (estPulsar.gt(0)) estText += ` | +${format(estPulsar)} 🌀`;
-    if (estSingularity.gt(0)) estText += ` | +${format(estSingularity)} 🌌`;
+    if (estPulsar.gt(0)) estText += ` | +${format(estPulsar)} ${ICONS.pulsar}`;
+    if (estSingularity.gt(0)) estText += ` | +${format(estSingularity)} ${ICONS.singularity}`;
 
-    const supernovaEstimateNode = document.getElementById('supernova-gain-estimate');
-    if (supernovaEstimateNode) supernovaEstimateNode.innerHTML = estText;
+    this.setInnerHTML('supernova-gain-estimate', estText);
 
     if (gameState.currencies.pulsarShards.amount.gt(0) || gameState.currencies.singularityMass.amount.gt(0)) {
-      document.getElementById('tier2-currencies').classList.remove('tier2-hidden');
-      document.getElementById('pulsar-count').textContent = format(gameState.currencies.pulsarShards.amount);
-      document.getElementById('singularity-count').textContent = format(gameState.currencies.singularityMass.amount);
+      const tier2 = this.getEl('tier2-currencies');
+      if (tier2) tier2.classList.remove('tier2-hidden');
+      this.setTextContent('pulsar-count', format(gameState.currencies.pulsarShards.amount));
+      this.setTextContent('singularity-count', format(gameState.currencies.singularityMass.amount));
     }
   },
 
   renderStellarNodeButtons() {
     const updateCard = (cardId, btnId, canAfford) => {
-      const card = document.getElementById(cardId);
-      const btn = document.getElementById(btnId);
+      const card = this.getEl(cardId);
+      const btn = this.getEl(btnId);
       if (card) {
         if (canAfford) card.classList.add('upgrade-affordable');
         else card.classList.remove('upgrade-affordable');
@@ -1159,17 +1764,17 @@ const Viewport = {
 
     let gravityAfford = gameState.resources.hydrogen.amount.gte(gameState.era3.gravityCost);
     updateCard('era3-card-gravity', 'btn-gravity', gravityAfford);
-    const gravLvl = document.getElementById('gravity-lvl');
+    const gravLvl = this.getEl('gravity-lvl');
     const gravLvlVal = gameState.era3.gravity ? gameState.era3.gravity.toNumber() : 0;
     if (gravLvl) gravLvl.textContent = format(gameState.era3.gravity);
 
-    const gravDesc = document.getElementById('gravity-desc');
+    const gravDesc = this.getEl('gravity-desc');
     if (gravDesc) {
-      let nextMilestoneLvl = (Math.floor(gravLvlVal / 25) + 1) * 25;
+      let nextMilestoneLvl = (Math.floor(gravLvlVal / 10) + 1) * 10;
       gravDesc.textContent = `Increases base atomic drift • ${t("milestone_tooltip", { lvl: nextMilestoneLvl })}`;
     }
 
-    const btnAutoBuyH = document.getElementById('btn-autobuy-hydrogen');
+    const btnAutoBuyH = this.getEl('btn-autobuy-hydrogen');
     if (btnAutoBuyH) {
       const isUnlocked = gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp);
       btnAutoBuyH.style.display = isUnlocked ? 'block' : 'none';
@@ -1188,11 +1793,11 @@ const Viewport = {
 
     let compressAfford = gameState.resources.helium.amount.gte(gameState.era3.compressCost);
     updateCard('era3-card-compress', 'btn-compress', compressAfford);
-    const compLvl = document.getElementById('compress-lvl');
+    const compLvl = this.getEl('compress-lvl');
     if (compLvl) compLvl.textContent = getCompressionsCompleted();
 
-    const fuserBtnText = document.getElementById('fuser-text');
-    const fuserCostLabel = document.getElementById('fuser-cost-label');
+    const fuserBtnText = this.getEl('fuser-text');
+    const fuserCostLabel = this.getEl('fuser-cost-label');
     let fuserAfford = false;
     if (fuserBtnText && fuserCostLabel) {
       if (gameState.era3.fusionYield.eq(0)) {
@@ -1207,8 +1812,8 @@ const Viewport = {
     }
     updateCard('era3-card-fuser', 'btn-fuser', fuserAfford);
 
-    const carbonCostLabel = document.getElementById('carbon-cost-label');
-    const carbonText = document.getElementById('carbon-text');
+    const carbonCostLabel = this.getEl('carbon-cost-label');
+    const carbonText = this.getEl('carbon-text');
     let carbonAfford = false;
     if (carbonCostLabel) {
       if (gameState.era3.stage !== "Main Sequence Star" || gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
@@ -1228,8 +1833,8 @@ const Viewport = {
     }
     updateCard('era3-card-carbon', 'btn-carbon', carbonAfford);
 
-    const ironCostLabel = document.getElementById('iron-cost-label');
-    const ironText = document.getElementById('iron-text');
+    const ironCostLabel = this.getEl('iron-cost-label');
+    const ironText = this.getEl('iron-text');
     let ironAfford = false;
     if (ironCostLabel) {
       if (gameState.era3.stage !== "Main Sequence Star" || gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.iron.unlockTemp)) {
@@ -1249,7 +1854,7 @@ const Viewport = {
     }
     updateCard('era3-card-iron', 'btn-iron', ironAfford);
 
-    const supernovaBtn = document.getElementById('btn-supernova');
+    const supernovaBtn = this.getEl('btn-supernova');
     if (supernovaBtn) {
       if (gameState.era3.temperature.gte(COSMIC_REGISTRY.constants.supernovaTempThreshold)) {
         supernovaBtn.disabled = false;
@@ -1316,7 +1921,7 @@ const Viewport = {
     if (!btn) return;
     if (gameState.flares.active) {
       btn.style.setProperty('display', 'block', 'important');
-      btn.textContent = `${COSMIC_REGISTRY.solarEvents.flare.fx.emoji} PROMINENCE ACTIVE! (${Math.ceil(gameState.flares.active.expiresInSec.toNumber())}s)`;
+      btn.innerHTML = `${ICONS.starlight} PROMINENCE ACTIVE! (${Math.ceil(gameState.flares.active.expiresInSec.toNumber())}s)`;
       document.body.classList.add('flare-active');    // screen-edge glow (Prio 4)
     } else {
       btn.style.setProperty('display', 'none', 'important');
@@ -1371,7 +1976,7 @@ const Viewport = {
   },
 
   updateVisualProgression() {
-    const core = document.getElementById('star-core');
+    const core = this.getEl('star-core');
     if (!core) return;
 
     const epoch = gameState.activeEpoch;
@@ -1380,18 +1985,19 @@ const Viewport = {
       let gLvl = gameState.upgrades.quantum.gravityForce?.level || 0;
       let wLvl = gameState.upgrades.quantum.weakForce?.level || 0;
       let eLvl = gameState.upgrades.quantum.electromagneticForce?.level || 0;
+      let vLvl = gameState.upgrades.quantum.vacuumResonance?.level || 0;
       let sLvl = gameState.upgrades.quantum.strongForce?.level || 0;
-      let totalLvl = gLvl + wLvl + eLvl + sLvl;
+      let totalLvl = gLvl + wLvl + eLvl + vLvl + sLvl;
 
       // Core size grows from 8px to 30px
       let coreSize = Math.min(8 + totalLvl * 0.8, 30);
-      core.style.setProperty('width', `${coreSize}px`, 'important');
-      core.style.setProperty('height', `${coreSize}px`, 'important');
+      core.style.width = `${coreSize}px`;
+      core.style.height = `${coreSize}px`;
 
       // Core glow spreads wider
       let glowSize = Math.min(16 + totalLvl * 1.5, 55);
       let glowSpread = Math.min(6 + totalLvl * 0.4, 20);
-      core.style.setProperty('box-shadow', `0 0 ${glowSize}px ${glowSpread}px #ffffff`, 'important');
+      core.style.boxShadow = `0 0 ${glowSize}px ${glowSpread}px #ffffff`;
 
       // Orbits fade in based on respective forces purchased
       const orbit1 = document.querySelector('.orbit-1');
@@ -1400,7 +2006,7 @@ const Viewport = {
 
       if (orbit1) orbit1.style.opacity = Math.min(gLvl * 0.15, 0.7);
       if (orbit2) orbit2.style.opacity = Math.min(eLvl * 0.15, 0.7);
-      if (orbit3) orbit3.style.opacity = Math.min(sLvl * 0.15, 0.7);
+      if (orbit3) orbit3.style.opacity = Math.min((vLvl + sLvl) * 0.15, 0.7);
     }
     else if (epoch === 2) {
       let qLvl = gameState.upgrades.plasma.quarkCondenser?.level || 0;
@@ -1412,13 +2018,13 @@ const Viewport = {
 
       // Core size grows from 84px to 140px
       let coreSize = Math.min(84 + totalLvl * 1.2, 140);
-      core.style.setProperty('width', `${coreSize}px`, 'important');
-      core.style.setProperty('height', `${coreSize}px`, 'important');
+      core.style.width = `${coreSize}px`;
+      core.style.height = `${coreSize}px`;
 
       // Glow intensifies
       let glowSize = Math.min(45 + totalLvl * 1.8, 100);
       let opacity = Math.min(0.45 + totalLvl * 0.015, 0.9);
-      core.style.setProperty('box-shadow', `0 0 ${glowSize}px 15px rgba(255, 107, 107, ${opacity}), inset 0 0 15px rgba(255,255,255,0.6)`, 'important');
+      core.style.boxShadow = `0 0 ${glowSize}px 15px rgba(255, 107, 107, ${opacity}), inset 0 0 15px rgba(255,255,255,0.6)`;
 
       // Orbits show as force fields
       const orbit1 = document.querySelector('.orbit-1');
@@ -1442,6 +2048,12 @@ const Viewport = {
   },
 
   update() {
+    const overlay = document.getElementById('intro-screen-overlay');
+    if (!gameState.unfold?.introCompleted && overlay && overlay.style.display !== 'none') {
+      return;
+    }
+    ActManager.evaluate();
+    ArtifactManager.renderBar();
     this.updateStardustDisplays();
     const currentEpoch = COSMIC_REGISTRY.universeChronology.epochs[gameState.activeEpoch] || COSMIC_REGISTRY.universeChronology.epochs[3];
 
@@ -1462,138 +2074,59 @@ const Viewport = {
       objNode.textContent = objectives[gameState.activeEpoch] || objectives[1];
     }
 
+    // Era 1 Cold Boot Diegetic Unfolding visibility controls using permanent state flags
+    const isEra1 = gameState.activeEpoch === 1;
+    const unfold = gameState.unfold || {};
+
+    // HUD box visibility
+    const hydroBox = this.getEl('label-hydrogen')?.closest('.resource-box');
+    if (hydroBox) hydroBox.style.display = (isEra1 && !unfold.hasUnlocked1QF) ? 'none' : '';
+
+    const heliumBox = this.getEl('label-helium')?.closest('.resource-box');
+    if (heliumBox) heliumBox.style.display = (isEra1 && !unfold.hasUnlocked10QF) ? 'none' : '';
+
+    // Navigation bar visibility
+    const navMenu = document.querySelector('.tab-menu');
+    if (navMenu) navMenu.style.display = (isEra1 && !unfold.hasUnlocked10QF) ? 'none' : 'flex';
+
     const allPossibleTabs = ["core", "upgrades", "system", "shop", "pulsar", "singularity", "prestige", "settings"];
     allPossibleTabs.forEach(tabId => {
       const navBtn = document.getElementById(`nav-${tabId}`);
-      if (navBtn) navBtn.style.display = currentEpoch.tabs.includes(tabId) ? "" : "none";
+      if (navBtn) {
+        let isTabAllowed = currentEpoch.tabs.includes(tabId);
+        if (isEra1 && !unfold.hasUnlocked10QF && tabId !== 'core') isTabAllowed = false;
+        navBtn.style.display = isTabAllowed ? "" : "none";
+      }
     });
 
     const coreCanvasElement = document.getElementById('star-core');
     if (coreCanvasElement) coreCanvasElement.setAttribute('data-canvas-style', currentEpoch.canvasStyle);
 
-    const panel = document.getElementById('quantum-superposition-panel');
-    if (panel) {
-      const isAct2Unlocked = gameState.activeEpoch === 1 && gameState.era1Act >= 2;
-      panel.style.display = isAct2Unlocked ? 'flex' : 'none';
-
-      if (isAct2Unlocked) {
-        const amp = getQuantumAmplitude();
-        const ampValNode = document.getElementById('quantum-amp-value');
-        if (ampValNode) ampValNode.textContent = amp.toFixed(2) + "x";
-
-        const storageValNode = document.getElementById('quantum-storage-value');
-        if (storageValNode) storageValNode.textContent = format(gameState.quantumStorage || 0) + " QF";
-
-        const ampBarNode = document.getElementById('quantum-amp-bar');
-        if (ampBarNode) {
-          let pct = (amp / 5.0) * 100;
-          ampBarNode.style.width = pct.toFixed(1) + "%";
-          if (amp >= 4.0) {
-            ampBarNode.style.background = 'linear-gradient(90deg, #fdcb6e, #e17055)';
-            ampBarNode.style.boxShadow = '0 0 10px #fdcb6e';
-          } else {
-            ampBarNode.style.background = 'linear-gradient(90deg, #6c5ce7, #00cec9)';
-            ampBarNode.style.boxShadow = 'none';
-          }
-        }
-
-        const badgeNode = document.getElementById('quantum-peak-badge');
-        if (badgeNode) {
-          if (amp >= 4.0) {
-            badgeNode.textContent = "⚡ PEAK WINDOW";
-            badgeNode.style.background = "rgba(253, 203, 110, 0.2)";
-            badgeNode.style.color = "#fdcb6e";
-            badgeNode.style.border = "1px solid #fdcb6e";
-          } else {
-            badgeNode.textContent = "STABLE";
-            badgeNode.style.background = "rgba(255,255,255,0.05)";
-            badgeNode.style.color = "#b2bec3";
-            badgeNode.style.border = "none";
-          }
-        }
-
-        // Peak-pulse body class: fires a CSS animation on #star-core at amplitude 5.0x (Prio 1)
-        const amp2 = getQuantumAmplitude();
-        if (amp2 >= 4.99) {
-          if (!document.body.classList.contains('quantum-peak-active')) {
-            document.body.classList.add('quantum-peak-active');
-            setTimeout(() => document.body.classList.remove('quantum-peak-active'), 900);
-          }
-        }
-
-        const hasStorage = gameState.quantumStorage && gameState.quantumStorage.gt(0);
-        const btnMeasure = document.getElementById('btn-measure-safe');
-        const btnLeap = document.getElementById('btn-quantum-leap');
-
-        if (btnMeasure) {
-          btnMeasure.disabled = !hasStorage;
-          if (hasStorage) {
-            btnMeasure.style.opacity = '1';
-            btnMeasure.style.cursor = 'pointer';
-            btnMeasure.style.borderColor = '#6c5ce7';
-          } else {
-            btnMeasure.style.opacity = '0.4';
-            btnMeasure.style.cursor = 'not-allowed';
-            btnMeasure.style.borderColor = 'rgba(255,255,255,0.1)';
-          }
-        }
-        if (btnLeap) {
-          btnLeap.disabled = !hasStorage;
-          if (hasStorage) {
-            btnLeap.style.opacity = '1';
-            btnLeap.style.cursor = 'pointer';
-            btnLeap.style.borderColor = '#00cec9';
-          } else {
-            btnLeap.style.opacity = '0.4';
-            btnLeap.style.cursor = 'not-allowed';
-            btnLeap.style.borderColor = 'rgba(255,255,255,0.1)';
-          }
-        }
-
-        const tunerBtn = document.getElementById('btn-tuner-toggle');
-        if (tunerBtn) {
-          const isUnlocked = gameState.quantumTunerUnlocked || (gameState.upgrades.quantum.decoherenceTuner && gameState.upgrades.quantum.decoherenceTuner.level > 0);
-          tunerBtn.style.display = isUnlocked ? '' : 'none';
-          const mode = gameState.quantumTunerMode || 'off';
-          tunerBtn.textContent = `Tuner: ${mode.toUpperCase()}`;
-          if (mode === 'safe') {
-            tunerBtn.style.borderColor = '#6c5ce7';
-            tunerBtn.style.color = '#a29bfe';
-          } else if (mode === 'resonance') {
-            tunerBtn.style.borderColor = '#fdcb6e';
-            tunerBtn.style.color = '#fdcb6e';
-          } else {
-            tunerBtn.style.borderColor = 'rgba(255,255,255,0.1)';
-            tunerBtn.style.color = '#b2bec3';
-          }
-        }
-      }
-    }
-
-    if (gameState.activeEpoch === 4) {
-      const dm = gameState.resources.darkMatter ? gameState.resources.darkMatter.amount : new Decimal(0);
-      const act2Unlocked = dm.gte(10000);
-      const act3Unlocked = dm.gte(100000);
-
-      document.querySelectorAll('.era4-act2-only').forEach(el => el.style.display = act2Unlocked ? '' : 'none');
-      document.querySelectorAll('.era4-act3-only').forEach(el => el.style.display = act3Unlocked ? '' : 'none');
-
-      if (act2Unlocked && !gameState.era4.act2Notified) {
-        gameState.era4.act2Notified = true;
-        Viewport.showToast("🌌 CRITICAL MASS REACHED: Supermassive Black Hole & Quasar Ignition Unlocked!");
-      }
-      if (act3Unlocked && !gameState.era4.act3Notified) {
-        gameState.era4.act3Notified = true;
-        Viewport.showToast("🌀 CLUSTER COHERENCE ACHIEVED: Multi-Node Cluster Links & Galactic Collision Unlocked!");
-      }
-    }
-
     const logNode = document.getElementById('chrono-neural-log');
     if (logNode) {
       let activeLog = "";
       if (gameState.activeEpoch === 1) {
-        activeLog = gameState.resources.quantumFluctuations.amount.gte(80000) ?
-          COSMIC_REGISTRY.narrativeLogs.era1.nearInflation : COSMIC_REGISTRY.narrativeLogs.era1.initial;
+        const unfold = gameState.unfold || {};
+        const qf = gameState.resources.quantumFluctuations.amount;
+        if (qf.gte(80000)) {
+          activeLog = COSMIC_REGISTRY.narrativeLogs.era1.nearInflation;
+        } else if (qf.gte(25000)) {
+          activeLog = "[SYSTEM]: Strong color forces binding gluons. Inflationary buildup critical.";
+        } else if (qf.gte(10000)) {
+          activeLog = "[SYSTEM]: Vacuum resonance established. Harmonic energy density surging.";
+        } else if (qf.gte(2500)) {
+          activeLog = "[SYSTEM]: Electromagnetic tensors propagating photon streams through space.";
+        } else if (qf.gte(500)) {
+          activeLog = "[SYSTEM]: Weak nuclear vectors active. Gauge boson exchange underway.";
+        } else if (unfold.hasUnlocked100QF || qf.gte(100)) {
+          activeLog = "[SYSTEM]: Vacuum fluctuation rate stable. Fundamental force stratification operational.";
+        } else if (unfold.hasUnlocked10QF || qf.gte(10)) {
+          activeLog = "[SYSTEM]: Energy density sufficient. Compiling Fluctuation Condenser...";
+        } else if (unfold.hasUnlocked1QF || qf.gte(1)) {
+          activeLog = "[SYSTEM]: Quantum Foam compiled. Primary metric online.";
+        } else {
+          activeLog = "> [ACTION]: OBSERVE THE VOID (CLICK CORE)";
+        }
       } else if (gameState.activeEpoch === 2) {
         if (gameState.resources.protons.amount.gte(800000)) activeLog = COSMIC_REGISTRY.narrativeLogs.era2.nearRecomb;
         else if (gameState.upgrades.plasma.plasmaAutomation.level > 0) activeLog = COSMIC_REGISTRY.narrativeLogs.era2.fuserActive;
@@ -1603,25 +2136,24 @@ const Viewport = {
       } else if (gameState.activeEpoch === 4) {
         activeLog = COSMIC_REGISTRY.narrativeLogs.era4.initial;
       }
-      const cohStr = gameState.coherence.toNumber().toFixed(1);
-      if (logNode.getAttribute('data-active-text') !== activeLog || logNode.getAttribute('data-active-coh') !== cohStr) {
+      if (logNode.getAttribute('data-active-text') !== activeLog) {
         logNode.setAttribute('data-active-text', activeLog);
-        logNode.setAttribute('data-active-coh', cohStr);
-        const corrupted = corruptText(activeLog, gameState.coherence);
+        const vacCoh = (gameState.era1 && typeof gameState.era1.vacuumCoherence === 'number') ? gameState.era1.vacuumCoherence : gameState.coherence;
+        const corrupted = corruptText(activeLog, vacCoh);
         typeWriter(logNode, corrupted, 25);
       }
     }
 
     if (gameState.activeEpoch === 1) {
-      document.getElementById('label-hydrogen').innerHTML = `QUANTUM FLUCTUATIONS`;
-      document.getElementById('count').textContent = format(gameState.resources.quantumFluctuations.amount);
-      document.getElementById('auto-rate').innerHTML = `+${format(getQuantumFluctuationRate())}/s`;
+      this.setTextContent('label-hydrogen', t('label_quantum_fluctuations'));
+      this.setTextContent('count', format(gameState.resources.quantumFluctuations.amount));
+      this.setInnerHTML('auto-rate', `+${format(getQuantumFluctuationRate())}/s`);
 
-      document.getElementById('label-helium').innerHTML = `ENERGY DENSITY`;
-      document.getElementById('helium-count').textContent = format(gameState.resources.energyDensity.amount);
-      document.getElementById('helium-yield').textContent = "Temp: " + format(gameState.eraITemperature) + " K";
+      this.setTextContent('label-helium', t('label_energy_density'));
+      this.setTextContent('helium-count', format(gameState.resources.energyDensity.amount));
+      this.setTextContent('helium-yield', "Temp: " + format(gameState.eraITemperature) + " K");
 
-      const inflationBtn = document.getElementById('btn-inflation');
+      const inflationBtn = this.getEl('btn-inflation');
       if (inflationBtn) {
         inflationBtn.disabled = gameState.resources.quantumFluctuations.amount.lt(COSMIC_REGISTRY.constants.inflationThreshold);
       }
@@ -1635,57 +2167,42 @@ const Viewport = {
       let asymmetryModifier = getBaryonAsymmetryMultiplier();
 
       let isFuserActive = gameState.upgrades.plasma.plasmaAutomation.level > 0;
-      let actualQuarkLoss = new Decimal(0);
-      let actualGluonLoss = new Decimal(0);
       let protonGainRate = isFuserActive ? getProtonFusionCap().times(gameState.upgrades.plasma.plasmaAutomation.level).times(asymmetryModifier) : new Decimal(0);
 
       let radiatorLevel = gameState.upgrades.plasma.baryoRadiator.level || 0;
       let radiatorProtonDrain = new Decimal(radiatorLevel * 2);
 
-      document.getElementById('label-hydrogen').innerHTML = `PRIMORDIAL QUARKS`;
-      document.getElementById('count').textContent = format(gameState.resources.quarks.amount);
-      document.getElementById('auto-rate').innerHTML = `+${format(pRates.quarks)}/s`;
+      this.setTextContent('label-hydrogen', t('label_primordial_quarks'));
+      this.setTextContent('count', format(gameState.resources.quarks.amount));
+      this.setInnerHTML('auto-rate', `+${format(pRates.quarks)}/s`);
 
-      document.getElementById('label-helium').innerHTML = `PRIMORDIAL GLUONS`;
-      document.getElementById('helium-count').textContent = format(gameState.resources.gluons.amount);
-      document.getElementById('helium-yield').innerHTML = `+${format(pRates.gluons)}/s`;
+      this.setTextContent('label-helium', t('label_primordial_gluons'));
+      this.setTextContent('helium-count', format(gameState.resources.gluons.amount));
+      this.setInnerHTML('helium-yield', `+${format(pRates.gluons)}/s`);
 
       // Asymmetry Bonus indicator (Prio 2)
       const asymBonusPct = ((asymmetryModifier.toNumber() - 1) * 100).toFixed(1);
-      const asymEl = document.getElementById('auto-rate');
+      const asymEl = this.getEl('auto-rate');
       if (asymEl) {
-        asymEl.innerHTML = `+${format(pRates.quarks)}/s <span style="color:var(--neon-teal);font-size:0.72em;font-weight:700;" title="${t('baryon_asymmetry_tooltip')}">${t('baryon_asymmetry_label', { val: asymBonusPct })}</span>`;
+        this.setInnerHTML(asymEl, `+${format(pRates.quarks)}/s <span style="color:var(--neon-teal);font-size:0.72em;font-weight:700;" title="${t('baryon_asymmetry_tooltip')}">${t('baryon_asymmetry_label', { val: asymBonusPct })}</span>`);
       }
 
       // Update dedicated Era II elements
-      const leptonCountEl = document.getElementById('lepton-count');
-      if (leptonCountEl) leptonCountEl.textContent = format(gameState.resources.leptons.amount);
-      const leptonRateEl = document.getElementById('lepton-rate');
-      if (leptonRateEl) leptonRateEl.innerHTML = `+${format(pRates.leptons)}/s`;
+      this.setTextContent('lepton-count', format(gameState.resources.leptons.amount));
+      this.setInnerHTML('lepton-rate', `+${format(pRates.leptons)}/s`);
 
-      const protonCountEl = document.getElementById('proton-count');
-      if (protonCountEl) protonCountEl.textContent = format(gameState.resources.protons.amount);
-      const protonRateEl = document.getElementById('proton-rate');
-      if (protonRateEl) {
-        protonRateEl.innerHTML = `+${format(protonGainRate)}/s` + (radiatorLevel > 0 ? ` <span style='color:#ff7675'>(-${format(radiatorProtonDrain)})</span>` : '');
-      }
+      this.setTextContent('proton-count', format(gameState.resources.protons.amount));
+      this.setInnerHTML('proton-rate', `+${format(protonGainRate)}/s` + (radiatorLevel > 0 ? ` <span style='color:#ff7675'>(-${format(radiatorProtonDrain)})</span>` : ''));
 
-      const electronCountEl = document.getElementById('electron-count');
-      if (electronCountEl) electronCountEl.textContent = format(gameState.resources.electrons.amount);
-      const electronRateEl = document.getElementById('electron-rate');
-      if (electronRateEl) {
-        let electronRate = (gameState.plasmaTemperature.lt(500000) && gameState.resources.leptons.amount.gt(0)) ?
-          gameState.resources.leptons.amount.div(2).floor() : new Decimal(0);
-        electronRateEl.innerHTML = `+${format(electronRate)}/s`;
-      }
+      this.setTextContent('electron-count', format(gameState.resources.electrons.amount));
+      let electronRate = (gameState.plasmaTemperature.lt(500000) && gameState.resources.leptons.amount.gt(0)) ?
+        gameState.resources.leptons.amount.div(2).floor() : new Decimal(0);
+      this.setInnerHTML('electron-rate', `+${format(electronRate)}/s`);
 
-      const tempCountEl = document.getElementById('plasma-temp-count');
-      if (tempCountEl) tempCountEl.textContent = `${format(gameState.plasmaTemperature)} K`;
-      const tempRateEl = document.getElementById('plasma-temp-rate');
-      if (tempRateEl) {
-        tempRateEl.innerHTML = pRates.cooling.gt(0) ? `Cooling: -${format(pRates.cooling)} K/s` : `Stable`;
-      }
-      const recombBtn = document.getElementById('btn-recombination');
+      this.setTextContent('plasma-temp-count', `${format(gameState.plasmaTemperature)} K`);
+      this.setInnerHTML('plasma-temp-rate', pRates.cooling.gt(0) ? `Cooling: -${format(pRates.cooling)} K/s` : `Stable`);
+
+      const recombBtn = this.getEl('btn-recombination');
       if (recombBtn) {
         recombBtn.disabled = !(gameState.resources.protons.amount.gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) || gameState.plasmaTemperature.lte(3000));
       }
@@ -1695,42 +2212,40 @@ const Viewport = {
       }
     }
     else if (gameState.activeEpoch === 3) {
-      const cLabel = document.getElementById('label-carbon');
-      if (cLabel) cLabel.innerHTML = `CARBON`;
-      const iLabel = document.getElementById('label-iron');
-      if (iLabel) iLabel.innerHTML = `IRON`;
+      this.setTextContent('label-carbon', t('label_carbon'));
+      this.setTextContent('label-iron', t('label_iron'));
 
-      document.getElementById('label-hydrogen').innerHTML = `HYDROGEN`;
-      document.getElementById('label-helium').innerHTML = `HELIUM`;
+      this.setTextContent('label-hydrogen', t('label_hydrogen'));
+      this.setTextContent('label-helium', t('label_helium'));
 
-      document.getElementById('count').textContent = format(gameState.resources.hydrogen.amount);
-      document.getElementById('auto-rate').innerHTML = `+${format(getHydrogenGenRate())}/s`;
-      document.getElementById('cost').textContent = format(gameState.era3.gravityCost);
-      document.getElementById('helium-count').textContent = format(gameState.resources.helium.amount);
+      this.setTextContent('count', format(gameState.resources.hydrogen.amount));
+      this.setInnerHTML('auto-rate', `+${format(getHydrogenGenRate())}/s`);
+      this.setTextContent('cost', format(gameState.era3.gravityCost));
+      this.setTextContent('helium-count', format(gameState.resources.helium.amount));
+
       const stardustBoost = gameState.currencies.stardust.amount.times(0.25).plus(1);
       const baseYieldPerFusion = gameState.era3.fusionYield.times(getFusionSurgeMultiplier());
       const effectiveYieldPerFusion = baseYieldPerFusion.times(stardustBoost);
-      document.getElementById('helium-yield').innerHTML = `Yield: ${format(effectiveYieldPerFusion)}/f`;
-      document.getElementById('temp').textContent = format(gameState.era3.temperature);
-      document.getElementById('multiplier').textContent = format(gameState.era3.tempMultiplier) + "x";
-      document.getElementById('compress-cost').textContent = format(gameState.era3.compressCost);
-      document.getElementById('stage').textContent = gameState.era3.stage;
+      this.setInnerHTML('helium-yield', `Yield: ${format(effectiveYieldPerFusion)}/f`);
 
-      document.getElementById('carbon-count').textContent = format(gameState.resources.carbon.amount);
-      document.getElementById('carbon-box').style.opacity = gameState.era3.stage === "Main Sequence Star" ? "1" : "0.3";
+      this.setTextContent('temp', format(gameState.era3.temperature));
+      this.setTextContent('multiplier', format(gameState.era3.tempMultiplier) + "x");
+      this.setTextContent('compress-cost', format(gameState.era3.compressCost));
+      this.setTextContent('stage', gameState.era3.stage);
+
+      this.setTextContent('carbon-count', format(gameState.resources.carbon.amount));
+      const cBox = this.getEl('carbon-box');
+      if (cBox) cBox.style.opacity = gameState.era3.stage === "Main Sequence Star" ? "1" : "0.3";
+
       const carbonMult = getCarbonGravityMultiplier();
-      const carbonBoostContainer = document.getElementById('carbon-boost-container');
-      if (carbonBoostContainer) {
-        carbonBoostContainer.textContent = `Grav: +${format(carbonMult.minus(1).times(100))}%`;
-      }
+      this.setTextContent('carbon-boost-container', `Grav: +${format(carbonMult.minus(1).times(100))}%`);
 
       let ironMultiplier = gameState.resources.iron.amount.times(COSMIC_REGISTRY.constants.ironHeatCoefficient).plus(1);
-      document.getElementById('iron-count').textContent = format(gameState.resources.iron.amount);
-      document.getElementById('iron-box').style.opacity = gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) ? "1" : "0.3";
-      const ironBoostContainer = document.getElementById('iron-boost-container');
-      if (ironBoostContainer) {
-        ironBoostContainer.textContent = `Heat: +${format(ironMultiplier.minus(1).times(100))}%`;
-      }
+      this.setTextContent('iron-count', format(gameState.resources.iron.amount));
+      const iBox = this.getEl('iron-box');
+      if (iBox) iBox.style.opacity = gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) ? "1" : "0.3";
+
+      this.setTextContent('iron-boost-container', `Heat: +${format(ironMultiplier.minus(1).times(100))}%`);
 
       this.updateStardustDisplays();
       this.renderStellarNodeButtons();
@@ -1739,25 +2254,25 @@ const Viewport = {
       let dRate = getGalacticDebrisRate();
       let dmRate = getGalacticDarkMatterRate();
 
-      document.getElementById('label-hydrogen').innerHTML = `ACCUMULATED HYDROGEN`;
-      document.getElementById('count').textContent = format(gameState.resources.hydrogen.amount);
-      document.getElementById('auto-rate').textContent = "0";
+      this.setTextContent('label-hydrogen', t('label_accumulated_hydrogen'));
+      this.setTextContent('count', format(gameState.resources.hydrogen.amount));
+      this.setTextContent('auto-rate', "0");
 
-      document.getElementById('label-helium').innerHTML = `STELLAR MASS INDEX`;
-      document.getElementById('helium-count').textContent = format(gameState.era4.stellarMassPassiveCount);
-      document.getElementById('helium-yield').innerHTML = "Ticking Background";
+      this.setTextContent('label-helium', t('label_stellar_mass_index'));
+      this.setTextContent('helium-count', format(gameState.era4.stellarMassPassiveCount));
+      this.setInnerHTML('helium-yield', "Ticking Background");
 
-      document.getElementById('debris-count').textContent = format(gameState.resources.planetaryDebris.amount);
-      document.getElementById('debris-rate').textContent = format(dRate);
+      this.setTextContent('debris-count', format(gameState.resources.planetaryDebris.amount));
+      this.setTextContent('debris-rate', format(dRate));
 
-      document.getElementById('darkmatter-count').textContent = format(gameState.resources.darkMatter.amount);
-      document.getElementById('darkmatter-rate').textContent = format(dmRate);
+      this.setTextContent('darkmatter-count', format(gameState.resources.darkMatter.amount));
+      this.setTextContent('darkmatter-rate', format(dmRate));
 
-      document.getElementById('galaxy-stability-val').textContent = format(gameState.era4.stability) + "%";
-      const barFill = document.getElementById('stability-bar-fill');
+      this.setTextContent('galaxy-stability-val', format(gameState.era4.stability) + "%");
+      const barFill = this.getEl('stability-bar-fill');
       if (barFill) barFill.style.width = gameState.era4.stability.toString() + "%";
 
-      document.getElementById('planetary-count-label').textContent = format(gameState.era4.planetaryNodes);
+      this.setTextContent('planetary-count-label', format(gameState.era4.planetaryNodes));
 
       const mergeBtn = document.getElementById('btn-galactic-merge');
       if (mergeBtn) {
@@ -1803,11 +2318,13 @@ const Economy = {
     const currencyKey = this.resolveCurrencyKey(category, key, def);
     if (!currencyKey) return;
 
+    const discount = gameState.artifacts?.modifiers?.costDiscount || 0.0;
     for (let i = 0; i < loops; i++) {
       if (def.max !== undefined && state.level >= def.max) break;
-      if (getAmount(currencyKey).lt(state.cost)) break;
+      const effectiveCost = discount > 0 ? state.cost.times(1.0 - discount).floor() : state.cost;
+      if (getAmount(currencyKey).lt(effectiveCost)) break;
 
-      deduct(currencyKey, state.cost);
+      deduct(currencyKey, effectiveCost);
       state.level += 1;
 
       if (def.costScaling) {
@@ -2061,7 +2578,6 @@ function triggerInflation() {
     document.body.appendChild(flashElement);
     setTimeout(() => flashElement.remove(), 1250);
 
-    Viewport.showToast(t("toast_era1_to_era2"));
     Viewport.switchTab('core');
     saveGame();
     isDirty = true;
@@ -2230,14 +2746,37 @@ function accretePlanetConfiguration() {
 // ==========================================================================
 // [SEC-13] CLICK & TRANSACTION UTILITY IMPLEMENTATION (RECONSTRUCTED)
 // ==========================================================================
+const FLOATING_TEXT_POOL_SIZE = 30;
+let floatingTextPool = [];
+let floatingTextPoolIndex = 0;
+
+function initFloatingTextPool() {
+  const canvas = document.querySelector('.core-canvas');
+  if (!canvas) return;
+  canvas.querySelectorAll('.floating-text-particle').forEach(el => el.remove());
+  floatingTextPool = [];
+  for (let i = 0; i < FLOATING_TEXT_POOL_SIZE; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'floating-text-particle';
+    particle.style.display = 'none';
+    canvas.appendChild(particle);
+    floatingTextPool.push(particle);
+  }
+}
+
 function spawnFloatingText(text, color, e, offsetX = 0) {
   const canvas = document.querySelector('.core-canvas');
   if (!canvas) return;
+  if (floatingTextPool.length === 0) {
+    initFloatingTextPool();
+  }
 
-  const particle = document.createElement('div');
-  particle.className = 'floating-text-particle';
-  particle.textContent = text;
-  particle.style.color = color || '#fff';
+  const particle = floatingTextPool[floatingTextPoolIndex];
+  floatingTextPoolIndex = (floatingTextPoolIndex + 1) % FLOATING_TEXT_POOL_SIZE;
+  if (!particle) return;
+
+  const cx = canvas.clientWidth / 2;
+  const cy = canvas.clientHeight / 2;
 
   let x, y;
   if (e && e.clientX && e.clientY) {
@@ -2245,17 +2784,24 @@ function spawnFloatingText(text, color, e, offsetX = 0) {
     x = e.clientX - rect.left + offsetX;
     y = e.clientY - rect.top;
   } else {
-    x = canvas.clientWidth / 2 + offsetX;
-    y = canvas.clientHeight / 2;
+    x = cx + offsetX;
+    y = cy;
   }
 
+  particle.textContent = text;
+  particle.style.color = color || '#fff';
   particle.style.left = `${x}px`;
   particle.style.top = `${y}px`;
+  particle.style.display = 'block';
 
-  canvas.appendChild(particle);
+  particle.classList.remove('floating-text-particle');
+  requestAnimationFrame(() => {
+    particle.classList.add('floating-text-particle');
+  });
 
-  setTimeout(() => {
-    particle.remove();
+  clearTimeout(particle._hideTimer);
+  particle._hideTimer = setTimeout(() => {
+    particle.style.display = 'none';
   }, 1000);
 }
 
@@ -2265,10 +2811,21 @@ function clickCore(e) {
   initAudio();
 
   if (gameState.activeEpoch === 1) {
+    if (!gameState.era1) {
+      gameState.era1 = { currentAct: 1, quantumFoam: 0, vacuumCoherence: 0.0, unfoldCount: 0 };
+    }
+    gameState.era1.unfoldCount = (gameState.era1.unfoldCount || 0) + 1;
+    if (gameState.era1.vacuumCoherence < 1.0) {
+      gameState.era1.vacuumCoherence = Math.min(1.0, (gameState.era1.vacuumCoherence || 0) + 0.10);
+    }
     let mult = getCardMultiplier("hydrogenGen");
     let gain = new Decimal(1).times(mult);
     gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(gain);
-    gameState.quantumStorage = (gameState.quantumStorage || new Decimal(0)).plus(gain.times(0.10));
+    gameState.era1.quantumFoam = gameState.resources.quantumFluctuations.amount.toNumber();
+    if (!gameState.unfold) gameState.unfold = {};
+    if (gameState.resources.quantumFluctuations.amount.gte(1)) gameState.unfold.hasUnlocked1QF = true;
+    if (gameState.resources.quantumFluctuations.amount.gte(10)) gameState.unfold.hasUnlocked10QF = true;
+    if (gameState.resources.quantumFluctuations.amount.gte(100)) gameState.unfold.hasUnlocked100QF = true;
     spawnFloatingText(`+${format(gain)} Fluctuations`, 'var(--neon-teal)', e);
   }
   else if (gameState.activeEpoch === 2) {
@@ -2293,6 +2850,11 @@ function clickCore(e) {
     spawnFloatingText(`+50 Hydrogen`, '#0984e3', e);
   }
 
+  if (gameState.artifacts && gameState.artifacts.modifiers && gameState.artifacts.modifiers.clickPassiveBoost > 0) {
+    gameState.artifacts.modifiers.activeClickBoostSec = 3.0;
+  }
+
+  ActManager.evaluate();
   isDirty = true;
 }
 
@@ -2480,10 +3042,16 @@ const Timeline = {
 
   quantumFoam(dt) {
     let passiveFluctuations = getQuantumFluctuationRate().times(dt);
-    gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(passiveFluctuations);
+    if (passiveFluctuations.gt(0)) {
+      gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(passiveFluctuations);
+      isDirty = true;
+    }
 
     let passiveDensity = getEnergyDensityRate().times(dt);
-    gameState.resources.energyDensity.amount = gameState.resources.energyDensity.amount.plus(passiveDensity);
+    if (passiveDensity.gt(0)) {
+      gameState.resources.energyDensity.amount = gameState.resources.energyDensity.amount.plus(passiveDensity);
+      isDirty = true;
+    }
 
     if (gameState.resources.energyDensity.amount.gt(0)) {
       let densityLogPrimitive = gameState.resources.energyDensity.amount.plus(1).log10();
@@ -2496,12 +3064,16 @@ const Timeline = {
     gameState.cosmicAge = (gameState.cosmicAge || new Decimal(0)).plus(dt);
     let plasmaRates = getPlasmaPassiveRates();
 
-    gameState.resources.quarks.amount = gameState.resources.quarks.amount.plus(plasmaRates.quarks.times(dt));
-    gameState.resources.gluons.amount = gameState.resources.gluons.amount.plus(plasmaRates.gluons.times(dt));
-    gameState.resources.leptons.amount = gameState.resources.leptons.amount.plus(plasmaRates.leptons.times(dt));
+    if (plasmaRates.quarks.gt(0) || plasmaRates.gluons.gt(0) || plasmaRates.leptons.gt(0)) {
+      gameState.resources.quarks.amount = gameState.resources.quarks.amount.plus(plasmaRates.quarks.times(dt));
+      gameState.resources.gluons.amount = gameState.resources.gluons.amount.plus(plasmaRates.gluons.times(dt));
+      gameState.resources.leptons.amount = gameState.resources.leptons.amount.plus(plasmaRates.leptons.times(dt));
+      isDirty = true;
+    }
 
     if (plasmaRates.cooling.gt(0)) {
       gameState.plasmaTemperature = Decimal.max(300, gameState.plasmaTemperature.minus(plasmaRates.cooling.times(dt)));
+      isDirty = true;
 
       let radiatorLevel = gameState.upgrades.plasma.baryoRadiator.level || 0;
       if (radiatorLevel > 0) {
@@ -2513,18 +3085,23 @@ const Timeline = {
     if (gameState.plasmaTemperature.lt(500000) && gameState.resources.leptons.amount.gt(0)) {
       let electronHarvest = gameState.resources.leptons.amount.div(2).floor().times(dt);
       gameState.resources.electrons.amount = gameState.resources.electrons.amount.plus(electronHarvest);
+      isDirty = true;
     }
 
     if (gameState.upgrades.plasma.plasmaAutomation.level > 0) {
       let asymmetryModifier = getBaryonAsymmetryMultiplier();
       let fusionRate = getProtonFusionCap().times(gameState.upgrades.plasma.plasmaAutomation.level).times(asymmetryModifier);
       gameState.resources.protons.amount = gameState.resources.protons.amount.plus(fusionRate.times(dt));
+      isDirty = true;
     }
   },
 
   stellarDawn(dt) {
     let autoRate = getHydrogenGenRate().times(dt);
-    gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(autoRate);
+    if (autoRate.gt(0)) {
+      gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(autoRate);
+      isDirty = true;
+    }
 
     if (gameState.autoBuyer && gameState.autoBuyer.hydrogen && gameState.autoBuyer.hydrogen.active) {
       if (gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
@@ -2554,17 +3131,34 @@ const Timeline = {
       if (autoCompressAccumulator >= 1.0) {
         let triggers = Math.floor(autoCompressAccumulator);
         autoCompressAccumulator -= triggers;
-        for (let i = 0; i < triggers; i++) {
-          if (gameState.resources.helium.amount.gte(gameState.era3.compressCost)) {
-            gameState.resources.helium.amount = gameState.resources.helium.amount.minus(gameState.era3.compressCost);
-            gameState.era3.temperature = gameState.era3.temperature.plus(getCompressionHeatYield());
-            gameState.era3.compressCost = gameState.era3.compressCost.times(1.75).floor();
+
+        if (triggers > 0 && gameState.resources.helium.amount.gte(gameState.era3.compressCost)) {
+          let maxAffordable = Decimal.affordGeometricSeries(
+            gameState.resources.helium.amount,
+            gameState.era3.compressCost,
+            new Decimal(1.75),
+            0
+          );
+          let countToCompress = Decimal.min(new Decimal(triggers), maxAffordable);
+
+          if (countToCompress.gt(0)) {
+            let totalCost = Decimal.sumGeometricSeries(
+              countToCompress,
+              gameState.era3.compressCost,
+              new Decimal(1.75),
+              0
+            );
+
+            gameState.resources.helium.amount = gameState.resources.helium.amount.minus(totalCost);
+            gameState.era3.temperature = gameState.era3.temperature.plus(getCompressionHeatYield().times(countToCompress));
+            gameState.era3.compressCost = gameState.era3.compressCost.times(new Decimal(1.75).pow(countToCompress)).floor();
+
             recalcTempMultiplier();
             if (gameState.era3.temperature.gte(COSMIC_REGISTRY.constants.mainSequenceTempThreshold) && gameState.era3.stage === "Protostar") {
               gameState.era3.stage = "Main Sequence Star";
             }
             updateStatsData();
-          } else { break; }
+          }
         }
       }
     }
@@ -2613,6 +3207,10 @@ const Timeline = {
 };
 
 function gameTick(dt) {
+  if (gameState.artifacts && gameState.artifacts.modifiers && gameState.artifacts.modifiers.activeClickBoostSec > 0) {
+    gameState.artifacts.modifiers.activeClickBoostSec = Math.max(0, gameState.artifacts.modifiers.activeClickBoostSec - dt);
+  }
+
   if (gameState.activeEpoch === 1) {
     let totalQuantumLevels =
       (gameState.upgrades.quantum.gravityForce?.level ?? 0) +
@@ -2624,48 +3222,18 @@ function gameTick(dt) {
       gameState.coherence = Decimal.min(100, gameState.coherence.plus(new Decimal(0.1).times(dt)));
     }
 
-    gameState.quantumPhaseTime = (gameState.quantumPhaseTime || 0) + dt;
-    const passiveGen = getQuantumFluctuationRate().times(0.10).times(dt);
-    if (passiveGen.gt(0)) {
-      gameState.quantumStorage = (gameState.quantumStorage || new Decimal(0)).plus(passiveGen);
-    }
+    // Era 1 Act unfolding progression logic & permanent unfold flags
+    const currentQF = gameState.resources.quantumFluctuations.amount;
+    if (!gameState.unfold) gameState.unfold = {};
+    if (currentQF.gte(1)) gameState.unfold.hasUnlocked1QF = true;
+    if (currentQF.gte(10)) gameState.unfold.hasUnlocked10QF = true;
+    if (currentQF.gte(100)) gameState.unfold.hasUnlocked100QF = true;
 
-    if (gameState.upgrades.quantum.decoherenceTuner && gameState.upgrades.quantum.decoherenceTuner.level > 0) {
-      gameState.quantumTunerUnlocked = true;
+    if (gameState.era1Act < 2 && gameState.unfold.hasUnlocked10QF) {
+      gameState.era1Act = 2;
     }
-
-    // Era 1 Act unfolding progression logic
-    if (gameState.era1Act < 2) {
-      if (gameState.resources.energyDensity.amount.gte(20) || gameState.resources.quantumFluctuations.amount.gte(100)) {
-        gameState.era1Act = 2;
-      }
-    }
-    if (gameState.era1Act >= 2 && !gameState.era1Act2Notified) {
-      gameState.era1Act2Notified = true;
-      Viewport.showToast(t("toast_superposition_unlock"));
-    }
-    if (gameState.era1Act < 3) {
-      if ((gameState.quantumStorage && gameState.quantumStorage.gte(50)) || (gameState.era1Collapses || 0) >= 2) {
-        gameState.era1Act = 3;
-      }
-    }
-
-    const tunerMode = gameState.quantumTunerMode || 'off';
-    if (tunerMode === 'safe') {
-      if (gameState.quantumStorage && gameState.quantumStorage.gt(0)) {
-        if ((gameState.quantumPhaseTime % 15) < dt) {
-          measureQuantumSafe();
-        }
-      }
-    } else if (tunerMode === 'resonance') {
-      if (gameState.quantumStorage && gameState.quantumStorage.gt(0)) {
-        if ((gameState.quantumPhaseTime % 15) < dt) {
-          const amp = getQuantumAmplitude();
-          if (amp >= 4.0) {
-            quantumLeapRisk();
-          }
-        }
-      }
+    if (gameState.era1Act < 3 && gameState.unfold.hasUnlocked100QF) {
+      gameState.era1Act = 3;
     }
   } else if (gameState.activeEpoch === 2) {
     // Era 2 Coherence Equilibrium: high temp (>8M K) slightly drains coherence, cooling (<500k K) recovers it toward 100%
@@ -2689,7 +3257,6 @@ function gameTick(dt) {
 
     if (gameState.plasmaTemperature.lte(3000) && !gameState.era2CoolingNotified) {
       gameState.era2CoolingNotified = true;
-      Viewport.showToast(t("toast_plasma_cooling"));
     }
   } else if (gameState.activeEpoch === 3) {
     // Era 3 Coherence Equilibrium: extreme temp (>1.5B K) causes subtle coherence stress, normal operation recovers it
@@ -2701,7 +3268,6 @@ function gameTick(dt) {
 
     if (gameState.era3.temperature.gte(500000000) && !gameState.era3CarbonNotified) {
       gameState.era3CarbonNotified = true;
-      Viewport.showToast(t("toast_carbon_synthesis"));
     }
   } else {
     // Era 4 Stability Integration: Coherence tracks Era 4 Galaxy Stability
@@ -2712,7 +3278,6 @@ function gameTick(dt) {
   Timeline.process(dt);
   checkAchievements();
   checkMissionProgress();
-  isDirty = true;
 }
 
 // ==========================================================================
@@ -2860,6 +3425,8 @@ function importSave() {
 
 function wipeSave() {
   if (confirm("Are you sure you want to reset all universe progression? This cannot be undone.")) {
+    const overlay = document.getElementById('intro-screen-overlay');
+    if (overlay) delete overlay.dataset.initialized;
     localStorage.removeItem('starForgeSave_v15');
     localStorage.removeItem('starForgeSave_v14');
     location.reload();
@@ -3033,9 +3600,12 @@ checkDevMode();
 if (new URLSearchParams(window.location.search).get('dev') === 'true') {
   runParityHarness();
 }
+if (gameState.activeEpoch === 1 && (!gameState.unfold || !gameState.unfold.introCompleted)) {
+  showIntroScreenCinematic();
+}
 Viewport.switchTab(gameState.activeTab);
 
-window.addEventListener('resize', () => Viewport.syncAnchor());
+window.addEventListener('resize', () => Viewport.syncAnchor(true));
 
 requestAnimationFrame(renderLoop);
 
@@ -3043,6 +3613,10 @@ requestAnimationFrame(renderLoop);
 // [SEC-20] IRON-CLAD DECOUPLED RUNTIME EVENT BINDING INITIALIZER
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
+  initFloatingTextPool();
+  ArtifactManager.recalculateArtifactModifiers();
+  Viewport.syncAnchor(true);
+
   document.querySelectorAll('.tab-menu .tab-btn, .side-rail .rail-btn').forEach(btn => {
     const tabId = btn.id.replace('nav-', '');
     btn.addEventListener('click', () => Viewport.switchTab(tabId));
@@ -3051,14 +3625,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const coreCanvas = document.querySelector('.core-canvas');
   if (coreCanvas) {
     // Use pointerdown (not 'click') so mobile gets immediate response with no 300ms delay.
-    // star-core is a child of coreCanvas so a single listener on the parent covers both.
-    // No touchstart listener needed alongside this — pointerdown fires for both mouse and touch,
-    // preventing double-fire that would occur with both 'touchstart' + 'click' listeners.
     coreCanvas.addEventListener('pointerdown', (e) => {
       // Tactile scale-pulse feedback (CSS animation class, no layout reflow)
       coreCanvas.classList.remove('core-tap-active');
-      void coreCanvas.offsetWidth; // force reflow to restart animation
-      coreCanvas.classList.add('core-tap-active');
+      requestAnimationFrame(() => {
+        coreCanvas.classList.add('core-tap-active');
+      });
       clickCore(e);
     });
   }
@@ -3084,9 +3656,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  bindClick('btn-measure-safe', measureQuantumSafe);
-  bindClick('btn-quantum-leap', quantumLeapRisk);
-  bindClick('btn-tuner-toggle', cycleQuantumTunerMode);
   bindClick('btn-inflation', triggerInflation);
   bindClick('btn-recombination', triggerRecombination);
   bindClick('btn-supernova', triggerSupernova);
@@ -3149,10 +3718,7 @@ window.getAIState = function (copyToClipboard = true) {
   if (epoch === 1) {
     state.resources = {
       quantumFluctuations: gameState.resources.quantumFluctuations.amount.toString(),
-      energyDensity: gameState.resources.energyDensity.amount.toString(),
-      quantumStorage: gameState.quantumStorage.toString(),
-      quantumAmplitude: getQuantumAmplitude().toFixed(2) + "x",
-      quantumTunerMode: gameState.quantumTunerMode
+      energyDensity: gameState.resources.energyDensity.amount.toString()
     };
     state.specialActions.canInflation = gameState.resources.quantumFluctuations.amount.gte(COSMIC_REGISTRY.constants.inflationThreshold);
   } else if (epoch === 2) {
@@ -3278,15 +3844,7 @@ window.runAIAction = function (cmd) {
       console.log(`🤖 Action: Bought ${cmd.category} -> ${cmd.key}`);
       break;
 
-    case "measureSafe":
-      measureQuantumSafe();
-      console.log("🤖 Action: Measured Quantum Safe");
-      break;
 
-    case "quantumLeap":
-      quantumLeapRisk();
-      console.log("🤖 Action: Quantum Leap Executed");
-      break;
 
     case "collectFlare":
       collectFlare();
