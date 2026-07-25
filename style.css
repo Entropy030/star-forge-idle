@@ -1463,18 +1463,24 @@ body.flare-active::after {
   display: flex;
   flex-direction: row !important;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  text-align: left;
+  width: 100%;
 }
 
 .artifact-card-img-wrapper {
-  width: 34px;
-  height: 34px;
-  border-radius: 6px;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 0 12px var(--glass-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .artifact-card-img {
@@ -1507,14 +1513,18 @@ body.flare-active::after {
 }
 
 .artifact-picker-thumb {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border-radius: 8px;
   overflow: hidden;
   position: relative;
   flex-shrink: 0;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 0 12px var(--glass-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .artifact-picker-img {

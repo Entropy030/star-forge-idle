@@ -2,3 +2,10 @@
 *.tmp.drivedownload
 desktop.ini
 .DS_Store
+
+# VS Code Einstellungen
+.vscode/
+
+# Windows System-Müll
+desktop.ini
+Thumbs.db

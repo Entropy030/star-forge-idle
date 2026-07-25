@@ -129,24 +129,6 @@
     <p class="stage-text timeline-banner">TIMELINE: <span id="active-epoch-name">Era I: The Quantum Foam</span></p>
     <p class="stage-text cosmic-phase-banner">Cosmic Phase: <span id="stage">Protostar</span></p>
     <p class="stage-text coherence-banner">Vacuum Coherence: <span id="coherence-display">0.0%</span></p>
-    <p class="stage-text objective-banner">CURRENT OBJECTIVE: <span id="era-objective-text">Accumulate 100,000 QF &
-        Trigger Cosmic Inflation</span></p>
-
-    <div class="neural-log-wrapper" style="max-width:540px; margin: 8px auto 0 auto; padding: 0 16px;">
-      <p id="chrono-neural-log"
-        style="font-size:0.75rem; font-style:italic; color:#b2bec3; letter-spacing:0.5px; line-height:1.4; margin:0; min-height:2.8em; display:flex; align-items:center; justify-content:center;">
-      </p>
-      <div id="era-progress-container"
-        style="width: 100%; height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; margin-top: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: none; position: relative;">
-        <div id="era-progress-bar"
-          style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-teal), var(--hydrogen-glow)); transition: width 0.3s ease; box-shadow: 0 0 8px var(--neon-teal);">
-        </div>
-        <div id="era3-progress-nodes" style="display: none; position: absolute; inset: 0; pointer-events: none;">
-          <div style="position: absolute; left: 33.33%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.4);" title="100M K: Supernova"></div>
-          <div style="position: absolute; left: 66.66%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.4);" title="500M K: Carbon"></div>
-        </div>
-      </div>
-    </div>
   </header>
 
   <div id="toast-container" class="toast-hidden"></div>
@@ -182,7 +164,7 @@
     <span id="playtest-status-text" style="font-size: 0.75rem; font-family: monospace; color: #b2bec3; margin-left: 5px;"></span>
   </div>
 
-  <!-- Central Resource Metrics Readout HUD -->
+  <!-- Minimal Persistent Primary Metrics Readout HUD -->
   <div class="dashboard-container">
     <div id="prestige-bar" class="currency-prestige-bar">
       <svg class="ui-icon icon-yellow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" fill="currentColor"/></svg> Synaptic Dust: <span id="stardust-count">0</span> (<span id="stardust-boost">0</span>% Boost)
@@ -258,18 +240,6 @@
         <small class="color-purple"><span id="darkmatter-rate">+0/s</span></small>
       </div>
     </div>
-
-    <!-- Forge Artifacts Capsule Bar (3 Equipped Slots) -->
-    <div id="artifact-bar" class="artifact-bar-container">
-      <div class="artifact-bar-header">
-        <span class="artifact-bar-title"><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg> FORGE ARTIFACTS</span>
-      </div>
-      <div class="artifact-slots-wrapper">
-        <div class="artifact-slot" data-slot="0" onclick="ArtifactManager.openPicker(0)"></div>
-        <div class="artifact-slot" data-slot="1" onclick="ArtifactManager.openPicker(1)"></div>
-        <div class="artifact-slot" data-slot="2" onclick="ArtifactManager.openPicker(2)"></div>
-      </div>
-    </div>
   </div>
 
   <!-- Visualizer (Background) -->
@@ -285,11 +255,31 @@
 
   <!-- Main Viewport Screens -->
   <main>
+    <!-- Tab 1: Cosmos (The Core, Objective & Terminal) -->
     <div id="tab-content-core" class="tab-content">
+      <p class="stage-text objective-banner" style="margin-top: 10px;">CURRENT OBJECTIVE: <span id="era-objective-text">Accumulate 100,000 QF & Trigger Cosmic Inflation</span></p>
+
+      <div class="neural-log-wrapper" style="max-width:540px; margin: 12px auto 0 auto; padding: 0 16px;">
+        <p id="chrono-neural-log"
+          style="font-size:0.75rem; font-style:italic; color:#b2bec3; letter-spacing:0.5px; line-height:1.4; margin:0; min-height:2.8em; display:flex; align-items:center; justify-content:center;">
+        </p>
+        <div id="era-progress-container"
+          style="width: 100%; height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; margin-top: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: none; position: relative;">
+          <div id="era-progress-bar"
+            style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-teal), var(--hydrogen-glow)); transition: width 0.3s ease; box-shadow: 0 0 8px var(--neon-teal);">
+          </div>
+          <div id="era3-progress-nodes" style="display: none; position: absolute; inset: 0; pointer-events: none;">
+            <div style="position: absolute; left: 33.33%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.4);" title="100M K: Supernova"></div>
+            <div style="position: absolute; left: 66.66%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.4);" title="500M K: Carbon"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- Era III Actions -->
       <button id="flare-button" class="era3-only visual-hidden"></button>
     </div>
 
+    <!-- Tab 2: Upgrades (Generators) -->
     <div id="tab-content-upgrades" class="tab-content">
       <!-- Dynamic Era Upgrades Containers injection points -->
       <div class="era1-only">
@@ -479,6 +469,22 @@
         <hr class="divider-subtle">
         <button id="btn-wipe" class="btn-danger width-full">Wipe Universe Tracking Footprint</button>
       </div>
+    <!-- Tab 3: Artifacts (Equipment Loadout & Unlocked Inventory) -->
+    <div id="tab-content-artifacts" class="tab-content">
+      <div class="section-title color-teal"><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg> FORGE ARTIFACT LOADOUT</div>
+      <p class="section-desc">Equip up to 3 macro-modifiers to warp universal constants.</p>
+
+      <div id="artifact-bar" class="artifact-bar-container" style="display: flex;">
+        <div class="artifact-slots-wrapper">
+          <div class="artifact-slot" data-slot="0" onclick="ArtifactManager.openPicker(0)"></div>
+          <div class="artifact-slot" data-slot="1" onclick="ArtifactManager.openPicker(1)"></div>
+          <div class="artifact-slot" data-slot="2" onclick="ArtifactManager.openPicker(2)"></div>
+        </div>
+      </div>
+
+      <div class="section-title color-purple space-top" style="margin-top: 24px;">UNLOCKED ARTIFACT INVENTORY</div>
+      <p class="section-desc">Click any unlocked artifact below to manage equipment slots.</p>
+      <div id="artifact-inventory-list" class="artifact-picker-list" style="margin-top: 12px; max-height: unset;"></div>
     </div>
   </main>
 
@@ -488,8 +494,8 @@
   <nav class="tab-menu">
     <button id="nav-core" class="tab-btn active">Cosmos</button>
     <button id="nav-upgrades" class="tab-btn">Upgrades</button>
-    <button id="nav-prestige" class="tab-btn" disabled>Prestige</button>
-    <button id="nav-settings" class="tab-btn">System ⚙️</button>
+    <button id="nav-artifacts" class="tab-btn">Artifacts</button>
+    <button id="nav-settings" class="tab-btn">System <svg class="ui-icon icon-grey" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </nav>
 
   <script src="break_infinity.js"></script>

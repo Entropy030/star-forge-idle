@@ -86,11 +86,11 @@ function t(key, params = {}) {
 const COSMIC_REGISTRY = {
   universeChronology: {
     epochs: {
-      1: { id: "quantum_foam", name: "Era I: The Quantum Foam", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "settings"] },
-      2: { id: "plasma_crucible", name: "Era II: The Primordial Soup", canvasStyle: "plasma-haze", tabs: ["core", "upgrades", "settings"] },
-      3: { id: "stellar_dawn", name: "Era III: The Stellar Dawn", canvasStyle: "star-core", tabs: ["core", "upgrades", "prestige", "settings"] },
-      4: { id: "galactic_matrix", name: "Era IV: The Galactic Matrix", canvasStyle: "galaxy-wheel", tabs: ["core", "settings"] },
-      5: { id: "deep_future", name: "Era V: The Event Horizon", canvasStyle: "singularity-point", tabs: ["core", "settings"] }
+      1: { id: "quantum_foam", name: "Era I: The Quantum Foam", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "artifacts", "settings"] },
+      2: { id: "plasma_crucible", name: "Era II: The Primordial Soup", canvasStyle: "plasma-haze", tabs: ["core", "upgrades", "artifacts", "settings"] },
+      3: { id: "stellar_dawn", name: "Era III: The Stellar Dawn", canvasStyle: "star-core", tabs: ["core", "upgrades", "artifacts", "settings"] },
+      4: { id: "galactic_matrix", name: "Era IV: The Galactic Matrix", canvasStyle: "galaxy-wheel", tabs: ["core", "upgrades", "artifacts", "settings"] },
+      5: { id: "deep_future", name: "Era V: The Event Horizon", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "artifacts", "settings"] }
     }
   },
   resources: {
@@ -913,7 +913,18 @@ const ArtifactManager = {
     }
   },
 
+  isSlotUnlocked(slotIndex) {
+    if (slotIndex === 0) return true;
+    if (slotIndex === 1) return gameState.activeEpoch >= 2 || (gameState.era1 && gameState.era1.currentAct >= 3);
+    if (slotIndex === 2) return gameState.activeEpoch >= 3;
+    return false;
+  },
+
   openPicker(slotIndex) {
+    if (!this.isSlotUnlocked(slotIndex)) {
+      Viewport.showToast(`Slot ${slotIndex + 1} is locked! Advance to Era ${slotIndex + 1} to unlock.`);
+      return;
+    }
     this.activeSlotForPicker = slotIndex;
     const modal = document.getElementById('artifact-picker-modal');
     const slotNum = document.getElementById('picker-slot-num');
@@ -933,8 +944,7 @@ const ArtifactManager = {
     const bar = document.getElementById('artifact-bar');
     if (!bar) return;
 
-    const isUnlockedUI = (gameState.era1 && gameState.era1.currentAct >= 2) || gameState.activeEpoch > 1 || (gameState.unfold && gameState.unfold.hasUnlocked10QF);
-    bar.style.display = isUnlockedUI ? 'flex' : 'none';
+    bar.style.display = 'flex';
 
     const equipped = gameState.artifacts ? (gameState.artifacts.equipped || [null, null, null]) : [null, null, null];
 
@@ -942,6 +952,17 @@ const ArtifactManager = {
       const slotEl = document.querySelector(`.artifact-slot[data-slot="${i}"]`);
       if (!slotEl) continue;
 
+      const isUnlocked = this.isSlotUnlocked(i);
+      if (!isUnlocked) {
+        slotEl.removeAttribute('data-type');
+        slotEl.style.opacity = '0.5';
+        slotEl.style.cursor = 'not-allowed';
+        slotEl.innerHTML = `<span class="artifact-slot-empty" style="color:#64748b;">${ICONS.lock} SLOT ${i + 1} (ERA ${i + 1})</span>`;
+        continue;
+      }
+
+      slotEl.style.opacity = '1';
+      slotEl.style.cursor = 'pointer';
       const artId = equipped[i];
       if (!artId) {
         slotEl.removeAttribute('data-type');
@@ -964,6 +985,42 @@ const ArtifactManager = {
           `;
         }
       }
+    }
+
+    this.renderInventory();
+  },
+
+  renderInventory() {
+    const invEl = document.getElementById('artifact-inventory-list');
+    if (!invEl) return;
+
+    invEl.innerHTML = '';
+    const unlocked = gameState.artifacts ? (gameState.artifacts.unlocked || []) : [];
+    const equipped = gameState.artifacts ? (gameState.artifacts.equipped || [null, null, null]) : [null, null, null];
+
+    for (let id of unlocked) {
+      const def = ARTIFACT_DEFINITIONS[id];
+      if (!def) continue;
+
+      const equippedSlot = equipped.indexOf(id);
+      const isEquipped = equippedSlot !== -1;
+
+      const item = document.createElement('div');
+      item.className = 'artifact-picker-item';
+      item.innerHTML = `
+        <div class="artifact-picker-item-left">
+          <div class="artifact-picker-thumb">
+            <img src="${def.image}" alt="${def.name}" class="artifact-picker-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+            <div class="artifact-picker-fallback" style="display:none; color:${def.color};">${ICONS.socket}</div>
+          </div>
+          <div class="artifact-picker-info">
+            <div class="artifact-picker-name" style="color: ${def.color};">${def.name} <small style="opacity: 0.6;">(${def.rarity})</small> ${isEquipped ? `<span style="color:#00ecc6; font-size:0.7rem; margin-left:6px;">[SLOT ${equippedSlot + 1}]</span>` : ''}</div>
+            <div class="artifact-picker-desc">${def.description}</div>
+          </div>
+        </div>
+        <button class="artifact-equip-btn" onclick="ArtifactManager.openPicker(0)">${isEquipped ? 'VERWALTEN' : 'AUSRÜSTEN'}</button>
+      `;
+      invEl.appendChild(item);
     }
   },
 
@@ -1393,6 +1450,10 @@ const Viewport = {
     const targetNav = document.getElementById(`nav-${tabId}`);
     if (targetNav) targetNav.classList.add('active');
 
+    if (tabId === 'artifacts') {
+      ArtifactManager.renderBar();
+      ArtifactManager.renderInventory();
+    }
     if (tabId === 'prestige') {
       this.renderShop('stardust');
       this.renderShop('pulsar');
