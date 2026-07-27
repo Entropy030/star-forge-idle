@@ -424,6 +424,9 @@ function getInitialGameState() {
         activeClickBoostSec: 0
       }
     },
+    settings: {
+      crtOverlay: true
+    },
     coherence: new Decimal(0),
     activeTab: "core",
     buyMode: 1,
@@ -531,6 +534,13 @@ function ensureStateShape() {
   }
   if (!gameState.autoBuyer) gameState.autoBuyer = { hydrogen: { active: false } };
   if (!gameState.autoBuyer.hydrogen) gameState.autoBuyer.hydrogen = { active: false };
+
+  if (!gameState.settings || typeof gameState.settings !== 'object') {
+    gameState.settings = { crtOverlay: true };
+  }
+  if (typeof gameState.settings.crtOverlay !== 'boolean') {
+    gameState.settings.crtOverlay = true;
+  }
 
   if (!(gameState.coherence instanceof Decimal)) gameState.coherence = new Decimal(gameState.coherence || 0);
 
@@ -2905,6 +2915,9 @@ function spawnFloatingText(text, color, e, offsetX = 0) {
 
 function clickCore(e) {
   initAudio();
+  if (typeof CanvasCore !== 'undefined') {
+    CanvasCore.spawnClickBurst(e ? e.clientX : null, e ? e.clientY : null, gameState ? gameState.activeEpoch : 1);
+  }
 
   if (gameState.activeEpoch === 1) {
     if (!gameState.era1) {
@@ -3714,6 +3727,15 @@ document.addEventListener('DOMContentLoaded', () => {
   ArtifactManager.recalculateArtifactModifiers();
   Viewport.syncAnchor(true);
 
+  if (typeof CanvasCore !== 'undefined') {
+    CanvasCore.init();
+  }
+
+  const crtActive = gameState.settings ? (gameState.settings.crtOverlay !== false) : true;
+  document.body.classList.toggle('crt-enabled', crtActive);
+  const crtBtn = document.getElementById('btn-toggle-crt');
+  if (crtBtn) crtBtn.textContent = `Toggle CRT Retro Overlay: ${crtActive ? 'ON' : 'OFF'}`;
+
   document.querySelectorAll('.tab-menu .tab-btn, .side-rail .rail-btn').forEach(btn => {
     const tabId = btn.id.replace('nav-', '');
     btn.addEventListener('click', () => Viewport.switchTab(tabId));
@@ -3752,6 +3774,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('click', fn);
   };
+
+  bindClick('btn-toggle-crt', () => {
+    if (!gameState.settings) gameState.settings = { crtOverlay: true };
+    gameState.settings.crtOverlay = !gameState.settings.crtOverlay;
+    const active = gameState.settings.crtOverlay;
+    document.body.classList.toggle('crt-enabled', active);
+    const btn = document.getElementById('btn-toggle-crt');
+    if (btn) btn.textContent = `Toggle CRT Retro Overlay: ${active ? 'ON' : 'OFF'}`;
+    Viewport.log(`CRT Retro Overlay set to ${active ? 'ON' : 'OFF'}`);
+  });
 
   bindClick('btn-ai-state', window.getAIState);
   bindClick('btn-bot-start', () => {
