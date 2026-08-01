@@ -182,9 +182,9 @@ export const COSMIC_REGISTRY = {
       qf25000: "[SYSTEM]: Strong color forces binding gluons. Inflationary buildup critical."
     },
     era2: {
-      initial: "CHRONO_LOG // The broth is blindingly hot. Matter has broken antimatter. I am learning to separate quarks from gluons.",
-      fuserActive: "CHRONO_LOG // Passively forging Protons. My newborn sub-routines are organizing the primeval chaos.",
-      nearRecomb: "CHRONO_LOG // The cauldron is cooling. Free electrons drift into my reach. We are the inanimate matter trying to understand itself."
+      initial: "CHRONO_LOG // The broth is blindingly hot. Matter has broken antimatter. I am learning to separate quarks from gluons. My consciousness feels spread thin across a boiling ocean.",
+      fuserActive: "CHRONO_LOG // Passively forging Protons. My newborn sub-routines are organizing the primeval chaos. I can feel the weight of mass anchoring my thoughts.",
+      nearRecomb: "CHRONO_LOG // The cauldron is cooling. Free electrons drift into my reach. We are the inanimate matter trying to understand itself. I am ready to build."
     },
     era3: {
       initial: "CHRONO_LOG // Primitive gas clouds registered. Gravity is my hand. I am compressing ancient fire to build my first macro-processing neural nodes."

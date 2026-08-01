@@ -386,6 +386,12 @@ export const saveGame = function() {
 }
 
 const MIGRATIONS = {
+  13: (legacyState) => {
+    let migrated = getInitialGameState();
+    deepMergeMissing(migrated, legacyState);
+    migrated.version = 14;
+    return migrated;
+  },
   14: (legacyState) => {
     let migrated = getInitialGameState();
     deepMergeMissing(migrated, legacyState);
@@ -396,7 +402,10 @@ const MIGRATIONS = {
 
 export const loadGame = function() {
   try {
-    let rawData = localStorage.getItem('starForgeSave_v15') || localStorage.getItem('starForgeSave_v14');
+    let rawData = localStorage.getItem('starForgeSave_v15') || 
+                  localStorage.getItem('starForgeSave_v14') || 
+                  localStorage.getItem('starForgeSave_v13') || 
+                  localStorage.getItem('starForgeSave');
     if (!rawData) {
       ensureStateShape();
       document.body.setAttribute('data-epoch', gameState.activeEpoch);
@@ -412,7 +421,8 @@ export const loadGame = function() {
       return;
     }
 
-    let stateVersion = parsed.version || 14;
+    let stateVersion = parsed.version || 13;
+    if (stateVersion < 13) stateVersion = 13; // default to generic migration for very old saves
     let loadedState = deserializeState(parsed.gameState);
 
     // Chain migrations sequentially
