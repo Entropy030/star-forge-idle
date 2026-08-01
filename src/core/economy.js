@@ -103,7 +103,10 @@ function getStardustYield() {
   
   // Steep exponential scaling past 100M K: (temp / 100M K) ^ 1.6
   let exponentScaler = baseYield.pow(1.6);
-  return exponentScaler.floor().max(1);
+  
+  let hbarMod = 1.0 + (0.20 * (gameState.cosmicConstants?.hbar || 0));
+  
+  return exponentScaler.times(hbarMod).floor().max(1);
 }
 
 function getPulsarShardYield() {
@@ -146,6 +149,7 @@ export function deduct(key, amount) {
 }
 
 export function getHydrogenGenRate() {
+  let gMod = 1.0 + (0.20 * (gameState.cosmicConstants?.G || 0));
   let achBaseMult = gameState.achievements.firstSupernova.unlocked ? COSMIC_REGISTRY.achievements.firstSupernova.multiplier : 1.0;
   let stardustMult = gameState.currencies.stardust.amount.times(0.5).plus(1);
   let carbonBoost = getCarbonGravityMultiplier();
@@ -153,20 +157,26 @@ export function getHydrogenGenRate() {
   let milestoneMult = getMilestoneMultiplier(gravityLevel);
   let baseGen = gameState.era3.gravity.times(milestoneMult).times(carbonBoost).times(gameState.era3.tempMultiplier).times(stardustMult).times(achBaseMult).times(COSMIC_REGISTRY.resources.hydrogen.baseGen);
   let exponent = new Decimal(1).plus(new Decimal(0.05).times(gameState.upgrades.singularity.darkGravity.level));
-  return baseGen.pow(exponent).times(getCardMultiplier("hydrogenGen")).round();
+  return baseGen.pow(exponent).times(getCardMultiplier("hydrogenGen")).times(gMod).round();
 }
 
 function getFusionCost() {
   return new Decimal(COSMIC_REGISTRY.resources.helium.fusionCost - ((gameState.upgrades.stardust.fusionDiscount?.level ?? 0) * 2));
 }
 
+export function getCompressionScaling() {
+  let alpha = gameState.cosmicConstants?.alpha || 0;
+  return 1.75 + (0.03 * alpha);
+}
+
 function getCompressionsCompleted() {
   let logPrimitive = gameState.era3.compressCost.div(10).log10();
-  let exponent = logPrimitive / Math.log10(1.75);
+  let exponent = logPrimitive / Math.log10(getCompressionScaling());
   return Math.max(0, Math.round(exponent));
 }
 
 function getCompressionHeatYield() {
+  let gMod = 1.0 + (0.20 * (gameState.cosmicConstants?.G || 0));
   let compressLevel = getCompressionsCompleted();
   let milestoneMult = getMilestoneMultiplier(compressLevel);
   let shopMultiplier = new Decimal(1.0 + ((gameState.upgrades.stardust.thermalInsulation?.level ?? 0) * 0.20));
@@ -174,7 +184,8 @@ function getCompressionHeatYield() {
   let runGrowth = new Decimal(COSMIC_REGISTRY.constants.compressionScaling).pow(compressLevel);
   let baseHeat = new Decimal(COSMIC_REGISTRY.constants.baseCompressionHeat).times(milestoneMult).times(shopMultiplier).times(ironMultiplier).times(runGrowth);
   let exponent = new Decimal(1).plus(new Decimal(0.05).times(gameState.upgrades.singularity.stellarIgnition.level));
-  return baseHeat.pow(exponent).times(getCardMultiplier("compressionHeat")).round();
+  let finalHeat = new Decimal(baseHeat).times(milestoneMult).times(shopMultiplier).times(1).pow(exponent).times(getCardMultiplier("compressionHeat")).times(gMod).round();
+  return finalHeat;
 }
 
 function getGravityCostMultiplier() {
@@ -204,6 +215,33 @@ function getGalacticDarkMatterRate() {
 function getGalacticMergeYield() {
   if (gameState.activeEpoch !== 4) return new Decimal(0);
   return gameState.resources.darkMatter.amount.div(2500).floor().plus(1);
+}
+
+// ==========================================================================
+// [SEC-05] ERA V & PRESTIGE LOGIC
+// ==========================================================================
+export function processEraV(dt) {
+  if (gameState.activeEpoch !== 5) return;
+  if (gameState.era5.isHeatDeath) return;
+
+  let cMod = 1.0 + (0.12 * (gameState.cosmicConstants?.c || 0));
+  let entropyRate = new Decimal(0.5).times(cMod); // 0.5% per second base
+  
+  gameState.era5.entropy += entropyRate.toNumber() * dt;
+  if (gameState.era5.entropy >= 100) {
+    gameState.era5.entropy = 100;
+    gameState.era5.isHeatDeath = true;
+    return; // Heat death achieved
+  }
+
+  // Passive Bits Generation
+  let hr = gameState.resources.hawkingRadiation.amount;
+  let infoExtractors = gameState.upgrades.era5?.infoExtractor?.level || 0;
+  if (infoExtractors > 0 && hr.gte(10)) {
+    let toConvert = Math.min(hr.toNumber(), infoExtractors * 10 * dt);
+    deduct('hawkingRadiation', toConvert);
+    gameState.currencies.bits.amount = gameState.currencies.bits.amount.plus(toConvert / 10);
+  }
 }
 
 // ==========================================================================
@@ -291,7 +329,7 @@ export const Economy = {
     } else if (key === 'compress') {
       loopBuy('helium', () => gameState.era3.compressCost, () => {
         gameState.era3.temperature = gameState.era3.temperature.plus(getCompressionHeatYield());
-        gameState.era3.compressCost = gameState.era3.compressCost.times(1.75).floor();
+        gameState.era3.compressCost = gameState.era3.compressCost.times(getCompressionScaling()).floor();
         recalcTempMultiplier();
         if (gameState.era3.temperature.gte(COSMIC_REGISTRY.constants.mainSequenceTempThreshold) && gameState.era3.stage === "Protostar") {
           gameState.era3.stage = "Main Sequence Star";

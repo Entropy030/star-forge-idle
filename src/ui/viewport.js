@@ -844,6 +844,11 @@ export const Viewport = {
     if (sdSection) sdSection.style.display = gameState.currencies.stardust.amount.gt(0) ? '' : 'none';
     if (plSection) plSection.style.display = (gameState.currencies.pulsarShards.amount.gt(0) || gameState.upgrades.pulsar.autoCompress.level > 0) ? '' : 'none';
     if (sgSection) sgSection.style.display = (gameState.currencies.singularityMass.amount.gt(0) || gameState.upgrades.singularity.darkGravity.level > 0) ? '' : 'none';
+    
+    const tuningBtn = document.getElementById('btn-open-tuning');
+    if (tuningBtn) {
+      tuningBtn.style.display = (gameState.activeEpoch === 5 || gameState.currencies.bits.amount.gt(0)) ? 'block' : 'none';
+    }
   },
 
   updateSupernovaOutcome() {
@@ -1563,8 +1568,52 @@ export const Viewport = {
         mergeBtn.textContent = ready ? `COLLIDE GALAXY MATRIX (Yield: +${format(getGalacticMergeYield())} Dark Energy)` : `Merge Requires 10,000 Dark Matter (Current: ${format(gameState.resources.darkMatter.amount)})`;
       }
 
+      const entropyBtn = document.getElementById('btn-embrace-entropy');
+      if (entropyBtn) {
+        let entropyReady = gameState.resources.darkMatter.amount.gte(100000) && gameState.era4.stability.lte(20);
+        if (gameState.resources.darkMatter.amount.gte(50000)) {
+          entropyBtn.style.display = 'block';
+        }
+        entropyBtn.disabled = !entropyReady;
+        entropyBtn.textContent = entropyReady ? `EMBRACE ENTROPY (Initiate Era V)` : `Embrace Entropy Requires 100k DM & <20% Stability (Current DM: ${format(gameState.resources.darkMatter.amount)}, Stab: ${format(gameState.era4.stability)}%)`;
+      }
+
       if (gameState.activeTab === 'core') {
         this.renderGenericTierList('galaxy-upgrades-container', 'galaxy', 'DM', '#00ecc6', 'darkMatter');
+      }
+    }
+    else if (gameState.activeEpoch === 5) {
+      const container = this.getEl('era5-dashboard-container');
+      if (container) {
+        if (!container.innerHTML.trim()) {
+          container.innerHTML = Templates.era5Dashboard;
+        }
+        
+        const entropyFill = this.getEl('entropy-bar-fill');
+        const entropyText = this.getEl('entropy-bar-text');
+        if (entropyFill) entropyFill.style.width = `${gameState.era5.entropy}%`;
+        if (entropyText) entropyText.textContent = `${gameState.era5.entropy.toFixed(2)}% ENTROPY`;
+
+        this.setTextContent('hawking-radiation-count', format(gameState.resources.hawkingRadiation.amount));
+        this.setTextContent('bits-count', format(gameState.currencies.bits.amount));
+      }
+
+      if (gameState.era5.isHeatDeath) {
+        let overlay = this.getEl('heat-death-overlay');
+        if (!overlay) {
+          document.body.insertAdjacentHTML('beforeend', Templates.heatDeathOverlay);
+          overlay = this.getEl('heat-death-overlay');
+          setTimeout(() => overlay.style.opacity = '1', 50);
+          
+          this.getEl('btn-big-bounce').addEventListener('click', () => {
+            if (window.triggerBigBounce) window.triggerBigBounce();
+            overlay.remove();
+          });
+        }
+      }
+
+      if (gameState.activeTab === 'core') {
+        this.renderGenericTierList('era5-upgrades-container', 'era5', 'Cost', '#ff7675');
       }
     }
 
@@ -1572,6 +1621,37 @@ export const Viewport = {
     this.renderFlare();
     this.updateEraProgressBar();
     this.updateVisualProgression();
+  },
+
+  renderTuningModal() {
+    const list = this.getEl('tuning-upgrades-list');
+    const bitsDisplay = this.getEl('tuning-bits-display');
+    if (!list || !bitsDisplay) return;
+
+    bitsDisplay.textContent = format(gameState.currencies.bits.amount);
+    
+    let html = '';
+    const tuningReg = COSMIC_REGISTRY.upgrades.tuning;
+    for (let key in tuningReg) {
+      const def = tuningReg[key];
+      const currentLvl = gameState.cosmicConstants[key] || 0;
+      const cost = typeof def.baseCost === 'function' ? def.baseCost(currentLvl) : new Decimal(def.baseCost).times(Decimal.pow(def.costMult || 2, currentLvl));
+      const isMaxed = currentLvl >= def.maxLevel;
+      const canAfford = !isMaxed && gameState.currencies.bits.amount.gte(cost);
+      
+      html += `
+        <div class="cosmic-card" style="border-color: #00cec9;">
+          <div class="btn-meta">
+            <strong style="color: #00cec9;">${def.name} <span class="lvl-display">(Lvl ${currentLvl}/${def.maxLevel})</span></strong>
+            <small>${def.desc}</small>
+          </div>
+          <button class="upgrade-btn" data-key="${key}" ${isMaxed ? 'disabled' : (canAfford ? '' : 'disabled')} style="${canAfford ? 'background: rgba(0, 206, 201, 0.2); border-color: #00cec9; color: #fff;' : 'opacity: 0.5;'}">
+            ${isMaxed ? 'MAXED' : 'Cost: ' + format(cost) + ' Bits'}
+          </button>
+        </div>
+      `;
+    }
+    list.innerHTML = html;
   }
 };
 

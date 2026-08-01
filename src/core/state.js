@@ -48,6 +48,24 @@ function getInitialEra4State() {
   };
 }
 
+function getInitialEra5State() {
+  return {
+    entropy: 0.0,
+    isHeatDeath: false,
+    hawkingCollectors: 0,
+    infoExtractors: 0
+  };
+}
+
+function getInitialCosmicConstants() {
+  return {
+    G: 0,
+    c: 0,
+    alpha: 0,
+    hbar: 0
+  };
+}
+
 export const getInitialGameState = function() {
   let state = {
     activeEpoch: 1,
@@ -75,9 +93,11 @@ export const getInitialGameState = function() {
     currencies: {
       stardust: { amount: new Decimal(0) },
       pulsarShards: { amount: new Decimal(0) },
-      singularityMass: { amount: new Decimal(0) }
+      singularityMass: { amount: new Decimal(0) },
+      hawkingRadiation: { amount: new Decimal(0) },
+      bits: { amount: new Decimal(0) }
     },
-    upgrades: { quantum: {}, plasma: {}, stardust: {}, pulsar: {}, singularity: {}, galaxy: {} },
+    upgrades: { quantum: {}, plasma: {}, stardust: {}, pulsar: {}, singularity: {}, galaxy: {}, tuning: {} },
     unfold: {
       hasUnlocked1QF: false,
       hasUnlocked10QF: false,
@@ -102,6 +122,8 @@ export const getInitialGameState = function() {
     era2: getInitialEra2State(),
     era3: getInitialEra3State(),
     era4: getInitialEra4State(),
+    era5: getInitialEra5State(),
+    cosmicConstants: getInitialCosmicConstants(),
     prestige: {
       autoStabilizer: false
     },

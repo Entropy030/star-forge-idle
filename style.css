@@ -836,7 +836,7 @@ min-height: 36px;
     specificity (1,0,0); without !important those inline values would override
     tab hiding. Genuine specificity conflict — cannot be resolved without !important.
 */
-.era1-only, .era2-only, .era3-only, .era4-only { display: none; }
+.era1-only, .era2-only, .era3-only, .era4-only, .era5-only { display: none; }
 .visual-hidden { display: none !important; }
 
 body[data-epoch="1"] .era1-only { display: block; }
@@ -850,6 +850,8 @@ body[data-epoch="3"] button.era3-only { display: inline-block; }
 
 body[data-epoch="4"] .era4-only { display: block; }
 body[data-epoch="4"] button.era4-only { display: block; }
+body[data-epoch="5"] .era5-only { display: block; }
+body[data-epoch="5"] button.era5-only { display: block; }
 
 /* Era 1 Unfolding Act Rules */
 body[data-epoch="1"][data-era1-act="1"] #btn-tuner-toggle {

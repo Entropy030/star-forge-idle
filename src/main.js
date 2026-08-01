@@ -9,6 +9,7 @@ import { CanvasCore } from './ui/canvasCore.js';
 
 // Re-export or attach globals needed by inline HTML (like onclick)
 window.ArtifactManager = ArtifactManager;
+window.triggerBigBounce = triggerBigBounce;
 
 // ==========================================================================
 // [SEC-01] THIRD-PARTY INTEGRATIONS & SHIMS
@@ -296,10 +297,61 @@ function triggerSupernova() {
       Viewport.switchTab('core');
       saveGame();
     });
-  } else {
+  }
+}
+
+export function triggerBigBounce() {
+  const savedBits = gameState.currencies.bits.amount;
+  const savedConstants = JSON.parse(JSON.stringify(gameState.cosmicConstants));
+
+  // Perform a hard reset by overwriting gameState with a clean state,
+  // but keep the Bits and Cosmic Constants.
+  const cleanState = getInitialGameState();
+  
+  // Recursively overwrite current state with clean state
+  for (let key in gameState) {
+    delete gameState[key];
+  }
+  Object.assign(gameState, cleanState);
+
+  gameState.currencies.bits.amount = savedBits;
+  gameState.cosmicConstants = savedConstants;
+
+  startEraTransition(1, "The universe has reached maximum entropy. Time itself loses meaning. But from the perfect stillness, a fluctuation emerges. The remnants of information seed a new beginning. The Big Bounce initiates.", () => {
+    document.body.setAttribute('data-epoch', 1);
+    Viewport.switchTab('core');
+    setIsDirty(true);
+    saveGame();
+  });
+}
+
+function buyCosmicTuning(key) {
+  const def = COSMIC_REGISTRY.upgrades.tuning[key];
+  if (!def) return;
+  
+  const currentLvl = gameState.cosmicConstants[key] || 0;
+  if (currentLvl >= def.maxLevel) return;
+
+  const cost = typeof def.baseCost === 'function' ? def.baseCost(currentLvl) : new Decimal(def.baseCost).times(Decimal.pow(def.costMult || 2, currentLvl));
+  
+  if (gameState.currencies.bits.amount.gte(cost)) {
+    gameState.currencies.bits.amount = gameState.currencies.bits.amount.minus(cost);
+    gameState.cosmicConstants[key] = currentLvl + 1;
+    saveGame();
+    Viewport.log(`Cosmic Constant Adjusted: ${def.name} -> Level ${currentLvl + 1}`);
+  }
+}
+
+function triggerEraVTransition() {
+  if (gameState.activeEpoch !== 4) return;
+  if (gameState.resources.darkMatter.amount.lt(100000) || gameState.era4.stability.gt(20)) return;
+
+  startEraTransition(5, "The galaxy destabilizes. The last stars burn out, leaving only black holes and dark energy. The universe enters its final act: The Heat Death.", () => {
+    gameState.activeEpoch = 5;
+    document.body.setAttribute('data-epoch', 5);
     Viewport.switchTab('core');
     saveGame();
-  }
+  });
 }
 
 function closeTheatrical() {
@@ -433,7 +485,8 @@ function clickCore(e) {
     }
     gameState.era1.unfoldCount = (gameState.era1.unfoldCount || 0) + 1;
     if (gameState.era1.vacuumCoherence < 1.0) {
-      gameState.era1.vacuumCoherence = Math.min(1.0, (gameState.era1.vacuumCoherence || 0) + 0.10);
+      let cMod = 1.0 - (0.08 * (gameState.cosmicConstants?.c || 0));
+      gameState.era1.vacuumCoherence = Math.min(1.0, (gameState.era1.vacuumCoherence || 0) + (0.10 * cMod));
     }
     let mult = getCardMultiplier("hydrogenGen");
     let gain = new Decimal(1).times(mult);
@@ -751,6 +804,8 @@ let simulationAccumulator = 0;
 function renderLoop() {
   let now = Date.now();
   let dt = Math.max(0, (now - lastTick) / 1000);
+  let cMod = 1.0 + (0.12 * (gameState.cosmicConstants?.c || 0));
+  dt *= cMod;
 
   if (dt > 1.5) dt = 1.5;
   lastTick = now;
@@ -880,6 +935,30 @@ document.addEventListener('DOMContentLoaded', () => {
   bindClick('btn-trigger-hypernova', triggerGalacticMerge);
   bindClick('btn-stabilize-arms', stabilizeArms);
   bindClick('btn-accrete-planet', accretePlanetConfiguration);
+  bindClick('btn-embrace-entropy', triggerEraVTransition);
+  bindClick('btn-open-tuning', () => {
+    let overlay = document.getElementById('tuning-modal');
+    if (!overlay) {
+      document.body.insertAdjacentHTML('beforeend', Templates.tuningModal);
+      overlay = document.getElementById('tuning-modal');
+      document.getElementById('close-tuning-modal').addEventListener('click', () => {
+        overlay.style.display = 'none';
+      });
+      // Attach click handlers to the container so we can buy tuning upgrades
+      document.getElementById('tuning-upgrades-list').addEventListener('click', (e) => {
+        if (e.target.closest('.upgrade-btn')) {
+          const btn = e.target.closest('.upgrade-btn');
+          const key = btn.dataset.key;
+          if (key) {
+            buyCosmicTuning(key);
+            Viewport.renderTuningModal();
+          }
+        }
+      });
+    }
+    overlay.style.display = 'flex';
+    Viewport.renderTuningModal();
+  });
   bindClick('flare-button', collectFlare);
   bindClick('btn-autobuy-hydrogen', () => {
     if (!gameState.autoBuyer) gameState.autoBuyer = { hydrogen: { active: false } };

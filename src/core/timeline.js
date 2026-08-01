@@ -1,7 +1,7 @@
 // [SEC-15] TIME LOOP & EPOCH CHUNK SIMULATION// [SEC-06] CORE PHYSICS & SIMULATION LOOP
 // ==========================================================================
 import { gameState } from './state.js';
-import { Economy } from './economy.js';
+import { Economy, getAmount, getCompressionScaling, processEraV } from './economy.js';
 import { Viewport } from '../ui/viewport.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 
@@ -20,6 +20,14 @@ export const Timeline = {
   },
 
   simulate(dt) {
+    if (gameState.activeEpoch === 5) {
+      processEraV(dt);
+    }
+
+    if (gameState.era5?.isHeatDeath) {
+      return; // Stop all other physics
+    }
+
     if (gameState.activeEpoch === 1) {
       this.quantumFoam(dt);
     } else if (gameState.activeEpoch === 2) {
@@ -106,7 +114,8 @@ export const Timeline = {
       if (targetFusions.gt(0)) {
         gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.minus(targetFusions.times(costPerYield));
         const stardustBoost = gameState.currencies.stardust.amount.times(0.25).plus(1);
-        const totalHeliumYield = targetFusions.times(getFusionSurgeMultiplier()).times(stardustBoost);
+        const alphaMod = 1.0 + (0.30 * (gameState.cosmicConstants?.alpha || 0));
+        const totalHeliumYield = targetFusions.times(getFusionSurgeMultiplier()).times(stardustBoost).times(alphaMod);
         gameState.resources.helium.amount = gameState.resources.helium.amount.plus(totalHeliumYield);
       }
     }
@@ -122,7 +131,7 @@ export const Timeline = {
           let maxAffordable = Decimal.affordGeometricSeries(
             gameState.resources.helium.amount,
             gameState.era3.compressCost,
-            new Decimal(1.75),
+            new Decimal(getCompressionScaling()),
             0
           );
           let countToCompress = Decimal.min(new Decimal(triggers), maxAffordable);
@@ -131,13 +140,13 @@ export const Timeline = {
             let totalCost = Decimal.sumGeometricSeries(
               countToCompress,
               gameState.era3.compressCost,
-              new Decimal(1.75),
+              new Decimal(getCompressionScaling()),
               0
             );
 
             gameState.resources.helium.amount = gameState.resources.helium.amount.minus(totalCost);
             gameState.era3.temperature = gameState.era3.temperature.plus(getCompressionHeatYield().times(countToCompress));
-            gameState.era3.compressCost = gameState.era3.compressCost.times(new Decimal(1.75).pow(countToCompress)).floor();
+            gameState.era3.compressCost = gameState.era3.compressCost.times(new Decimal(getCompressionScaling()).pow(countToCompress)).floor();
 
             recalcTempMultiplier();
             if (gameState.era3.temperature.gte(COSMIC_REGISTRY.constants.mainSequenceTempThreshold) && gameState.era3.stage === "Protostar") {
@@ -152,12 +161,13 @@ export const Timeline = {
     if (gameState.era3.stage === "Main Sequence Star" && gameState.era3.carbonYield.gt(0)) {
       let synthLvl = gameState.upgrades.pulsar.autoSynthesize?.level ?? 0;
       let velocityMult = new Decimal(1).plus(synthLvl);
-      let carbonGen = gameState.era3.carbonYield.times(velocityMult).times(dt);
+      let alphaMod = 1.0 + (0.30 * (gameState.cosmicConstants?.alpha || 0));
+      let carbonGen = gameState.era3.carbonYield.times(velocityMult).times(dt).times(alphaMod);
       gameState.resources.carbon.amount = gameState.resources.carbon.amount.plus(carbonGen);
       gameState.era3.lifetimeCarbonThisRun = (gameState.era3.lifetimeCarbonThisRun || new Decimal(0)).plus(carbonGen);
 
       if (gameState.era3.ironYield.gt(0) && gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp)) {
-        let ironGen = gameState.era3.ironYield.times(velocityMult).times(dt);
+        let ironGen = gameState.era3.ironYield.times(velocityMult).times(dt).times(alphaMod);
         gameState.resources.iron.amount = gameState.resources.iron.amount.plus(ironGen);
       }
     }
@@ -188,7 +198,8 @@ export const Timeline = {
       dynamicDecay = dynamicDecay.times(0.85);
     }
 
-    gameState.era4.stability = Decimal.max(5, gameState.era4.stability.minus(dynamicDecay.times(dt)));
+    let gMod = 1.0 + (0.10 * (gameState.cosmicConstants?.G || 0));
+    gameState.era4.stability = Decimal.max(5, gameState.era4.stability.minus(dynamicDecay.times(dt).times(gMod)));
   }
 };
 

@@ -149,6 +149,16 @@ export const COSMIC_REGISTRY = {
     singularity: {
       darkGravity: { id: "darkGravity", name: "Dark Matter Gravity", max: 5, baseCost: new Decimal(1), currency: "singularityMass", desc: "Applies structural ^1.05 exponential scaling factor to Hydrogen rates per level." },
       stellarIgnition: { id: "stellarIgnition", name: "Stellar Ignition", max: 5, baseCost: new Decimal(1), currency: "singularityMass", desc: "Applies a ^1.05 exponential scaling to Core Compression thermal metrics per level." }
+    },
+    era5: {
+      hawkingCollector: { id: "hawkingCollector", name: "Hawking Collector", baseCost: new Decimal(100), currency: "stardust", costScaling: 2.0, gen: new Decimal(1), desc: "Harvests Hawking Radiation from evaporating black holes. Generates +1 HR/s." },
+      infoExtractor: { id: "infoExtractor", name: "Information Extractor", baseCost: new Decimal(10), currency: "pulsarShards", costScaling: 2.5, desc: "Extracts Bits from Hawking Radiation. Converts 10 HR/s into 1 Bit/s." }
+    },
+    tuning: {
+      G: { id: "G", name: "Gravitational Constant (G)", baseCost: new Decimal(50), currency: "bits", costScaling: 3.0, desc: "+20% Heating & Hydrogen Gen in Era 3. -10% Halo Stability in Era 4." },
+      c: { id: "c", name: "Speed of Light (c)", baseCost: new Decimal(100), currency: "bits", costScaling: 3.0, desc: "+12% Global Tick Speed. -8% Coherence Generation in Era 1." },
+      alpha: { id: "alpha", name: "Fine-structure Constant (α)", baseCost: new Decimal(150), currency: "bits", costScaling: 3.0, desc: "+30% Fusion Yields (He, C, Fe). +3% Compression Cost." },
+      hbar: { id: "hbar", name: "Planck Constant (ħ)", baseCost: new Decimal(200), currency: "bits", costScaling: 3.0, desc: "Increases Era 1 Peak Window. +20% Supernova Stardust Yield." }
     }
   },
   solarEvents: {
