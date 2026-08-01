@@ -9,3 +9,7 @@ desktop.ini
 # Windows System-Müll
 desktop.ini
 Thumbs.db
+
+# Build and dependencies
+node_modules/
+dist/

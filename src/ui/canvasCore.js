@@ -2,7 +2,7 @@
 // [SEC-CANVAS-01] HIGH-PERFORMANCE CANVAS 2D ENGINE & PARTICLE POOL
 // ==========================================================================
 
-const CanvasCore = (function () {
+export const CanvasCore = (function () {
   let canvas = null;
   let ctx = null;
   let width = 0;

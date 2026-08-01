@@ -1,11 +1,11 @@
 # 🛠️ Technical Design Document: Code Architecture & State Management
 
-## 1. System-Architektur & Modul-Trennung (`script.js`)
+## 1. System-Architektur & Modul-Trennung (Vite & ES Modules)
 
-Das Spiel folgt einem entkoppelten **Registry-State-Engine** Muster:
+Das Spiel folgt einem entkoppelten **Registry-State-Engine** Muster, aufgebaut auf **Vite** und **ES Modules** im `src/` Verzeichnis (zuvor monolithisches `script.js`):
 
-* **`COSMIC_REGISTRY`:** Statische Daten-Matrix. Enthält alle Definitionen für Ären, Ressourcen, Upgrades, Solar-Events und Lore-Texte.
-* **`gameState`:** Das zentrale Laufzeit-State-Objekt. Enthält ausschließlich dynamische Variablen.
+* **`src/config/registry.js`:** Statische Daten-Matrix. Enthält alle Definitionen für Ären, Ressourcen, Upgrades, Solar-Events und Lore-Texte.
+* **`src/core/state.js`:** Das zentrale Laufzeit-State-Objekt. Enthält ausschließlich dynamische Variablen.
 * **`break_infinity.js` (Decimal):** Alle mathematischen Operationen auf Ressourcen nutzen die `Decimal`-Klasse, um Floating-Point-Fehler und `NaN`-Degradierungen zu verhindern.
 
 ---
@@ -22,7 +22,8 @@ Das Spiel folgt einem entkoppelten **Registry-State-Engine** Muster:
 
 * **Lazy DOM Caching (`Viewport.getEl()`):** Um DOM-Thrashing zu vermeiden, werden Element-Referenzen lazily in einem Dictionary gespeichert.
 * **Cached Layout Anchors (`_coreAnchorCache`):** `getBoundingClientRect()` wurde vollständig aus dem 100ms `Viewport.update()` Hot-Path entfernt. Anker-Koordinaten (`--core-anchor-x`, `--core-anchor-y`) werden ausschließlich beim Boot und in einem `resize`-EventListener aktualisiert.
-* **Selektives Dirty-Checking (`isDirty`):** `isDirty = true` wird nicht mehr pauschal in jedem Tick gesetzt, sondern nur wenn Ressourcen-Schwellen überschritten werden oder Nutzer-Aktionen stattfinden.
+* **Deep Proxy State Reactivity (State-Kapselung):** Der `gameState` ist vollständig in einen `createReactiveState()` Proxy gewrappt. Jegliche Zuweisung (z.B. `gameState.resources.x = y`) triggert auf unterster Ebene vollautomatisch den `isDirty`-Flag für das UI-Rerendering. Manuelle `isDirty = true` Aufrufe wurden zu 100% eliminiert.
+* **UI Templating (`src/ui/templates.js`):** HTML-Struktur-Strings für Shop-Listen und den Artefakt-Picker sind vom DOM-Rendering in `viewport.js` getrennt und in reinen Template-Funktionen gekapselt. Das reduziert Inline-Markup im JavaScript erheblich und erleichtert künftiges Theming.
 * **DOM Object Pool für Partikel (`floatingTextPool`):** 30 `.floating-text-particle` DOM-Knoten werden beim Start prä-allokiert und im Ringpuffer wiederverwendet. Eliminierte Garbage Collection (GC) Thrashing beim schnellen Tappen.
 * **Card Row Caching (`row._cache`):** In `renderGenericTierList()` werden Kindelemente (`name`, `lvl`, `desc`, `btn`) direkt am Row-Knoten gecached, um wiederholtes `querySelector()` zu vermeiden.
 * **CSS Whitelist Isolation:** Visuelle Sichtbarkeiten von Ären und Tabs werden primär über CSS-Attribute am `<body>` Tag gesteuert (`data-epoch`, `data-tab`).

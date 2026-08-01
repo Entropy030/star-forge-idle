@@ -3,7 +3,13 @@
  * playtestBot.js
  */
 
-(function () {
+// [SEC-21] PLAYTEST AUTOMATION & TELEMETRY
+// ==========================================================================
+import { gameState, isDirty, setIsDirty } from './state.js';
+import { Economy, getAmount } from './economy.js';
+import { Timeline } from './timeline.js';
+import { Viewport } from '../ui/viewport.js';
+import { getAIState, runAIAction } from '../main.js';
   class PlaytestEngine {
     constructor() {
       this.isRunning = false;
@@ -59,7 +65,7 @@
     // 1. BOT DECISION ENGINE
     // ------------------------------------------------------------------------
     stepBotDecision() {
-      if (typeof window.getAIState !== 'function' || typeof window.runAIAction !== 'function') return;
+      if (typeof getAIState !== 'function' || typeof runAIAction !== 'function') return;
 
       const epoch = gameState.activeEpoch;
       const amp = typeof getQuantumAmplitude === 'function' ? getQuantumAmplitude() : 1.0;
@@ -72,18 +78,18 @@
       if (epoch === 1) {
         if (getResAmount('quantumFluctuations').gte(COSMIC_REGISTRY.constants.inflationThreshold)) {
           this.logMilestone("Era I Complete (Cosmic Inflation Ready)");
-          window.runAIAction({ action: "triggerInflation" });
+          runAIAction({ action: "triggerInflation" });
           return;
         }
       } else if (epoch === 2) {
         if (getResAmount('protons').gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) || (gameState.plasmaTemperature && gameState.plasmaTemperature.lte(3000))) {
           this.logMilestone("Era II Complete (Recombination Ready)");
-          window.runAIAction({ action: "triggerRecombination" });
+          runAIAction({ action: "triggerRecombination" });
           return;
         }
       } else if (epoch === 3) {
         if (gameState.flares && gameState.flares.active) {
-          window.runAIAction({ action: "collectFlare" });
+          runAIAction({ action: "collectFlare" });
           this.stats.totalFlaresCollected++;
         }
         let currentTemp = gameState.era3?.temperature || new Decimal(0);
@@ -96,7 +102,7 @@
 
         if (currentTemp.gte(targetThreshold) && gameState.era3 && (gameState.era3.supernovaUnlocked || gameState.era3.currentAct >= 3)) {
           this.logMilestone(`Era III Complete (Supernova Ready @ ${this.targetNode})`);
-          window.runAIAction({ action: "triggerSupernova" });
+          runAIAction({ action: "triggerSupernova" });
           return;
         }
       } else if (epoch === 4) {
@@ -117,7 +123,7 @@
       if (stardustUpgrades.length > 0) {
         const thermal = stardustUpgrades.find(u => u.key === 'thermalInsulation');
         const target = thermal || stardustUpgrades[0];
-        window.runAIAction({ action: "buy", category: "stardust", key: target.key });
+        runAIAction({ action: "buy", category: "stardust", key: target.key });
         this.stats.totalUpgradesBought++;
         this.logMilestone(`Bought Stardust Upgrade: ${target.name}`);
         boughtSomething = true;
@@ -133,7 +139,7 @@
             const currencyKey = Economy.resolveCurrencyKey('quantum', key, def);
             const balance = getAmount(currencyKey);
             if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
-              window.runAIAction({ action: "buy", category: "quantum", key: key });
+              runAIAction({ action: "buy", category: "quantum", key: key });
               this.stats.totalUpgradesBought++;
               boughtSomething = true;
               if (key === 'electromagneticForce' && upState.level === 1) {
@@ -155,11 +161,11 @@
           const balance = upState && def ? getAmount(Economy.resolveCurrencyKey('plasma', 'quarkCondenser', def)) : new Decimal(0);
           
           if (upState && balance.gte(upState.cost)) {
-            window.runAIAction({ action: "buy", category: "plasma", key: "quarkCondenser" });
+            runAIAction({ action: "buy", category: "plasma", key: "quarkCondenser" });
             this.stats.totalUpgradesBought++;
             boughtSomething = true;
           } else {
-            window.runAIAction({ action: "click", count: 1 });
+            runAIAction({ action: "click", count: 1 });
             this.stats.totalClicks++;
             return;
           }
@@ -173,7 +179,7 @@
               const currencyKey = Economy.resolveCurrencyKey('plasma', key, def);
               const balance = getAmount(currencyKey);
               if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
-                window.runAIAction({ action: "buy", category: "plasma", key: key });
+                runAIAction({ action: "buy", category: "plasma", key: key });
                 this.stats.totalUpgradesBought++;
                 boughtSomething = true;
                 break;
@@ -189,15 +195,15 @@
 
         // Always prioritize Fuser & Gravity to build sustainable Helium & Hydrogen scaling
         if (fuserCost && fuserCurrency.gte(fuserCost)) {
-          window.runAIAction({ action: "buy", category: "core", key: "fuser" });
+          runAIAction({ action: "buy", category: "core", key: "fuser" });
           this.stats.totalUpgradesBought++;
           boughtSomething = true;
         } else if (era3.gravityCost && getResAmount('hydrogen').gte(era3.gravityCost)) {
-          window.runAIAction({ action: "buy", category: "core", key: "gravity" });
+          runAIAction({ action: "buy", category: "core", key: "gravity" });
           this.stats.totalUpgradesBought++;
           boughtSomething = true;
         } else if (era3.compressCost && getResAmount('helium').gte(era3.compressCost)) {
-          window.runAIAction({ action: "buy", category: "core", key: "compress" });
+          runAIAction({ action: "buy", category: "core", key: "compress" });
           this.stats.totalUpgradesBought++;
           boughtSomething = true;
         }
@@ -207,7 +213,7 @@
           const carbonCost = era3.carbonYield?.eq(0) ? era3.carbonCostHelium : era3.carbonCostCarbon;
           const carbonCurrency = era3.carbonYield?.eq(0) ? getResAmount('helium') : getResAmount('carbon');
           if (carbonCost && carbonCurrency.gte(carbonCost)) {
-            window.runAIAction({ action: "buy", category: "core", key: "carbon" });
+            runAIAction({ action: "buy", category: "core", key: "carbon" });
             this.stats.totalUpgradesBought++;
             boughtSomething = true;
           }
@@ -215,7 +221,7 @@
           const ironCost = era3.ironYield?.eq(0) ? era3.ironCostCarbon : era3.ironCostIron;
           const ironCurrency = era3.ironYield?.eq(0) ? getResAmount('carbon') : getResAmount('iron');
           if (ironCost && ironCurrency.gte(ironCost)) {
-            window.runAIAction({ action: "buy", category: "core", key: "iron" });
+            runAIAction({ action: "buy", category: "core", key: "iron" });
             this.stats.totalUpgradesBought++;
             boughtSomething = true;
           }
@@ -237,7 +243,7 @@
             const currencyKey = Economy.resolveCurrencyKey('galaxy', key, def);
             const balance = getAmount(currencyKey);
             if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
-              window.runAIAction({ action: "buy", category: "galaxy", key: key });
+              runAIAction({ action: "buy", category: "galaxy", key: key });
               this.stats.totalUpgradesBought++;
               boughtSomething = true;
               break;
@@ -254,7 +260,7 @@
       // --- ACTIVE IDLE CLICKING ---
       // Click core if no upgrades were bought and amp is not at peak
       if (!boughtSomething && amp < 3.8) {
-        window.runAIAction({ action: "click", count: 1 });
+        runAIAction({ action: "click", count: 1 });
         this.stats.totalClicks++;
       }
     }
@@ -277,7 +283,7 @@
 
       if (!isHeadless && isDirty) {
         try { Viewport.update(); } catch (e) {}
-        isDirty = false;
+        setIsDirty(false);
       }
     }
 
@@ -325,7 +331,6 @@
 
       this.isRunning = false;
       // Force single render update at the end
-      isDirty = true;
       if (typeof Viewport !== 'undefined' && Viewport.update) Viewport.update();
 
       const realTimeDuration = ((Date.now() - startRealTime) / 1000).toFixed(2);
@@ -374,10 +379,8 @@
   const harness = new PlaytestEngine();
 
   // Expose Controls on window
-  window.startAutoPlaytest = (opts) => harness.startAutoPlaytest(opts);
-  window.stopAutoPlaytest = () => harness.stopAutoPlaytest();
-  window.runHeadlessSim = (opts) => harness.runHeadlessSim(opts);
-  window.playtestHarness = harness;
-  window.getTelemetryHistory = () => harness.stats.milestones;
-
-})();
+  export const startAutoPlaytest = (opts) => harness.startAutoPlaytest(opts);
+  export const stopAutoPlaytest = () => harness.stopAutoPlaytest();
+  export const runHeadlessSim = (opts) => harness.runHeadlessSim(opts);
+  export const playtestHarness = harness;
+  export const getTelemetryHistory = () => harness.stats.milestones;
