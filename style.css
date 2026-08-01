@@ -54,6 +54,10 @@ main {
   contain: layout;
 }
 
+body[data-tab="core"] main {
+  pointer-events: none;
+}
+
 /* ==========================================================================
  [CSS-SEC-02] DEEP CANVAS STARS DRIFT FIELD ANIMATIONS
  ========================================================================== */
@@ -1139,9 +1143,6 @@ body[data-epoch="3"] #cosmic-backdrop::before {
   box-shadow: 0 0 15px rgba(231, 76, 60, 0.6) !important;
 }
 
-.era1-only, .era2-only, .era3-only, .era4-only, .era5-only {
-  pointer-events: auto !important;
-}
 
 #flare-button {
   position: relative;
