@@ -110,7 +110,7 @@ function getStardustYield() {
 }
 
 function getPulsarShardYield() {
-  const carbonTotal = gameState.era3.lifetimeCarbonThisRun || gameState.resources.carbon.amount;
+  const carbonTotal = gameState.era3.lifetimeCarbonThisRun.gt(0) ? gameState.era3.lifetimeCarbonThisRun : gameState.resources.carbon.amount;
   const temp = gameState.era3.temperature || new Decimal(0);
   
   if (carbonTotal.lte(0)) return new Decimal(0);

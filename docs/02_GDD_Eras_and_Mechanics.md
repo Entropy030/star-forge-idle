@@ -79,7 +79,7 @@
   * 100M K: Basis-Ertrag (~1 Neural Synapse)
   * 500M K: Exponentieller Boost (~15+ Neural Synapses)
   * 2.000M K: Massiver Endspiel-Ertrag (~100+ Neural Synapses)
-* **Meilenstein-Synergien (Ära I & III):** Alle 25 Stufen (Lvl 25, 50, 75, 100...) gewährt jedes Upgrade einen globalen +5% Ertrags-Multiplikator (`Next Milestone (Lvl X): +5% Global Yield`).
+* **Meilenstein-Synergien (Ära I & III):** Alle 10 Stufen (Lvl 10, 20, 30, 40...) gewährt jedes Upgrade einen globalen +5% Ertrags-Multiplikator (`Next Milestone (Lvl X): +5% Global Yield`).
 * **Hydrogen Auto-Buyer (Automatisierung):** Ab Erreichen der Kohlenstoff-Synthese (500M K) wird in Ära III ein Umschalter `[ Auto-Buy Hydrogen: ON/OFF ]` freigeschaltet. Der Auto-Buyer kauft im Tick-Loop automatisch erschwingliche Hydrogen-Upgrades, ohne höherrangige Fusions-Ressourcen zu blockieren.
 * **Ära IV Gateway ("GALACTIC IGNITION"):**
   * Eigenständige Gateway-Karte `GALACTIC IGNITION (ERA IV GATEWAY)` am Ende von Ära III.

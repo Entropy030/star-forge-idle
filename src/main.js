@@ -255,7 +255,7 @@ function triggerSupernova() {
     extraRewardText = `<br><span style="color:#00cec9">+${format(gainedPulsar)} 🌀 Neural Synapse</span>`;
   }
 
-  if (gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) && gameState.era3.ironYield.gt(0)) {
+  if (gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) && gameState.resources.iron.amount.gte(1000)) {
     outcome = "Black Hole";
     titleColor = "#a29bfe";
     let gainedMass = getSingularityMassYield();
@@ -932,7 +932,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindClick('btn-recombination', triggerRecombination);
   bindClick('btn-supernova', triggerSupernova);
   bindClick('btn-galactic-merge', triggerGalacticMerge);
-  bindClick('btn-trigger-hypernova', triggerGalacticMerge);
+  bindClick('btn-trigger-hypernova', triggerSupernova);
   bindClick('btn-stabilize-arms', stabilizeArms);
   bindClick('btn-accrete-planet', accretePlanetConfiguration);
   bindClick('btn-embrace-entropy', triggerEraVTransition);

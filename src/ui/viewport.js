@@ -1398,13 +1398,13 @@ export const Viewport = {
         if (qf.gte(80000)) {
           activeLog = COSMIC_REGISTRY.narrativeLogs.era1.nearInflation;
         } else if (qf.gte(25000)) {
-          activeLog = "[SYSTEM]: Strong color forces binding gluons. Inflationary buildup critical.";
+          activeLog = COSMIC_REGISTRY.narrativeLogs.era1.qf25000;
         } else if (qf.gte(10000)) {
-          activeLog = "[SYSTEM]: Vacuum resonance established. Harmonic energy density surging.";
+          activeLog = COSMIC_REGISTRY.narrativeLogs.era1.qf10000;
         } else if (qf.gte(2500)) {
-          activeLog = "[SYSTEM]: Electromagnetic tensors propagating photon streams through space.";
+          activeLog = COSMIC_REGISTRY.narrativeLogs.era1.qf2500;
         } else if (qf.gte(500)) {
-          activeLog = "[SYSTEM]: Weak nuclear vectors active. Gauge boson exchange underway.";
+          activeLog = COSMIC_REGISTRY.narrativeLogs.era1.qf500;
         } else if (unfold.hasUnlocked100QF || qf.gte(100)) {
           activeLog = "[SYSTEM]: Vacuum fluctuation rate stable. Fundamental force stratification operational.";
         } else if (unfold.hasUnlocked10QF || qf.gte(10)) {

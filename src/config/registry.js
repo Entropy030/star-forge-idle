@@ -175,7 +175,11 @@ export const COSMIC_REGISTRY = {
   narrativeLogs: {
     era1: {
       initial: t("log_era1_initial"),
-      nearInflation: "CHRONO_LOG // Quantum fluctuation thresholds saturated. This tiny singularity cannot sustain my expanse. I must shatter the horizon."
+      nearInflation: "CHRONO_LOG // Quantum fluctuation thresholds saturated. This tiny singularity cannot sustain my expanse. I must shatter the horizon.",
+      qf500: "[SYSTEM]: Weak nuclear vectors active. Gauge boson exchange underway.",
+      qf2500: "[SYSTEM]: Electromagnetic tensors propagating photon streams through space.",
+      qf10000: "[SYSTEM]: Vacuum resonance established. Harmonic energy density surging.",
+      qf25000: "[SYSTEM]: Strong color forces binding gluons. Inflationary buildup critical."
     },
     era2: {
       initial: "CHRONO_LOG // The broth is blindingly hot. Matter has broken antimatter. I am learning to separate quarks from gluons.",
@@ -223,7 +227,7 @@ export const ARTIFACT_DEFINITIONS = {
     rarity: 'Common',
     color: '#00d2ff',
     image: 'assets/artifacts/quantum_lens.png',
-    description: '+25% Quantum Foam Ertrag.',
+    description: '+25% Quantum Foam yield.',
     effect: { type: 'productionMult', value: 1.25 }
   },
   density_compressor: {
@@ -233,7 +237,7 @@ export const ARTIFACT_DEFINITIONS = {
     rarity: 'Common',
     color: '#00ff88',
     image: 'assets/artifacts/density_compressor.png',
-    description: '10% Ersparnis auf alle Generator-Kosten.',
+    description: '10% discount on all generator costs.',
     effect: { type: 'costDiscount', value: 0.10 }
   },
   pulse_coupler: {
@@ -243,7 +247,7 @@ export const ARTIFACT_DEFINITIONS = {
     rarity: 'Uncommon',
     color: '#a855f7',
     image: 'assets/artifacts/pulse_coupler.png',
-    description: 'Jeder Core-Klick erhöht die Passiv-Produktion für 3s um +10%.',
+    description: 'Every Core click increases passive production by +10% for 3s.',
     effect: { type: 'clickPassiveBoost', value: 0.10, durationSec: 3 }
   },
   singularity_core: {
@@ -253,7 +257,7 @@ export const ARTIFACT_DEFINITIONS = {
     rarity: 'Uncommon',
     color: '#00d2ff',
     image: 'assets/artifacts/singularity_core.png',
-    description: '+50% Ertrag in Akt 3.',
+    description: '+50% yield in Act 3.',
     effect: { type: 'act3Multiplier', value: 1.50 }
   },
   vacuum_stabilizer: {
@@ -263,7 +267,7 @@ export const ARTIFACT_DEFINITIONS = {
     rarity: 'Rare',
     color: '#00ff88',
     image: 'assets/artifacts/vacuum_stabilizer.png',
-    description: 'Setzt Coherence dauerhaft auf 1.0 (schützt vor Glitches).',
+    description: 'Permanently sets Coherence to 1.0 (protects against glitches).',
     effect: { type: 'vacuumCoherenceLock', value: 1.0 }
   },
   big_bang_catalyst: {
@@ -273,7 +277,7 @@ export const ARTIFACT_DEFINITIONS = {
     rarity: 'Rare',
     color: '#a855f7',
     image: 'assets/artifacts/big_bang_catalyst.png',
-    description: '+1 zusätzliche Prestige-Währung bei Aufstieg zu Ära II.',
+    description: '+1 additional prestige currency upon ascending to Era II.',
     effect: { type: 'extraPrestige', value: 1 }
   }
 };
