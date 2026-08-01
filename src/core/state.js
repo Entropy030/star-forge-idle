@@ -162,12 +162,19 @@ export const getInitialGameState = function() {
     buffs: { fusionSurge: { remainingSec: new Decimal(0) } }
   };
 
-  for (let category of ['quantum', 'plasma', 'stardust', 'pulsar', 'singularity', 'galaxy']) {
+  for (let category of ['quantum', 'plasma', 'stardust', 'pulsar', 'singularity', 'galaxy', 'era5']) {
     state.upgrades[category] = state.upgrades[category] || {};
     for (let key in COSMIC_REGISTRY.upgrades[category]) {
       let def = COSMIC_REGISTRY.upgrades[category][key];
       state.upgrades[category][key] = { level: 0, cost: new Decimal(def.baseCost) };
     }
+  }
+  // Tuning: state is tracked via cosmicConstants (integer levels), not upgrades slice
+  // But we still seed the upgrades.tuning slice for Economy.buy() compatibility
+  state.upgrades.tuning = state.upgrades.tuning || {};
+  for (let key in COSMIC_REGISTRY.upgrades.tuning) {
+    let def = COSMIC_REGISTRY.upgrades.tuning[key];
+    state.upgrades.tuning[key] = { level: 0, cost: new Decimal(def.baseCost) };
   }
 
   state.systemRank = 1;
@@ -302,6 +309,36 @@ export const ensureStateShape = function() {
       gameState.currencies[curKey] = { amount: new Decimal(0) };
     } else if (!(gameState.currencies[curKey].amount instanceof Decimal)) {
       gameState.currencies[curKey].amount = new Decimal(gameState.currencies[curKey].amount || 0);
+    }
+  }
+  // Ensure era5 state exists (added in later version)
+  if (!gameState.era5 || typeof gameState.era5 !== 'object') {
+    gameState.era5 = getInitialEra5State();
+  }
+  if (typeof gameState.era5.entropy !== 'number') gameState.era5.entropy = 0;
+  if (typeof gameState.era5.isHeatDeath !== 'boolean') gameState.era5.isHeatDeath = false;
+  if (typeof gameState.era5.hawkingCollectors !== 'number') gameState.era5.hawkingCollectors = 0;
+  if (typeof gameState.era5.infoExtractors !== 'number') gameState.era5.infoExtractors = 0;
+
+  // Ensure cosmicConstants exists (added in later version)
+  if (!gameState.cosmicConstants || typeof gameState.cosmicConstants !== 'object') {
+    gameState.cosmicConstants = getInitialCosmicConstants();
+  }
+  for (let k of ['G', 'c', 'alpha', 'hbar']) {
+    if (typeof gameState.cosmicConstants[k] !== 'number') gameState.cosmicConstants[k] = 0;
+  }
+
+  // Ensure upgrades.era5 and upgrades.tuning state slices exist
+  if (!gameState.upgrades.era5) gameState.upgrades.era5 = {};
+  for (let key in COSMIC_REGISTRY.upgrades.era5) {
+    if (!gameState.upgrades.era5[key]) {
+      gameState.upgrades.era5[key] = { level: 0, cost: new Decimal(COSMIC_REGISTRY.upgrades.era5[key].baseCost) };
+    }
+  }
+  if (!gameState.upgrades.tuning) gameState.upgrades.tuning = {};
+  for (let key in COSMIC_REGISTRY.upgrades.tuning) {
+    if (!gameState.upgrades.tuning[key]) {
+      gameState.upgrades.tuning[key] = { level: 0, cost: new Decimal(COSMIC_REGISTRY.upgrades.tuning[key].baseCost) };
     }
   }
 }

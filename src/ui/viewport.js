@@ -1,8 +1,8 @@
 // [SEC-05] VISUAL FORMATTING & AUDIO HELPER ENGINES
 // ==========================================================================
-import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, t as i18n_t, i18n } from '../config/registry.js';
+import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
 import { gameState, saveGame, exportSave, importSave, wipeSave } from '../core/state.js';
-import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate } from '../core/economy.js';
+import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, getStardustYield, getPulsarShardYield, getSingularityMassYield } from '../core/economy.js';
 import { Templates } from './templates.js';
 import { Timeline } from '../core/timeline.js';
 
@@ -57,7 +57,7 @@ async function playIntroNarrative() {
   }
 }
 
-function showIntroScreenCinematic(onComplete) {
+export function showIntroScreenCinematic(onComplete) {
   const overlay = document.getElementById('intro-screen-overlay');
   const storyCard = document.getElementById('intro-story-card');
   const textEl = document.getElementById('intro-narrative-text');
@@ -113,7 +113,7 @@ function showIntroScreenCinematic(onComplete) {
   playIntroNarrative();
 }
 
-function startEraTransition(targetEpoch, transitionText, onConfirm) {
+export function startEraTransition(targetEpoch, transitionText, onConfirm) {
   const overlay = document.getElementById('era-transition-overlay');
   const titleEl = document.getElementById('trans-title');
   const descEl = document.getElementById('trans-desc');
@@ -211,7 +211,7 @@ function corruptText(cleanText, coherenceValue) {
   return result;
 }
 
-const ActManager = {
+export const ActManager = {
   evaluate() {
     if (!gameState) return;
 
@@ -520,12 +520,12 @@ export const format = function(dec) {
   return dec.toExponential(2);
 }
 
-function initAudio() {
+export function initAudio() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
 }
 
-function playSupernovaSound() {
+export function playSupernovaSound() {
   try {
     initAudio();
     const osc = audioCtx.createOscillator();

@@ -1,9 +1,9 @@
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, t, i18n } from './config/registry.js';
-import { gameState, setGameState, isDirty, setIsDirty, saveGame, exportSave, importSave, wipeSave, ensureStateShape, getInitialGameState, deserializeState } from './core/state.js';
-import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, deduct } from './core/economy.js';
-import { ArtifactManager, Viewport, format } from './ui/viewport.js';
+import { gameState, setGameState, isDirty, setIsDirty, saveGame, exportSave, importSave, wipeSave, ensureStateShape, getInitialGameState, deserializeState, loadGame, serializeState } from './core/state.js';
+import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, deduct, getStardustYield, getPulsarShardYield, getSingularityMassYield } from './core/economy.js';
+import { ArtifactManager, Viewport, format, ActManager, initAudio, playSupernovaSound, showIntroScreenCinematic, startEraTransition } from './ui/viewport.js';
 import { Templates } from './ui/templates.js';
-import { Timeline } from './core/timeline.js';
+import { Timeline, gameTick } from './core/timeline.js';
 import { startAutoPlaytest, stopAutoPlaytest, runHeadlessSim, playtestHarness, getTelemetryHistory } from './core/playtestBot.js';
 import { CanvasCore } from './ui/canvasCore.js';
 
@@ -330,9 +330,11 @@ function buyCosmicTuning(key) {
   if (!def) return;
   
   const currentLvl = gameState.cosmicConstants[key] || 0;
-  if (currentLvl >= def.maxLevel) return;
+  const maxLevel = def.max || def.maxLevel || 5; // registry uses 'max'
+  if (currentLvl >= maxLevel) return;
 
-  const cost = typeof def.baseCost === 'function' ? def.baseCost(currentLvl) : new Decimal(def.baseCost).times(Decimal.pow(def.costMult || 2, currentLvl));
+  const scalingFactor = def.costScaling || def.costMult || 2;
+  const cost = typeof def.baseCost === 'function' ? def.baseCost(currentLvl) : new Decimal(def.baseCost).times(Decimal.pow(scalingFactor, currentLvl));
   
   if (gameState.currencies.bits.amount.gte(cost)) {
     gameState.currencies.bits.amount = gameState.currencies.bits.amount.minus(cost);
@@ -800,6 +802,7 @@ function rollFlareType() {
 // [SEC-19] RUNTIME TIMERS & CORE BOOTSTRAP INITIALIZATION
 // ==========================================================================
 let simulationAccumulator = 0;
+let lastTick = Date.now();
 
 function renderLoop() {
   let now = Date.now();

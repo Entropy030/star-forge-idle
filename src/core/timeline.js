@@ -273,8 +273,40 @@ function gameTick(dt) {
     }
   }
   Timeline.process(dt);
-  checkAchievements();
-  checkMissionProgress();
+
+  // Achievement checks (inline — only need gameState + Viewport)
+  if (gameState.resources.iron.amount.gte(1) && !gameState.achievements.firstIron.unlocked) {
+    gameState.achievements.firstIron.unlocked = true;
+    Viewport.showToast("Achievement Unlocked: Heavy Metal! (Neon Core Skin active)");
+  }
+  if (gameState.stats.supernovas.gte(1) && !gameState.achievements.firstSupernova.unlocked) {
+    gameState.achievements.firstSupernova.unlocked = true;
+    Viewport.showToast("Achievement Unlocked: Stellar Collapse!");
+  }
+
+  // Mission progress (inline)
+  if (COSMIC_REGISTRY.systemRanks) {
+    let currentRankDef = COSMIC_REGISTRY.systemRanks[gameState.systemRank];
+    if (currentRankDef) {
+      let allCompleted = true;
+      for (let mission of currentRankDef.missions) {
+        if (gameState.completedMissions.includes(mission.id)) continue;
+        if (mission.check()) {
+          gameState.completedMissions.push(mission.id);
+        } else {
+          allCompleted = false;
+        }
+      }
+      if (allCompleted) {
+        let nextRank = gameState.systemRank + 1;
+        if (COSMIC_REGISTRY.systemRanks[nextRank]) {
+          gameState.systemRank = nextRank;
+        }
+      }
+    }
+  }
 }
+
+export { gameTick };
 
 // ==========================================================================

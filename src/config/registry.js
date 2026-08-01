@@ -195,7 +195,7 @@ export const COSMIC_REGISTRY = {
   }
 };
 
-const SHOP_CONFIGS = {
+export const SHOP_CONFIGS = {
   stardust: { containerId: "stardust-shop-list", currency: "stardust", btnColor: "var(--stardust-gold)", label: "✨ Traces" },
   pulsar: { containerId: "pulsar-shop-list", currency: "pulsarShards", btnColor: "var(--neon-teal)", label: "🌀 Cores" },
   singularity: { containerId: "singularity-shop-list", currency: "singularityMass", btnColor: "var(--singularity-purple)", label: "🌌 Density" }

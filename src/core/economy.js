@@ -1,5 +1,8 @@
 // [SEC-06] MATHEMATICAL MATH RULES & PRODUCTION FORMULAS
 // ==========================================================================
+import { gameState } from './state.js';
+import { COSMIC_REGISTRY } from '../config/registry.js';
+import { Viewport, format, initAudio } from '../ui/viewport.js';
 function getMilestoneMultiplier(level) {
   let milestones = Math.floor((level || 0) / 10);
   return 1.0 + (milestones * 0.05);
@@ -94,7 +97,7 @@ function getCardMultiplier(target) {
   return mult;
 }
 
-function getStardustYield() {
+export function getStardustYield() {
   const temp = gameState.era3.temperature || new Decimal(0);
   if (temp.lt(COSMIC_REGISTRY.constants.supernovaTempThreshold)) return new Decimal(0);
   
@@ -109,7 +112,7 @@ function getStardustYield() {
   return exponentScaler.times(hbarMod).floor().max(1);
 }
 
-function getPulsarShardYield() {
+export function getPulsarShardYield() {
   const carbonTotal = gameState.era3.lifetimeCarbonThisRun.gt(0) ? gameState.era3.lifetimeCarbonThisRun : gameState.resources.carbon.amount;
   const temp = gameState.era3.temperature || new Decimal(0);
   
@@ -129,7 +132,7 @@ function getPulsarShardYield() {
   return basePulsar.times(tempMultiplier).floor().max(1);
 }
 
-function getSingularityMassYield() {
+export function getSingularityMassYield() {
   return gameState.resources.iron.amount.div(25).floor().plus(1);
 }
 
@@ -184,7 +187,7 @@ function getCompressionHeatYield() {
   let runGrowth = new Decimal(COSMIC_REGISTRY.constants.compressionScaling).pow(compressLevel);
   let baseHeat = new Decimal(COSMIC_REGISTRY.constants.baseCompressionHeat).times(milestoneMult).times(shopMultiplier).times(ironMultiplier).times(runGrowth);
   let exponent = new Decimal(1).plus(new Decimal(0.05).times(gameState.upgrades.singularity.stellarIgnition.level));
-  let finalHeat = new Decimal(baseHeat).times(milestoneMult).times(shopMultiplier).times(1).pow(exponent).times(getCardMultiplier("compressionHeat")).times(gMod).round();
+  let finalHeat = baseHeat.pow(exponent).times(getCardMultiplier("compressionHeat")).times(gMod).round();
   return finalHeat;
 }
 
