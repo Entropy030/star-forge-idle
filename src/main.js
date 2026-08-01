@@ -530,52 +530,6 @@ function clickCore(e) {
 }
 
 
-
-function getBuyLoopCount() {
-  if (gameState.buyMode === 'max') {
-    return 10000;
-  }
-  return parseInt(gameState.buyMode, 10) || 1;
-}
-
-function getBuyMultiplierCount(category, key, def, state, currencyKey) {
-  let mode = gameState.buyMode;
-  if (mode === 1) return 1;
-
-  let maxBuyable = def.max !== undefined ? def.max - state.level : Infinity;
-  if (maxBuyable <= 0) return 0;
-
-  if (typeof mode === 'number') {
-    return Math.min(mode, maxBuyable);
-  }
-
-  let balance = getAmount(currencyKey);
-  let cost = new Decimal(state.cost);
-  let scaling = new Decimal(def.costScaling || 2);
-
-  let count = 0;
-  let tempCost = new Decimal(0);
-  let currentCost = new Decimal(cost);
-  while (balance.gte(tempCost.plus(currentCost)) && count < maxBuyable && count < 1000) {
-    tempCost = tempCost.plus(currentCost);
-    currentCost = currentCost.times(scaling).round();
-    count++;
-  }
-  return Math.max(1, count);
-}
-
-function getCumulativeCost(stateCost, costScaling, count) {
-  if (count <= 1) return new Decimal(stateCost);
-  let scaling = new Decimal(costScaling || 2);
-  let sum = new Decimal(0);
-  let current = new Decimal(stateCost);
-  for (let i = 0; i < count; i++) {
-    sum = sum.plus(current);
-    current = current.times(scaling).round();
-  }
-  return sum;
-}
-
 function togglePlasmaFuser() {
   initAudio();
   if (gameState.era2) {
@@ -594,12 +548,7 @@ function recalcTempMultiplier() {
   gameState.era3.tempMultiplier = new Decimal(1.0 + logPrimitive);
 }
 
-function getFusionSurgeMultiplier() {
-  if (gameState.buffs && gameState.buffs.fusionSurge && gameState.buffs.fusionSurge.remainingSec.gt(0)) {
-    return 2;
-  }
-  return 1;
-}
+
 
 function spawnFlare() {
   if (gameState.flares.active) return;

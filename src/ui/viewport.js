@@ -2,7 +2,7 @@
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
 import { gameState, saveGame, exportSave, importSave, wipeSave } from '../core/state.js';
-import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, getStardustYield, getPulsarShardYield, getSingularityMassYield } from '../core/economy.js';
+import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, getStardustYield, getPulsarShardYield, getSingularityMassYield, getBuyMultiplierCount, getCumulativeCost, getFusionSurgeMultiplier } from '../core/economy.js';
 import { Templates } from './templates.js';
 import { Timeline } from '../core/timeline.js';
 
@@ -428,7 +428,7 @@ export const ArtifactManager = {
         const def = ARTIFACT_DEFINITIONS[artId];
         if (def) {
           slotEl.setAttribute('data-type', def.type);
-          slotEl.innerHTML = window.Templates.artifactCard(def);
+          slotEl.innerHTML = Templates.artifactCard(def);
         }
       }
     }
@@ -453,7 +453,7 @@ export const ArtifactManager = {
 
       const item = document.createElement('div');
       item.className = 'artifact-picker-item';
-      item.innerHTML = window.Templates.artifactInventoryItem(def, isEquipped, equippedSlot);
+      item.innerHTML = Templates.artifactInventoryItem(def, isEquipped, equippedSlot);
       invEl.appendChild(item);
     }
   },
@@ -473,7 +473,7 @@ export const ArtifactManager = {
       if (def) {
         const item = document.createElement('div');
         item.className = 'artifact-picker-item';
-        item.innerHTML = window.Templates.artifactPickerEquippedItem(def, currentSlot);
+        item.innerHTML = Templates.artifactPickerEquippedItem(def, currentSlot);
         listEl.appendChild(item);
       }
     }
@@ -486,7 +486,7 @@ export const ArtifactManager = {
       const isEquippedElsewhere = equipped.includes(id);
       const item = document.createElement('div');
       item.className = 'artifact-picker-item';
-      item.innerHTML = window.Templates.artifactPickerAvailableItem(def, id, currentSlot, isEquippedElsewhere);
+      item.innerHTML = Templates.artifactPickerAvailableItem(def, id, currentSlot, isEquippedElsewhere);
       listEl.appendChild(item);
     }
   }
@@ -894,7 +894,7 @@ export const Viewport = {
         const row = document.createElement('div');
         row.id = `${category}-row-${key}`;
         row.className = 'cosmic-card';
-        row.innerHTML = window.Templates.genericTierListRow(displayColor);
+        row.innerHTML = Templates.genericTierListRow(displayColor);
         const btn = row.querySelector('.upgrade-btn');
         btn.addEventListener('click', () => Economy.buy(category, key));
         row._cache = {

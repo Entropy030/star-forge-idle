@@ -1,7 +1,7 @@
 // [SEC-15] TIME LOOP & EPOCH CHUNK SIMULATION// [SEC-06] CORE PHYSICS & SIMULATION LOOP
 // ==========================================================================
 import { gameState } from './state.js';
-import { Economy, getAmount, getCompressionScaling, processEraV } from './economy.js';
+import { Economy, getAmount, getCompressionScaling, processEraV, getQuantumFluctuationRate, getEnergyDensityRate, getPlasmaPassiveRates, getBaryonAsymmetryMultiplier, getProtonFusionCap, getHydrogenGenRate, getBuyLoopCount, getFusionCost, getFusionSurgeMultiplier, getCompressionHeatYield, getGalacticDebrisRate, getGalacticDarkMatterRate } from './economy.js';
 import { Viewport } from '../ui/viewport.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 

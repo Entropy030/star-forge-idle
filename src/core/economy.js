@@ -3,7 +3,7 @@
 import { gameState } from './state.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import { Viewport, format, initAudio } from '../ui/viewport.js';
-function getMilestoneMultiplier(level) {
+export function getMilestoneMultiplier(level) {
   let milestones = Math.floor((level || 0) / 10);
   return 1.0 + (milestones * 0.05);
 }
@@ -35,7 +35,7 @@ export function getQuantumFluctuationRate() {
 
 
 
-function getEnergyDensityRate() {
+export function getEnergyDensityRate() {
   let rate = new Decimal(0);
   for (let key in COSMIC_REGISTRY.upgrades.quantum) {
     let def = COSMIC_REGISTRY.upgrades.quantum[key];
@@ -48,7 +48,7 @@ function getEnergyDensityRate() {
   return rate;
 }
 
-function getPlasmaPassiveRates() {
+export function getPlasmaPassiveRates() {
   let qRate = new Decimal(0);
   let gRate = new Decimal(0);
   let lRate = new Decimal(0);
@@ -76,7 +76,7 @@ export function getProtonFusionCap() {
   return cap;
 }
 
-function getBaryonAsymmetryMultiplier() {
+export function getBaryonAsymmetryMultiplier() {
   let q = gameState.resources.quarks.amount;
   let g = gameState.resources.gluons.amount;
   if (q.eq(0) || g.eq(0)) return new Decimal(1);
@@ -85,7 +85,7 @@ function getBaryonAsymmetryMultiplier() {
   return new Decimal(1).plus(new Decimal(logPrimitiveResult).times(0.05));
 }
 
-function getCardMultiplier(target) {
+export function getCardMultiplier(target) {
   let mult = new Decimal(1);
   for (let key in gameState.cards) {
     let def = COSMIC_REGISTRY.celestialCards[key];
@@ -163,7 +163,7 @@ export function getHydrogenGenRate() {
   return baseGen.pow(exponent).times(getCardMultiplier("hydrogenGen")).times(gMod).round();
 }
 
-function getFusionCost() {
+export function getFusionCost() {
   return new Decimal(COSMIC_REGISTRY.resources.helium.fusionCost - ((gameState.upgrades.stardust.fusionDiscount?.level ?? 0) * 2));
 }
 
@@ -172,13 +172,13 @@ export function getCompressionScaling() {
   return 1.75 + (0.03 * alpha);
 }
 
-function getCompressionsCompleted() {
+export function getCompressionsCompleted() {
   let logPrimitive = gameState.era3.compressCost.div(10).log10();
   let exponent = logPrimitive / Math.log10(getCompressionScaling());
   return Math.max(0, Math.round(exponent));
 }
 
-function getCompressionHeatYield() {
+export function getCompressionHeatYield() {
   let gMod = 1.0 + (0.20 * (gameState.cosmicConstants?.G || 0));
   let compressLevel = getCompressionsCompleted();
   let milestoneMult = getMilestoneMultiplier(compressLevel);
@@ -191,15 +191,15 @@ function getCompressionHeatYield() {
   return finalHeat;
 }
 
-function getGravityCostMultiplier() {
+export function getGravityCostMultiplier() {
   return 1.5 - ((gameState.upgrades.stardust.gravityDiscount?.level ?? 0) * 0.03);
 }
 
-function getCarbonGravityMultiplier() {
+export function getCarbonGravityMultiplier() {
   return gameState.resources.carbon.amount.times(0.02).plus(1);
 }
 
-function getGalacticDebrisRate() {
+export function getGalacticDebrisRate() {
   if (gameState.activeEpoch !== 4) return new Decimal(0);
   let baseDebris = gameState.era4.planetaryNodes.times(3).plus(gameState.era4.stellarMassPassiveCount.times(0.5));
   let upgradeLevel = gameState.upgrades.galaxy?.elementalInjection?.level || 0;
@@ -208,14 +208,14 @@ function getGalacticDebrisRate() {
   return baseDebris.times(multiplier).times(stabilityFactor).round();
 }
 
-function getGalacticDarkMatterRate() {
+export function getGalacticDarkMatterRate() {
   if (gameState.activeEpoch !== 4) return new Decimal(0);
   let baseDM = gameState.era4.planetaryNodes.times(1.5);
   let stardustMult = gameState.currencies.stardust.amount.times(0.1).plus(1);
   return baseDM.times(stardustMult).round();
 }
 
-function getGalacticMergeYield() {
+export function getGalacticMergeYield() {
   if (gameState.activeEpoch !== 4) return new Decimal(0);
   return gameState.resources.darkMatter.amount.div(2500).floor().plus(1);
 }
@@ -377,4 +377,56 @@ export const Economy = {
   }
 };
 
-// ==========================================================================
+// ==========================================================================
+
+export function getBuyLoopCount() {
+  if (gameState.buyMode === 'max') {
+    return 10000;
+  }
+  return parseInt(gameState.buyMode, 10) || 1;
+}
+
+export function getBuyMultiplierCount(category, key, def, state, currencyKey) {
+  let mode = gameState.buyMode;
+  if (mode === 1) return 1;
+
+  let maxBuyable = def.max !== undefined ? def.max - state.level : Infinity;
+  if (maxBuyable <= 0) return 0;
+
+  if (typeof mode === 'number') {
+    return Math.min(mode, maxBuyable);
+  }
+
+  let balance = getAmount(currencyKey);
+  let cost = new Decimal(state.cost);
+  let scaling = new Decimal(def.costScaling || 2);
+
+  let count = 0;
+  let tempCost = new Decimal(0);
+  let currentCost = new Decimal(cost);
+  while (balance.gte(tempCost.plus(currentCost)) && count < maxBuyable && count < 1000) {
+    tempCost = tempCost.plus(currentCost);
+    currentCost = currentCost.times(scaling).round();
+    count++;
+  }
+  return Math.max(1, count);
+}
+
+export function getCumulativeCost(stateCost, costScaling, count) {
+  if (count <= 1) return new Decimal(stateCost);
+  let scaling = new Decimal(costScaling || 2);
+  let sum = new Decimal(0);
+  let current = new Decimal(stateCost);
+  for (let i = 0; i < count; i++) {
+    sum = sum.plus(current);
+    current = current.times(scaling).round();
+  }
+  return sum;
+}
+
+export function getFusionSurgeMultiplier() {
+  if (gameState.buffs && gameState.buffs.fusionSurge && gameState.buffs.fusionSurge.remainingSec.gt(0)) {
+    return 2;
+  }
+  return 1;
+}
