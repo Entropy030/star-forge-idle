@@ -1,5 +1,6 @@
 // [SEC-01.5] CENTRAL i18n DICTIONARY ARCHITECTURE
 // ==========================================================================
+import { gameState } from '../core/state.js';
 export const i18n = {
   en: {
     log_era1_initial: "t=0.000... ░▒▓ E-R-R-O-R ▓▒░ I have mass. I am severed from nothingness. The first fluctuation pierces the void.",
