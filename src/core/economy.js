@@ -2,7 +2,6 @@
 // ==========================================================================
 import { gameState } from './state.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
-import { Viewport, format, initAudio } from '../ui/viewport.js';
 export function getMilestoneMultiplier(level) {
   let milestones = Math.floor((level || 0) / 10);
   return 1.0 + (milestones * 0.05);
@@ -252,7 +251,7 @@ export function processEraV(dt) {
 // ==========================================================================
 export const Economy = {
   buy(category, key) {
-    initAudio();
+    if (window.initAudio) window.initAudio();
     const loops = getBuyLoopCount();
 
     if (category === 'core') {
@@ -346,7 +345,7 @@ export const Economy = {
         () => {
           if (gameState.era3.carbonYield.eq(0)) {
             gameState.era3.carbonYield = new Decimal(1);
-            Viewport.showToast("Nucleosynthesis Unlocked: Generating Carbon!");
+            window.Viewport.showToast("Nucleosynthesis Unlocked: Generating Carbon!");
           } else {
             gameState.era3.carbonYield = gameState.era3.carbonYield.plus(1);
             gameState.era3.carbonCostCarbon = gameState.era3.carbonCostCarbon.times(2.5).round();
@@ -359,7 +358,7 @@ export const Economy = {
         () => {
           if (gameState.era3.ironYield.eq(0)) {
             gameState.era3.ironYield = new Decimal(1);
-            Viewport.showToast("Heavy Nucleosynthesis: Synthesizing Iron!");
+            window.Viewport.showToast("Heavy Nucleosynthesis: Synthesizing Iron!");
           } else {
             gameState.era3.ironYield = gameState.era3.ironYield.plus(1);
             gameState.era3.ironCostIron = gameState.era3.ironCostIron.times(2.5).round();
@@ -370,9 +369,9 @@ export const Economy = {
 
   refreshUI() {
     if (gameState.activeTab === 'prestige') {
-      Viewport.renderShop('stardust');
-      Viewport.renderShop('pulsar');
-      Viewport.renderShop('singularity');
+      window.Viewport.renderShop('stardust');
+      window.Viewport.renderShop('pulsar');
+      window.Viewport.renderShop('singularity');
     }
   }
 };

@@ -1,6 +1,5 @@
 // [SEC-01.5] CENTRAL i18n DICTIONARY ARCHITECTURE
 // ==========================================================================
-import { gameState } from '../core/state.js';
 export const i18n = {
   en: {
     log_era1_initial: "t=0.000... ░▒▓ E-R-R-O-R ▓▒░ I have mass. I am severed from nothingness. The first fluctuation pierces the void.",
@@ -98,19 +97,19 @@ export const COSMIC_REGISTRY = {
     1: {
       name: "Initiate Cosmos Grid",
       missions: [
-        { id: "m1", desc: "Accumulate 10,000 Quantum Fluctuations", check: () => gameState.resources.quantumFluctuations.amount.gte(10000) }
+        { id: "m1", desc: "Accumulate 10,000 Quantum Fluctuations", check: (state) => state.resources.quantumFluctuations.amount.gte(10000) }
       ]
     },
     2: {
       name: "Plasma Sentinel",
       missions: [
-        { id: "m2", desc: "Forge 50,000 Protons", check: () => gameState.resources.protons.amount.gte(50000) }
+        { id: "m2", desc: "Forge 50,000 Protons", check: (state) => state.resources.protons.amount.gte(50000) }
       ]
     },
     3: {
       name: "Stellar Architect",
       missions: [
-        { id: "m3", desc: "Reach a Core Temperature of 50M K", check: () => gameState.era3.temperature.gte(50000000) }
+        { id: "m3", desc: "Reach a Core Temperature of 50M K", check: (state) => state.era3.temperature.gte(50000000) }
       ]
     }
   },

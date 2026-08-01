@@ -291,7 +291,7 @@ function gameTick(dt) {
       let allCompleted = true;
       for (let mission of currentRankDef.missions) {
         if (gameState.completedMissions.includes(mission.id)) continue;
-        if (mission.check()) {
+        if (mission.check(gameState)) {
           gameState.completedMissions.push(mission.id);
         } else {
           allCompleted = false;

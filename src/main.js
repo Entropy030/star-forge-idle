@@ -1120,4 +1120,5 @@ export const runAIAction = function (cmd) {
     default:
       console.warn("🤖 Action unknown:", cmd.action);
   }
-};
+};window.Viewport = Viewport;
+window.initAudio = initAudio;
