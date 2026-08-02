@@ -127,8 +127,10 @@ export const CanvasCore = (function () {
         drawEra3(cx, cy);
         break;
       case 4:
-      case 5:
         drawEra4(cx, cy);
+        break;
+      case 5:
+        drawEra5(cx, cy);
         break;
       default:
         drawEra1(cx, cy);
@@ -220,8 +222,27 @@ export const CanvasCore = (function () {
     ctx.restore();
   }
 
-  // --- ERA 2: PRIMORDIAL PLASMA CRUCIBLE ---
+  // --- ERA 2: PRIMORDIAL PLASMA CRUCIBLE (COOLING INTERPOLATED) ---
   function drawEra2(cx, cy) {
+    let tempK = 10000000;
+    if (typeof gameState !== 'undefined' && gameState.plasmaTemperature) {
+      tempK = (typeof gameState.plasmaTemperature.toNumber === 'function')
+        ? gameState.plasmaTemperature.toNumber()
+        : Number(gameState.plasmaTemperature) || 10000000;
+    }
+
+    // Interpolation factor: 1.0 = freshly hot (10M K, start of Era II), 0.0 = at recombination (3000K)
+    const startTemp = 10000000;
+    const endTemp = 3000;
+    const coolProgress = Math.min(1, Math.max(0,
+      (startTemp - tempK) / (startTemp - endTemp)
+    ));
+
+    // Blend from hot white-blue (coolProgress=0) to warm orange-red (coolProgress=1)
+    const r = Math.round(200 + coolProgress * 55);   // 200 -> 255
+    const g = Math.round(220 - coolProgress * 130);  // 220 -> 90
+    const b = Math.round(255 - coolProgress * 175);  // 255 -> 80
+
     const pulse = 1 + Math.cos(time * 2.5) * 0.06;
     const radius = 60 * pulse;
 
@@ -230,8 +251,8 @@ export const CanvasCore = (function () {
 
     // Plasma Core Haze
     const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 2.5);
-    grad.addColorStop(0, 'rgba(255, 180, 100, 0.9)');
-    grad.addColorStop(0.4, 'rgba(235, 94, 40, 0.5)');
+    grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.9)`);
+    grad.addColorStop(0.4, `rgba(${Math.round(r * 0.9)}, ${Math.round(g * 0.4)}, ${Math.round(b * 0.3)}, 0.5)`);
     grad.addColorStop(0.7, 'rgba(120, 20, 160, 0.2)');
     grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
@@ -247,7 +268,7 @@ export const CanvasCore = (function () {
       const px = cx + Math.cos(orbAngle) * orbDist;
       const py = cy + Math.sin(orbAngle) * orbDist * 0.7;
 
-      ctx.fillStyle = i % 2 === 0 ? 'rgba(255, 220, 120, 0.8)' : 'rgba(255, 90, 140, 0.8)';
+      ctx.fillStyle = i % 2 === 0 ? `rgba(${r}, ${g}, ${Math.round(b * 0.6)}, 0.8)` : 'rgba(255, 90, 140, 0.8)';
       ctx.beginPath();
       ctx.arc(px, py, 2.5, 0, Math.PI * 2);
       ctx.fill();
@@ -258,23 +279,30 @@ export const CanvasCore = (function () {
 
   // --- ERA 3: STELLAR DAWN (TEMPERATURE-INTERPOLATED) ---
   function drawEra3(cx, cy) {
-    let tempK = 1000000;
-    if (typeof gameState !== 'undefined' && gameState.plasmaTemperature) {
-      tempK = (typeof gameState.plasmaTemperature.toNumber === 'function')
-        ? gameState.plasmaTemperature.toNumber()
-        : Number(gameState.plasmaTemperature) || 1000000;
+    let tempK = 0;
+    if (typeof gameState !== 'undefined' && gameState.era3 && gameState.era3.temperature) {
+      tempK = (typeof gameState.era3.temperature.toNumber === 'function')
+        ? gameState.era3.temperature.toNumber()
+        : Number(gameState.era3.temperature) || 0;
     }
 
-    // Temperature Color Interpolation (Blue -> Gold -> Deep Red)
-    let coreColor = 'rgba(0, 210, 255, 0.9)';
+    // Temperature Color Interpolation, calibrated to Era III's actual scale (Protostar -> Iron Core)
+    let coreColor = 'rgba(0, 210, 255, 0.9)';   // Blue-white: Iron core / pre-supernova (>=2B K)
     let auraColor = 'rgba(108, 92, 231, 0.4)';
-    if (tempK <= 5000) {
-      coreColor = 'rgba(255, 75, 75, 0.95)';
-      auraColor = 'rgba(200, 30, 30, 0.4)';
-    } else if (tempK <= 100000) {
-      coreColor = 'rgba(255, 200, 80, 0.95)';
-      auraColor = 'rgba(255, 140, 0, 0.4)';
+    if (tempK < 10000000) {
+      // Protostar: still collapsing, not yet fusing. Dim, dull red-orange glow.
+      coreColor = 'rgba(255, 110, 60, 0.9)';
+      auraColor = 'rgba(180, 50, 20, 0.35)';
+    } else if (tempK < 500000000) {
+      // Main Sequence: sustained hydrogen fusion. Warm white-gold, sun-like.
+      coreColor = 'rgba(255, 225, 150, 0.95)';
+      auraColor = 'rgba(255, 170, 60, 0.4)';
+    } else if (tempK < 2000000000) {
+      // Carbon/advanced fusion stages: hotter, shifting toward blue-white.
+      coreColor = 'rgba(160, 210, 255, 0.95)';
+      auraColor = 'rgba(100, 140, 255, 0.4)';
     }
+    // else: >= 2B K (Iron core, imminent collapse), keeps the default blue-white defined above.
 
     const radius = 62 + Math.sin(time * 4) * 3;
 
@@ -340,6 +368,58 @@ export const CanvasCore = (function () {
       ctx.beginPath();
       ctx.arc(sx, sy, 1.5 + (1 - distance / 130), 0, Math.PI * 2);
       ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  // --- ERA 5: THE HEAT DEATH (ENTROPY-COUPLED EVAPORATING SINGULARITY) ---
+  function drawEra5(cx, cy) {
+    let entropy = 0;
+    if (typeof gameState !== 'undefined' && gameState.era5 && typeof gameState.era5.entropy === 'number') {
+      entropy = gameState.era5.entropy;
+    }
+    const entropyFrac = Math.min(1, Math.max(0, entropy / 100));
+
+    // Radius shrinks as entropy rises (evaporating black hole), floor at 15% of original size
+    const shrink = 1.0 - (entropyFrac * 0.85);
+    const pulse = 1 + Math.sin(time * 3) * 0.08;
+    const radius = 55 * pulse * shrink;
+
+    // Color drifts from cool cyan/white (low entropy, "just arrived" from Big Bounce echo)
+    // toward deep red/near-black (high entropy, heat death approaching)
+    const r = Math.round(0 + entropyFrac * 214);     // 0 -> 214
+    const g = Math.round(240 - entropyFrac * 210);    // 240 -> 30
+    const b = Math.round(255 - entropyFrac * 225);    // 255 -> 30
+
+    // Final flash: brief brightening in the last few percent before Heat Death (last Hawking burst)
+    const isFinalFlash = entropyFrac > 0.95;
+    const flashPulse = isFinalFlash ? (1 + Math.sin(time * 12) * 0.4) : 1;
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 2.8 * flashPulse);
+    grad.addColorStop(0, isFinalFlash ? 'rgba(255, 255, 255, 0.95)' : `rgba(${r}, ${g}, ${b}, 0.9)`);
+    grad.addColorStop(0.35, `rgba(${r}, ${g}, ${b}, 0.5)`);
+    grad.addColorStop(0.7, `rgba(${Math.round(r * 0.6)}, ${Math.round(g * 0.3)}, ${Math.round(b * 0.3)}, 0.25)`);
+    grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius * 2.8 * flashPulse, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Collapsing rings: fewer and tighter as entropy rises, unlike Era 1's expanding rings
+    const ringCount = Math.max(1, Math.round(3 * (1 - entropyFrac * 0.6)));
+    for (let i = 0; i < ringCount; i++) {
+      const ringRadius = radius + 15 + i * 14 * shrink;
+      const angle = time * (1.2 - i * 0.3) * (i % 2 === 0 ? 1 : -1);
+      ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${0.4 - entropyFrac * 0.2})`;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, ringRadius, ringRadius * 0.45, angle, 0, Math.PI * 2);
+      ctx.stroke();
     }
 
     ctx.restore();
