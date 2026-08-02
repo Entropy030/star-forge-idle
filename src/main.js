@@ -8,6 +8,17 @@ import { startAutoPlaytest, stopAutoPlaytest, runHeadlessSim, playtestHarness, g
 import { CanvasCore } from './ui/canvasCore.js';
 
 // Re-export or attach globals needed by inline HTML (like onclick)
+const Haptics = {
+  vibrate(pattern) {
+    if (typeof navigator !== 'undefined' && navigator.vibrate && !document.body.classList.contains('reduced-motion')) {
+      navigator.vibrate(pattern);
+    }
+  },
+  light() { this.vibrate(10); },
+  heavy() { this.vibrate([30, 50, 30]); }
+};
+
+window.Haptics = Haptics;
 window.ArtifactManager = ArtifactManager;
 window.triggerBigBounce = triggerBigBounce;
 
@@ -67,11 +78,11 @@ function updateStatsData() {
 function checkAchievements() {
   if (gameState.resources.iron.amount.gte(1) && !gameState.achievements.firstIron.unlocked) {
     gameState.achievements.firstIron.unlocked = true;
-    Viewport.showToast("Achievement Unlocked: Heavy Metal! (Neon Core Skin active)");
+    Viewport.showToast("Achievement Unlocked: Heavy Metal! (Neon Core Skin active)", "success");
   }
-  if (gameState.stats.supernovas.gte(1) && !gameState.achievements.firstSupernova.unlocked) {
-    gameState.achievements.firstSupernova.unlocked = true;
-    Viewport.showToast("Achievement Unlocked: Stellar Collapse!");
+  if (!gameState.achievements.firstBlackHole && gameState.stats.firstBlackHoleTriggered) {
+    gameState.achievements.firstBlackHole = true;
+    Viewport.showToast("Achievement Unlocked: Stellar Collapse!", "success");
   }
 }
 
@@ -103,7 +114,7 @@ function checkMissionProgress() {
 // ==========================================================================
 function checkDevMode() {
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('dev') === 'true') {
+  if (urlParams.get('dev') === 'true' || localStorage.getItem('devMode') === 'true') {
     const devMatrix = document.getElementById('dev-matrix');
     if (devMatrix) devMatrix.classList.remove('dev-matrix-hidden');
 
@@ -112,20 +123,29 @@ function checkDevMode() {
 
     const devToggle = document.getElementById('dev-toggle-container');
     if (devToggle) devToggle.classList.remove('dev-toggle-hidden');
+
+    const aiDev = document.getElementById('ai-dev-controls');
+    if (aiDev) aiDev.classList.remove('dev-matrix-hidden');
   }
 }
+
+window.enableDevMode = function() {
+  localStorage.setItem('devMode', 'true');
+  checkDevMode();
+  Viewport.showToast("Developer Mode explicitly enabled.");
+};
 
 function toggleDevMatrix() {
   const matrix = document.getElementById('dev-matrix');
   const tag = document.getElementById('warp-tag');
   if (!matrix) return;
 
-  if (matrix.classList.contains('dev-matrix-hidden')) {
-    matrix.classList.remove('dev-matrix-hidden');
-    if (tag) tag.style.display = 'inline';
-    Viewport.showToast("Developer Matrix Enabled.");
+  if (gameState.flags.devMode) {
+    Viewport.showToast("Developer Matrix Enabled.", "success");
+    document.getElementById('dev-matrix').classList.remove('dev-matrix-hidden');
   } else {
-    matrix.classList.add('dev-matrix-hidden');
+    Viewport.showToast("Developer Matrix Disabled.", "warning");
+    document.getElementById('dev-matrix').classList.add('dev-matrix-hidden');
     if (tag) tag.style.display = 'none';
     Viewport.showToast("Developer Matrix Disabled.");
   }
@@ -181,7 +201,7 @@ function devSetEpoch(epochNum, callback) {
 // ==========================================================================
 function triggerInflation() {
   if (gameState.resources.quantumFluctuations.amount.lt(COSMIC_REGISTRY.constants.inflationThreshold)) {
-    Viewport.showToast(`Requires ${format(COSMIC_REGISTRY.constants.inflationThreshold)} Quantum Fluctuations!`);
+    Viewport.showToast(`Requires ${format(COSMIC_REGISTRY.constants.inflationThreshold)} Quantum Fluctuations!`, "warning");
     return;
   }
 
@@ -210,7 +230,7 @@ function triggerInflation() {
 // ==========================================================================
 function triggerRecombination() {
   if (!gameState.resources.protons.amount.gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) && !gameState.plasmaTemperature.lte(3000)) {
-    Viewport.showToast(`Requires ${format(COSMIC_REGISTRY.constants.recombinationProtonThreshold)} Protons or cooling below 3,000 K!`);
+    Viewport.showToast(`Requires ${format(COSMIC_REGISTRY.constants.recombinationProtonThreshold)} Protons or cooling below 3,000 K!`, "warning");
     return;
   }
 
@@ -240,6 +260,20 @@ function triggerRecombination() {
 function triggerSupernova() {
   if (gameState.era3.temperature.lt(COSMIC_REGISTRY.constants.supernovaTempThreshold)) return;
   playSupernovaSound();
+  Haptics.heavy();
+
+  // Flash overlay
+  const flash = document.createElement('div');
+  flash.className = 'supernova-flash';
+  document.body.appendChild(flash);
+
+  // Screen shake
+  document.body.classList.add('screen-shake');
+
+  setTimeout(() => {
+    if (flash.parentNode) flash.parentNode.removeChild(flash);
+    document.body.classList.remove('screen-shake');
+  }, 3000);
 
   let gainedStardust = getStardustYield();
   let outcome = "White Dwarf";
@@ -373,11 +407,12 @@ function closeTheatrical() {
 
 function triggerGalacticMerge() {
   if (gameState.resources.darkMatter.amount.lt(10000)) {
-    Viewport.showToast("Requires at least 10,000 Dark Matter coordinates to anchor collision vectors.");
+    Viewport.showToast("Requires at least 10,000 Dark Matter coordinates to anchor collision vectors.", "warning");
     return;
   }
 
   playSupernovaSound();
+  Haptics.heavy();
   let gainedResidue = getGalacticMergeYield();
   gameState.resources.darkEnergyResidue.amount = gameState.resources.darkEnergyResidue.amount.plus(gainedResidue);
 
@@ -386,7 +421,7 @@ function triggerGalacticMerge() {
   document.body.appendChild(flashElement);
   setTimeout(() => flashElement.remove(), 2050);
 
-  Viewport.showToast(`🌌 GALACTIC COLLISION SECURED: Earned +${format(gainedResidue)} Dark Energy Residue! Era V (Deep Future) is currently expanding in the multiverse.`);
+  Viewport.showToast(`🌌 GALACTIC COLLISION SECURED: Earned +${format(gainedResidue)} Dark Energy Residue! Era V (Deep Future) is currently expanding in the multiverse.`, "success");
   Viewport.switchTab('core');
   saveGame();
 }
@@ -394,19 +429,20 @@ function triggerGalacticMerge() {
 function stabilizeArms() {
   if (gameState.activeEpoch === 4) {
     gameState.era4.stability = new Decimal(100);
-    Viewport.showToast("Orbital velocity profiles synchronized. Stability anchored at 100%.");
+    Viewport.showToast("Orbital velocity profiles synchronized. Stability anchored at 100%.", "success");
   }
 }
 
 function accretePlanetConfiguration() {
   if (gameState.activeEpoch === 4) {
-    let cost = new Decimal(1000);
+    let cost = gameState.era4.planetaryNodeCost;
     if (gameState.resources.planetaryDebris.amount.gte(cost)) {
       gameState.resources.planetaryDebris.amount = gameState.resources.planetaryDebris.amount.minus(cost);
       gameState.era4.planetaryNodes = gameState.era4.planetaryNodes.plus(1);
-      Viewport.showToast("Planetary Debris condensed into a stable macro planetary node.");
+      gameState.era4.planetaryNodeCost = gameState.era4.planetaryNodeCost.times(1.12).floor();
+      Viewport.showToast("Planetary Debris condensed into a stable macro planetary node.", "success");
     } else {
-      Viewport.showToast(`Accretion requires ${format(cost)} Planetary Debris.`);
+      Viewport.showToast(`Accretion requires ${format(cost)} Planetary Debris.`, "warning");
     }
   }
 }
@@ -556,7 +592,7 @@ function spawnFlare() {
     expiresInSec: new Decimal(COSMIC_REGISTRY.solarEvents.flare.spawn.activeWindowSec || 12)
   };
   if (!flareSimSuppressed) {
-    Viewport.showToast("☀️ SOLAR PROMINENCE DETECTED: Core-Turbulenz aktiv!");
+    Viewport.showToast("☀️ SOLAR PROMINENCE DETECTED: Core-Turbulenz aktiv!", "warning");
   }
 }
 
@@ -570,7 +606,7 @@ function expireFlare() {
   updateStatsData();
 
   if (!flareSimSuppressed) {
-    Viewport.showToast(COSMIC_REGISTRY.solarEvents.flare.miss.toast);
+    Viewport.showToast(COSMIC_REGISTRY.solarEvents.flare.miss.toast, "warning");
   }
 
   gameState.flares.active = null;
@@ -594,7 +630,7 @@ function collectFlare() {
   }
 
   gameState.stats.flaresCollected = (gameState.stats.flaresCollected || new Decimal(0)).plus(1);
-  Viewport.showToast(rewardDef.toast || "Flare stabilisiert!");
+  Viewport.showToast(rewardDef.toast || "Flare stabilisiert!", "success");
 
   gameState.flares.active = null;
   gameState.flares.nextSpawnInSec = rollNextSpawnDelay();
@@ -851,7 +887,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const bindClick = (id, fn) => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('click', fn);
+    if (el) {
+      el.addEventListener('click', (e) => {
+        Haptics.light();
+        fn(e);
+      });
+    }
   };
 
   bindClick('btn-toggle-crt', () => {
@@ -862,6 +903,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('btn-toggle-crt');
     if (btn) btn.textContent = `Toggle CRT Retro Overlay: ${active ? 'ON' : 'OFF'}`;
     Viewport.log(`CRT Retro Overlay set to ${active ? 'ON' : 'OFF'}`);
+  });
+
+  bindClick('btn-toggle-motion', () => {
+    document.body.classList.toggle('reduced-motion');
+    const isReduced = document.body.classList.contains('reduced-motion');
+    const btn = document.getElementById('btn-toggle-motion');
+    if (btn) btn.textContent = `Toggle Reduced Motion: ${isReduced ? 'ON' : 'OFF'}`;
   });
 
   bindClick('btn-ai-state', window.getAIState);

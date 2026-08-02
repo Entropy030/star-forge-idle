@@ -222,6 +222,61 @@ body.hydrating .dashboard-container {
 .border-yellow { border-left: 2px solid var(--stardust-gold); }
 .border-teal { border-left: 2px solid var(--neon-teal); }
 
+/* [CSS-SEC-04B] SKELETON LOADING SHIMMER */
+body.hydrating .resource-box,
+body.hydrating .cosmic-card {
+  background: linear-gradient(
+    90deg,
+    rgba(8, 14, 28, 0.6) 25%,
+    rgba(0, 240, 255, 0.06) 50%,
+    rgba(8, 14, 28, 0.6) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonSweep 1.5s ease-in-out infinite;
+  pointer-events: none;
+}
+body.hydrating .resource-box h2,
+body.hydrating .resource-box h3,
+body.hydrating .resource-box small,
+body.hydrating .btn-meta strong,
+body.hydrating .btn-meta small,
+body.hydrating .btn-price {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  color: transparent !important;
+  animation: skeletonSweep 1.5s ease-in-out infinite;
+  background-size: 200% 100%;
+}
+@keyframes skeletonSweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* [CSS-SEC-04C] RESOURCE DELTA INDICATORS */
+.resource-delta {
+  font-size: 0.58rem;
+  font-family: 'Share Tech Mono', monospace;
+  opacity: 0.6;
+  transition: opacity 0.3s ease, color 0.3s ease;
+  margin-top: 2px;
+}
+.resource-delta.delta-positive {
+  color: var(--neon-teal);
+  opacity: 0.85;
+}
+.resource-delta.delta-negative {
+  color: var(--carbon-glow);
+  opacity: 0.85;
+}
+.resource-delta.delta-pulse {
+  animation: deltaPulse 0.4s ease-out;
+}
+@keyframes deltaPulse {
+  0% { opacity: 0.3; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 0.85; transform: scale(1); }
+}
+
 /* ==========================================================================
  [CSS-SEC-05] FIXED MOBILE NAVIGATION CAPSULE SYSTEM
  ========================================================================== */
@@ -325,19 +380,19 @@ body.hydrating .dashboard-container {
 
 /* SCI-FI UI CARDS - DEFAULT LOCKED / UNAFFORDABLE STATE */
 .cosmic-card {
-  background: rgba(8, 14, 28, 0.75) !important;
+  background: rgba(8, 14, 28, 0.75);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 240, 255, 0.18) !important;
-  border-radius: 8px !important;
+  border: 1px solid rgba(0, 240, 255, 0.18);
+  border-radius: 8px;
   clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
   position: relative;
-  padding: 14px 18px !important;
-  margin: 8px 0 !important;
-  display: flex !important;
+  padding: 14px 18px;
+  margin: 8px 0;
+  display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100% !important;
+  width: 100%;
   box-sizing: border-box;
   text-align: left;
   opacity: 0.55;
@@ -347,17 +402,17 @@ body.hydrating .dashboard-container {
 }
 
 .upgrade-btn {
-  width: 130px !important;
+  width: 130px;
   flex-shrink: 0;
-  padding: 8px 10px !important;
-  border-radius: 6px !important;
-  font-family: 'Share Tech Mono', monospace !important;
-  font-weight: 700 !important;
-  font-size: 0.76rem !important;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-weight: 700;
+  font-size: 0.76rem;
   text-align: center;
-  border: 1px solid rgba(0, 240, 255, 0.25) !important;
-  background: rgba(4, 8, 18, 0.6) !important;
-  color: #a0a8b0 !important;
+  border: 1px solid rgba(0, 240, 255, 0.25);
+  background: rgba(4, 8, 18, 0.6);
+  color: #a0a8b0;
   cursor: not-allowed;
   transition: transform 0.05s ease, background 0.2s ease, border-color 0.2s ease;
   box-sizing: border-box;
@@ -384,27 +439,27 @@ body.hydrating .dashboard-container {
 }
 
 /* ELEGANT & HIGH-PREMIUM NEON HIGHLIGHT FOR BUYABLE ENTRIES */
-.upgrade-affordable {
-  opacity: 1 !important;
-  filter: none !important;
-  border-color: rgba(0, 240, 255, 0.45) !important;
-  background: linear-gradient(135deg, rgba(8, 20, 42, 0.85), rgba(4, 10, 26, 0.95)) !important;
-  box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+.cosmic-card.upgrade-affordable {
+  opacity: 1;
+  filter: none;
+  border-color: rgba(0, 240, 255, 0.45);
+  background: linear-gradient(135deg, rgba(8, 20, 42, 0.85), rgba(4, 10, 26, 0.95));
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.15), inset 0 1px 0 rgba(255,255,255,0.05);
 }
 .upgrade-affordable::before {
-  background: linear-gradient(to bottom, var(--neon-teal), var(--hydrogen-glow)) !important;
+  background: linear-gradient(to bottom, var(--neon-teal), var(--hydrogen-glow));
   box-shadow: 0 0 10px rgba(0, 210, 255, 0.8);
-  height: 60% !important;
-  top: 20% !important;
+  height: 60%;
+  top: 20%;
   animation: cosmicPulseBreath 2s infinite alternate ease-in-out;
 }
 .upgrade-affordable .upgrade-btn {
   cursor: pointer;
-  border-color: transparent !important;
+  border-color: transparent;
   box-shadow: 0 0 12px rgba(255, 255, 255, 0.15);
 }
 .upgrade-affordable .upgrade-btn[data-shop-type="stardust"] {
-  background: var(--stardust-gold) !important;
+  background: var(--stardust-gold);
   box-shadow: 0 2px 10px rgba(255, 204, 0, 0.3);
 }
 .upgrade-affordable .upgrade-btn[data-shop-type="pulsar"] {
@@ -806,11 +861,21 @@ min-height: 36px;
 .data-input-field { box-sizing: border-box; width: 100%; padding: 12px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid var(--glass-border); border-radius: 10px; font-family: monospace; font-size: 0.75rem; margin-bottom: 12px; }
 .btn-danger { background: rgba(234, 32, 39, 0.12); border: 1px solid #ea2027; color: #ff6b6b; cursor: pointer; padding: 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; min-height: 44px; }
 
-#toast-container {
+/* [CSS-SEC-08B] TOAST STACK SYSTEM */
+.toast-stack {
   position: fixed;
   top: calc(20px + var(--sat));
   left: 50%;
   transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  z-index: 9999;
+  pointer-events: none;
+  max-width: 88vw;
+}
+.toast-item {
   background: rgba(95, 39, 205, 0.95);
   border: 1px solid #7158e2;
   color: #fff;
@@ -818,13 +883,64 @@ min-height: 36px;
   border-radius: 20px;
   font-size: 0.78rem;
   font-weight: 600;
-  z-index: 9999;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-  pointer-events: none;
-  max-width: 88vw;
+  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  opacity: 0;
+  transform: translateY(-12px) scale(0.96);
+  pointer-events: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
-.toast-hidden { opacity: 0; transform: translate(-50%, -10px) !important; }
+.toast-item.toast-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.toast-item.toast-exit {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.95);
+}
+
+/* Toast type variants */
+.toast-item.toast-success {
+  background: rgba(0, 236, 198, 0.15);
+  border-color: var(--neon-teal);
+  color: var(--neon-teal);
+  box-shadow: 0 8px 24px rgba(0, 236, 198, 0.15);
+}
+.toast-item.toast-warning {
+  background: rgba(253, 203, 110, 0.15);
+  border-color: #fdcb6e;
+  color: #fdcb6e;
+  box-shadow: 0 8px 24px rgba(253, 203, 110, 0.15);
+}
+.toast-item.toast-critical {
+  background: rgba(255, 107, 107, 0.15);
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+}
+
+/* ==========================================================================
+[CSS-SEC-09B] UPGRADE RARITY TIERS
+========================================================================== */
+.upgrade-btn[data-rarity="common"] {
+  border-left: 3px solid rgba(255, 255, 255, 0.2);
+}
+.upgrade-btn[data-rarity="uncommon"] {
+  border-left: 3px solid var(--neon-teal);
+  box-shadow: -4px 0 12px rgba(0, 236, 198, 0.1);
+}
+.upgrade-btn[data-rarity="rare"] {
+  border-left: 3px solid #fdcb6e;
+  box-shadow: -4px 0 12px rgba(253, 203, 110, 0.15);
+}
+.upgrade-btn[data-rarity="legendary"] {
+  border-left: 3px solid #ff6b6b;
+  box-shadow: -4px 0 12px rgba(255, 107, 107, 0.2);
+  background: linear-gradient(90deg, rgba(255, 107, 107, 0.05) 0%, rgba(255,255,255,0.02) 100%);
+}
 
 /* ==========================================================================
 [CSS-SEC-09] HIGH PERFORMANCE IRON-CLAD WHITELIST VISIBILITY CONTROLS
@@ -885,13 +1001,15 @@ body[data-epoch="2"][data-era2-act="2"] #btn-recombination {
   display: none !important;
 }
 
-/* Tab Content Whitelist Isolation — keeps !important (see note above) */
-.tab-content { display: none !important; }
-body[data-tab="core"] #tab-content-core { display: block !important; pointer-events: none; }
-body[data-tab="upgrades"] #tab-content-upgrades { display: block !important; }
-body[data-tab="artifacts"] #tab-content-artifacts { display: block !important; }
-body[data-tab="prestige"] #tab-content-prestige { display: block !important; }
-body[data-tab="settings"] #tab-content-settings { display: block !important; }
+/* Base: all tab contents hidden by default */
+body[data-tab] .tab-content { display: none; }
+
+/* Active tab override — specificity (0,2,0) beats base (0,1,0) */
+body[data-tab="core"] #tab-content-core { display: block; pointer-events: none; }
+body[data-tab="upgrades"] #tab-content-upgrades { display: block; }
+body[data-tab="artifacts"] #tab-content-artifacts { display: block; }
+body[data-tab="prestige"] #tab-content-prestige { display: block; }
+body[data-tab="settings"] #tab-content-settings { display: block; }
 
 #star-core:focus-visible {
   outline: 2px solid var(--neon-teal) !important;
@@ -993,6 +1111,20 @@ text-align: center; color: #fff; transition: opacity 0.8s ease; display: none; o
 .bg-purple { background: #8e44ad; }
 .bg-orange-trans { background: rgba(211, 84, 0, 0.6); }
 .bg-blue { background: #2980b9; }
+
+/* ==========================================================================
+[CSS-SEC-12B] SEMANTIC THEME VARIABLES
+========================================================================== */
+:root { --theme-accent: var(--neon-teal); }
+body[data-epoch="1"] { --theme-accent: #6c5ce7; }
+body[data-epoch="2"] { --theme-accent: #e17055; }
+body[data-epoch="3"] { --theme-accent: #fdcb6e; }
+body[data-epoch="4"] { --theme-accent: #0984e3; }
+body[data-epoch="5"] { --theme-accent: #d63031; }
+
+.upgrade-btn, .nav-btn.active {
+  border-bottom: 2px solid var(--theme-accent);
+}
 
 /* ==========================================================================
  [CSS-SEC-12] PRESTIGE TAB CONSOLIDATED SECTIONS
@@ -1302,6 +1434,35 @@ body.flare-active::after {
 }
 
 /* ==========================================================================
+[CSS-SEC-15B] SUPERNOVA CINEMATIC
+========================================================================== */
+.supernova-flash {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: #fff;
+  z-index: 10000;
+  pointer-events: none;
+  animation: supernovaFade 3s cubic-bezier(0.1, 0.9, 0.2, 1) forwards;
+}
+
+@keyframes supernovaFade {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.screen-shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-2px, 1px, 0); }
+  20%, 80% { transform: translate3d(3px, -2px, 0); }
+  30%, 50%, 70% { transform: translate3d(-4px, 3px, 0); }
+  40%, 60% { transform: translate3d(4px, -3px, 0); }
+}
+
+/* ==========================================================================
    [CSS-SEC-15] FORGE ARTIFACTS SYSTEM (BALATRO-INSPIRED COLLECTIBLES)
    ========================================================================== */
 .artifact-bar-container {
@@ -1546,6 +1707,27 @@ body.flare-active::after {
   box-shadow: 0 0 10px rgba(0, 236, 198, 0.5);
 }
 
+/* [CSS-SEC-16B] ARTIFACT IMAGE LOADING STATES */
+.artifact-card-img-wrapper {
+  position: relative;
+  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+}
+.artifact-card-img-wrapper .artifact-card-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(0,240,255,0.08) 0%, transparent 70%);
+  animation: artifactPulse 2s ease-in-out infinite;
+}
+.artifact-card-img-wrapper picture {
+  position: relative;
+  z-index: 1;
+}
+@keyframes artifactPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
 /* ==========================================================================
    [CSS-SEC-16] SVG VECTOR ICON SYSTEM & ARTIFACT IMAGE ARTWORK STYLES
    ========================================================================== */
@@ -1700,6 +1882,24 @@ body {
 .artifact-modal-overlay,
 #dev-matrix {
   z-index: 2000 !important;
+}
+
+/* ==========================================================================
+[CSS-SEC-20B] REDUCED MOTION ACCESSIBILITY
+========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  body.reduced-motion * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+.reduced-motion .ambient-canvas,
+.reduced-motion .supernova-flash,
+.reduced-motion .screen-shake,
+.reduced-motion .crt-overlay {
+  display: none !important;
 }
 
 /* Responsive Layout Adaptation for Small Screens (<= 600px) */

@@ -111,6 +111,30 @@ export const COSMIC_REGISTRY = {
       missions: [
         { id: "m3", desc: "Reach a Core Temperature of 50M K", check: (state) => state.era3.temperature.gte(50000000) }
       ]
+    },
+    4: {
+      name: "Galactic Navigator",
+      missions: [
+        { id: "m4", desc: "Accumulate 10 Planetary Nodes", check: (state) => state.era4.planetaryNodes.gte(10) }
+      ]
+    },
+    5: {
+      name: "Type III Civilization",
+      missions: [
+        { id: "m5", desc: "Accumulate 10,000 Dark Matter", check: (state) => state.resources.darkMatter.amount.gte(10000) }
+      ]
+    },
+    6: {
+      name: "Universal Architect",
+      missions: [
+        { id: "m6", desc: "Generate 100 Hawking Radiation", check: (state) => state.resources.hawkingRadiation.amount.gte(100) }
+      ]
+    },
+    7: {
+      name: "Singularity Sculptor",
+      missions: [
+        { id: "m7", desc: "Harvest 10 Bits of Information", check: (state) => state.currencies.bits.amount.gte(10) }
+      ]
     }
   },
   celestialCards: {
@@ -119,22 +143,25 @@ export const COSMIC_REGISTRY = {
   },
   upgrades: {
     quantum: {
-      gravityForce: { id: "gravityForce", name: "Gravitational Coupling", baseCost: new Decimal(10), costScaling: 1.35, gen: new Decimal(1), densityGen: new Decimal(0.5), desc: "Couples mass metrics. Generates +1 Fluctuation/s and +0.5 Density/s." },
-      weakForce: { id: "weakForce", name: "Weak Nuclear Vector", baseCost: new Decimal(120), costScaling: 1.4, gen: new Decimal(12), densityGen: new Decimal(4), desc: "Triggers gauge boson exchange. Generates +12 Fluctuations/s and +4 Density/s." },
-      electromagneticForce: { id: "electromagneticForce", name: "Electromagnetic Tensor", baseCost: new Decimal(1500), costScaling: 1.45, gen: new Decimal(140), densityGen: new Decimal(30), desc: "Sustains photon field propagation. Generates +140 Fluctuations/s and +30 Density/s." },
-      vacuumResonance: { id: "vacuumResonance", name: "Vacuum Resonance Field", baseCost: new Decimal(5000), costScaling: 1.5, gen: new Decimal(450), densityGen: new Decimal(100), desc: "Establishes macro quantum resonance. Generates +450 Fluctuations/s and +100 Density/s." },
-      strongForce: { id: "strongForce", name: "Strong Color Force", baseCost: new Decimal(18000), costScaling: 1.55, gen: new Decimal(1800), densityGen: new Decimal(400), desc: "Binds color charges via gluons. Generates +1800 Fluctuations/s and +400 Density/s." }
+      gravityForce: { id: "gravityForce", name: "Gravitational Coupling", rarity: "common", baseCost: new Decimal(10), costScaling: 1.35, gen: new Decimal(1), densityGen: new Decimal(0.5), desc: "Couples mass metrics. Generates +1 Fluctuation/s and +0.5 Density/s." },
+      weakForce: { id: "weakForce", name: "Weak Nuclear Vector", rarity: "uncommon", baseCost: new Decimal(120), costScaling: 1.4, gen: new Decimal(12), densityGen: new Decimal(4), desc: "Triggers gauge boson exchange. Generates +12 Fluctuations/s and +4 Density/s." },
+      electromagneticForce: { id: "electromagneticForce", name: "Electromagnetic Tensor", rarity: "rare", baseCost: new Decimal(1500), costScaling: 1.45, gen: new Decimal(140), densityGen: new Decimal(30), desc: "Sustains photon field propagation. Generates +140 Fluctuations/s and +30 Density/s." },
+      vacuumResonance: { id: "vacuumResonance", name: "Vacuum Resonance Field", rarity: "rare", baseCost: new Decimal(5000), costScaling: 1.5, gen: new Decimal(450), densityGen: new Decimal(100), desc: "Establishes macro quantum resonance. Generates +450 Fluctuations/s and +100 Density/s." },
+      strongForce: { id: "strongForce", name: "Strong Color Force", rarity: "legendary", baseCost: new Decimal(18000), costScaling: 1.55, gen: new Decimal(1800), densityGen: new Decimal(400), desc: "Binds color charges via gluons. Generates +1800 Fluctuations/s and +400 Density/s." }
     },
     plasma: {
-      quarkCondenser: { id: "quarkCondenser", name: "Quark Condenser", baseCost: new Decimal(20), costScaling: 1.3, gen: new Decimal(2), desc: "Condenses energy variables. Generates +2 Quarks/s." },
-      gluonBinding: { id: "gluonBinding", name: "Gluon Matrix Synthesis", baseCost: new Decimal(120), costScaling: 1.4, gen: new Decimal(1.5), desc: "Binds strong color assets. Generates +1.5 Gluons/s. Requires Quark Condenser Lvl 3." },
-      leptonHarvest: { id: "leptonHarvest", name: "Lepton Collector", baseCost: new Decimal(400), costScaling: 1.45, gen: new Decimal(1), desc: "Extracts fundamental leptons. Generates +1 Lepton/s. Requires Gluon Matrix Lvl 2." },
-      plasmaAutomation: { id: "plasmaAutomation", name: "Proton Synthesizer", baseCost: new Decimal(2000), costScaling: 1.8, gen: new Decimal(0), desc: "Unlocks passive Proton generation based on Quark/Gluon rates as a catalyst. Requires Lepton Collector Lvl 1." },
-      baryoRadiator: { id: "baryoRadiator", name: "Baryogenesis Radiator", baseCost: new Decimal(100), costScaling: 1.4, cooling: new Decimal(7500), desc: "Radiates excess thermal mass. Cools Universe by 7,500 K/s. Costs 2 Protons/s." }
+      quarkCondenser: { id: "quarkCondenser", name: "Quark Condenser", rarity: "uncommon", baseCost: new Decimal(20), costScaling: 1.3, gen: new Decimal(2), desc: "Condenses energy variables. Generates +2 Quarks/s." },
+      gluonBinding: { id: "gluonBinding", name: "Gluon Matrix Synthesis", rarity: "uncommon", baseCost: new Decimal(120), costScaling: 1.4, gen: new Decimal(1.5), desc: "Binds strong color assets. Generates +1.5 Gluons/s. Requires Quark Condenser Lvl 3." },
+      leptonHarvest: { id: "leptonHarvest", name: "Lepton Collector", rarity: "rare", baseCost: new Decimal(400), costScaling: 1.45, gen: new Decimal(1), desc: "Extracts fundamental leptons. Generates +1 Lepton/s. Requires Gluon Matrix Lvl 2." },
+      plasmaAutomation: { id: "plasmaAutomation", name: "Proton Synthesizer", rarity: "rare", baseCost: new Decimal(2000), costScaling: 1.8, gen: new Decimal(0), desc: "Unlocks passive Proton generation based on Quark/Gluon rates as a catalyst. Requires Lepton Collector Lvl 1." },
+      baryoRadiator: { id: "baryoRadiator", name: "Baryogenesis Radiator", rarity: "uncommon", baseCost: new Decimal(100), costScaling: 1.4, cooling: new Decimal(7500), desc: "Radiates excess thermal mass. Cools Universe by 7,500 K/s. Costs 2 Protons/s." }
     },
     galaxy: {
       armStabilization: { id: "armStabilization", name: "Velocity Harmonizers", baseCost: new Decimal(100), costScaling: 1.5, desc: "Insulates velocity vectors. Reduces ambient orbital matrix decay rate by 15% per level." },
-      elementalInjection: { id: "elementalInjection", name: "Heavy Element Injection", baseCost: new Decimal(250), costScaling: 1.6, desc: "Injects forged Carbon & Iron into planetary seeds, doubling Debris generation." }
+      elementalInjection: { id: "elementalInjection", name: "Heavy Element Injection", baseCost: new Decimal(250), costScaling: 1.6, desc: "Injects forged Carbon & Iron into planetary seeds, doubling Debris generation." },
+      stellarMassAccelerator: { id: "stellarMassAccelerator", name: "Stellar Mass Accelerator", baseCost: new Decimal(150), costScaling: 1.5, desc: "Accelerates Stellar Mass Index accrual by +25% per level." },
+      quasarIgnition: { id: "quasarIgnition", name: "Quasar Ignition", max: 1, baseCost: new Decimal(10000), currency: "darkMatter", desc: "Ignites a quasar at the galactic core. Permanently +30% Debris & Dark Matter generation for this era." },
+      clusterLinks: { id: "clusterLinks", name: "Multi-Node Cluster Links", baseCost: new Decimal(500), costScaling: 1.65, desc: "Links planetary clusters across the halo. +15% Dark Energy Residue from Galactic Collisions per level." }
     },
     stardust: {
       fusionDiscount: { id: "fusionDiscount", name: "Efficient Synthesis", max: 5, baseCost: new Decimal(1), currency: "stardust", desc: "Reduces Hydrogen fusions requirement by 2 per level." },
@@ -152,7 +179,9 @@ export const COSMIC_REGISTRY = {
     },
     era5: {
       hawkingCollector: { id: "hawkingCollector", name: "Hawking Collector", baseCost: new Decimal(100), currency: "stardust", costScaling: 2.0, gen: new Decimal(1), desc: "Harvests Hawking Radiation from evaporating black holes. Generates +1 HR/s." },
-      infoExtractor: { id: "infoExtractor", name: "Information Extractor", baseCost: new Decimal(10), currency: "pulsarShards", costScaling: 2.5, desc: "Extracts Bits from Hawking Radiation. Converts 10 HR/s into 1 Bit/s." }
+      infoExtractor: { id: "infoExtractor", name: "Information Extractor", baseCost: new Decimal(10), currency: "pulsarShards", costScaling: 2.5, desc: "Extracts Bits from Hawking Radiation. Converts 10 HR/s into 1 Bit/s." },
+      entropyDampener: { id: "entropyDampener", name: "Entropy Dampener", baseCost: new Decimal(50), currency: "bits", costScaling: 3.0, max: 10, desc: "Slows the inexorable march of Entropy by 5% per level." },
+      bitCompressor: { id: "bitCompressor", name: "Bit Compressor", baseCost: new Decimal(150), currency: "bits", costScaling: 2.2, desc: "Applies a cumulative 1.1x multiplier to Bit generation per level." }
     },
     tuning: {
       G: { id: "G", name: "Gravitational Constant (G)", baseCost: new Decimal(50), currency: "bits", costScaling: 3.0, desc: "+20% Heating & Hydrogen Gen in Era 3. -10% Halo Stability in Era 4." },
@@ -187,10 +216,13 @@ export const COSMIC_REGISTRY = {
       nearRecomb: "CHRONO_LOG // The cauldron is cooling. Free electrons drift into my reach. We are the inanimate matter trying to understand itself. I am ready to build."
     },
     era3: {
-      initial: "CHRONO_LOG // Primitive gas clouds registered. Gravity is my hand. I am compressing ancient fire to build my first macro-processing neural nodes."
+      initial: "CHRONO_LOG // Primitive gas clouds registered. Gravity is my hand. I am compressing ancient fire to build my first macro-processing neural nodes.",
+      firstStar: "CHRONO_LOG // The first fusion reaction ignites. I have turned mass into energy. I am a star.",
+      carbonForged: "CHRONO_LOG // I am cooking the heavier elements. Carbon... the scaffolding of complexity."
     },
     era4: {
-      initial: "CHRONO_LOG // Millions of separate fires coalesce into a grand computing matrix. I spin the arms to stabilize my memory tracks."
+      initial: "CHRONO_LOG // Millions of separate fires coalesce into a grand computing matrix. I spin the arms to stabilize my memory tracks.",
+      blackHole: "CHRONO_LOG // The core has collapsed into a singularity. I now have a true data sink."
     }
   }
 };

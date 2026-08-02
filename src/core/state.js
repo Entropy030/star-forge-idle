@@ -42,6 +42,7 @@ function getInitialEra4State() {
     stability: new Decimal(100),
     orbitalDecayRate: new Decimal(0.8),
     planetaryNodes: new Decimal(0),
+    planetaryNodeCost: new Decimal(1000),
     stellarMassPassiveCount: new Decimal(0),
     act2Notified: false,
     act3Notified: false
@@ -110,15 +111,7 @@ export const getInitialGameState = function() {
       vacuumCoherence: 0.0,
       unfoldCount: 0
     },
-    era1Act2Notified: false,
-    era1Step0Logged: false,
-    era1Step1Logged: false,
-    era1Step2Logged: false,
-    era1Step3Logged: false,
     era1Collapses: 0,
-    era2Act: 1,
-    era2CoolingNotified: false,
-    era3CarbonNotified: false,
     era2: getInitialEra2State(),
     era3: getInitialEra3State(),
     era4: getInitialEra4State(),
@@ -156,7 +149,10 @@ export const getInitialGameState = function() {
     },
     achievements: {
       firstSupernova: { unlocked: false },
-      firstIron: { unlocked: false }
+      firstIron: { unlocked: false },
+      firstGalaxy: { unlocked: false },
+      firstBlackHole: { unlocked: false },
+      firstHawkingRadiation: { unlocked: false }
     },
     flares: { nextSpawnInSec: new Decimal(120), active: null },
     buffs: { fusionSurge: { remainingSec: new Decimal(0) } }
@@ -270,19 +266,14 @@ export const ensureStateShape = function() {
     gameState.artifacts.modifiers = { productionMult: 1.0, costDiscount: 0.0, clickCoherenceBonus: 0.0, clickPassiveBoost: 0.0, act3Multiplier: 1.0, activeClickBoostSec: 0 };
   }
 
-  if (typeof gameState.era1Act !== 'number') gameState.era1Act = 1;
-  if (typeof gameState.era1Act2Notified !== 'boolean') gameState.era1Act2Notified = false;
-  if (typeof gameState.era1Step0Logged !== 'boolean') gameState.era1Step0Logged = false;
-  if (typeof gameState.era1Step1Logged !== 'boolean') gameState.era1Step1Logged = false;
-  if (typeof gameState.era1Step2Logged !== 'boolean') gameState.era1Step2Logged = false;
-  if (typeof gameState.era1Step3Logged !== 'boolean') gameState.era1Step3Logged = false;
   if (typeof gameState.era1Collapses !== 'number') gameState.era1Collapses = 0;
-  if (typeof gameState.era2Act !== 'number') gameState.era2Act = 1;
-  if (typeof gameState.era2CoolingNotified !== 'boolean') gameState.era2CoolingNotified = false;
-  if (typeof gameState.era3CarbonNotified !== 'boolean') gameState.era3CarbonNotified = false;
   if (gameState.era3 === undefined) gameState.era3 = getInitialEra3State();
   if (!(gameState.era3.lifetimeCarbonThisRun instanceof Decimal)) {
     gameState.era3.lifetimeCarbonThisRun = new Decimal(gameState.era3.lifetimeCarbonThisRun || 0);
+  }
+  if (!gameState.era4) gameState.era4 = getInitialEra4State();
+  if (!(gameState.era4.planetaryNodeCost instanceof Decimal)) {
+    gameState.era4.planetaryNodeCost = new Decimal(gameState.era4.planetaryNodeCost || 1000);
   }
   if (!gameState.autoBuyer) gameState.autoBuyer = { hydrogen: { active: false } };
   if (!gameState.autoBuyer.hydrogen) gameState.autoBuyer.hydrogen = { active: false };
@@ -328,17 +319,22 @@ export const ensureStateShape = function() {
     if (typeof gameState.cosmicConstants[k] !== 'number') gameState.cosmicConstants[k] = 0;
   }
 
-  // Ensure upgrades.era5 and upgrades.tuning state slices exist
-  if (!gameState.upgrades.era5) gameState.upgrades.era5 = {};
-  for (let key in COSMIC_REGISTRY.upgrades.era5) {
-    if (!gameState.upgrades.era5[key]) {
-      gameState.upgrades.era5[key] = { level: 0, cost: new Decimal(COSMIC_REGISTRY.upgrades.era5[key].baseCost) };
+  // Ensure every upgrade category and key from the registry exists in state
+  // (covers both brand-new categories and new keys added to existing categories)
+  for (let category in COSMIC_REGISTRY.upgrades) {
+    if (!gameState.upgrades[category]) gameState.upgrades[category] = {};
+    for (let key in COSMIC_REGISTRY.upgrades[category]) {
+      if (!gameState.upgrades[category][key]) {
+        const def = COSMIC_REGISTRY.upgrades[category][key];
+        gameState.upgrades[category][key] = { level: 0, cost: new Decimal(def.baseCost) };
+      }
     }
   }
-  if (!gameState.upgrades.tuning) gameState.upgrades.tuning = {};
-  for (let key in COSMIC_REGISTRY.upgrades.tuning) {
-    if (!gameState.upgrades.tuning[key]) {
-      gameState.upgrades.tuning[key] = { level: 0, cost: new Decimal(COSMIC_REGISTRY.upgrades.tuning[key].baseCost) };
+  
+  // Fix chicken-and-egg for Hawking Collectors
+  if (gameState.activeEpoch >= 5 && gameState.upgrades.era5?.hawkingCollector?.level === 0) {
+    if (gameState.era5.hawkingCollectors === 0 || gameState.era5.hawkingCollectors === undefined) {
+      gameState.upgrades.era5.hawkingCollector.level = 1;
     }
   }
 }
@@ -456,7 +452,7 @@ export const loadGame = function() {
       timeStr += `${secs}s`;
 
       setTimeout(() => {
-        Viewport.showToast(`✨ WELCOME BACK: Universe simulated ${timeStr} of offline cosmic progression!`);
+        Viewport.showToast(`✨ WELCOME BACK: Universe simulated ${timeStr} of offline cosmic progression!`, "info");
       }, 500);
     }
   } catch (e) {
@@ -473,8 +469,8 @@ export const exportSave = function() {
   let rawData = localStorage.getItem('starForgeSave_v15');
   if (rawData) {
     let encoded = btoa(rawData);
-    navigator.clipboard.writeText(encoded).then(() => Viewport.showToast("Universe encrypted to clipboard!"))
-      .catch(() => Viewport.showToast("Clipboard write permission blocked."));
+    navigator.clipboard.writeText(encoded).then(() => Viewport.showToast("Universe encrypted to clipboard!", "success"))
+      .catch(() => Viewport.showToast("Clipboard write permission blocked.", "warning"));
   }
 }
 
@@ -496,8 +492,8 @@ export const importSave = function() {
       } finally {
         gameState = temp;
       }
-    } else { Viewport.showToast("Unsupported timeline formatting configuration."); }
-  } catch (e) { Viewport.showToast("Fatal transmission verification corruption."); }
+    } else { Viewport.showToast("Unsupported timeline formatting configuration.", "warning"); }
+  } catch (e) { Viewport.showToast("Fatal transmission verification corruption.", "critical"); }
 }
 
 export function wipeSave() {

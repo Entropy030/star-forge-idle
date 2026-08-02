@@ -4,7 +4,10 @@ export const Templates = {
   artifactCard: (def) => `
     <div class="artifact-card">
       <div class="artifact-card-img-wrapper">
-        <img src="${def.image}" alt="${def.name}" class="artifact-card-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <picture>
+          <source srcset="${def.image.replace('.png', '.webp')}" type="image/webp">
+          <img src="${def.image}" alt="${def.name}" class="artifact-card-img" loading="lazy" decoding="async" onload="this.style.opacity='1'" style="opacity:0; transition: opacity 0.3s ease;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';" />
+        </picture>
         <div class="artifact-card-fallback" style="display:none; color:${def.color};">${ICONS.socket}</div>
       </div>
       <div class="artifact-card-content">
@@ -16,7 +19,10 @@ export const Templates = {
   artifactInventoryItem: (def, isEquipped, equippedSlot) => `
     <div class="artifact-picker-item-left">
       <div class="artifact-picker-thumb">
-        <img src="${def.image}" alt="${def.name}" class="artifact-picker-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <picture>
+          <source srcset="${def.image.replace('.png', '.webp')}" type="image/webp">
+          <img src="${def.image}" alt="${def.name}" class="artifact-picker-img" loading="lazy" decoding="async" onload="this.style.opacity='1'" style="opacity:0; transition: opacity 0.3s ease;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';" />
+        </picture>
         <div class="artifact-picker-fallback" style="display:none; color:${def.color};">${ICONS.socket}</div>
       </div>
       <div class="artifact-picker-info">
@@ -29,7 +35,10 @@ export const Templates = {
   artifactPickerEquippedItem: (def, currentSlot) => `
     <div class="artifact-picker-item-left">
       <div class="artifact-picker-thumb">
-        <img src="${def.image}" alt="${def.name}" class="artifact-picker-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <picture>
+          <source srcset="${def.image.replace('.png', '.webp')}" type="image/webp">
+          <img src="${def.image}" alt="${def.name}" class="artifact-picker-img" loading="lazy" decoding="async" onload="this.style.opacity='1'" style="opacity:0; transition: opacity 0.3s ease;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';" />
+        </picture>
         <div class="artifact-picker-fallback" style="display:none; color:${def.color};">${ICONS.socket}</div>
       </div>
       <div class="artifact-picker-info">
@@ -42,7 +51,10 @@ export const Templates = {
   artifactPickerAvailableItem: (def, id, currentSlot, isEquippedElsewhere) => `
     <div class="artifact-picker-item-left">
       <div class="artifact-picker-thumb">
-        <img src="${def.image}" alt="${def.name}" class="artifact-picker-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <picture>
+          <source srcset="${def.image.replace('.png', '.webp')}" type="image/webp">
+          <img src="${def.image}" alt="${def.name}" class="artifact-picker-img" loading="lazy" decoding="async" onload="this.style.opacity='1'" style="opacity:0; transition: opacity 0.3s ease;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';" />
+        </picture>
         <div class="artifact-picker-fallback" style="display:none; color:${def.color};">${ICONS.socket}</div>
       </div>
       <div class="artifact-picker-info">
@@ -52,12 +64,12 @@ export const Templates = {
     </div>
     <button class="artifact-equip-btn" onclick="ArtifactManager.equip(${currentSlot}, '${id}')">${isEquippedElsewhere ? 'MOVE' : 'EQUIP'}</button>
   `,
-  genericTierListRow: (displayColor) => `
+  genericTierListRow: (displayColor, rarity = 'common') => `
     <div class="btn-meta">
       <strong><span class="name-display"></span> <span class="lvl-display" style="font-size: 0.75em; color: ${displayColor};"></span></strong>
       <small class="desc-display"></small>
     </div>
-    <button class="upgrade-btn" style="padding: 6px 14px; border-radius: 8px; font-weight: bold; font-size:0.78rem; margin:0; width:auto !important; min-height:unset;"></button>
+    <button class="upgrade-btn" data-rarity="${rarity}" style="padding: 6px 14px; border-radius: 8px; font-weight: bold; font-size:0.78rem; margin:0; width:auto !important; min-height:unset;"></button>
   `,
   era5Dashboard: `
     <div class="era5-dashboard">

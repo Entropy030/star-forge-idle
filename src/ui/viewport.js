@@ -9,7 +9,8 @@ import { Timeline } from '../core/timeline.js';
 let audioCtx;
 let transTypewriterInterval;
 let typewriterInterval;
-let toastTimer;
+let toastQueue = [];
+let toastIdCounter = 0;
 
 async function playIntroNarrative() {
   const target = document.getElementById('intro-narrative-text');
@@ -379,7 +380,7 @@ export const ArtifactManager = {
 
   openPicker(slotIndex) {
     if (!this.isSlotUnlocked(slotIndex)) {
-      Viewport.showToast(`Slot ${slotIndex + 1} is locked! Advance to Era ${slotIndex + 1} to unlock.`);
+      Viewport.showToast(`Slot ${slotIndex + 1} is locked! Advance to Era ${slotIndex + 1} to unlock.`, "warning");
       return;
     }
     this.activeSlotForPicker = slotIndex;
@@ -616,13 +617,44 @@ export const Viewport = {
     document.documentElement.style.setProperty('--cosmic-progress', totalProgress);
   },
 
-  showToast(message, duration = 4000) {
-    const toast = document.getElementById('toast-container');
-    if (!toast) return;
-    toast.textContent = message;
-    toast.classList.remove('toast-hidden');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { toast.classList.add('toast-hidden'); }, duration);
+  showToast(message, type = 'info', duration = 3000) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const id = ++toastIdCounter;
+    const el = document.createElement('div');
+    el.className = `toast-item toast-${type}`;
+    el.textContent = message;
+    el.dataset.toastId = id;
+
+    container.appendChild(el);
+    toastQueue.push({ id, el });
+
+    // Trigger enter animation on next frame
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        el.classList.add('toast-visible');
+      });
+    });
+
+    // Auto-dismiss
+    setTimeout(() => {
+      Viewport.dismissToast(id);
+    }, duration);
+  },
+
+  dismissToast(id) {
+    const idx = toastQueue.findIndex(t => t.id === id);
+    if (idx === -1) return;
+
+    const { el } = toastQueue[idx];
+    el.classList.remove('toast-visible');
+    el.classList.add('toast-exit');
+
+    setTimeout(() => {
+      if (el.parentNode) el.parentNode.removeChild(el);
+      toastQueue.splice(idx, 1);
+    }, 300);
   },
 
   showTheatrical(outcome, titleColor, tempText, elementsText, rewardHTML) {
@@ -723,13 +755,7 @@ export const Viewport = {
         const row = document.createElement('div');
         row.id = `${shopId}-row-${key}`;
         row.className = 'cosmic-card';
-        row.innerHTML = `
-          <div class="btn-meta">
-            <strong>${def.name} <span class="lvl-display" style="font-size: 0.75em; color:${config.btnColor};"></span></strong>
-            <small>${def.desc}</small>
-          </div>
-          <button class="upgrade-btn" style="padding: 6px 14px; border-radius: 8px; font-weight: bold; font-size:0.78rem; margin:0; width:auto !important; min-height:unset;"></button>
-        `;
+        row.innerHTML = Templates.genericTierListRow(config.btnColor, def.rarity || 'common');
         row.querySelector('.upgrade-btn').addEventListener('click', () => Economy.buy(shopId, key));
         shopList.appendChild(row);
       }
@@ -799,13 +825,7 @@ export const Viewport = {
         const row = document.createElement('div');
         row.id = `card-row-${key}`;
         row.className = 'cosmic-card';
-        row.innerHTML = `
-          <div class="btn-meta">
-            <strong>${def.name} <span class="lvl-display" style="font-size: 0.8em; color: #74b9ff;">(Lvl 0)</span></strong>
-            <small>${def.desc}</small>
-          </div>
-          <button class="upgrade-btn" style="padding: 6px 14px; border-radius: 8px; font-weight: bold; font-size:0.78rem; margin:0; width:auto !important; min-height:unset;"></button>
-        `;
+        row.innerHTML = Templates.genericTierListRow('#74b9ff', def.rarity || 'common');
         row.querySelector('.upgrade-btn').addEventListener('click', () => {
           buyCelestialCard(key);
         });
@@ -891,10 +911,11 @@ export const Viewport = {
         (category === 'plasma' ? 'PRIMORDIAL PLASMA CRUCIBLE INFRASTRUCTURE' : 'MACRO GALACTIC ACCRETION NETWORK');
       container.innerHTML = `<div class="section-title" style="color: ${displayColor}; font-size: 1.0rem; letter-spacing: 2px; margin-bottom: 15px; font-weight: bold;">${headerText}</div>`;
       for (let key in COSMIC_REGISTRY.upgrades[category]) {
+        const def = COSMIC_REGISTRY.upgrades[category][key];
         const row = document.createElement('div');
         row.id = `${category}-row-${key}`;
         row.className = 'cosmic-card';
-        row.innerHTML = Templates.genericTierListRow(displayColor);
+        row.innerHTML = Templates.genericTierListRow(displayColor, def.rarity || 'common');
         const btn = row.querySelector('.upgrade-btn');
         btn.addEventListener('click', () => Economy.buy(category, key));
         row._cache = {
@@ -1204,6 +1225,31 @@ export const Viewport = {
     }
   },
 
+  updateResourceDelta(resourceKey, rate) {
+    const deltaEl = document.getElementById(`delta-${resourceKey}`);
+    if (!deltaEl) return;
+
+    let rateNum = 0;
+    if (rate && rate.toNumber) rateNum = rate.toNumber();
+    else if (typeof rate === 'number') rateNum = rate;
+
+    if (rateNum > 0) {
+      deltaEl.textContent = `▲ ${format(rate)}/s`;
+      deltaEl.className = 'resource-delta delta-positive delta-pulse';
+    } else if (rateNum < 0) {
+      const absRate = rate.abs ? rate.abs() : Math.abs(rate);
+      deltaEl.textContent = `▼ ${format(absRate)}/s`;
+      deltaEl.className = 'resource-delta delta-negative delta-pulse';
+    } else {
+      deltaEl.textContent = '—';
+      deltaEl.className = 'resource-delta';
+    }
+
+    setTimeout(() => {
+      deltaEl.classList.remove('delta-pulse');
+    }, 400);
+  },
+
   updateEraProgressBar() {
     const container = document.getElementById('era-progress-container');
     const bar = document.getElementById('era-progress-bar');
@@ -1334,11 +1380,11 @@ export const Viewport = {
     this.updateStardustDisplays();
     const currentEpoch = COSMIC_REGISTRY.universeChronology.epochs[gameState.activeEpoch] || COSMIC_REGISTRY.universeChronology.epochs[3];
 
-    const targetEra1Act = String(gameState.era1Act || 1);
+    const targetEra1Act = String(gameState.era1?.currentAct || 1);
     if (document.body.getAttribute('data-era1-act') !== targetEra1Act) {
       document.body.setAttribute('data-era1-act', targetEra1Act);
     }
-    const targetEra2Act = String(gameState.era2Act || 1);
+    const targetEra2Act = String(gameState.era2?.currentAct || 1);
     if (document.body.getAttribute('data-era2-act') !== targetEra2Act) {
       document.body.setAttribute('data-era2-act', targetEra2Act);
     }
@@ -1434,11 +1480,16 @@ export const Viewport = {
     if (gameState.activeEpoch === 1) {
       this.setTextContent('label-hydrogen', t('label_quantum_fluctuations'));
       this.setTextContent('count', format(gameState.resources.quantumFluctuations.amount));
-      this.setInnerHTML('auto-rate', `+${format(getQuantumFluctuationRate())}/s`);
+      this.updateResourceDelta('hydrogen', getQuantumFluctuationRate());
 
       this.setTextContent('label-helium', t('label_energy_density'));
       this.setTextContent('helium-count', format(gameState.resources.energyDensity.amount));
-      this.setTextContent('helium-yield', "Temp: " + format(gameState.eraITemperature) + " K");
+      // Energy density doesn't have a direct rate right now, but temperature determines it.
+      // We can just show zero or omit rate.
+      this.updateResourceDelta('helium', new Decimal(0));
+      // We can still display the temperature info somewhere else, or keep it in the name/label?
+      // The plan replaced the helium-yield span with a delta indicator. Let's append the temp to the label instead.
+      this.setTextContent('label-helium', t('label_energy_density') + ` (Temp: ${format(gameState.eraITemperature)} K)`);
 
       const inflationBtn = this.getEl('btn-inflation');
       if (inflationBtn) {
@@ -1461,33 +1512,30 @@ export const Viewport = {
 
       this.setTextContent('label-hydrogen', t('label_primordial_quarks'));
       this.setTextContent('count', format(gameState.resources.quarks.amount));
-      this.setInnerHTML('auto-rate', `+${format(pRates.quarks)}/s`);
+      this.updateResourceDelta('hydrogen', pRates.quarks);
 
       this.setTextContent('label-helium', t('label_primordial_gluons'));
       this.setTextContent('helium-count', format(gameState.resources.gluons.amount));
-      this.setInnerHTML('helium-yield', `+${format(pRates.gluons)}/s`);
+      this.updateResourceDelta('helium', pRates.gluons);
 
       // Asymmetry Bonus indicator (Prio 2)
       const asymBonusPct = ((asymmetryModifier.toNumber() - 1) * 100).toFixed(1);
-      const asymEl = this.getEl('auto-rate');
-      if (asymEl) {
-        this.setInnerHTML(asymEl, `+${format(pRates.quarks)}/s <span style="color:var(--neon-teal);font-size:0.72em;font-weight:700;" title="${t('baryon_asymmetry_tooltip')}">${t('baryon_asymmetry_label', { val: asymBonusPct })}</span>`);
-      }
+      this.setTextContent('label-hydrogen', t('label_primordial_quarks') + ` (Asym: +${asymBonusPct}%)`);
 
       // Update dedicated Era II elements
       this.setTextContent('lepton-count', format(gameState.resources.leptons.amount));
-      this.setInnerHTML('lepton-rate', `+${format(pRates.leptons)}/s`);
+      this.updateResourceDelta('leptons', pRates.leptons);
 
       this.setTextContent('proton-count', format(gameState.resources.protons.amount));
-      this.setInnerHTML('proton-rate', `+${format(protonGainRate)}/s` + (radiatorLevel > 0 ? ` <span style='color:#ff7675'>(-${format(radiatorProtonDrain)})</span>` : ''));
+      this.updateResourceDelta('protons', protonGainRate.minus(radiatorProtonDrain));
 
       this.setTextContent('electron-count', format(gameState.resources.electrons.amount));
       let electronRate = (gameState.plasmaTemperature.lt(500000) && gameState.resources.leptons.amount.gt(0)) ?
         gameState.resources.leptons.amount.div(2).floor() : new Decimal(0);
-      this.setInnerHTML('electron-rate', `+${format(electronRate)}/s`);
+      this.updateResourceDelta('electrons', electronRate);
 
       this.setTextContent('plasma-temp-count', `${format(gameState.plasmaTemperature)} K`);
-      this.setInnerHTML('plasma-temp-rate', pRates.cooling.gt(0) ? `Cooling: -${format(pRates.cooling)} K/s` : `Stable`);
+      this.updateResourceDelta('temperature', pRates.cooling.times(-1));
 
       const recombBtn = this.getEl('btn-recombination');
       if (recombBtn) {
@@ -1506,14 +1554,15 @@ export const Viewport = {
       this.setTextContent('label-helium', t('label_helium'));
 
       this.setTextContent('count', format(gameState.resources.hydrogen.amount));
-      this.setInnerHTML('auto-rate', `+${format(getHydrogenGenRate())}/s`);
+      this.updateResourceDelta('hydrogen', getHydrogenGenRate());
       this.setTextContent('cost', format(gameState.era3.gravityCost));
       this.setTextContent('helium-count', format(gameState.resources.helium.amount));
 
       const stardustBoost = gameState.currencies.stardust.amount.times(0.25).plus(1);
       const baseYieldPerFusion = gameState.era3.fusionYield.times(getFusionSurgeMultiplier());
       const effectiveYieldPerFusion = baseYieldPerFusion.times(stardustBoost);
-      this.setInnerHTML('helium-yield', `Yield: ${format(effectiveYieldPerFusion)}/f`);
+      this.updateResourceDelta('helium', new Decimal(0));
+      this.setTextContent('label-helium', t('label_helium') + ` (Yield: ${format(effectiveYieldPerFusion)}/f)`);
 
       this.setTextContent('temp', format(gameState.era3.temperature));
       this.setTextContent('multiplier', format(gameState.era3.tempMultiplier) + "x");
@@ -1525,14 +1574,16 @@ export const Viewport = {
       if (cBox) cBox.style.opacity = gameState.era3.stage === "Main Sequence Star" ? "1" : "0.3";
 
       const carbonMult = getCarbonGravityMultiplier();
-      this.setTextContent('carbon-boost-container', `Grav: +${format(carbonMult.minus(1).times(100))}%`);
+      this.updateResourceDelta('carbon', new Decimal(0));
+      this.setTextContent('label-carbon', t('label_carbon') + ` (Grav: +${format(carbonMult.minus(1).times(100))}%)`);
 
       let ironMultiplier = gameState.resources.iron.amount.times(COSMIC_REGISTRY.constants.ironHeatCoefficient).plus(1);
       this.setTextContent('iron-count', format(gameState.resources.iron.amount));
       const iBox = this.getEl('iron-box');
       if (iBox) iBox.style.opacity = gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) ? "1" : "0.3";
 
-      this.setTextContent('iron-boost-container', `Heat: +${format(ironMultiplier.minus(1).times(100))}%`);
+      this.updateResourceDelta('iron', new Decimal(0));
+      this.setTextContent('label-iron', t('label_iron') + ` (Heat: +${format(ironMultiplier.minus(1).times(100))}%)`);
 
       this.updateStardustDisplays();
       this.renderStellarNodeButtons();
@@ -1543,17 +1594,17 @@ export const Viewport = {
 
       this.setTextContent('label-hydrogen', t('label_accumulated_hydrogen'));
       this.setTextContent('count', format(gameState.resources.hydrogen.amount));
-      this.setTextContent('auto-rate', "0");
+      this.updateResourceDelta('hydrogen', new Decimal(0));
 
       this.setTextContent('label-helium', t('label_stellar_mass_index'));
       this.setTextContent('helium-count', format(gameState.era4.stellarMassPassiveCount));
-      this.setInnerHTML('helium-yield', "Ticking Background");
+      this.updateResourceDelta('helium', new Decimal(0));
 
       this.setTextContent('debris-count', format(gameState.resources.planetaryDebris.amount));
-      this.setTextContent('debris-rate', format(dRate));
+      this.updateResourceDelta('debris', dRate);
 
       this.setTextContent('darkmatter-count', format(gameState.resources.darkMatter.amount));
-      this.setTextContent('darkmatter-rate', format(dmRate));
+      this.updateResourceDelta('darkmatter', dmRate);
 
       this.setTextContent('galaxy-stability-val', format(gameState.era4.stability) + "%");
       const barFill = this.getEl('stability-bar-fill');

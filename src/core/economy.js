@@ -203,6 +203,7 @@ export function getGalacticDebrisRate() {
   let baseDebris = gameState.era4.planetaryNodes.times(3).plus(gameState.era4.stellarMassPassiveCount.times(0.5));
   let upgradeLevel = gameState.upgrades.galaxy?.elementalInjection?.level || 0;
   let multiplier = new Decimal(2).pow(upgradeLevel);
+  if (gameState.upgrades.galaxy?.quasarIgnition?.level >= 1) multiplier = multiplier.times(1.30);
   let stabilityFactor = gameState.era4.stability.div(100);
   return baseDebris.times(multiplier).times(stabilityFactor).round();
 }
@@ -211,12 +212,18 @@ export function getGalacticDarkMatterRate() {
   if (gameState.activeEpoch !== 4) return new Decimal(0);
   let baseDM = gameState.era4.planetaryNodes.times(1.5);
   let stardustMult = gameState.currencies.stardust.amount.times(0.1).plus(1);
+  if (gameState.upgrades.galaxy?.quasarIgnition?.level >= 1) stardustMult = stardustMult.times(1.30);
   return baseDM.times(stardustMult).round();
 }
 
 export function getGalacticMergeYield() {
   if (gameState.activeEpoch !== 4) return new Decimal(0);
-  return gameState.resources.darkMatter.amount.div(2500).floor().plus(1);
+  let baseYield = gameState.resources.darkMatter.amount.div(2500).floor().plus(1);
+  const clusterLvl = gameState.upgrades.galaxy?.clusterLinks?.level || 0;
+  if (clusterLvl > 0) {
+    baseYield = baseYield.times(1.0 + 0.15 * clusterLvl).floor();
+  }
+  return baseYield;
 }
 
 // ==========================================================================
@@ -226,9 +233,21 @@ export function processEraV(dt) {
   if (gameState.activeEpoch !== 5) return;
   if (gameState.era5.isHeatDeath) return;
 
+  // NEW: Passive Hawking Radiation generation from Hawking Collector upgrades
+  let collectorLvl = gameState.upgrades.era5?.hawkingCollector?.level || 0;
+  if (collectorLvl > 0) {
+    let genPerLevel = COSMIC_REGISTRY.upgrades.era5.hawkingCollector.gen || new Decimal(1);
+    let hrGain = genPerLevel.times(collectorLvl).times(dt);
+    gameState.resources.hawkingRadiation.amount = gameState.resources.hawkingRadiation.amount.plus(hrGain);
+  }
+
   let cMod = 1.0 + (0.12 * (gameState.cosmicConstants?.c || 0));
   let entropyRate = new Decimal(0.5).times(cMod); // 0.5% per second base
   
+  let dampenerLvl = gameState.upgrades.era5?.entropyDampener?.level || 0;
+  if (dampenerLvl > 0) {
+    entropyRate = entropyRate.times(1.0 - (dampenerLvl * 0.05));
+  }
   gameState.era5.entropy += entropyRate.toNumber() * dt;
   if (gameState.era5.entropy >= 100) {
     gameState.era5.entropy = 100;
@@ -242,7 +261,10 @@ export function processEraV(dt) {
   if (infoExtractors > 0 && hr.gte(10)) {
     let toConvert = Math.min(hr.toNumber(), infoExtractors * 10 * dt);
     deduct('hawkingRadiation', toConvert);
-    gameState.currencies.bits.amount = gameState.currencies.bits.amount.plus(toConvert / 10);
+    const coherenceBonus = 1.0 + (gameState.coherence.toNumber() / 100) * 0.5; // up to +50% at 100% Coherence
+    const compressorLvl = gameState.upgrades.era5?.bitCompressor?.level || 0;
+    const compressorMult = Math.pow(1.1, compressorLvl);
+    gameState.currencies.bits.amount = gameState.currencies.bits.amount.plus((toConvert / 10) * coherenceBonus * compressorMult);
   }
 }
 
@@ -345,7 +367,7 @@ export const Economy = {
         () => {
           if (gameState.era3.carbonYield.eq(0)) {
             gameState.era3.carbonYield = new Decimal(1);
-            window.Viewport.showToast("Nucleosynthesis Unlocked: Generating Carbon!");
+            window.Viewport.showToast("Nucleosynthesis Unlocked: Generating Carbon!", "success");
           } else {
             gameState.era3.carbonYield = gameState.era3.carbonYield.plus(1);
             gameState.era3.carbonCostCarbon = gameState.era3.carbonCostCarbon.times(2.5).round();
@@ -358,7 +380,7 @@ export const Economy = {
         () => {
           if (gameState.era3.ironYield.eq(0)) {
             gameState.era3.ironYield = new Decimal(1);
-            window.Viewport.showToast("Heavy Nucleosynthesis: Synthesizing Iron!");
+            window.Viewport.showToast("Heavy Nucleosynthesis: Synthesizing Iron!", "success");
           } else {
             gameState.era3.ironYield = gameState.era3.ironYield.plus(1);
             gameState.era3.ironCostIron = gameState.era3.ironCostIron.times(2.5).round();

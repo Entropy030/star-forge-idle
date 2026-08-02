@@ -17,6 +17,7 @@ export const CanvasCore = (function () {
   const particlePool = [];
   const activeParticles = [];
   const shockwaves = [];
+  const ambientParticles = [];
 
   for (let i = 0; i < MAX_PARTICLES; i++) {
     particlePool.push({
@@ -136,6 +137,53 @@ export const CanvasCore = (function () {
 
     updateAndDrawParticles(ctx);
     updateAndDrawShockwaves(ctx);
+    updateAndDrawAmbientParticles(ctx, width, height, epoch);
+  }
+
+  function spawnAmbientParticle(w, h, epoch) {
+    const isDark = epoch === 5 || epoch === 4;
+    const speed = isDark ? 0.2 : 0.5;
+    const colors = epoch === 1 ? ['#6c5ce7', '#a29bfe'] :
+                   epoch === 2 ? ['#e17055', '#fab1a0'] :
+                   epoch === 3 ? ['#fdcb6e', '#ffeaa7'] :
+                   epoch === 4 ? ['#0984e3', '#74b9ff'] :
+                   ['#d63031', '#ff7675'];
+
+    ambientParticles.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * speed,
+      vy: -Math.random() * speed - 0.1,
+      size: Math.random() * 2 + 1,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      alpha: 0
+    });
+  }
+
+  function updateAndDrawAmbientParticles(ctx, w, h, epoch) {
+    // Spawn rate
+    if (Math.random() < 0.1) spawnAmbientParticle(w, h, epoch);
+
+    for (let i = ambientParticles.length - 1; i >= 0; i--) {
+      let p = ambientParticles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // Fade in/out logic
+      if (p.alpha < 0.6 && p.y > h * 0.2) p.alpha += 0.02;
+      if (p.y < h * 0.2) p.alpha -= 0.02;
+
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+
+      if (p.y < -10 || (p.alpha <= 0 && p.y < h * 0.2)) {
+        ambientParticles.splice(i, 1);
+      }
+    }
+    ctx.globalAlpha = 1.0;
   }
 
   // --- ERA 1: QUANTUM SINGULARITY & BLOOM RINGS ---

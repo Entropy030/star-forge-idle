@@ -182,7 +182,9 @@ export const Timeline = {
   },
 
   galacticMatrix(dt) {
-    gameState.era4.stellarMassPassiveCount = gameState.era4.stellarMassPassiveCount.plus(new Decimal(0.2).times(dt));
+    const smAccelLvl = gameState.upgrades.galaxy?.stellarMassAccelerator?.level || 0;
+    const smMult = 1.0 + (0.25 * smAccelLvl);
+    gameState.era4.stellarMassPassiveCount = gameState.era4.stellarMassPassiveCount.plus(new Decimal(0.2).times(smMult).times(dt));
 
     let dRate = getGalacticDebrisRate().times(dt);
     gameState.resources.planetaryDebris.amount = gameState.resources.planetaryDebris.amount.plus(dRate);
@@ -226,12 +228,7 @@ function gameTick(dt) {
     if (currentQF.gte(10)) gameState.unfold.hasUnlocked10QF = true;
     if (currentQF.gte(100)) gameState.unfold.hasUnlocked100QF = true;
 
-    if (gameState.era1Act < 2 && gameState.unfold.hasUnlocked10QF) {
-      gameState.era1Act = 2;
-    }
-    if (gameState.era1Act < 3 && gameState.unfold.hasUnlocked100QF) {
-      gameState.era1Act = 3;
-    }
+    // Era 1 Act unfolding progression removed from here (handled by ActManager)
   } else if (gameState.activeEpoch === 2) {
     // Era 2 Coherence Equilibrium: high temp (>8M K) slightly drains coherence, cooling (<500k K) recovers it toward 100%
     if (gameState.plasmaTemperature.gt(8000000)) {
@@ -240,21 +237,7 @@ function gameTick(dt) {
       gameState.coherence = Decimal.min(100, gameState.coherence.plus(new Decimal(0.5).times(dt)));
     }
 
-    // Era 2 Act unfolding progression logic
-    if (gameState.era2Act < 2) {
-      if (gameState.resources.quarks.amount.gte(300) || (gameState.upgrades.plasma.quarkCondenser && gameState.upgrades.plasma.quarkCondenser.level >= 3)) {
-        gameState.era2Act = 2;
-      }
-    }
-    if (gameState.era2Act < 3) {
-      if (gameState.plasmaTemperature.lte(5000000) || (gameState.upgrades.plasma.leptonHarvest && gameState.upgrades.plasma.leptonHarvest.level >= 1)) {
-        gameState.era2Act = 3;
-      }
-    }
-
-    if (gameState.plasmaTemperature.lte(3000) && !gameState.era2CoolingNotified) {
-      gameState.era2CoolingNotified = true;
-    }
+    // Era 2 Act unfolding progression removed from here (handled by ActManager)
   } else if (gameState.activeEpoch === 3) {
     // Era 3 Coherence Equilibrium: extreme temp (>1.5B K) causes subtle coherence stress, normal operation recovers it
     if (gameState.era3.temperature.gt(1500000000)) {
@@ -263,25 +246,39 @@ function gameTick(dt) {
       gameState.coherence = Decimal.min(100, gameState.coherence.plus(new Decimal(0.5).times(dt)));
     }
 
-    if (gameState.era3.temperature.gte(500000000) && !gameState.era3CarbonNotified) {
-      gameState.era3CarbonNotified = true;
-    }
-  } else {
-    // Era 4 Stability Integration: Coherence tracks Era 4 Galaxy Stability
+    // Carbon notification flag logic removed (handled narratively or not needed)
+  } else if (gameState.activeEpoch === 4) {
+    // Era 4 Coherence Integration: Coherence tracks Galaxy Stability
     if (gameState.era4 && gameState.era4.stability) {
       gameState.coherence = Decimal.min(100, Decimal.max(0, gameState.era4.stability));
     }
+  } else if (gameState.activeEpoch === 5) {
+    // Era 5 Coherence Integration: Coherence dissolves inversely to rising Entropy
+    const entropyVal = gameState.era5?.entropy || 0;
+    gameState.coherence = Decimal.max(0, new Decimal(100).minus(entropyVal));
   }
   Timeline.process(dt);
 
   // Achievement checks (inline — only need gameState + Viewport)
   if (gameState.resources.iron.amount.gte(1) && !gameState.achievements.firstIron.unlocked) {
     gameState.achievements.firstIron.unlocked = true;
-    Viewport.showToast("Achievement Unlocked: Heavy Metal! (Neon Core Skin active)");
+    Viewport.showToast("Achievement Unlocked: Heavy Metal! (Neon Core Skin active)", "success");
   }
   if (gameState.stats.supernovas.gte(1) && !gameState.achievements.firstSupernova.unlocked) {
     gameState.achievements.firstSupernova.unlocked = true;
-    Viewport.showToast("Achievement Unlocked: Stellar Collapse!");
+    Viewport.showToast("Achievement Unlocked: Stellar Collapse!", "success");
+  }
+  if (gameState.stats.firstGalaxyTriggered && !gameState.achievements.firstGalaxy) {
+    gameState.achievements.firstGalaxy = true;
+    Viewport.showToast("Achievement Unlocked: Galactic Formation!", "success");
+  }
+  if (gameState.stats.firstBlackHoleTriggered && !gameState.achievements.firstBlackHole) {
+    gameState.achievements.firstBlackHole = true;
+    Viewport.showToast("Achievement Unlocked: Event Horizon!", "success");
+  }
+  if (gameState.stats.firstHawkingRadiationTriggered && !gameState.achievements.firstHawkingRadiation) {
+    gameState.achievements.firstHawkingRadiation = true;
+    Viewport.showToast("Achievement Unlocked: Quantum Evaporation!", "success");
   }
 
   // Mission progress (inline)

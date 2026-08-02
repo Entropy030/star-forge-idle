@@ -232,7 +232,8 @@ import { getAIState, runAIAction } from '../main.js';
           if (typeof stabilizeArms === 'function') stabilizeArms();
         }
 
-        if (getResAmount('planetaryDebris').gte(1000)) {
+        let nodeCost = gameState.era4.planetaryNodeCost || new Decimal(1000);
+        if (getResAmount('planetaryDebris').gte(nodeCost)) {
           if (typeof accretePlanetConfiguration === 'function') accretePlanetConfiguration();
         }
 
@@ -244,6 +245,22 @@ import { getAIState, runAIAction } from '../main.js';
             const balance = getAmount(currencyKey);
             if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
               runAIAction({ action: "buy", category: "galaxy", key: key });
+              this.stats.totalUpgradesBought++;
+              boughtSomething = true;
+              break;
+            }
+          }
+        }
+      } else if (epoch === 5 && gameState.era5) {
+        // Era V Strategy: Buy era5 upgrades
+        for (let key in COSMIC_REGISTRY.upgrades.era5) {
+          const upState = gameState.upgrades?.era5?.[key];
+          const def = COSMIC_REGISTRY.upgrades.era5[key];
+          if (upState && def) {
+            const currencyKey = Economy.resolveCurrencyKey('era5', key, def);
+            const balance = getAmount(currencyKey);
+            if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
+              runAIAction({ action: "buy", category: "era5", key: key });
               this.stats.totalUpgradesBought++;
               boughtSomething = true;
               break;

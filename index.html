@@ -131,7 +131,7 @@
     <p class="stage-text coherence-banner">Vacuum Coherence: <span id="coherence-display">0.0%</span></p>
   </header>
 
-  <div id="toast-container" class="toast-hidden"></div>
+  <div id="toast-container" class="toast-stack"></div>
 
   <!-- Developer Sandbox Interface -->
   <div id="dev-matrix" class="dev-matrix-hidden">
@@ -164,66 +164,66 @@
       <div class="resource-box border-blue">
         <h3 id="label-hydrogen">QUANTUM FLUCTUATIONS</h3>
         <h2 id="count">0</h2>
-        <small class="color-blue"><span id="auto-rate">+0/s</span></small>
+        <small id="delta-hydrogen" class="resource-delta">—</small>
       </div>
 
       <div class="resource-box border-purple">
         <h3 id="label-helium">ENERGY DENSITY</h3>
         <h2 id="helium-count">0</h2>
-        <small class="color-purple"><span id="helium-yield">Temp: 0 K</span></small>
+        <small id="delta-helium" class="resource-delta">—</small>
       </div>
 
       <!-- Era II Lepton Generation Tracking Anchor Element -->
       <div id="lepton-box" class="resource-box border-purple era2-only">
         <h3>LEPTONS</h3>
         <h2 id="lepton-count">0</h2>
-        <small class="color-purple"><span id="lepton-rate">+0/s</span></small>
+        <small id="delta-leptons" class="resource-delta">—</small>
       </div>
 
       <!-- Era II Proton Generation -->
       <div id="proton-box" class="resource-box border-orange era2-only">
         <h3>SYNTHESIZED PROTONS</h3>
         <h2 id="proton-count">0</h2>
-        <small class="color-orange"><span id="proton-rate">+0/s</span></small>
+        <small id="delta-protons" class="resource-delta">—</small>
       </div>
 
       <!-- Era II Electron Generation -->
       <div id="electron-box" class="resource-box border-yellow era2-only">
         <h3>FREE ELECTRONS</h3>
         <h2 id="electron-count">0</h2>
-        <small class="color-yellow"><span id="electron-rate">+0/s</span></small>
+        <small id="delta-electrons" class="resource-delta">—</small>
       </div>
 
       <!-- Era II Temperature cooling -->
       <div id="plasma-temp-box" class="resource-box border-red era2-only">
         <h3>PLASMA TEMPERATURE</h3>
         <h2 id="plasma-temp-count">0 K</h2>
-        <small class="color-red"><span id="plasma-temp-rate">Stable</span></small>
+        <small id="delta-temperature" class="resource-delta">—</small>
       </div>
 
       <div id="carbon-box" class="resource-box border-red era3-only">
         <h3>CARBON</h3>
         <h2 id="carbon-count">0</h2>
-        <small class="color-red"><span id="carbon-boost-container">Grav: +0%</span></small>
+        <small id="delta-carbon" class="resource-delta">—</small>
       </div>
 
       <div id="iron-box" class="resource-box border-grey era3-only">
         <h3>IRON</h3>
         <h2 id="iron-count">0</h2>
-        <small class="color-grey"><span id="iron-boost-container">Heat: +0%</span></small>
+        <small id="delta-iron" class="resource-delta">—</small>
       </div>
 
       <!-- Era IV Galactic Accretion Dashboard Targets -->
       <div id="debris-box" class="resource-box border-blue era4-only">
         <h3>PLANETARY DEBRIS</h3>
         <h2 id="debris-count">0</h2>
-        <small class="color-blue"><span id="debris-rate">+0/s</span></small>
+        <small id="delta-debris" class="resource-delta">—</small>
       </div>
 
       <div id="darkmatter-box" class="resource-box border-purple era4-only">
         <h3>DARK MATTER</h3>
         <h2 id="darkmatter-count">0</h2>
-        <small class="color-purple"><span id="darkmatter-rate">+0/s</span></small>
+        <small id="delta-darkmatter" class="resource-delta">—</small>
       </div>
 
       <!-- Era V Dashboard Container -->
@@ -457,6 +457,7 @@
 
       <div class="settings-card">
         <button id="btn-toggle-crt" class="btn-settings-action border-teal">Toggle CRT Retro Overlay: ON</button>
+        <button id="btn-toggle-motion" class="btn-settings-action border-teal">Toggle Reduced Motion: OFF</button>
         <button id="btn-export" class="btn-settings-action border-blue">Export Universe State (Clipboard)</button>
         <div class="import-wrapper">
           <input type="text" id="import-string" placeholder="Paste Base64 Cosmos Data Matrix Here..."
