@@ -515,7 +515,7 @@ function typeWriter(element, text, speed = 25, onComplete = null) {
   }, speed);
 }
 
-export const format = function(dec) {
+export const format = function (dec) {
   if (!(dec instanceof Decimal)) dec = new Decimal(dec);
   if (dec.lt(1e6)) return Math.floor(dec.toNumber()).toLocaleString();
   if (dec.lt(1e9)) return (dec.toNumber() / 1e6).toFixed(2) + " M";
@@ -582,20 +582,47 @@ export const Viewport = {
   setInnerHTML(idOrEl, html) {
     const el = typeof idOrEl === 'string' ? this.getEl(idOrEl) : idOrEl;
     if (!el) return;
+
     const cacheKey = el.id ? `html_${el.id}` : null;
     const str = String(html);
+
     if (cacheKey) {
       if (this.diffCache[cacheKey] === str) return;
       this.diffCache[cacheKey] = str;
     }
+
     if (!str.includes('<')) {
-      if (el.textContent !== str) el.textContent = str;
-    } else {
-      if (el.innerHTML !== str) el.innerHTML = str;
+      if (el.textContent !== str) {
+        el.textContent = str;
+      }
+    } else if (el.innerHTML !== str) {
+      el.innerHTML = str;
     }
   },
 
+  showElement(idOrEl) {
+    const el = typeof idOrEl === 'string'
+      ? this.getEl(idOrEl)
+      : idOrEl;
+
+    if (!el) return;
+
+    el.style.display = '';
+  },
+
+  hideElement(idOrEl) {
+    const el = typeof idOrEl === 'string'
+      ? this.getEl(idOrEl)
+      : idOrEl;
+
+    if (!el) return;
+
+    el.style.display = 'none';
+  },
+
   _coreAnchorCache: null,
+
+
   syncAnchor(force = false) {
     const core = this.getEl('star-core');
     if (!core) return;
@@ -869,7 +896,7 @@ export const Viewport = {
     if (sdSection) sdSection.style.display = gameState.currencies.stardust.amount.gt(0) ? '' : 'none';
     if (plSection) plSection.style.display = (gameState.currencies.pulsarShards.amount.gt(0) || gameState.upgrades.pulsar.autoCompress.level > 0) ? '' : 'none';
     if (sgSection) sgSection.style.display = (gameState.currencies.singularityMass.amount.gt(0) || gameState.upgrades.singularity.darkGravity.level > 0) ? '' : 'none';
-    
+
     const tuningBtn = document.getElementById('btn-open-tuning');
     if (tuningBtn) {
       tuningBtn.style.display = (gameState.activeEpoch === 5 || gameState.currencies.bits.amount.gt(0)) ? 'block' : 'none';
@@ -1507,7 +1534,7 @@ export const Viewport = {
     }
     else if (gameState.activeEpoch === 2) {
       let pRates = getPlasmaRates(gameState);
-      
+
       this.setTextContent('label-hydrogen', t('label_primordial_quarks'));
       this.setTextContent('count', format(gameState.resources.quarks.amount));
       this.updateResourceDelta('hydrogen', pRates.quarksProduction.minus(pRates.quarksConsumption));
@@ -1530,7 +1557,7 @@ export const Viewport = {
 
       this.setTextContent('electron-count', format(gameState.resources.electrons.amount));
       this.updateResourceDelta('electrons', pRates.electronsProduction.minus(pRates.electronsConsumption));
-      
+
       if (gameState.resources.hydrogen.amount.gt(0)) {
         // Just show hydrogen in the generic slots if needed, or if Era II has a slot
         this.setTextContent('carbon-count', format(gameState.resources.hydrogen.amount));
@@ -1656,7 +1683,7 @@ export const Viewport = {
         if (!container.innerHTML.trim()) {
           container.innerHTML = Templates.era5Dashboard;
         }
-        
+
         const entropyFill = this.getEl('entropy-bar-fill');
         const entropyText = this.getEl('entropy-bar-text');
         if (entropyFill) entropyFill.style.width = `${gameState.era5.entropy}%`;
@@ -1672,7 +1699,7 @@ export const Viewport = {
           document.body.insertAdjacentHTML('beforeend', Templates.heatDeathOverlay);
           overlay = this.getEl('heat-death-overlay');
           setTimeout(() => overlay.style.opacity = '1', 50);
-          
+
           this.getEl('btn-big-bounce').addEventListener('click', () => {
             if (window.triggerBigBounce) window.triggerBigBounce();
             overlay.remove();
@@ -1697,7 +1724,7 @@ export const Viewport = {
     if (!list || !bitsDisplay) return;
 
     bitsDisplay.textContent = format(gameState.currencies.bits.amount);
-    
+
     let html = '';
     const tuningReg = COSMIC_REGISTRY.upgrades.tuning;
     for (let key in tuningReg) {
@@ -1706,7 +1733,7 @@ export const Viewport = {
       const cost = typeof def.baseCost === 'function' ? def.baseCost(currentLvl) : new Decimal(def.baseCost).times(Decimal.pow(def.costMult || 2, currentLvl));
       const isMaxed = currentLvl >= def.maxLevel;
       const canAfford = !isMaxed && gameState.currencies.bits.amount.gte(cost);
-      
+
       html += `
         <div class="cosmic-card" style="border-color: #00cec9;">
           <div class="btn-meta">
