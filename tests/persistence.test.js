@@ -10,7 +10,7 @@ describe('Persistence Logic', () => {
     
     // Simulate loading this state
     Object.assign(gameState, savedState);
-    ensureStateShape();
+    ensureStateShape(gameState);
 
     // After ensureStateShape, it should be wrapped in Decimal
     expect(gameState.resources.hydrogen.amount).toBeInstanceOf(global.Decimal);

@@ -3,7 +3,7 @@ import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, t, i18n } from './config/
 import { triggerSupernova } from './core/actions.js';
 import { updateStatsData, recalcTempMultiplier } from './core/economy.js';
 import { spawnFlare, collectFlare } from './core/stellar.js';
-import { getInitialEra3State } from './core/state.js';
+import { getInitialEra3State } from './state/createInitialState.js';
 import { getGalacticMergeYield, getCompressionHeatYield, getCompressionsCompleted, getGalacticDebrisRate } from './core/economy.js';
 import { triggerGalacticMerge, stabilizeArmsAction as stabilizeArms, accretePlanetConfigurationAction as accretePlanetConfiguration, triggerBigBounce } from './core/actions.js';
 import { expireFlare } from './core/stellar.js';
@@ -15,6 +15,7 @@ import { Templates } from './ui/templates.js';
 import { Timeline, gameTick } from './core/timeline.js';
 import { startAutoPlaytest, stopAutoPlaytest, runHeadlessSim, playtestHarness, getTelemetryHistory } from './core/playtestBot.js';
 import { CanvasCore } from './ui/canvasCore.js';
+import { engine } from './engine/instance.js';
 
 // Re-export or attach globals needed by inline HTML (like onclick)
 const Haptics = {
@@ -84,8 +85,8 @@ function checkAchievements() {
     gameState.achievements.firstIron.unlocked = true;
     Viewport.showToast("Achievement Unlocked: Heavy Metal! (Neon Core Skin active)", "success");
   }
-  if (!gameState.achievements.firstBlackHole && gameState.stats.firstBlackHoleTriggered) {
-    gameState.achievements.firstBlackHole = true;
+  if (!gameState.achievements.firstBlackHole.unlocked && gameState.stats.firstBlackHoleTriggered) {
+    gameState.achievements.firstBlackHole.unlocked = true;
     Viewport.showToast("Achievement Unlocked: Stellar Collapse!", "success");
   }
 }
@@ -233,24 +234,16 @@ function triggerInflation() {
 // [SEC-12] PRESTIGE RECOMBINATION SHIFT & CORE REIGNITE MAP
 // ==========================================================================
 function triggerRecombination() {
-  if (!gameState.resources.protons.amount.gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) && !gameState.plasmaTemperature.lte(3000)) {
-    Viewport.showToast(`Requires ${format(COSMIC_REGISTRY.constants.recombinationProtonThreshold)} Protons or cooling below 3,000 K!`, "warning");
+  const result = engine.dispatch({ type: 'TRIGGER_RECOMBINATION' });
+  if (!result.ok) {
+    if (result.error.code === 'PREREQUISITES_NOT_MET') {
+      Viewport.showToast(`Requires ${format(COSMIC_REGISTRY.constants.recombinationProtonThreshold)} Protons or cooling below 3,000 K!`, "warning");
+    }
     return;
   }
 
   startEraTransition(3, "The soup cools below critical recombination thresholds. Free electrons bind to protons, neutralizing the plasma. The universe becomes transparent. Under gravity, the first gas clouds collapse, igniting stellar fusion. We enter the Stellar Dawn.", () => {
-    gameState.activeEpoch = 3;
     document.body.setAttribute('data-epoch', 3);
-
-    let electronBonus = gameState.resources.electrons.amount;
-    let startingHydrogen = gameState.resources.protons.amount.times(1.5).plus(electronBonus).max(250);
-    gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(startingHydrogen);
-
-    if (gameState.resources.antimatterResidue) {
-      let residueGained = gameState.resources.protons.amount.div(1000).clampMin(1).round();
-      gameState.resources.antimatterResidue.amount = gameState.resources.antimatterResidue.amount.plus(residueGained);
-    }
-
     const flashElement = document.createElement('div');
     flashElement.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #fff; z-index: 99999; pointer-events: none; animation: flashEffect 1.5s forwards;";
     document.body.appendChild(flashElement);
@@ -383,44 +376,36 @@ function clickCore(e) {
   }
 
   if (gameState.activeEpoch === 1) {
-    if (!gameState.era1) {
-      gameState.era1 = { currentAct: 1, quantumFoam: 0, vacuumCoherence: 0.0, unfoldCount: 0 };
+    const result = engine.dispatch({ type: 'CLICK_CORE' });
+    if (result.ok) {
+      const clickEvent = result.events.find(ev => ev.type === 'CORE_CLICKED');
+      if (clickEvent) {
+        spawnFloatingText(`+${format(new Decimal(clickEvent.gain))} Fluctuations`, 'var(--neon-teal)', e);
+      }
     }
-    gameState.era1.unfoldCount = (gameState.era1.unfoldCount || 0) + 1;
-    if (gameState.era1.vacuumCoherence < 1.0) {
-      let cMod = 1.0 - (0.08 * (gameState.cosmicConstants?.c || 0));
-      gameState.era1.vacuumCoherence = Math.min(1.0, (gameState.era1.vacuumCoherence || 0) + (0.10 * cMod));
-    }
-    let mult = getCardMultiplier("hydrogenGen");
-    let gain = new Decimal(1).times(mult);
-    gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(gain);
-    gameState.era1.quantumFoam = gameState.resources.quantumFluctuations.amount.toNumber();
-    if (!gameState.unfold) gameState.unfold = {};
-    if (gameState.resources.quantumFluctuations.amount.gte(1)) gameState.unfold.hasUnlocked1QF = true;
-    if (gameState.resources.quantumFluctuations.amount.gte(10)) gameState.unfold.hasUnlocked10QF = true;
-    if (gameState.resources.quantumFluctuations.amount.gte(100)) gameState.unfold.hasUnlocked100QF = true;
-    spawnFloatingText(`+${format(gain)} Fluctuations`, 'var(--neon-teal)', e);
   }
   else if (gameState.activeEpoch === 2) {
-    let asymmetry = getBaryonAsymmetryMultiplier();
-    let quarkGain = new Decimal(3).times(asymmetry);
-    let gluonGain = new Decimal(2).times(asymmetry);
-
-    gameState.resources.quarks.amount = gameState.resources.quarks.amount.plus(quarkGain);
-    gameState.resources.gluons.amount = gameState.resources.gluons.amount.plus(gluonGain);
-
-    spawnFloatingText(`+${format(quarkGain)} Quarks`, '#ff7675', e, -30);
-    spawnFloatingText(`+${format(gluonGain)} Gluons`, '#ffeaa7', e, 30);
+    const result = engine.dispatch({ type: 'CLICK_CORE_ERA2' });
+    if (result.ok) {
+      const clickEvent = result.events.find(ev => ev.type === 'CORE_CLICKED');
+      if (clickEvent) {
+        spawnFloatingText(`+${format(new Decimal(clickEvent.quarkGain))} Quarks`, '#ff7675', e, -30);
+        spawnFloatingText(`+${format(new Decimal(clickEvent.gluonGain))} Gluons`, '#ffeaa7', e, 30);
+      }
+    }
   }
   else if (gameState.activeEpoch === 3) {
-    gameState.era3.temperature = gameState.era3.temperature.plus(10000);
-    recalcTempMultiplier();
-    updateStatsData();
-    spawnFloatingText(`+10,000 K`, '#fdcb6e', e);
+    const result = engine.dispatch({ type: 'CLICK_CORE_ERA3' });
+    if (result.ok) {
+      spawnFloatingText(`+10,000 K`, '#fdcb6e', e);
+      updateStatsData(); // TODO: move to subscriber
+    }
   }
   else if (gameState.activeEpoch === 4) {
-    gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(50);
-    spawnFloatingText(`+50 Hydrogen`, '#0984e3', e);
+    const result = engine.dispatch({ type: 'CLICK_CORE_ERA4' });
+    if (result.ok) {
+      spawnFloatingText(`+50 Hydrogen`, '#0984e3', e);
+    }
   }
 
   if (gameState.artifacts && gameState.artifacts.modifiers && gameState.artifacts.modifiers.clickPassiveBoost > 0) {
@@ -433,10 +418,7 @@ function clickCore(e) {
 
 function togglePlasmaFuser() {
   initAudio();
-  if (gameState.era2) {
-    gameState.era2.plasmaFusersEnabled = !gameState.era2.plasmaFusersEnabled;
-    window.protonFusionAccumulator = 0;
-  }
+  engine.dispatch({ type: 'TOGGLE_FUSER' });
 }
 
 // ==========================================================================

@@ -4,7 +4,8 @@
 const Haptics = window.Haptics;
 import { saveGame } from './state.js';
 // ==========================================================================
-import { gameState } from './state.js';
+/* eslint-disable import/no-cycle */
+import { gameState, isDirty, setIsDirty } from './state.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 export function updateStatsData() {
   if (gameState.era3 && gameState.era3.temperature.gt(gameState.stats.maxTemp)) {
@@ -233,10 +234,10 @@ export function getGalacticDarkMatterRate() {
   return baseDM.times(stardustMult).round();
 }
 
-export function getGalacticMergeYield() {
-  if (gameState.activeEpoch !== 4) return new Decimal(0);
-  let baseYield = gameState.resources.darkMatter.amount.div(2500).floor().plus(1);
-  const clusterLvl = gameState.upgrades.galaxy?.clusterLinks?.level || 0;
+export function getGalacticMergeYield(state = gameState) {
+  if (state.activeEpoch !== 5 && state.activeEpoch !== 4) return new Decimal(0);
+  let baseYield = state.resources.darkMatter.amount.div(2500).floor().plus(1);
+  const clusterLvl = state.upgrades.galaxy?.clusterLinks?.level || 0;
   if (clusterLvl > 0) {
     baseYield = baseYield.times(1.0 + 0.15 * clusterLvl).floor();
   }
@@ -294,8 +295,42 @@ export const Economy = {
     const loops = getBuyLoopCount();
 
     if (category === 'core') {
-      this.buyCoreNodes(key, loops);
-      this.refreshUI();
+      import('../engine/instance.js').then(({ engine }) => {
+        engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key, loops } });
+        this.refreshUI();
+      });
+      return;
+    }
+
+    if (category === 'quantum') {
+      import('../engine/instance.js').then(({ engine }) => {
+        engine.dispatch({ type: 'BUY_UPGRADE', payload: { category, upgradeId: key, loops } });
+        this.refreshUI();
+      });
+      return;
+    }
+
+    if (category === 'plasma') {
+      import('../engine/instance.js').then(({ engine }) => {
+        engine.dispatch({ type: 'BUY_UPGRADE_PLASMA', payload: { category, upgradeId: key, loops } });
+        this.refreshUI();
+      });
+      return;
+    }
+
+    if (category === 'galaxy') {
+      import('../engine/instance.js').then(({ engine }) => {
+        engine.dispatch({ type: 'BUY_UPGRADE_GALAXY', payload: { category, upgradeId: key, loops } });
+        this.refreshUI();
+      });
+      return;
+    }
+
+    if (category === 'era5') {
+      import('../engine/instance.js').then(({ engine }) => {
+        engine.dispatch({ type: 'BUY_UPGRADE_ERA5', payload: { category, upgradeId: key, loops } });
+        this.refreshUI();
+      });
       return;
     }
 

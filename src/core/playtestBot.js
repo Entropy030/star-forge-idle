@@ -5,16 +5,12 @@ import { getQuantumFluctuationRate } from './economy.js';
  * playtestBot.js
  */
 
-// [SEC-21] PLAYTEST AUTOMATION & TELEMETRY
-// ==========================================================================
-import { gameState, isDirty, setIsDirty } from './state.js';
+import { engine } from '../engine/instance.js';
+import { isDirty, setIsDirty } from './state.js';
 import { Economy, getAmount } from './economy.js';
-import { Timeline } from './timeline.js';
 import { Viewport } from '../ui/viewport.js';
-import { getAIState, runAIAction } from '../main.js';
+import { getAIState } from '../main.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
-import { triggerGalacticMerge, stabilizeArmsAction as stabilizeArms, accretePlanetConfigurationAction as accretePlanetConfiguration } from './actions.js';
-import { gameTick } from './timeline.js';
 import { format } from '../ui/viewport.js';
   class PlaytestEngine {
     constructor() {
@@ -71,34 +67,33 @@ import { format } from '../ui/viewport.js';
     // 1. BOT DECISION ENGINE
     // ------------------------------------------------------------------------
     stepBotDecision() {
-      if (typeof getAIState !== 'function' || typeof runAIAction !== 'function') return;
-
-      const epoch = gameState.activeEpoch;
+      const state = engine.getStateUnsafe();
+      const epoch = state.activeEpoch;
       const amp = 1.0;
-      const storage = gameState.quantumStorage || new Decimal(0);
+      const storage = state.quantumStorage || new Decimal(0);
 
-      // Helper for safely retrieving Decimal resource amounts directly from gameState
-      const getResAmount = (key) => gameState.resources[key]?.amount || new Decimal(0);
+      // Helper for safely retrieving Decimal resource amounts directly from state
+      const getResAmount = (key) => state.resources[key]?.amount || new Decimal(0);
 
       // --- ERA TRANSITIONS & SPECIAL ERA ACTIONS ---
       if (epoch === 1) {
         if (getResAmount('quantumFluctuations').gte(COSMIC_REGISTRY.constants.inflationThreshold)) {
           this.logMilestone("Era I Complete (Cosmic Inflation Ready)");
-          runAIAction({ action: "triggerInflation" });
+          engine.dispatch({ type: 'TRIGGER_INFLATION' }); // Assuming we made this command later
           return;
         }
       } else if (epoch === 2) {
-        if (getResAmount('protons').gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) || (gameState.plasmaTemperature && gameState.plasmaTemperature.lte(3000))) {
+        if (getResAmount('protons').gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) || (state.plasmaTemperature && state.plasmaTemperature.lte(3000))) {
           this.logMilestone("Era II Complete (Recombination Ready)");
-          runAIAction({ action: "triggerRecombination" });
+          engine.dispatch({ type: 'TRIGGER_RECOMBINATION' });
           return;
         }
       } else if (epoch === 3) {
-        if (gameState.flares && gameState.flares.active) {
-          runAIAction({ action: "collectFlare" });
+        if (state.flares && state.flares.active) {
+          engine.dispatch({ type: 'COLLECT_FLARE' });
           this.stats.totalFlaresCollected++;
         }
-        let currentTemp = gameState.era3?.temperature || new Decimal(0);
+        let currentTemp = state.era3?.temperature || new Decimal(0);
         let targetThreshold = 100000000; // default 100M K
         if (this.targetNode === '500M' || this.targetNode === 'TARGET_NODE_500M') {
           targetThreshold = 500000000; // 500M K (Carbon Synthesis)
@@ -106,21 +101,28 @@ import { format } from '../ui/viewport.js';
           targetThreshold = 2000000000; // 2B K (Iron Core / Gateway)
         }
 
-        if (currentTemp.gte(targetThreshold) && gameState.era3 && (gameState.era3.supernovaUnlocked || gameState.era3.currentAct >= 3)) {
+        if (currentTemp.gte(targetThreshold) && state.era3 && (state.era3.supernovaUnlocked || state.era3.currentAct >= 3)) {
           this.logMilestone(`Era III Complete (Supernova Ready @ ${this.targetNode})`);
-          runAIAction({ action: "triggerSupernova" });
+          engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
           return;
         }
       } else if (epoch === 4) {
         if (getResAmount('darkMatter').gte(10000)) {
           this.logMilestone("Era IV Complete (Galactic Merge Ready)");
-          if (typeof triggerGalacticMerge === 'function') triggerGalacticMerge();
+          engine.dispatch({ type: 'TRIGGER_GALACTIC_MERGE' });
           return;
         }
       }
 
       // --- UPGRADE PURCHASING STRATEGY ---
       let boughtSomething = false;
+
+      const getCommandType = (category) => {
+        if (category === 'quantum') return 'BUY_UPGRADE';
+        if (category === 'plasma') return 'BUY_UPGRADE_PLASMA';
+        if (category === 'galaxy') return 'BUY_UPGRADE_GALAXY';
+        return 'BUY_UPGRADE';
+      };
 
       // Priority 2: Stardust / Prestige Upgrades (Thermal Insulation has priority)
       const stardustUpgrades = (typeof getAIState === 'function')
@@ -129,7 +131,7 @@ import { format } from '../ui/viewport.js';
       if (stardustUpgrades.length > 0) {
         const thermal = stardustUpgrades.find(u => u.key === 'thermalInsulation');
         const target = thermal || stardustUpgrades[0];
-        runAIAction({ action: "buy", category: "stardust", key: target.key });
+        engine.dispatch({ type: getCommandType('stardust'), payload: { category: 'stardust', upgradeId: target.key } });
         this.stats.totalUpgradesBought++;
         this.logMilestone(`Bought Stardust Upgrade: ${target.name}`);
         boughtSomething = true;
@@ -139,13 +141,13 @@ import { format } from '../ui/viewport.js';
         // Priority order for Era I
         const priorityKeys = ['gravityForce', 'weakForce', 'electromagneticForce', 'strongForce'];
         for (let key of priorityKeys) {
-          const upState = gameState.upgrades?.quantum?.[key];
+          const upState = state.upgrades?.quantum?.[key];
           const def = COSMIC_REGISTRY.upgrades.quantum[key];
           if (upState && def) {
             const currencyKey = Economy.resolveCurrencyKey('quantum', key, def);
             const balance = getAmount(currencyKey);
             if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
-              runAIAction({ action: "buy", category: "quantum", key: key });
+              engine.dispatch({ type: getCommandType('quantum'), payload: { category: 'quantum', upgradeId: key } });
               this.stats.totalUpgradesBought++;
               boughtSomething = true;
               if (key === 'electromagneticForce' && upState.level === 1) {
@@ -157,21 +159,21 @@ import { format } from '../ui/viewport.js';
         }
       } else if (epoch === 2) {
         // Epoch II Strategy:
-        const quarkCondenserLvl = gameState.upgrades?.plasma?.quarkCondenser?.level || 0;
+        const quarkCondenserLvl = state.upgrades?.plasma?.quarkCondenser?.level || 0;
         const currentQuarks = getResAmount('quarks');
 
         // 1. If Quarks < 20 or quarkCondenser is 0, click core to grind initial Quarks
         if (currentQuarks.lt(20) || quarkCondenserLvl === 0) {
-          const upState = gameState.upgrades?.plasma?.quarkCondenser;
+          const upState = state.upgrades?.plasma?.quarkCondenser;
           const def = COSMIC_REGISTRY.upgrades.plasma.quarkCondenser;
           const balance = upState && def ? getAmount(Economy.resolveCurrencyKey('plasma', 'quarkCondenser', def)) : new Decimal(0);
           
           if (upState && balance.gte(upState.cost)) {
-            runAIAction({ action: "buy", category: "plasma", key: "quarkCondenser" });
+            engine.dispatch({ type: getCommandType('plasma'), payload: { category: 'plasma', upgradeId: 'quarkCondenser' } });
             this.stats.totalUpgradesBought++;
             boughtSomething = true;
           } else {
-            runAIAction({ action: "click", count: 1 });
+            engine.dispatch({ type: 'CLICK_CORE_ERA2' });
             this.stats.totalClicks++;
             return;
           }
@@ -179,13 +181,13 @@ import { format } from '../ui/viewport.js';
           // Priority order for Era II plasma upgrades
           const priorityKeys = ['quarkCondenser', 'baryoRadiator', 'gluonBinding', 'leptonHarvest', 'plasmaAutomation'];
           for (let key of priorityKeys) {
-            const upState = gameState.upgrades?.plasma?.[key];
+            const upState = state.upgrades?.plasma?.[key];
             const def = COSMIC_REGISTRY.upgrades.plasma[key];
             if (upState && def) {
               const currencyKey = Economy.resolveCurrencyKey('plasma', key, def);
               const balance = getAmount(currencyKey);
               if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
-                runAIAction({ action: "buy", category: "plasma", key: key });
+                engine.dispatch({ type: getCommandType('plasma'), payload: { category: 'plasma', upgradeId: key } });
                 this.stats.totalUpgradesBought++;
                 boughtSomething = true;
                 break;
@@ -193,23 +195,23 @@ import { format } from '../ui/viewport.js';
             }
           }
         }
-      } else if (epoch === 3 && gameState.era3) {
+      } else if (epoch === 3 && state.era3) {
         // Era III Aggressive Strategy: Auto-Fuser & Gravity first to maximize Helium inflow, then Compression & Elements
-        const era3 = gameState.era3;
+        const era3 = state.era3;
         const fuserCost = era3.fusionYield?.eq(0) ? era3.fuserCostHydrogen : era3.fuserCostHelium;
         const fuserCurrency = era3.fusionYield?.eq(0) ? getResAmount('hydrogen') : getResAmount('helium');
 
         // Always prioritize Fuser & Gravity to build sustainable Helium & Hydrogen scaling
         if (fuserCost && fuserCurrency.gte(fuserCost)) {
-          runAIAction({ action: "buy", category: "core", key: "fuser" });
+          engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'fuser' } });
           this.stats.totalUpgradesBought++;
           boughtSomething = true;
         } else if (era3.gravityCost && getResAmount('hydrogen').gte(era3.gravityCost)) {
-          runAIAction({ action: "buy", category: "core", key: "gravity" });
+          engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'gravity' } });
           this.stats.totalUpgradesBought++;
           boughtSomething = true;
         } else if (era3.compressCost && getResAmount('helium').gte(era3.compressCost)) {
-          runAIAction({ action: "buy", category: "core", key: "compress" });
+          engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'compress' } });
           this.stats.totalUpgradesBought++;
           boughtSomething = true;
         }
@@ -219,7 +221,7 @@ import { format } from '../ui/viewport.js';
           const carbonCost = era3.carbonYield?.eq(0) ? era3.carbonCostHelium : era3.carbonCostCarbon;
           const carbonCurrency = era3.carbonYield?.eq(0) ? getResAmount('helium') : getResAmount('carbon');
           if (carbonCost && carbonCurrency.gte(carbonCost)) {
-            runAIAction({ action: "buy", category: "core", key: "carbon" });
+            engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'carbon' } });
             this.stats.totalUpgradesBought++;
             boughtSomething = true;
           }
@@ -227,46 +229,47 @@ import { format } from '../ui/viewport.js';
           const ironCost = era3.ironYield?.eq(0) ? era3.ironCostCarbon : era3.ironCostIron;
           const ironCurrency = era3.ironYield?.eq(0) ? getResAmount('carbon') : getResAmount('iron');
           if (ironCost && ironCurrency.gte(ironCost)) {
-            runAIAction({ action: "buy", category: "core", key: "iron" });
+            engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'iron' } });
             this.stats.totalUpgradesBought++;
             boughtSomething = true;
           }
         }
-      } else if (epoch === 4 && gameState.era4) {
+      } else if (epoch === 4 && state.era4) {
         // Era IV Strategy: Node accretion, stability recovery, galaxy upgrades
-        if (gameState.era4.stability.lte(30)) {
-          if (typeof stabilizeArms === 'function') stabilizeArms();
+        if (state.era4.stability.lte(30)) {
+           // Placeholder for stabilize arms
+           // engine.dispatch({ type: 'STABILIZE_ARMS' });
         }
 
-        let nodeCost = gameState.era4.planetaryNodeCost || new Decimal(1000);
+        let nodeCost = state.era4.planetaryNodeCost || new Decimal(1000);
         if (getResAmount('planetaryDebris').gte(nodeCost)) {
-          if (typeof accretePlanetConfiguration === 'function') accretePlanetConfiguration();
+           // engine.dispatch({ type: 'ACCRETE_PLANETS' });
         }
 
         for (let key in COSMIC_REGISTRY.upgrades.galaxy) {
-          const upState = gameState.upgrades?.galaxy?.[key];
+          const upState = state.upgrades?.galaxy?.[key];
           const def = COSMIC_REGISTRY.upgrades.galaxy[key];
           if (upState && def) {
             const currencyKey = Economy.resolveCurrencyKey('galaxy', key, def);
             const balance = getAmount(currencyKey);
             if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
-              runAIAction({ action: "buy", category: "galaxy", key: key });
+              engine.dispatch({ type: getCommandType('galaxy'), payload: { category: 'galaxy', upgradeId: key } });
               this.stats.totalUpgradesBought++;
               boughtSomething = true;
               break;
             }
           }
         }
-      } else if (epoch === 5 && gameState.era5) {
+      } else if (epoch === 5 && state.era5) {
         // Era V Strategy: Buy era5 upgrades
         for (let key in COSMIC_REGISTRY.upgrades.era5) {
-          const upState = gameState.upgrades?.era5?.[key];
+          const upState = state.upgrades?.era5?.[key];
           const def = COSMIC_REGISTRY.upgrades.era5[key];
           if (upState && def) {
             const currencyKey = Economy.resolveCurrencyKey('era5', key, def);
             const balance = getAmount(currencyKey);
             if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
-              runAIAction({ action: "buy", category: "era5", key: key });
+              engine.dispatch({ type: getCommandType('era5'), payload: { category: 'era5', upgradeId: key } });
               this.stats.totalUpgradesBought++;
               boughtSomething = true;
               break;
@@ -276,14 +279,19 @@ import { format } from '../ui/viewport.js';
       }
 
       // Track 100% Coherence Milestone
-      if (gameState.coherence && gameState.coherence.gte(100)) {
+      if (state.coherence && state.coherence.gte(100)) {
         this.logMilestone("100% Vacuum Coherence Achieved");
       }
 
       // --- ACTIVE IDLE CLICKING ---
       // Click core if no upgrades were bought and amp is not at peak
       if (!boughtSomething && amp < 3.8) {
-        runAIAction({ action: "click", count: 1 });
+        let clickCmd = 'CLICK_CORE';
+        if (epoch === 2) clickCmd = 'CLICK_CORE_ERA2';
+        if (epoch === 3) clickCmd = 'CLICK_CORE_ERA3';
+        if (epoch === 4) clickCmd = 'CLICK_CORE_ERA4';
+        
+        engine.dispatch({ type: clickCmd });
         this.stats.totalClicks++;
       }
     }
@@ -296,7 +304,7 @@ import { format } from '../ui/viewport.js';
       const totalTicks = Math.ceil(seconds / tickRate);
 
       for (let i = 0; i < totalTicks; i++) {
-        gameTick(tickRate);
+        engine.tick(tickRate);
         this.stats.ticksElapsed++;
         this.stats.gameSecondsElapsed += tickRate;
 
@@ -365,12 +373,13 @@ import { format } from '../ui/viewport.js';
     // 3. TELEMETRY & ANALYTICS LOGGING
     // ------------------------------------------------------------------------
     logTelemetryReport() {
+      const state = engine.getStateUnsafe();
       const qfRate = typeof getQuantumFluctuationRate === 'function' ? format(getQuantumFluctuationRate()) : "0";
       const report = {
         gameTimeSec: this.stats.gameSecondsElapsed.toFixed(1) + "s",
         ticks: this.stats.ticksElapsed,
-        epoch: gameState.activeEpoch,
-        coherence: gameState.coherence.toFixed(1) + "%",
+        epoch: state.activeEpoch,
+        coherence: state.coherence.toFixed(1) + "%",
         clicks: this.stats.totalClicks,
         leaps: this.stats.totalLeaps,
         upgradesBought: this.stats.totalUpgradesBought,

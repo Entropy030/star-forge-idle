@@ -40,5 +40,29 @@ export default [
       'no-unused-vars': 'off',
       'import/no-cycle': ['error', { maxDepth: '∞' }]
     }
+  },
+  {
+    files: ['src/engine/**/*.js', 'src/state/**/*.js', 'src/eras/**/*.js', 'src/systems/**/*.js'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        'window',
+        'document',
+        'localStorage',
+        'sessionStorage',
+        'setTimeout',
+        'setInterval',
+        'clearTimeout',
+        'clearInterval',
+        'requestAnimationFrame',
+        'cancelAnimationFrame',
+        'Date', // Should use injected clock/now
+        'performance',
+        'alert',
+        'confirm',
+        'prompt',
+        'CustomEvent'
+      ]
+    }
   }
 ];

@@ -1,5 +1,5 @@
 // [SEC-05] VISUAL FORMATTING & AUDIO HELPER ENGINES
-import { getInitialEra2State } from '../core/state.js';
+import { getInitialEra2State } from '../state/createInitialState.js';
 import { getPlasmaPassiveRates, getBaryonAsymmetryMultiplier, getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, getGalacticDarkMatterRate, getGalacticMergeYield, getCompressionsCompleted } from '../core/economy.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 // ==========================================================================
