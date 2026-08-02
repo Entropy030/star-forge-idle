@@ -1,8 +1,11 @@
 // [SEC-15] TIME LOOP & EPOCH CHUNK SIMULATION// [SEC-06] CORE PHYSICS & SIMULATION LOOP
+import { updateStatsData, recalcTempMultiplier } from './economy.js';
+import { spawnFlare, expireFlare } from './stellar.js';
+let autoCompressAccumulator = 0;
+let flareSimSuppressed = false;
 // ==========================================================================
 import { gameState } from './state.js';
 import { Economy, getAmount, getCompressionScaling, processEraV, getQuantumFluctuationRate, getEnergyDensityRate, getPlasmaPassiveRates, getBaryonAsymmetryMultiplier, getProtonFusionCap, getHydrogenGenRate, getBuyLoopCount, getFusionCost, getFusionSurgeMultiplier, getCompressionHeatYield, getGalacticDebrisRate, getGalacticDarkMatterRate } from './economy.js';
-import { Viewport } from '../ui/viewport.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 
 export const Timeline = {
@@ -259,26 +262,26 @@ function gameTick(dt) {
   }
   Timeline.process(dt);
 
-  // Achievement checks (inline — only need gameState + Viewport)
-  if (gameState.resources.iron.amount.gte(1) && !gameState.achievements.firstIron.unlocked) {
+  // Achievement checks (inline — only need gameState + events)
+  if (gameState.resources.iron && gameState.resources.iron.amount.gte(1) && !gameState.achievements.firstIron.unlocked) {
     gameState.achievements.firstIron.unlocked = true;
-    Viewport.showToast("Achievement Unlocked: Heavy Metal! (Neon Core Skin active)", "success");
+    window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: "Achievement Unlocked: Heavy Metal! (Neon Core Skin active)" }));
   }
   if (gameState.stats.supernovas.gte(1) && !gameState.achievements.firstSupernova.unlocked) {
     gameState.achievements.firstSupernova.unlocked = true;
-    Viewport.showToast("Achievement Unlocked: Stellar Collapse!", "success");
+    window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: "Achievement Unlocked: Stellar Collapse!" }));
   }
-  if (gameState.stats.firstGalaxyTriggered && !gameState.achievements.firstGalaxy) {
-    gameState.achievements.firstGalaxy = true;
-    Viewport.showToast("Achievement Unlocked: Galactic Formation!", "success");
+  if (gameState.stats.firstGalaxyTriggered && !gameState.achievements.firstGalaxy.unlocked) {
+    gameState.achievements.firstGalaxy.unlocked = true;
+    window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: "Achievement Unlocked: Galactic Formation!" }));
   }
-  if (gameState.stats.firstBlackHoleTriggered && !gameState.achievements.firstBlackHole) {
-    gameState.achievements.firstBlackHole = true;
-    Viewport.showToast("Achievement Unlocked: Event Horizon!", "success");
+  if (gameState.stats.firstBlackHoleTriggered && !gameState.achievements.firstBlackHole.unlocked) {
+    gameState.achievements.firstBlackHole.unlocked = true;
+    window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: "Achievement Unlocked: Event Horizon!" }));
   }
-  if (gameState.stats.firstHawkingRadiationTriggered && !gameState.achievements.firstHawkingRadiation) {
-    gameState.achievements.firstHawkingRadiation = true;
-    Viewport.showToast("Achievement Unlocked: Quantum Evaporation!", "success");
+  if (gameState.stats.firstHawkingRadiationTriggered && !gameState.achievements.firstHawkingRadiation.unlocked) {
+    gameState.achievements.firstHawkingRadiation.unlocked = true;
+    window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: "Achievement Unlocked: Quantum Evaporation!" }));
   }
 
   // Mission progress (inline)
@@ -306,4 +309,4 @@ function gameTick(dt) {
 
 export { gameTick };
 
-// ==========================================================================
+// ==========================================================================

@@ -1,12 +1,10 @@
 // [SEC-03] ENGINE STATE ENGINE INITIALIZATION TREE
 // ==========================================================================
 import { COSMIC_REGISTRY } from '../config/registry.js';
-import { Viewport } from '../ui/viewport.js';
-import { Timeline } from './timeline.js';
 
 const SAVE_VERSION = 15;
 
-function getInitialEra2State() {
+export function getInitialEra2State() {
   return {
     currentAct: 1,
     starlightEnergy: 0,
@@ -15,7 +13,7 @@ function getInitialEra2State() {
   };
 }
 
-function getInitialEra3State() {
+export function getInitialEra3State() {
   return {
     gravity: new Decimal(1),
     gravityCost: new Decimal(10),
@@ -441,8 +439,6 @@ export const loadGame = function() {
     const elapsedSec = Math.max(0, (Date.now() - lastSaved) / 1000);
     if (elapsedSec > 5) {
       const offlineSec = Math.min(elapsedSec, 43200); // capped at 12 hours max
-      Timeline.process(offlineSec);
-
       const hrs = Math.floor(offlineSec / 3600);
       const mins = Math.floor((offlineSec % 3600) / 60);
       const secs = Math.floor(offlineSec % 60);
@@ -451,10 +447,9 @@ export const loadGame = function() {
       if (mins > 0 || hrs > 0) timeStr += `${mins}m `;
       timeStr += `${secs}s`;
 
-      setTimeout(() => {
-        Viewport.showToast(`✨ WELCOME BACK: Universe simulated ${timeStr} of offline cosmic progression!`, "info");
-      }, 500);
+      return { offlineSec, offlineTimeStr: timeStr };
     }
+    return { offlineSec: 0, offlineTimeStr: null };
   } catch (e) {
     console.error("Failed to load save:", e);
     ensureStateShape();
@@ -469,14 +464,15 @@ export const exportSave = function() {
   let rawData = localStorage.getItem('starForgeSave_v15');
   if (rawData) {
     let encoded = btoa(rawData);
-    navigator.clipboard.writeText(encoded).then(() => Viewport.showToast("Universe encrypted to clipboard!", "success"))
-      .catch(() => Viewport.showToast("Clipboard write permission blocked.", "warning"));
+    return navigator.clipboard.writeText(encoded)
+      .then(() => ({ success: true, message: "Universe encrypted to clipboard!" }))
+      .catch(() => ({ success: false, message: "Clipboard write permission blocked." }));
   }
+  return Promise.resolve({ success: false, message: "No save data found." });
 }
 
-export const importSave = function() {
-  let input = document.getElementById('import-string').value.trim();
-  if (!input) return;
+export const importSave = function(input) {
+  if (!input) return { success: false, message: "No input provided." };
   try {
     let decoded = atob(input);
     let parsed = JSON.parse(decoded);
@@ -488,12 +484,12 @@ export const importSave = function() {
         });
         ensureStateShape();
         localStorage.setItem('starForgeSave_v15', decoded);
-        location.reload();
+        return { success: true };
       } finally {
         gameState = temp;
       }
-    } else { Viewport.showToast("Unsupported timeline formatting configuration.", "warning"); }
-  } catch (e) { Viewport.showToast("Fatal transmission verification corruption.", "critical"); }
+    } else { return { success: false, message: "Unsupported timeline formatting configuration." }; }
+  } catch (e) { return { success: false, message: "Fatal transmission verification corruption." }; }
 }
 
 export function wipeSave() {
@@ -506,4 +502,4 @@ export function wipeSave() {
   }
 }
 
-// ==========================================================================
+// ==========================================================================

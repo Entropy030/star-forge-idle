@@ -1,4 +1,13 @@
+/* eslint-disable import/no-cycle */
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, t, i18n } from './config/registry.js';
+import { triggerSupernova } from './core/actions.js';
+import { updateStatsData, recalcTempMultiplier } from './core/economy.js';
+import { spawnFlare, collectFlare } from './core/stellar.js';
+import { getInitialEra3State } from './core/state.js';
+import { getGalacticMergeYield, getCompressionHeatYield, getCompressionsCompleted, getGalacticDebrisRate } from './core/economy.js';
+import { triggerGalacticMerge, stabilizeArmsAction as stabilizeArms, accretePlanetConfigurationAction as accretePlanetConfiguration, triggerBigBounce } from './core/actions.js';
+import { expireFlare } from './core/stellar.js';
+let flareSimSuppressed = false;
 import { gameState, setGameState, isDirty, setIsDirty, saveGame, exportSave, importSave, wipeSave, ensureStateShape, getInitialGameState, deserializeState, loadGame, serializeState } from './core/state.js';
 import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, deduct, getStardustYield, getPulsarShardYield, getSingularityMassYield, getCardMultiplier, getBaryonAsymmetryMultiplier } from './core/economy.js';
 import { ArtifactManager, Viewport, format, ActManager, initAudio, playSupernovaSound, showIntroScreenCinematic, startEraTransition } from './ui/viewport.js';
@@ -69,11 +78,6 @@ if (typeof Decimal !== 'undefined') {
 // ==========================================================================
 // [SEC-09] GLOBAL METRICS & PROGRESSION TRACKERS
 // ==========================================================================
-function updateStatsData() {
-  if (gameState.era3.temperature.gt(gameState.stats.maxTemp)) {
-    gameState.stats.maxTemp = gameState.era3.temperature;
-  }
-}
 
 function checkAchievements() {
   if (gameState.resources.iron.amount.gte(1) && !gameState.achievements.firstIron.unlocked) {
@@ -257,107 +261,7 @@ function triggerRecombination() {
   });
 }
 
-function triggerSupernova() {
-  if (gameState.era3.temperature.lt(COSMIC_REGISTRY.constants.supernovaTempThreshold)) return;
-  playSupernovaSound();
-  Haptics.heavy();
 
-  // Flash overlay
-  const flash = document.createElement('div');
-  flash.className = 'supernova-flash';
-  document.body.appendChild(flash);
-
-  // Screen shake
-  document.body.classList.add('screen-shake');
-
-  setTimeout(() => {
-    if (flash.parentNode) flash.parentNode.removeChild(flash);
-    document.body.classList.remove('screen-shake');
-  }, 3000);
-
-  let gainedStardust = getStardustYield();
-  let outcome = "White Dwarf";
-  let titleColor = "#ffffff";
-  let extraRewardText = "";
-  let shiftToEra4 = false;
-
-  if (gameState.era3.stage === "Main Sequence Star" && gameState.era3.carbonYield.gt(0)) {
-    outcome = "Neutron Star";
-    titleColor = "#00cec9";
-    let gainedPulsar = getPulsarShardYield();
-    gameState.currencies.pulsarShards.amount = gameState.currencies.pulsarShards.amount.plus(gainedPulsar);
-    extraRewardText = `<br><span style="color:#00cec9">+${format(gainedPulsar)} 🌀 Neural Synapse</span>`;
-  }
-
-  if (gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) && gameState.resources.iron.amount.gte(1000)) {
-    outcome = "Black Hole";
-    titleColor = "#a29bfe";
-    let gainedMass = getSingularityMassYield();
-    gameState.currencies.singularityMass.amount = gameState.currencies.singularityMass.amount.plus(gainedMass);
-    extraRewardText += `<br><span style="color:#a29bfe">+${format(gainedMass)} 🌌 Core Density</span>`;
-    shiftToEra4 = true;
-  }
-
-  gameState.currencies.stardust.amount = gameState.currencies.stardust.amount.plus(gainedStardust);
-  gameState.stats.supernovas = gameState.stats.supernovas.plus(1);
-  gameState.stats.totalStardust = gameState.stats.totalStardust.plus(gainedStardust);
-
-  Viewport.showTheatrical(
-    outcome,
-    titleColor,
-    format(gameState.era3.temperature) + " K",
-    gameState.era3.ironYield.gt(0) ? "H, He, C, Fe" : (gameState.era3.carbonYield.gt(0) ? "H, He, C" : "H, He"),
-    `+${format(gainedStardust)} ✨ Synaptic Dust${extraRewardText}`
-  );
-
-  if (window.playtestHarness && window.playtestHarness.isRunning) {
-    closeTheatrical();
-  }
-
-  gameState.resources.hydrogen.amount = new Decimal(0);
-  gameState.resources.helium.amount = new Decimal(0);
-  gameState.resources.carbon.amount = new Decimal(0);
-  gameState.resources.iron.amount = new Decimal(0);
-
-  gameState.era3 = getInitialEra3State();
-  gameState.flares.active = null;
-  gameState.buffs.fusionSurge.remainingSec = new Decimal(0);
-  gameState.flares.nextSpawnInSec = rollNextSpawnDelay();
-
-  if (shiftToEra4) {
-    startEraTransition(4, "The iron core collapses in milliseconds. Gravity overwhelms all nuclear forces. A singularity forms at the heart of the dying star, bending space-time itself. From the ashes of stellar death, gravitational waves ripple outward, seeding the cosmos with heavy elements. A new epoch begins: The Galactic Matrix.", () => {
-      gameState.activeEpoch = 4;
-      document.body.setAttribute('data-epoch', 4);
-      Viewport.switchTab('core');
-      saveGame();
-    });
-  }
-}
-
-export function triggerBigBounce() {
-  const savedBits = gameState.currencies.bits.amount;
-  const savedConstants = JSON.parse(JSON.stringify(gameState.cosmicConstants));
-
-  // Perform a hard reset by overwriting gameState with a clean state,
-  // but keep the Bits and Cosmic Constants.
-  const cleanState = getInitialGameState();
-  
-  // Recursively overwrite current state with clean state
-  for (let key in gameState) {
-    delete gameState[key];
-  }
-  Object.assign(gameState, cleanState);
-
-  gameState.currencies.bits.amount = savedBits;
-  gameState.cosmicConstants = savedConstants;
-
-  startEraTransition(1, "The universe has reached maximum entropy. Time itself loses meaning. But from the perfect stillness, a fluctuation emerges. The remnants of information seed a new beginning. The Big Bounce initiates.", () => {
-    document.body.setAttribute('data-epoch', 1);
-    Viewport.switchTab('core');
-    setIsDirty(true);
-    saveGame();
-  });
-}
 
 function buyCosmicTuning(key) {
   const def = COSMIC_REGISTRY.upgrades.tuning[key];
@@ -405,47 +309,8 @@ function closeTheatrical() {
   }, 1000);
 }
 
-function triggerGalacticMerge() {
-  if (gameState.resources.darkMatter.amount.lt(10000)) {
-    Viewport.showToast("Requires at least 10,000 Dark Matter coordinates to anchor collision vectors.", "warning");
-    return;
-  }
 
-  playSupernovaSound();
-  Haptics.heavy();
-  let gainedResidue = getGalacticMergeYield();
-  gameState.resources.darkEnergyResidue.amount = gameState.resources.darkEnergyResidue.amount.plus(gainedResidue);
 
-  const flashElement = document.createElement('div');
-  flashElement.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #fff; z-index: 99999; pointer-events: none; animation: flashEffect 2s forwards;";
-  document.body.appendChild(flashElement);
-  setTimeout(() => flashElement.remove(), 2050);
-
-  Viewport.showToast(`🌌 GALACTIC COLLISION SECURED: Earned +${format(gainedResidue)} Dark Energy Residue! Era V (Deep Future) is currently expanding in the multiverse.`, "success");
-  Viewport.switchTab('core');
-  saveGame();
-}
-
-function stabilizeArms() {
-  if (gameState.activeEpoch === 4) {
-    gameState.era4.stability = new Decimal(100);
-    Viewport.showToast("Orbital velocity profiles synchronized. Stability anchored at 100%.", "success");
-  }
-}
-
-function accretePlanetConfiguration() {
-  if (gameState.activeEpoch === 4) {
-    let cost = gameState.era4.planetaryNodeCost;
-    if (gameState.resources.planetaryDebris.amount.gte(cost)) {
-      gameState.resources.planetaryDebris.amount = gameState.resources.planetaryDebris.amount.minus(cost);
-      gameState.era4.planetaryNodes = gameState.era4.planetaryNodes.plus(1);
-      gameState.era4.planetaryNodeCost = gameState.era4.planetaryNodeCost.times(1.12).floor();
-      Viewport.showToast("Planetary Debris condensed into a stable macro planetary node.", "success");
-    } else {
-      Viewport.showToast(`Accretion requires ${format(cost)} Planetary Debris.`, "warning");
-    }
-  }
-}
 
 // ==========================================================================
 // [SEC-13] CLICK & TRANSACTION UTILITY IMPLEMENTATION (RECONSTRUCTED)
@@ -577,64 +442,11 @@ function togglePlasmaFuser() {
 // ==========================================================================
 // [SEC-14] SOLAR WEATHER & THERMODYNAMICS SIMULATION ENGINE (RECONSTRUCTED)
 // ==========================================================================
-function recalcTempMultiplier() {
-  if (!gameState.era3 || !gameState.era3.temperature) return;
-  let baseDiv = gameState.era3.temperature.div(1000000).plus(1);
-  let logPrimitive = Math.log10(baseDiv.toNumber());
-  gameState.era3.tempMultiplier = new Decimal(1.0 + logPrimitive);
-}
 
 
 
-function spawnFlare() {
-  if (gameState.flares.active) return;
-  gameState.flares.active = {
-    expiresInSec: new Decimal(COSMIC_REGISTRY.solarEvents.flare.spawn.activeWindowSec || 12)
-  };
-  if (!flareSimSuppressed) {
-    Viewport.showToast("☀️ SOLAR PROMINENCE DETECTED: Core-Turbulenz aktiv!", "warning");
-  }
-}
 
-function expireFlare() {
-  if (!gameState.flares.active) return;
-  let penaltyPct = COSMIC_REGISTRY.solarEvents.flare.miss.tempPctOfCompression || 0.25;
-  let heatSurge = getCompressionHeatYield().times(penaltyPct);
 
-  gameState.era3.temperature = gameState.era3.temperature.plus(heatSurge);
-  recalcTempMultiplier();
-  updateStatsData();
-
-  if (!flareSimSuppressed) {
-    Viewport.showToast(COSMIC_REGISTRY.solarEvents.flare.miss.toast, "warning");
-  }
-
-  gameState.flares.active = null;
-  gameState.flares.nextSpawnInSec = rollNextSpawnDelay();
-}
-
-function collectFlare() {
-  if (!gameState.flares.active) return;
-  initAudio();
-
-  let rewardKey = rollFlareType();
-  let rewardDef = COSMIC_REGISTRY.solarEvents.flare.rewards[rewardKey];
-
-  if (rewardKey === 'hydrogenSurge') {
-    let currentRate = getHydrogenGenRate();
-    let instantGain = currentRate.times(rewardDef.secondsOfProduction || 180);
-    gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(instantGain);
-  }
-  else if (rewardKey === 'magneticSurge') {
-    gameState.buffs.fusionSurge.remainingSec = new Decimal(rewardDef.buff.durationSec || 60);
-  }
-
-  gameState.stats.flaresCollected = (gameState.stats.flaresCollected || new Decimal(0)).plus(1);
-  Viewport.showToast(rewardDef.toast || "Flare stabilisiert!", "success");
-
-  gameState.flares.active = null;
-  gameState.flares.nextSpawnInSec = rollNextSpawnDelay();
-}
 
 
 // ==========================================================================
@@ -757,31 +569,7 @@ function runParityHarness() {
 // ==========================================================================
 // [SEC-18] WEATHER ARCHITECTURE (SOLAR PROMINENCES EVENTS)
 // ==========================================================================
-function rollNextSpawnDelay() {
-  const config = COSMIC_REGISTRY.solarEvents.flare.spawn;
-  const level = gameState.upgrades.stardust.flareForecasting?.level ?? 0;
-  const reduction = 1 - (0.08 * level);
-  return new Decimal(config.minDelaySec * reduction + Math.random() * ((config.maxDelaySec - config.minDelaySec) * reduction));
-}
 
-function rollFlareType() {
-  const rewards = COSMIC_REGISTRY.solarEvents.flare.rewards;
-  let validRewards = [];
-  let totalWeight = 0;
-  for (let key in rewards) {
-    if (rewards[key].unlocked()) {
-      validRewards.push({ key: key, weight: rewards[key].weight });
-      totalWeight += rewards[key].weight;
-    }
-  }
-  if (validRewards.length === 0) return null;
-  let roll = Math.random() * totalWeight, cumulative = 0;
-  for (let rollReward of validRewards) {
-    cumulative += rollReward.weight;
-    if (roll <= cumulative) return rollReward.key;
-  }
-  return validRewards[validRewards.length - 1].key;
-}
 
 // ==========================================================================
 // [SEC-19] RUNTIME TIMERS & CORE BOOTSTRAP INITIALIZATION
@@ -1170,3 +958,21 @@ export const runAIAction = function (cmd) {
   }
 };window.Viewport = Viewport;
 window.initAudio = initAudio;
+
+window.addEventListener('solarFlareSpawned', (e) => {
+  if (typeof window !== "undefined" && window.Viewport && window.Viewport.showToast) {
+    window.Viewport.showToast("☀️ SOLAR PROMINENCE DETECTED: Core-Turbulenz aktiv!", "warning");
+  }
+});
+
+window.addEventListener('solarFlareMissed', (e) => {
+  if (typeof window !== "undefined" && window.Viewport && window.Viewport.showToast) {
+    window.Viewport.showToast(e.detail.message, "warning");
+  }
+});
+
+window.addEventListener('solarFlareCollected', (e) => {
+  if (typeof window !== "undefined" && window.Viewport && window.Viewport.showToast) {
+    window.Viewport.showToast(e.detail.message, "success");
+  }
+});

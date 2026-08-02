@@ -195,7 +195,7 @@ export const COSMIC_REGISTRY = {
       spawn: { minDelaySec: 90, maxDelaySec: 240, activeWindowSec: 12 },
       rewards: {
         hydrogenSurge: { weight: 70, secondsOfProduction: 180, unlocked: () => true, toast: "Solar Flare Harvested!☀️" },
-        magneticSurge: { weight: 30, buff: { key: "fusionSurge", multiplier: 2, durationSec: 60 }, unlocked: () => gameState.era3.fusionYield.gt(0), toast: "Magnetic Flare Harvested!🧲" }
+        magneticSurge: { weight: 30, buff: { key: "fusionSurge", multiplier: 2, durationSec: 60 }, unlocked: (state) => state.era3.fusionYield.gt(0), toast: "Magnetic Flare Harvested!🧲" }
       },
       miss: { tempPctOfCompression: 0.25, toast: "Solar Flare collapsed back into the star, boosting core temperature! 🔥" },
       fx: { emoji: "☀️" }

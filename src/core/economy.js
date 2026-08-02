@@ -1,7 +1,24 @@
 // [SEC-06] MATHEMATICAL MATH RULES & PRODUCTION FORMULAS
+
+// Haptics is on window
+const Haptics = window.Haptics;
+import { saveGame } from './state.js';
 // ==========================================================================
 import { gameState } from './state.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
+export function updateStatsData() {
+  if (gameState.era3 && gameState.era3.temperature.gt(gameState.stats.maxTemp)) {
+    gameState.stats.maxTemp = gameState.era3.temperature;
+  }
+}
+
+export function recalcTempMultiplier() {
+  if (!gameState.era3 || !gameState.era3.temperature) return;
+  let baseDiv = gameState.era3.temperature.div(1000000).plus(1);
+  let logPrimitive = Math.log10(baseDiv.toNumber());
+  gameState.era3.tempMultiplier = new Decimal(1.0 + logPrimitive);
+}
+
 export function getMilestoneMultiplier(level) {
   let milestones = Math.floor((level || 0) / 10);
   return 1.0 + (milestones * 0.05);
@@ -450,4 +467,5 @@ export function getFusionSurgeMultiplier() {
     return 2;
   }
   return 1;
-}
+}
+

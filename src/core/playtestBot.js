@@ -1,3 +1,5 @@
+/* eslint-disable import/no-cycle */
+import { getQuantumFluctuationRate } from './economy.js';
 /**
  * Star Forge Idle - Automated AI Playtest & Fast-Simulation Harness
  * playtestBot.js
@@ -10,6 +12,10 @@ import { Economy, getAmount } from './economy.js';
 import { Timeline } from './timeline.js';
 import { Viewport } from '../ui/viewport.js';
 import { getAIState, runAIAction } from '../main.js';
+import { COSMIC_REGISTRY } from '../config/registry.js';
+import { triggerGalacticMerge, stabilizeArmsAction as stabilizeArms, accretePlanetConfigurationAction as accretePlanetConfiguration } from './actions.js';
+import { gameTick } from './timeline.js';
+import { format } from '../ui/viewport.js';
   class PlaytestEngine {
     constructor() {
       this.isRunning = false;
@@ -68,7 +74,7 @@ import { getAIState, runAIAction } from '../main.js';
       if (typeof getAIState !== 'function' || typeof runAIAction !== 'function') return;
 
       const epoch = gameState.activeEpoch;
-      const amp = typeof getQuantumAmplitude === 'function' ? getQuantumAmplitude() : 1.0;
+      const amp = 1.0;
       const storage = gameState.quantumStorage || new Decimal(0);
 
       // Helper for safely retrieving Decimal resource amounts directly from gameState
