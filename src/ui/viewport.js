@@ -1,4 +1,7 @@
 // [SEC-05] VISUAL FORMATTING & AUDIO HELPER ENGINES
+import { getInitialEra2State } from '../state/createInitialState.js';
+import { getPlasmaPassiveRates, getBaryonAsymmetryMultiplier, getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, getGalacticDarkMatterRate, getGalacticMergeYield, getCompressionsCompleted } from '../core/economy.js';
+import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
 import { gameState, saveGame, exportSave, importSave, wipeSave } from '../core/state.js';
@@ -1706,4 +1709,4 @@ export const Viewport = {
   }
 };
 
-// ==========================================================================
+// ==========================================================================
