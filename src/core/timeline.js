@@ -8,11 +8,20 @@ import { gameState } from './state.js';
 import { Economy, getAmount, getCompressionScaling, processEraV, getQuantumFluctuationRate, getEnergyDensityRate, getPlasmaPassiveRates, getBaryonAsymmetryMultiplier, getProtonFusionCap, getHydrogenGenRate, getBuyLoopCount, getFusionCost, getFusionSurgeMultiplier, getCompressionHeatYield, getGalacticDebrisRate, getGalacticDarkMatterRate } from './economy.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 
+import { simulateQuantumEra } from '../eras/quantum/simulation.js';
+import { simulatePlasmaEra } from '../eras/plasma/simulation.js';
+
+const simulationHandlers = {
+  1: simulateQuantumEra,
+  2: simulatePlasmaEra,
+  // 3: simulateStellarEra, // to be implemented in P2B
+  // 4: simulateGalacticEra,
+  // 5: simulateEraV
+};
+
 export const Timeline = {
   process(dt) {
     if (dt <= 0) return;
-    // Analytical offline progress chunking:
-    // Max 120 stepped chunks to guarantee <= 50ms execution time even for 12 hours (43,200s) of offline time.
     const MAX_STEPS = 120;
     const stepCount = Math.min(MAX_STEPS, Math.ceil(dt / 1.0));
     const chunkDt = dt / stepCount;
@@ -23,75 +32,25 @@ export const Timeline = {
   },
 
   simulate(dt) {
-    if (gameState.activeEpoch === 5) {
-      processEraV(dt);
-    }
-
     if (gameState.era5?.isHeatDeath) {
       return; // Stop all other physics
     }
 
-    if (gameState.activeEpoch === 1) {
-      this.quantumFoam(dt);
-    } else if (gameState.activeEpoch === 2) {
-      this.plasmaCrucible(dt);
-    } else if (gameState.activeEpoch === 3) {
-      this.stellarDawn(dt);
-    } else if (gameState.activeEpoch === 4) {
-      this.galacticMatrix(dt);
-    }
-
-    gameState.buffs.fusionSurge.remainingSec = Decimal.max(0, gameState.buffs.fusionSurge.remainingSec.minus(dt));
-  },
-
-  quantumFoam(dt) {
-    let passiveFluctuations = getQuantumFluctuationRate().times(dt);
-    if (passiveFluctuations.gt(0)) {
-      gameState.resources.quantumFluctuations.amount = gameState.resources.quantumFluctuations.amount.plus(passiveFluctuations);
-    }
-
-    let passiveDensity = getEnergyDensityRate().times(dt);
-    if (passiveDensity.gt(0)) {
-      gameState.resources.energyDensity.amount = gameState.resources.energyDensity.amount.plus(passiveDensity);
-    }
-
-    if (gameState.resources.energyDensity.amount.gt(0)) {
-      let densityLogPrimitive = gameState.resources.energyDensity.amount.plus(1).log10();
-      let coolingFactor = new Decimal(densityLogPrimitive).times(1e24).times(dt);
-      gameState.eraITemperature = Decimal.max(COSMIC_REGISTRY.constants.eraIInflationTemp, gameState.eraITemperature.minus(coolingFactor));
-    }
-  },
-
-  plasmaCrucible(dt) {
-    gameState.cosmicAge = (gameState.cosmicAge || new Decimal(0)).plus(dt);
-    let plasmaRates = getPlasmaPassiveRates();
-
-    if (plasmaRates.quarks.gt(0) || plasmaRates.gluons.gt(0) || plasmaRates.leptons.gt(0)) {
-      gameState.resources.quarks.amount = gameState.resources.quarks.amount.plus(plasmaRates.quarks.times(dt));
-      gameState.resources.gluons.amount = gameState.resources.gluons.amount.plus(plasmaRates.gluons.times(dt));
-      gameState.resources.leptons.amount = gameState.resources.leptons.amount.plus(plasmaRates.leptons.times(dt));
-    }
-
-    if (plasmaRates.cooling.gt(0)) {
-      gameState.plasmaTemperature = Decimal.max(300, gameState.plasmaTemperature.minus(plasmaRates.cooling.times(dt)));
-
-      let radiatorLevel = gameState.upgrades.plasma.baryoRadiator.level || 0;
-      if (radiatorLevel > 0) {
-        let protonDrain = new Decimal(radiatorLevel * 2).times(dt);
-        gameState.resources.protons.amount = Decimal.max(0, gameState.resources.protons.amount.minus(protonDrain));
+    const handler = simulationHandlers[gameState.activeEpoch];
+    if (handler) {
+      handler(gameState, dt);
+    } else {
+      // Fallback for not yet implemented eras
+      if (gameState.activeEpoch === 3) {
+        this.stellarDawn(dt);
+      } else if (gameState.activeEpoch === 4) {
+        this.galacticMatrix(dt);
+      } else if (gameState.activeEpoch === 5) {
+        processEraV(dt);
       }
     }
 
-    if (gameState.plasmaTemperature.lt(500000) && gameState.resources.leptons.amount.gt(0)) {
-      let electronHarvest = gameState.resources.leptons.amount.div(2).floor().times(dt);
-      gameState.resources.electrons.amount = gameState.resources.electrons.amount.plus(electronHarvest);
-    }
-
-    if (gameState.upgrades.plasma.plasmaAutomation.level > 0) {
-      let asymmetryModifier = getBaryonAsymmetryMultiplier();
-      let fusionRate = getProtonFusionCap().times(gameState.upgrades.plasma.plasmaAutomation.level).times(asymmetryModifier);
-      gameState.resources.protons.amount = gameState.resources.protons.amount.plus(fusionRate.times(dt));
-    }
+    gameState.buffs.fusionSurge.remainingSec = Decimal.max(0, gameState.buffs.fusionSurge.remainingSec.minus(dt));
   },
 
   stellarDawn(dt) {

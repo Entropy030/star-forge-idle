@@ -1,6 +1,8 @@
 // [SEC-05] VISUAL FORMATTING & AUDIO HELPER ENGINES
 import { getInitialEra2State } from '../state/createInitialState.js';
-import { getPlasmaPassiveRates, getBaryonAsymmetryMultiplier, getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, getGalacticDarkMatterRate, getGalacticMergeYield, getCompressionsCompleted } from '../core/economy.js';
+import { getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, getGalacticDarkMatterRate, getGalacticMergeYield, getCompressionsCompleted } from '../core/economy.js';
+import { getPlasmaRates } from '../eras/plasma/selectors.js';
+import { getQuantumRates } from '../eras/quantum/selectors.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
@@ -1504,41 +1506,53 @@ export const Viewport = {
       }
     }
     else if (gameState.activeEpoch === 2) {
-      let pRates = getPlasmaPassiveRates();
-      let asymmetryModifier = getBaryonAsymmetryMultiplier();
-
-      let isFuserActive = gameState.upgrades.plasma.plasmaAutomation.level > 0;
-      let protonGainRate = isFuserActive ? getProtonFusionCap().times(gameState.upgrades.plasma.plasmaAutomation.level).times(asymmetryModifier) : new Decimal(0);
-
-      let radiatorLevel = gameState.upgrades.plasma.baryoRadiator.level || 0;
-      let radiatorProtonDrain = new Decimal(radiatorLevel * 2);
-
+      let pRates = getPlasmaRates(gameState);
+      
       this.setTextContent('label-hydrogen', t('label_primordial_quarks'));
       this.setTextContent('count', format(gameState.resources.quarks.amount));
-      this.updateResourceDelta('hydrogen', pRates.quarks);
+      this.updateResourceDelta('hydrogen', pRates.quarksProduction.minus(pRates.quarksConsumption));
 
       this.setTextContent('label-helium', t('label_primordial_gluons'));
       this.setTextContent('helium-count', format(gameState.resources.gluons.amount));
-      this.updateResourceDelta('helium', pRates.gluons);
+      this.updateResourceDelta('helium', new Decimal(0));
 
       // Asymmetry Bonus indicator (Prio 2)
-      const asymBonusPct = ((asymmetryModifier.toNumber() - 1) * 100).toFixed(1);
-      this.setTextContent('label-hydrogen', t('label_primordial_quarks') + ` (Asym: +${asymBonusPct}%)`);
+      // The asymmetry bonus is now replaced with a trade-off, hiding for now
+      // this.hideElement('priority2');
+      // this.setTextContent('label-hydrogen', t('label_primordial_quarks') + ` (Asym: +${asymBonusPct}%)`);
 
       // Update dedicated Era II elements
       this.setTextContent('lepton-count', format(gameState.resources.leptons.amount));
-      this.updateResourceDelta('leptons', pRates.leptons);
+      this.updateResourceDelta('leptons', pRates.leptonsProduction.minus(pRates.leptonsConsumption));
 
       this.setTextContent('proton-count', format(gameState.resources.protons.amount));
-      this.updateResourceDelta('protons', protonGainRate.minus(radiatorProtonDrain));
+      this.updateResourceDelta('protons', pRates.protonsProduction.minus(pRates.protonsConsumption));
 
       this.setTextContent('electron-count', format(gameState.resources.electrons.amount));
-      let electronRate = (gameState.plasmaTemperature.lt(500000) && gameState.resources.leptons.amount.gt(0)) ?
-        gameState.resources.leptons.amount.div(2).floor() : new Decimal(0);
-      this.updateResourceDelta('electrons', electronRate);
+      this.updateResourceDelta('electrons', pRates.electronsProduction.minus(pRates.electronsConsumption));
+      
+      if (gameState.resources.hydrogen.amount.gt(0)) {
+        // Just show hydrogen in the generic slots if needed, or if Era II has a slot
+        this.setTextContent('carbon-count', format(gameState.resources.hydrogen.amount));
+        this.setTextContent('label-carbon', 'Hydrogen');
+        this.updateResourceDelta('carbon', pRates.hydrogenProduction);
+        this.showElement('resource-carbon');
+      } else {
+        this.hideElement('resource-carbon');
+      }
+
+      this.hideElement('resource-iron');
+
+      // Add survivingMatter info if we have unlocked it
+      if (gameState.resources.survivingMatter && gameState.resources.survivingMatter.amount.gt(0)) {
+        this.setTextContent('prio2-text', `Surviving Matter: ${format(gameState.resources.survivingMatter.amount)}`);
+        this.showElement('priority2');
+      } else {
+        this.hideElement('priority2');
+      }
 
       this.setTextContent('plasma-temp-count', `${format(gameState.plasmaTemperature)} K`);
-      this.updateResourceDelta('temperature', pRates.cooling.times(-1));
+      this.updateResourceDelta('temperature', pRates.coolingRate.times(-1));
 
       const recombBtn = this.getEl('btn-recombination');
       if (recombBtn) {
