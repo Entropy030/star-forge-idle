@@ -11,10 +11,12 @@ import { COSMIC_REGISTRY } from '../config/registry.js';
 import { simulateQuantumEra } from '../eras/quantum/simulation.js';
 import { simulatePlasmaEra } from '../eras/plasma/simulation.js';
 
+import { simulateStellarEra } from '../eras/stellar/simulation.js';
+
 const simulationHandlers = {
   1: simulateQuantumEra,
   2: simulatePlasmaEra,
-  // 3: simulateStellarEra, // to be implemented in P2B
+  3: simulateStellarEra,
   // 4: simulateGalacticEra,
   // 5: simulateEraV
 };
@@ -41,9 +43,7 @@ export const Timeline = {
       handler(gameState, dt);
     } else {
       // Fallback for not yet implemented eras
-      if (gameState.activeEpoch === 3) {
-        this.stellarDawn(dt);
-      } else if (gameState.activeEpoch === 4) {
+      if (gameState.activeEpoch === 4) {
         this.galacticMatrix(dt);
       } else if (gameState.activeEpoch === 5) {
         processEraV(dt);
@@ -53,95 +53,7 @@ export const Timeline = {
     gameState.buffs.fusionSurge.remainingSec = Decimal.max(0, gameState.buffs.fusionSurge.remainingSec.minus(dt));
   },
 
-  stellarDawn(dt) {
-    let autoRate = getHydrogenGenRate().times(dt);
-    if (autoRate.gt(0)) {
-      gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(autoRate);
-    }
 
-    if (gameState.autoBuyer && gameState.autoBuyer.hydrogen && gameState.autoBuyer.hydrogen.active) {
-      if (gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
-        if (gameState.resources.hydrogen.amount.gte(gameState.era3.gravityCost)) {
-          let loops = getBuyLoopCount();
-          Economy.buyCoreNodes('gravity', loops);
-        }
-      }
-    }
-
-    if (gameState.era3.fusersEnabled && gameState.era3.fusionYield.gt(0)) {
-      let costPerYield = getFusionCost();
-      let maxPossibleFusions = gameState.resources.hydrogen.amount.div(costPerYield).floor();
-      let targetFusions = Decimal.min(maxPossibleFusions, gameState.era3.fusionYield.times(dt));
-
-      if (targetFusions.gt(0)) {
-        gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.minus(targetFusions.times(costPerYield));
-        const stardustBoost = gameState.currencies.stardust.amount.times(0.25).plus(1);
-        const alphaMod = 1.0 + (0.30 * (gameState.cosmicConstants?.alpha || 0));
-        const totalHeliumYield = targetFusions.times(getFusionSurgeMultiplier()).times(stardustBoost).times(alphaMod);
-        gameState.resources.helium.amount = gameState.resources.helium.amount.plus(totalHeliumYield);
-      }
-    }
-
-    let autoCompressLvl = gameState.upgrades.pulsar.autoCompress?.level ?? 0;
-    if (autoCompressLvl > 0) {
-      autoCompressAccumulator += autoCompressLvl * dt;
-      if (autoCompressAccumulator >= 1.0) {
-        let triggers = Math.floor(autoCompressAccumulator);
-        autoCompressAccumulator -= triggers;
-
-        if (triggers > 0 && gameState.resources.helium.amount.gte(gameState.era3.compressCost)) {
-          let maxAffordable = Decimal.affordGeometricSeries(
-            gameState.resources.helium.amount,
-            gameState.era3.compressCost,
-            new Decimal(getCompressionScaling()),
-            0
-          );
-          let countToCompress = Decimal.min(new Decimal(triggers), maxAffordable);
-
-          if (countToCompress.gt(0)) {
-            let totalCost = Decimal.sumGeometricSeries(
-              countToCompress,
-              gameState.era3.compressCost,
-              new Decimal(getCompressionScaling()),
-              0
-            );
-
-            gameState.resources.helium.amount = gameState.resources.helium.amount.minus(totalCost);
-            gameState.era3.temperature = gameState.era3.temperature.plus(getCompressionHeatYield().times(countToCompress));
-            gameState.era3.compressCost = gameState.era3.compressCost.times(new Decimal(getCompressionScaling()).pow(countToCompress)).floor();
-
-            recalcTempMultiplier();
-            if (gameState.era3.temperature.gte(COSMIC_REGISTRY.constants.mainSequenceTempThreshold) && gameState.era3.stage === "Protostar") {
-              gameState.era3.stage = "Main Sequence Star";
-            }
-            updateStatsData();
-          }
-        }
-      }
-    }
-
-    if (gameState.era3.stage === "Main Sequence Star" && gameState.era3.carbonYield.gt(0)) {
-      let synthLvl = gameState.upgrades.pulsar.autoSynthesize?.level ?? 0;
-      let velocityMult = new Decimal(1).plus(synthLvl);
-      let alphaMod = 1.0 + (0.30 * (gameState.cosmicConstants?.alpha || 0));
-      let carbonGen = gameState.era3.carbonYield.times(velocityMult).times(dt).times(alphaMod);
-      gameState.resources.carbon.amount = gameState.resources.carbon.amount.plus(carbonGen);
-      gameState.era3.lifetimeCarbonThisRun = (gameState.era3.lifetimeCarbonThisRun || new Decimal(0)).plus(carbonGen);
-
-      if (gameState.era3.ironYield.gt(0) && gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp)) {
-        let ironGen = gameState.era3.ironYield.times(velocityMult).times(dt).times(alphaMod);
-        gameState.resources.iron.amount = gameState.resources.iron.amount.plus(ironGen);
-      }
-    }
-
-    if (gameState.flares.active) {
-      gameState.flares.active.expiresInSec = gameState.flares.active.expiresInSec.minus(dt);
-      if (gameState.flares.active.expiresInSec.lte(0)) expireFlare();
-    } else {
-      gameState.flares.nextSpawnInSec = gameState.flares.nextSpawnInSec.minus(dt);
-      if (gameState.flares.nextSpawnInSec.lte(0) && !flareSimSuppressed) spawnFlare();
-    }
-  },
 
   galacticMatrix(dt) {
     const smAccelLvl = gameState.upgrades.galaxy?.stellarMassAccelerator?.level || 0;

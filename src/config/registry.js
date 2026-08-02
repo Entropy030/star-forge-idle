@@ -156,6 +156,11 @@ export const COSMIC_REGISTRY = {
       plasmaAutomation: { id: "plasmaAutomation", name: "Proton Synthesizer", rarity: "rare", baseCost: new Decimal(2000), costScaling: 1.8, gen: new Decimal(0), desc: "Unlocks passive Proton generation based on Quark/Gluon rates as a catalyst. Requires Lepton Collector Lvl 1." },
       baryoRadiator: { id: "baryoRadiator", name: "Baryogenesis Radiator", rarity: "uncommon", baseCost: new Decimal(100), costScaling: 1.4, cooling: new Decimal(7500), desc: "Radiates excess thermal mass. Cools Universe by 7,500 K/s. Costs 2 Protons/s." }
     },
+    stellar: {
+      efficient: { id: "efficient", name: "Efficient Build", rarity: "rare", baseCost: new Decimal(100), currency: "helium", costScaling: 1.5, desc: "Increases fuel efficiency and stability. Better coherence." },
+      massive: { id: "massive", name: "Massive Build", rarity: "rare", baseCost: new Decimal(100), currency: "helium", costScaling: 1.5, desc: "Increases generation speed and Iron yield, but reduces stability." },
+      compact: { id: "compact", name: "Compact Build", rarity: "rare", baseCost: new Decimal(100), currency: "helium", costScaling: 1.5, desc: "Focuses on density. Rewards Pulsar Shards and automation rules." }
+    },
     galaxy: {
       armStabilization: { id: "armStabilization", name: "Velocity Harmonizers", baseCost: new Decimal(100), costScaling: 1.5, desc: "Insulates velocity vectors. Reduces ambient orbital matrix decay rate by 15% per level." },
       elementalInjection: { id: "elementalInjection", name: "Heavy Element Injection", baseCost: new Decimal(250), costScaling: 1.6, desc: "Injects forged Carbon & Iron into planetary seeds, doubling Debris generation." },

@@ -95,7 +95,7 @@ export function createInitialState() {
       hawkingRadiation: { amount: new Decimal(0) },
       bits: { amount: new Decimal(0) }
     },
-    upgrades: { quantum: {}, plasma: {}, stardust: {}, pulsar: {}, singularity: {}, galaxy: {}, tuning: {} },
+    upgrades: { quantum: {}, plasma: {}, stellar: {}, stardust: {}, pulsar: {}, singularity: {}, galaxy: {}, tuning: {} },
     unfold: {
       hasUnlocked1QF: false,
       hasUnlocked10QF: false,
