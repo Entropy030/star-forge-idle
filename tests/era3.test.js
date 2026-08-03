@@ -53,6 +53,6 @@ describe('Era 3 Commands', () => {
   it('handles TRIGGER_SUPERNOVA prerequisites', () => {
     const result = engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
     expect(result.ok).toBe(false);
-    expect(result.error.code).toBe('INSUFFICIENT_IRON');
+    expect(result.error.code).toBe('INCOMPLETE_STELLAR_STATE');
   });
 });

@@ -10,7 +10,6 @@ import { COSMIC_REGISTRY } from '../config/registry.js';
 
 import { simulateQuantumEra } from '../eras/quantum/simulation.js';
 import { simulatePlasmaEra } from '../eras/plasma/simulation.js';
-
 import { simulateStellarEra } from '../eras/stellar/simulation.js';
 
 const simulationHandlers = {
@@ -52,6 +51,7 @@ export const Timeline = {
 
     gameState.buffs.fusionSurge.remainingSec = Decimal.max(0, gameState.buffs.fusionSurge.remainingSec.minus(dt));
   },
+
 
 
 

@@ -1,8 +1,9 @@
 /* global Decimal */
 /* eslint-disable import/no-cycle */
 import { COSMIC_REGISTRY } from '../../config/registry.js';
-import { getStardustYield, getCompressionHeatYield, getCompressionScaling, getGravityCostMultiplier } from '../../core/economy.js';
+import { getCompressionHeatYield, getCompressionScaling, getGravityCostMultiplier } from '../../core/economy.js';
 import { createInitialState } from '../../state/createInitialState.js';
+import { getSupernovaEligibility, getSupernovaOutcome } from './selectors.js';
 
 export const stellarCommandHandlers = {
   CLICK_CORE_ERA3: (state, cmd) => {
@@ -112,62 +113,83 @@ export const stellarCommandHandlers = {
   },
 
   TRIGGER_SUPERNOVA: (state, cmd) => {
-    if (state.activeEpoch !== 3) return { ok: false, changed: false, events: [], error: { code: 'WRONG_EPOCH' } };
-    if (!state.resources.iron || state.resources.iron.amount.lt(1000)) return { ok: false, changed: false, events: [], error: { code: 'INSUFFICIENT_IRON' } };
+    const eligibility = getSupernovaEligibility(state);
+    if (!eligibility.canTrigger) {
+      return { ok: false, changed: false, events: [], error: { code: eligibility.errorCode } };
+    }
 
-    const yieldAmt = getStardustYield();
-    state.currencies.stardust.amount = state.currencies.stardust.amount.plus(yieldAmt);
-    state.stats.totalStardust = state.stats.totalStardust.plus(yieldAmt);
-    state.stats.supernovas = state.stats.supernovas.plus(1);
+    const outcome = getSupernovaOutcome(state);
+    const rewards = outcome.rewards;
+
+    // Persist objects by reference
+    const persistent = {
+      currencies: state.currencies,
+      stats: state.stats,
+      meta: state.meta,
+      achievements: state.achievements,
+      artifacts: state.artifacts,
+      settings: state.settings,
+      completedMissions: state.completedMissions,
+      cards: state.cards,
+      codex: state.codex
+    };
+
+    // Grant rewards exactly once
+    persistent.currencies.stardust.amount = persistent.currencies.stardust.amount.plus(rewards.stardust);
+    persistent.currencies.pulsarShards.amount = persistent.currencies.pulsarShards.amount.plus(rewards.pulsarShards);
+    persistent.currencies.singularityMass.amount = persistent.currencies.singularityMass.amount.plus(rewards.singularityMass);
     
-    if (!state.achievements.firstSupernova.unlocked) {
-      state.achievements.firstSupernova.unlocked = true;
+    persistent.stats.totalStardust = persistent.stats.totalStardust.plus(rewards.stardust);
+    persistent.stats.supernovas = persistent.stats.supernovas.plus(1);
+    
+    if (!persistent.achievements.firstSupernova.unlocked) {
+      persistent.achievements.firstSupernova.unlocked = true;
+    }
+
+    if (!persistent.meta) {
+      persistent.meta = {};
     }
     
-    const autoStabilizer = state.prestige.autoStabilizer;
+    // Update persistent meta
+    persistent.meta.stellarRunsCompleted = (persistent.meta.stellarRunsCompleted || 0) + 1;
+    persistent.meta.lastSupernovaOutcome = outcome.outcome;
+    persistent.meta.secondStellarRunUnlocked = true;
+    persistent.meta.stellarLegacyModifiers = outcome.modifiers;
     
-    // Create new fresh state
-    let fresh = createInitialState();
+    // Create fresh state
+    const fresh = createInitialState();
+    
+    // Attach persistent state
+    fresh.currencies = persistent.currencies;
+    fresh.stats = persistent.stats;
+    fresh.meta = persistent.meta;
+    fresh.achievements = persistent.achievements;
+    fresh.artifacts = persistent.artifacts;
+    fresh.settings = persistent.settings;
+    fresh.completedMissions = persistent.completedMissions;
+    fresh.cards = persistent.cards;
+    if (persistent.codex) {
+      fresh.codex = persistent.codex;
+    }
+
+    // Set post-supernova target
     fresh.activeEpoch = 3;
     fresh.activeTab = 'core';
-    
-    if (autoStabilizer) {
-      fresh.era1 = JSON.parse(JSON.stringify(state.era1));
-      fresh.era2 = JSON.parse(JSON.stringify(state.era2));
-    }
-    
-    // Retain prestige currencies and stats
-    fresh.currencies.stardust.amount = state.currencies.stardust.amount;
-    fresh.currencies.pulsarShards.amount = state.currencies.pulsarShards.amount;
-    fresh.currencies.singularityMass.amount = state.currencies.singularityMass.amount;
-    fresh.currencies.bits.amount = state.currencies.bits.amount;
-    fresh.stats = JSON.parse(JSON.stringify(state.stats));
-    fresh.achievements = JSON.parse(JSON.stringify(state.achievements));
-    fresh.artifacts = JSON.parse(JSON.stringify(state.artifacts));
-    fresh.settings = JSON.parse(JSON.stringify(state.settings));
-    fresh.completedMissions = JSON.parse(JSON.stringify(state.completedMissions));
-    fresh.cards = JSON.parse(JSON.stringify(state.cards));
-    fresh.prestige.autoStabilizer = autoStabilizer;
 
-    // Mutate state in place to match fresh
-    for (const key in fresh) {
-      state[key] = fresh[key];
+    // Wipe old state safely
+    for (const key of Object.keys(state)) {
+      delete state[key];
     }
     
-    let transitionToEra4 = false;
-    if (state.stats.supernovas.gte(1)) {
-      if (state.stats.supernovas.gte(1) && !state.era4.act2Notified) {
-        transitionToEra4 = true;
-      }
-    }
+    Object.assign(state, fresh);
 
     return { 
       ok: true,
       changed: true,
       events: [
-        { type: "SUPERNOVA_TRIGGERED", yieldAmt: yieldAmt.toString() },
-        { type: "STATE_RESET" },
-        ...(transitionToEra4 ? [{ type: "ERA_TRANSITION", targetEra: 4 }] : [])
+        { type: "SUPERNOVA_TRIGGERED", outcome: outcome.outcome, rewards: { stardust: rewards.stardust.toString(), pulsarShards: rewards.pulsarShards.toString(), singularityMass: rewards.singularityMass.toString() } },
+        { type: "STELLAR_RUN_STARTED", runNumber: 2 },
+        { type: "STATE_RESET" }
       ]
     };
   }

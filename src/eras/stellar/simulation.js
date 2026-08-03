@@ -14,6 +14,11 @@ export function simulateStellarEra(state, dt) {
   let stability = new Decimal(100).plus(efficientLvl * 10).minus(massiveLvl * 10);
   let fuelEfficiency = new Decimal(1.0).plus(efficientLvl * 0.1);
   let speedMult = new Decimal(1.0).plus(massiveLvl * 0.1);
+
+  if (state.meta && state.meta.stellarLegacyModifiers) {
+    stability = stability.times(state.meta.stellarLegacyModifiers.secondRunStabilityMult || 1.0);
+    speedMult = speedMult.times(state.meta.stellarLegacyModifiers.secondRunProductionMult || 1.0);
+  }
   
   // Completed stellar phases (based on temperature and stage)
   let phases = 1;

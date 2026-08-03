@@ -371,9 +371,20 @@
         <div class="prestige-card-panel">
           <p>The star's core pressure matrix has scaled past critical thresholds.</p>
           <div class="supernova-outcome-box" id="supernova-outcome-display">
-            <div class="outcome-label">Expected Outcome</div>
+            <div class="outcome-label">Predicted Remnant</div>
             <div class="outcome-type" id="supernova-outcome-type">White Dwarf</div>
+            
+            <div class="outcome-label" style="margin-top: 8px;">Dominant Architecture</div>
+            <div class="outcome-type" id="supernova-outcome-archetype" style="font-size: 0.95em; color: #a29bfe;">Balanced</div>
+            
+            <div class="outcome-label" style="margin-top: 8px;">Expected Rewards</div>
             <div class="outcome-yields" id="supernova-outcome-yields"></div>
+            
+            <div class="outcome-label" style="margin-top: 8px;">Prediction Factors</div>
+            <div id="supernova-outcome-reasons" style="font-size: 0.85em; color: #b2bec3; line-height: 1.4; margin-top: 4px;"></div>
+            
+            <div class="outcome-label" style="margin-top: 12px; font-weight: bold;">Status</div>
+            <div id="supernova-outcome-status" style="font-size: 0.9em; font-weight: bold; color: #ff7675; margin-bottom: 8px;">Blocked</div>
           </div>
           <button id="btn-supernova">Trigger Supernova</button>
         </div>
