@@ -4,7 +4,7 @@
 // [SEC-05] VISUAL FORMATTING & AUDIO HELPER ENGINES
 import { getInitialEra2State } from '../state/createInitialState.js';
 import { getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, getGalacticDarkMatterRate, getGalacticMergeYield, getCompressionsCompleted } from '../core/economy.js';
-import { getPlasmaRates } from '../eras/plasma/selectors.js';
+import { getPlasmaRates, getPlasmaUpgradeVisibility } from '../eras/plasma/selectors.js';
 import { getQuantumRates } from '../eras/quantum/selectors.js';
 import { getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 import { updateSupernovaOutcome } from './stellar.js';
@@ -361,13 +361,20 @@ export const ArtifactManager = {
     if (modal) modal.style.display = 'none';
   },
 
+  _lastRenderSignature: "",
+
   renderBar() {
     const bar = document.getElementById('artifact-bar');
     if (!bar) return;
 
-    bar.style.display = 'flex';
-
     const equipped = gameState.artifacts ? (gameState.artifacts.equipped || [null, null, null]) : [null, null, null];
+    const unlocked = gameState.artifacts ? (gameState.artifacts.unlocked || []) : [];
+    const signature = `${gameState.activeEpoch}|${equipped.join(',')}|${unlocked.join(',')}`;
+
+    if (this._lastRenderSignature === signature) return;
+    this._lastRenderSignature = signature;
+
+    bar.style.display = 'flex';
 
     for (let i = 0; i < 3; i++) {
       const slotEl = document.querySelector(`.artifact-slot[data-slot="${i}"]`);
@@ -851,7 +858,7 @@ export const Viewport = {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    if (container.children.length <= 1) {
+    if (!container.dataset.initialized || container.dataset.category !== category) {
       let headerText = category === 'quantum' ? 'FUNDAMENTAL PHYSICS STRATIFICATION' :
         (category === 'plasma' ? 'PRIMORDIAL PLASMA CRUCIBLE INFRASTRUCTURE' : 'MACRO GALACTIC ACCRETION NETWORK');
       container.innerHTML = `<div class="section-title" style="color: ${displayColor}; font-size: 1.0rem; letter-spacing: 2px; margin-bottom: 15px; font-weight: bold;">${headerText}</div>`;
@@ -860,6 +867,7 @@ export const Viewport = {
         const row = document.createElement('div');
         row.id = `${category}-row-${key}`;
         row.className = 'cosmic-card';
+        row.style.display = 'none'; // start hidden
         row.innerHTML = Templates.genericTierListRow(displayColor, def.rarity || 'common');
         const btn = row.querySelector('.upgrade-btn');
         btn.addEventListener('click', () => Economy.buy(category, key));
@@ -871,6 +879,8 @@ export const Viewport = {
         };
         container.appendChild(row);
       }
+      container.dataset.initialized = 'true';
+      container.dataset.category = category;
     }
 
     for (let key in COSMIC_REGISTRY.upgrades[category]) {
@@ -889,17 +899,60 @@ export const Viewport = {
         };
       }
 
+      let isVisible = true;
+      let isPreview = false;
+
       if (category === 'quantum') {
-        const hasUnlocked10 = gameState.unfold && gameState.unfold.hasUnlocked10QF;
-        if (!hasUnlocked10 && key !== 'gravityForce' && state.level === 0) { row.style.display = 'none'; continue; }
-        else { row.style.display = 'flex'; }
+        const qf = gameState.stats && gameState.stats.maxQF ? gameState.stats.maxQF.toNumber() : 0;
+        if (key === 'gravityForce') {
+          if (qf < 10) { isVisible = false; }
+          else { isVisible = true; isPreview = false; }
+        } else if (key === 'weakForce') {
+          if (qf < 10) { isVisible = false; }
+          else if (qf < 100) { isVisible = true; isPreview = true; }
+          else { isVisible = true; isPreview = false; }
+        } else if (key === 'electromagneticForce') {
+          if (qf < 100) { isVisible = false; }
+          else if (qf < 500) { isVisible = true; isPreview = true; }
+          else { isVisible = true; isPreview = false; }
+        } else if (key === 'vacuumResonance') {
+          if (qf < 500) { isVisible = false; }
+          else if (qf < 2500) { isVisible = true; isPreview = true; }
+          else { isVisible = true; isPreview = false; }
+        } else if (key === 'strongForce') {
+          if (qf < 2500) { isVisible = false; }
+          else if (qf < 10000) { isVisible = true; isPreview = true; }
+          else { isVisible = true; isPreview = false; }
+        }
       }
 
       if (category === 'plasma') {
-        if (key === 'gluonBinding' && gameState.upgrades.plasma.quarkCondenser.level < 3) { row.style.display = 'none'; continue; }
-        else if (key === 'leptonHarvest' && gameState.upgrades.plasma.gluonBinding.level < 2) { row.style.display = 'none'; continue; }
-        else if (key === 'plasmaAutomation' && gameState.upgrades.plasma.leptonHarvest.level < 1) { row.style.display = 'none'; continue; }
-        else { row.style.display = 'flex'; }
+        const plasmaVis = getPlasmaUpgradeVisibility(gameState);
+        if (plasmaVis[key]) {
+          isVisible = plasmaVis[key] !== 'none';
+        }
+      }
+
+      if (!isVisible) {
+        row.style.display = 'none';
+        continue;
+      } else {
+        row.style.display = 'flex';
+      }
+
+      const btn = row._cache.btn;
+
+      if (isPreview) {
+        row._cache.name.textContent = "???";
+        row._cache.lvl.textContent = "";
+        row._cache.desc.textContent = "Insufficient theoretical framework...";
+        btn.textContent = "LOCKED";
+        btn.disabled = true;
+        btn.style.background = 'rgba(255, 255, 255, 0.04)';
+        btn.style.color = '#64748b';
+        btn.style.borderColor = 'transparent';
+        row.classList.remove('upgrade-affordable');
+        continue;
       }
 
       let currentCostLabel = typeof costLabelText === 'function' ? costLabelText(key) : costLabelText;
@@ -924,7 +977,6 @@ export const Viewport = {
       if (isAffordable) row.classList.add('upgrade-affordable');
       else row.classList.remove('upgrade-affordable');
 
-      const btn = row._cache.btn;
       if (isMaxed) {
         btn.textContent = "MAXED";
         btn.disabled = true;
@@ -1321,7 +1373,7 @@ export const Viewport = {
       document.body.setAttribute('data-tab', targetTab);
     }
 
-    document.getElementById('active-epoch-name').textContent = currentEpoch.name;
+    this.setTextContent('active-epoch-name', currentEpoch.name);
 
     const objNode = document.getElementById('era-objective-text');
     if (objNode) {
@@ -1350,12 +1402,15 @@ export const Viewport = {
     const navMenu = document.querySelector('.tab-menu');
     if (navMenu) navMenu.style.display = (isEra1 && !unfold.hasUnlocked10QF) ? 'none' : 'flex';
 
-    const allPossibleTabs = ["core", "upgrades", "system", "shop", "pulsar", "singularity", "prestige", "settings"];
+    const allPossibleTabs = ["core", "upgrades", "artifacts", "system", "shop", "pulsar", "singularity", "prestige", "settings"];
     allPossibleTabs.forEach(tabId => {
       const navBtn = document.getElementById(`nav-${tabId}`);
       if (navBtn) {
         let isTabAllowed = currentEpoch.tabs.includes(tabId);
         if (isEra1 && !unfold.hasUnlocked10QF && tabId !== 'core') isTabAllowed = false;
+        if (tabId === 'artifacts' && (!gameState.artifacts || !gameState.artifacts.unlocked || gameState.artifacts.unlocked.length === 0)) {
+          isTabAllowed = false;
+        }
         navBtn.style.display = isTabAllowed ? "" : "none";
       }
     });
@@ -1385,8 +1440,12 @@ export const Viewport = {
       this.setTextContent('label-helium', t('label_energy_density') + ` (Temp: ${format(gameState.eraITemperature)} K)`);
 
       const inflationBtn = this.getEl('btn-inflation');
-      if (inflationBtn) {
-        inflationBtn.disabled = gameState.resources.quantumFluctuations.amount.lt(COSMIC_REGISTRY.constants.inflationThreshold);
+      const inflationCard = this.getEl('era1-locked-card');
+      const isInflationReady = gameState.resources.quantumFluctuations.amount.gte(COSMIC_REGISTRY.constants.inflationThreshold);
+      if (inflationBtn && inflationCard) {
+        inflationBtn.style.display = isInflationReady ? 'block' : 'none';
+        inflationCard.style.display = isInflationReady ? 'none' : 'block';
+        inflationBtn.disabled = !isInflationReady;
       }
 
       if (gameState.activeTab === 'upgrades') {
@@ -1443,8 +1502,12 @@ export const Viewport = {
       this.updateResourceDelta('temperature', pRates.coolingRate.times(-1));
 
       const recombBtn = this.getEl('btn-recombination');
-      if (recombBtn) {
-        recombBtn.disabled = !(gameState.resources.protons.amount.gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) || gameState.plasmaTemperature.lte(3000));
+      const recombCard = this.getEl('era2-locked-card');
+      const isRecombReady = gameState.resources.protons.amount.gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) || gameState.plasmaTemperature.lte(3000);
+      if (recombBtn && recombCard) {
+        recombBtn.style.display = isRecombReady ? 'block' : 'none';
+        recombCard.style.display = isRecombReady ? 'none' : 'block';
+        recombBtn.disabled = !isRecombReady;
       }
 
       if (gameState.activeTab === 'upgrades') {

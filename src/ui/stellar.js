@@ -21,7 +21,7 @@ export function updateSupernovaOutcome() {
   
   if (!typeEl || !yieldsEl) return;
 
-  const gameState = engine.getState();
+  const gameState = engine.getStateUnsafe();
   const outcome = getSupernovaOutcome(gameState);
   const eligibility = getSupernovaEligibility(gameState);
 

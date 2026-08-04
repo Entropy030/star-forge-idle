@@ -102,6 +102,11 @@ function gameTick(dt) {
     if (currentQF.gte(10)) gameState.unfold.hasUnlocked10QF = true;
     if (currentQF.gte(100)) gameState.unfold.hasUnlocked100QF = true;
 
+    if (!gameState.stats.maxQF) gameState.stats.maxQF = new Decimal(0);
+    if (currentQF.gt(gameState.stats.maxQF)) {
+      gameState.stats.maxQF = currentQF;
+    }
+
     // Era 1 Act unfolding progression removed from here (handled by ActManager)
   } else if (gameState.activeEpoch === 2) {
     // Era 2 Coherence Equilibrium: high temp (>8M K) slightly drains coherence, cooling (<500k K) recovers it toward 100%

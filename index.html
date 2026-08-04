@@ -15,9 +15,14 @@
     rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=34">
   <link rel="manifest" href="manifest.json">
+  <style id="critical-boot-guard">
+    html:not(.app-ready) body {
+      visibility: hidden;
+    }
+  </style>
 </head>
 
-<body id="app-root" data-epoch="1" data-tab="core" data-act="1">
+<body id="app-root" class="booting" data-epoch="1" data-tab="core" data-act="1">
 
   <!-- Full-Bleed Cosmic Backdrop: era-scoped ambient scene layer, sits behind all HUD content -->
   <div id="cosmic-backdrop" aria-hidden="true">
@@ -124,7 +129,8 @@
 
 
 
-  <header class="game-header">
+  <div id="game-shell" hidden>
+    <header class="game-header">
     <h1>STAR FORGE</h1>
     <p class="stage-text timeline-banner">TIMELINE: <span id="active-epoch-name">Era I: The Quantum Foam</span></p>
     <p class="stage-text cosmic-phase-banner">Cosmic Phase: <span id="stage">Protostar</span></p>
@@ -152,7 +158,7 @@
 
   <!-- Minimal Persistent Primary Metrics Readout HUD -->
   <div class="dashboard-container">
-    <div id="prestige-bar" class="currency-prestige-bar">
+    <div id="prestige-bar" class="currency-prestige-bar" style="display: none;">
       <svg class="ui-icon icon-yellow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" fill="currentColor"/></svg> Synaptic Dust: <span id="stardust-count">0</span> (<span id="stardust-boost">0</span>% Boost)
       <div id="tier2-currencies" class="tier2-hidden">
         <span><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15,9 22,12 15,15 12,22 9,15 2,12 9,9"/></svg> Neural Synapse: <span id="pulsar-count">0</span></span> |
@@ -265,6 +271,24 @@
         </div>
       </div>
 
+      <div class="era-transition-shell">
+        <div id="era1-transition-container" class="era1-only" style="margin-top: 20px;">
+          <div id="era1-locked-card" class="cosmic-card" style="text-align: center; color: #a0a8b0; padding: 15px; border-style: dashed;">
+            <div style="font-weight: bold; letter-spacing: 1px;">COSMIC INFLATION</div>
+            <div style="font-size: 0.8rem; margin-top: 5px;">Requires 100,000 QF</div>
+          </div>
+          <button id="btn-inflation" class="btn-macro-shift bg-gradient-purple" style="width: 100%; display: none;">TRIGGER COSMIC INFLATION</button>
+        </div>
+
+        <div id="era2-transition-container" class="era2-only" style="margin-top: 20px;">
+          <div id="era2-locked-card" class="cosmic-card" style="text-align: center; color: #a0a8b0; padding: 15px; border-style: dashed;">
+            <div style="font-weight: bold; letter-spacing: 1px;">COSMIC RECOMBINATION</div>
+            <div style="font-size: 0.8rem; margin-top: 5px;">Requires 3,000 K Cooling or 1,000,000 Protons</div>
+          </div>
+          <button id="btn-recombination" class="btn-macro-shift bg-gradient-purple" style="width: 100%; display: none;">INITIATE COSMIC RECOMBINATION</button>
+        </div>
+      </div>
+
       <!-- Era III Actions -->
       <button id="flare-button" class="era3-only visual-hidden"></button>
     </div>
@@ -274,13 +298,9 @@
       <!-- Dynamic Era Upgrades Containers injection points -->
       <div class="era1-only">
         <div id="quantum-upgrades-container" class="upgrade-grid"></div>
-        <button id="btn-inflation" class="btn-macro-shift bg-gradient-purple"
-          style="margin-top: 20px; width: 100%;">TRIGGER COSMIC INFLATION</button>
       </div>
       <div class="era2-only">
         <div id="plasma-upgrades-container" class="upgrade-grid"></div>
-        <button id="btn-recombination" class="btn-macro-shift bg-gradient-purple"
-          style="margin-top: 20px; width: 100%;">INITIATE COSMIC RECOMBINATION</button>
       </div>
       <div class="era4-only">
         <div id="galaxy-upgrades-container" class="upgrade-grid"></div>
@@ -516,6 +536,7 @@
     <button id="nav-prestige" class="tab-btn">Prestige</button>
     <button id="nav-settings" class="tab-btn">System <svg class="ui-icon icon-grey" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </nav>
+  </div>
 
   <script src="break_infinity.js"></script>
   <script type="module" src="src/main.js"></script>

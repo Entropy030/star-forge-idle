@@ -9,6 +9,7 @@ export default defineConfig({
       includeAssets: ['**/*'], // Ensures all assets are cached
       manifest: false, // Don't generate a manifest, we have one
       workbox: {
+        cacheId: 'star-forge-idle',
         globPatterns: ['**/*.{js,css,html,json,svg,png,woff2}']
       }
     })

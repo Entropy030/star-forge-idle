@@ -220,6 +220,11 @@ function triggerInflation() {
     gameState.plasmaTemperature = new Decimal(10000000);
     gameState.cosmicAge = new Decimal(0);
 
+    if (!gameState.artifacts.unlocked.includes("quantum_lens")) {
+      gameState.artifacts.unlocked.push("quantum_lens");
+      Viewport.showToast("Artifact Discovered: Quantum Lens", "success");
+    }
+
     const flashElement = document.createElement('div');
     flashElement.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #fff; z-index: 99999; pointer-events: none; animation: flashEffect 1.2s forwards;";
     document.body.appendChild(flashElement);
@@ -589,25 +594,84 @@ function renderLoop() {
 
 setInterval(function () { saveGame(); }, 5000);
 
-loadGame();
-checkDevMode();
-if (new URLSearchParams(window.location.search).get('dev') === 'true') {
-  runParityHarness();
+async function bootApp() {
+  if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+    try {
+      console.log("[DEV] SW Controller:", navigator.serviceWorker.controller);
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      let wasControlled = !!navigator.serviceWorker.controller;
+      let unregistered = false;
+      for (let r of registrations) {
+        if (r.scope === window.location.origin + '/') {
+           console.log("[DEV] Unregistering SW at scope:", r.scope);
+           await r.unregister();
+           unregistered = true;
+        }
+      }
+      if (unregistered) {
+        const keys = await window.caches.keys();
+        for (const key of keys) {
+          if (key.includes('star-forge-idle')) {
+            console.log("[DEV] Deleting cache:", key);
+            await window.caches.delete(key);
+          }
+        }
+        if (wasControlled && !window.sessionStorage.getItem('sw_reloaded')) {
+          window.sessionStorage.setItem('sw_reloaded', 'true');
+          console.log("[DEV] Reloading to shed SW control...");
+          window.location.reload();
+          return;
+        }
+      }
+    } catch(e) {
+      console.error("SW cleanup failed", e);
+    }
+  }
+
+  try {
+    loadGame();
+    engine.loadState(gameState);
+
+    checkDevMode();
+    if (new URLSearchParams(window.location.search).get('dev') === 'true') {
+      runParityHarness();
+    }
+    
+    Viewport.update();
+    Viewport.switchTab(gameState.activeTab);
+    Viewport.renderPrestigeVisibility();
+
+    if (gameState.activeEpoch === 1 && (!gameState.unfold || !gameState.unfold.introCompleted)) {
+      showIntroScreenCinematic(() => {
+        const shell = document.getElementById('game-shell');
+        if (shell) shell.hidden = false;
+      });
+    } else {
+      requestAnimationFrame(() => {
+        const shell = document.getElementById('game-shell');
+        if (shell) shell.hidden = false;
+      });
+    }
+  } catch (e) {
+    console.error("Boot sequence failed:", e);
+  } finally {
+    document.body.classList.remove('booting');
+    requestAnimationFrame(() => {
+      document.documentElement.classList.add('app-ready');
+    });
+  }
+
+  requestAnimationFrame(renderLoop);
 }
-if (gameState.activeEpoch === 1 && (!gameState.unfold || !gameState.unfold.introCompleted)) {
-  showIntroScreenCinematic();
-}
-Viewport.switchTab(gameState.activeTab);
 
 window.addEventListener('resize', () => Viewport.syncAnchor(true));
 
-requestAnimationFrame(renderLoop);
+bootApp();
 
 // ==========================================================================
 // [SEC-20] IRON-CLAD DECOUPLED RUNTIME EVENT BINDING INITIALIZER
 // ==========================================================================
 document.addEventListener('DOMContentLoaded', () => {
-  document.body.classList.remove('hydrating');
   initFloatingTextPool();
   ArtifactManager.recalculateArtifactModifiers();
   Viewport.syncAnchor(true);
@@ -740,8 +804,24 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnReignite = document.querySelector('.btn-reignite');
   if (btnReignite) btnReignite.addEventListener('click', closeTheatrical);
 
-  bindClick('btn-export', exportSave);
-  bindClick('btn-import', importSave);
+  bindClick('btn-export', () => {
+    exportSave().then(res => {
+      Viewport.showToast(res.message, res.success ? "success" : "error");
+    });
+  });
+  bindClick('btn-import', () => {
+    const input = prompt("Paste your universe string here:");
+    if (input) {
+      const res = importSave(input);
+      if (res.success) {
+        engine.loadState(gameState);
+        Viewport.showToast("Universe loaded successfully.", "success");
+        Viewport.switchTab(gameState.activeTab);
+      } else {
+        Viewport.showToast(res.message, "error");
+      }
+    }
+  });
   bindClick('btn-wipe', wipeSave);
 
   ['gravity', 'fuser', 'compress', 'carbon', 'iron'].forEach(key => {

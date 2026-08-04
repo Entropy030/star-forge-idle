@@ -120,7 +120,7 @@ export function createInitialState() {
     },
     artifacts: {
       equipped: [null, null, null],
-      unlocked: ["quantum_lens", "density_compressor", "pulse_coupler", "singularity_core", "vacuum_stabilizer", "big_bang_catalyst"],
+      unlocked: [],
       modifiers: {
         productionMult: 1.0,
         costDiscount: 0.0,
@@ -143,6 +143,7 @@ export function createInitialState() {
       supernovas: new Decimal(0),
       totalStardust: new Decimal(0),
       maxTemp: new Decimal(0),
+      maxQF: new Decimal(0),
       flaresCollected: new Decimal(0)
     },
     achievements: {

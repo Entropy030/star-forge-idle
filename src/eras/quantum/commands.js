@@ -29,6 +29,11 @@ export const quantumCommandHandlers = {
       if (state.resources.quantumFluctuations.amount.gte(10)) state.unfold.hasUnlocked10QF = true;
       if (state.resources.quantumFluctuations.amount.gte(100)) state.unfold.hasUnlocked100QF = true;
 
+      if (!state.stats.maxQF) state.stats.maxQF = new Decimal(0);
+      if (state.resources.quantumFluctuations.amount.gt(state.stats.maxQF)) {
+        state.stats.maxQF = state.resources.quantumFluctuations.amount;
+      }
+
       // Handle active click boost
       if (state.artifacts?.modifiers?.clickPassiveBoost > 0) {
         state.artifacts.modifiers.activeClickBoostSec = 3.0;

@@ -149,17 +149,15 @@ export const CodexEngine = {
   },
 
   getActiveNarrative(gameState) {
-    // Select the highest sortOrder unlocked entry that has a narrative text
     let bestEntry = null;
     let maxSort = -1;
 
-    for (const entry of CODEX_ENTRIES) {
+    const unlocked = this.getUnlockedEntries(gameState);
+    for (const entry of unlocked) {
       if (!entry.narrativeText) continue;
-      if (this._evaluateCondition(entry.unlockCondition, gameState)) {
-        if (entry.sortOrder > maxSort) {
-          maxSort = entry.sortOrder;
-          bestEntry = entry;
-        }
+      if (entry.sortOrder > maxSort) {
+        maxSort = entry.sortOrder;
+        bestEntry = entry;
       }
     }
     return bestEntry;

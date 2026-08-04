@@ -78,14 +78,15 @@ export { serializeState, deserializeState };
 
 export const saveGame = function() {
   const saveState = { version: SAVE_VERSION, gameState: serializeState(gameState), lastSavedTime: Date.now() };
-  localStorage.setItem('starForgeSave_v16', JSON.stringify(saveState));
+  localStorage.setItem('starForgeSave_v17', JSON.stringify(saveState));
 }
 
 
 
 export const loadGame = function() {
   try {
-    let rawData = localStorage.getItem('starForgeSave_v16') || 
+    let rawData = localStorage.getItem('starForgeSave_v17') || 
+                  localStorage.getItem('starForgeSave_v16') || 
                   localStorage.getItem('starForgeSave_v15') || 
                   localStorage.getItem('starForgeSave_v14') || 
                   localStorage.getItem('starForgeSave_v13') || 
@@ -151,7 +152,7 @@ export const loadGame = function() {
 
 export const exportSave = function() {
   saveGame();
-  let rawData = localStorage.getItem('starForgeSave_v16');
+  let rawData = localStorage.getItem('starForgeSave_v17');
   if (rawData) {
     let encoded = btoa(rawData);
     return navigator.clipboard.writeText(encoded)
@@ -167,16 +168,16 @@ export const importSave = function(input) {
     let decoded = atob(input);
     let parsed = JSON.parse(decoded);
     if (parsed && parsed.version === SAVE_VERSION) {
-      let temp = gameState;
       try {
-        gameState = createReactiveState(deserializeState(parsed.gameState), (prop) => {
+        const importedState = createReactiveState(deserializeState(parsed.gameState), (prop) => {
           isDirty = true;
         });
-        ensureStateShape(gameState);
-        localStorage.setItem('starForgeSave_v16', decoded);
+        ensureStateShape(importedState);
+        gameState = importedState;
+        localStorage.setItem('starForgeSave_v17', decoded);
         return { success: true };
-      } finally {
-        gameState = temp;
+      } catch (e) {
+        return { success: false, message: "State format error during import." };
       }
     } else { return { success: false, message: "Unsupported timeline formatting configuration." }; }
   } catch (e) { return { success: false, message: "Fatal transmission verification corruption." }; }
@@ -186,9 +187,9 @@ export function wipeSave() {
   if (confirm("Are you sure you want to reset all universe progression? This cannot be undone.")) {
     const overlay = document.getElementById('intro-screen-overlay');
     if (overlay) delete overlay.dataset.initialized;
+    localStorage.removeItem('starForgeSave_v17');
     localStorage.removeItem('starForgeSave_v16');
     localStorage.removeItem('starForgeSave_v15');
-    localStorage.removeItem('starForgeSave_v14');
     location.reload();
   }
 }
