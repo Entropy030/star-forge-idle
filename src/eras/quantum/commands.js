@@ -46,6 +46,21 @@ export const quantumCommandHandlers = {
     return { ok: false, changed: false, events: [], error: { code: 'UNHANDLED_EPOCH' } };
   },
 
+  TRIGGER_INFLATION: (state, cmd) => {
+    if (state.activeEpoch !== 1) return { ok: false, changed: false, events: [], error: { code: 'WRONG_EPOCH' } };
+    if (state.resources.quantumFluctuations.amount.lt(COSMIC_REGISTRY.constants.inflationThreshold)) {
+      return { ok: false, changed: false, events: [], error: { code: 'INSUFFICIENT_QF' } };
+    }
+    
+    state.activeEpoch = 2;
+    state.era1.currentAct = 4;
+    return {
+      ok: true,
+      changed: true,
+      events: [{ type: 'ERA_TRANSITION', targetEra: 2 }]
+    };
+  },
+
   BUY_UPGRADE: (state, cmd) => {
     // Expected payload: { category: 'quantum', upgradeId: 'vacuumEnergy', loops: 1 }
     const { category, upgradeId, loops = 1 } = cmd.payload;

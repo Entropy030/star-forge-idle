@@ -152,11 +152,14 @@ export function createInitialState() {
       firstBlackHole: { unlocked: false },
       firstHawkingRadiation: { unlocked: false }
     },
+    codex: {
+      unlockedEntryIds: []
+    },
     flares: { nextSpawnInSec: new Decimal(120), active: null },
     buffs: { fusionSurge: { remainingSec: new Decimal(0) } }
   };
 
-  for (let category of ['quantum', 'plasma', 'stardust', 'pulsar', 'singularity', 'galaxy', 'era5']) {
+  for (let category of ['quantum', 'plasma', 'stellar', 'stardust', 'pulsar', 'singularity', 'galaxy', 'era5']) {
     state.upgrades[category] = state.upgrades[category] || {};
     for (let key in COSMIC_REGISTRY.upgrades[category]) {
       let def = COSMIC_REGISTRY.upgrades[category][key];

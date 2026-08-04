@@ -78,14 +78,15 @@ export { serializeState, deserializeState };
 
 export const saveGame = function() {
   const saveState = { version: SAVE_VERSION, gameState: serializeState(gameState), lastSavedTime: Date.now() };
-  localStorage.setItem('starForgeSave_v15', JSON.stringify(saveState));
+  localStorage.setItem('starForgeSave_v16', JSON.stringify(saveState));
 }
 
 
 
 export const loadGame = function() {
   try {
-    let rawData = localStorage.getItem('starForgeSave_v15') || 
+    let rawData = localStorage.getItem('starForgeSave_v16') || 
+                  localStorage.getItem('starForgeSave_v15') || 
                   localStorage.getItem('starForgeSave_v14') || 
                   localStorage.getItem('starForgeSave_v13') || 
                   localStorage.getItem('starForgeSave');
@@ -150,7 +151,7 @@ export const loadGame = function() {
 
 export const exportSave = function() {
   saveGame();
-  let rawData = localStorage.getItem('starForgeSave_v15');
+  let rawData = localStorage.getItem('starForgeSave_v16');
   if (rawData) {
     let encoded = btoa(rawData);
     return navigator.clipboard.writeText(encoded)
@@ -172,7 +173,7 @@ export const importSave = function(input) {
           isDirty = true;
         });
         ensureStateShape(gameState);
-        localStorage.setItem('starForgeSave_v15', decoded);
+        localStorage.setItem('starForgeSave_v16', decoded);
         return { success: true };
       } finally {
         gameState = temp;
@@ -185,6 +186,7 @@ export function wipeSave() {
   if (confirm("Are you sure you want to reset all universe progression? This cannot be undone.")) {
     const overlay = document.getElementById('intro-screen-overlay');
     if (overlay) delete overlay.dataset.initialized;
+    localStorage.removeItem('starForgeSave_v16');
     localStorage.removeItem('starForgeSave_v15');
     localStorage.removeItem('starForgeSave_v14');
     location.reload();

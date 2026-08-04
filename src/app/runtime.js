@@ -46,7 +46,7 @@ export function initRuntime(engine) {
   const offlineData = loadGame(); // Legacy compat for now
 
   // In the future:
-  // const serializedState = localStorage.getItem('starForgeSave_v15');
+  // const serializedState = localStorage.getItem('starForgeSave_v16');
   // const state = deserializeAndMigrate(serializedState);
   // engine.loadState(state);
   // const offlineData = processOfflineProgress(engine, elapsedSeconds);

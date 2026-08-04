@@ -26,6 +26,59 @@ export const stellarCommandHandlers = {
     };
   },
 
+  BUY_UPGRADE_STELLAR: (state, cmd) => {
+    const { category, upgradeId, loops = 1 } = cmd.payload;
+    if (category !== 'stellar' && category !== 'stardust') {
+      return { ok: false, changed: false, events: [], error: { code: 'WRONG_CATEGORY' } };
+    }
+    
+    const registry = COSMIC_REGISTRY.upgrades[category];
+    const def = registry[upgradeId];
+    const upgradeState = state.upgrades[category][upgradeId];
+    
+    if (!def || !upgradeState) {
+      return { ok: false, changed: false, events: [], error: { code: 'UNKNOWN_UPGRADE' } };
+    }
+    
+    // Currency is resolved differently for stellar/stardust
+    // Stellar architecture uses Helium (or specific resources), but in registry stellar.currency = 'helium' usually.
+    let currencyKey = def.currency || 'helium';
+    if (category === 'stardust') currencyKey = 'stardust'; // explicit fallback
+    
+    let currencyAmount = state.resources[currencyKey]?.amount || new Decimal(0);
+    const discount = state.artifacts?.modifiers?.costDiscount || 0.0;
+    
+    let bought = 0;
+    for (let i = 0; i < loops; i++) {
+      if (def.max !== undefined && upgradeState.level >= def.max) break;
+      const effectiveCost = discount > 0 ? upgradeState.cost.times(1.0 - discount).floor() : upgradeState.cost;
+      
+      if (currencyAmount.lt(effectiveCost)) break;
+      
+      currencyAmount = currencyAmount.minus(effectiveCost);
+      upgradeState.level += 1;
+      
+      if (def.costScaling) {
+        upgradeState.cost = upgradeState.cost.times(def.costScaling).round();
+      } else {
+        upgradeState.cost = upgradeState.cost.times(2).round();
+      }
+      bought++;
+    }
+    
+    if (bought === 0) {
+      return { ok: false, changed: false, events: [], error: { code: 'INSUFFICIENT_FUNDS' } };
+    }
+    
+    state.resources[currencyKey].amount = currencyAmount;
+    
+    return {
+      ok: true,
+      changed: true,
+      events: [{ type: 'UPGRADE_BOUGHT', category, upgradeId, count: bought }]
+    };
+  },
+
   BUY_CORE_NODE: (state, cmd) => {
     const { key, loops = 1 } = cmd.payload;
     if (state.activeEpoch !== 3) return { ok: false, changed: false, events: [], error: { code: 'UNHANDLED_EPOCH' } };
@@ -135,9 +188,11 @@ export const stellarCommandHandlers = {
     };
 
     // Grant rewards exactly once
+    console.log(`[DEBUG] TRIGGER_SUPERNOVA granting stardust. Current: ${persistent.currencies.stardust.amount.toString()}, Reward: ${rewards.stardust.toString()}`);
     persistent.currencies.stardust.amount = persistent.currencies.stardust.amount.plus(rewards.stardust);
     persistent.currencies.pulsarShards.amount = persistent.currencies.pulsarShards.amount.plus(rewards.pulsarShards);
     persistent.currencies.singularityMass.amount = persistent.currencies.singularityMass.amount.plus(rewards.singularityMass);
+    console.log(`[DEBUG] TRIGGER_SUPERNOVA granted stardust. New: ${persistent.currencies.stardust.amount.toString()}`);
     
     persistent.stats.totalStardust = persistent.stats.totalStardust.plus(rewards.stardust);
     persistent.stats.supernovas = persistent.stats.supernovas.plus(1);
@@ -182,6 +237,7 @@ export const stellarCommandHandlers = {
     }
     
     Object.assign(state, fresh);
+    console.log(`[DEBUG] After Object.assign, state.currencies.stardust.amount = ${state.currencies.stardust.amount.toString()}`);
 
     return { 
       ok: true,

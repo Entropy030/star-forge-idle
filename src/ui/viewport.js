@@ -1,9 +1,14 @@
+/* eslint-disable import/no-cycle */
+
+
 // [SEC-05] VISUAL FORMATTING & AUDIO HELPER ENGINES
 import { getInitialEra2State } from '../state/createInitialState.js';
 import { getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, getGalacticDarkMatterRate, getGalacticMergeYield, getCompressionsCompleted } from '../core/economy.js';
 import { getPlasmaRates } from '../eras/plasma/selectors.js';
 import { getQuantumRates } from '../eras/quantum/selectors.js';
 import { getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
+import { updateSupernovaOutcome } from './stellar.js';
+import { CodexEngine } from './codex.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
@@ -14,7 +19,6 @@ import { Timeline } from '../core/timeline.js';
 
 let audioCtx;
 let transTypewriterInterval;
-let typewriterInterval;
 let toastQueue = [];
 let toastIdCounter = 0;
 
@@ -169,54 +173,7 @@ export function startEraTransition(targetEpoch, transitionText, onConfirm) {
   };
 }
 
-function corruptText(cleanText, coherenceValue) {
-  if (!cleanText) return "";
 
-  // Strictly check exemption rules
-  if (gameState.prestige && gameState.prestige.autoStabilizer === true) {
-    return cleanText;
-  }
-  if (gameState.era1) {
-    if (gameState.era1.currentAct > 1 || gameState.era1.vacuumCoherence >= 1.0) {
-      return cleanText;
-    }
-  }
-
-  let coh = 0.0;
-  if (typeof coherenceValue === 'number') {
-    coh = coherenceValue;
-  } else if (coherenceValue instanceof Decimal) {
-    coh = coherenceValue.toNumber();
-  } else if (gameState.era1 && typeof gameState.era1.vacuumCoherence === 'number') {
-    coh = gameState.era1.vacuumCoherence;
-  }
-
-  // Normalize if coh passed in 0..100 range
-  if (coh > 1.0) coh = coh / 100.0;
-  coh = Math.max(0.0, Math.min(1.0, coh));
-
-  if (coh >= 1.0) return cleanText;
-
-  let corruptionChance = (1.0 - coh) * 0.8;
-  if (corruptionChance <= 0) return cleanText;
-
-  const pool = ['#', '%', '░', '█', 'Ø', '§', 'Δ', 'X', '0'];
-  let result = "";
-  for (let idx = 0; idx < cleanText.length; idx++) {
-    let char = cleanText.charAt(idx);
-    if (char === ' ' || char === '\n' || char === '\r' || char === '\t') {
-      result += char;
-    } else {
-      if (Math.random() < corruptionChance) {
-        let randChar = pool[Math.floor(Math.random() * pool.length)];
-        result += randChar;
-      } else {
-        result += char;
-      }
-    }
-  }
-  return result;
-}
 
 export const ActManager = {
   evaluate() {
@@ -499,22 +456,6 @@ export const ArtifactManager = {
   }
 };
 
-function typeWriter(element, text, speed = 25, onComplete = null) {
-  element.textContent = "";
-  let i = 0;
-  clearInterval(typewriterInterval);
-  typewriterInterval = setInterval(() => {
-    if (i < text.length) {
-      element.textContent += text.charAt(i);
-      i++;
-    } else {
-      clearInterval(typewriterInterval);
-      if (typeof onComplete === 'function') {
-        onComplete();
-      }
-    }
-  }, speed);
-}
 
 export const format = function (dec) {
   if (!(dec instanceof Decimal)) dec = new Decimal(dec);
@@ -740,7 +681,7 @@ export const Viewport = {
       this.renderShop('pulsar');
       this.renderShop('singularity');
       this.renderPrestigeVisibility();
-      this.updateSupernovaOutcome();
+      updateSupernovaOutcome();
     }
     if (tabId === 'settings') {
       this.renderStats();
@@ -904,77 +845,7 @@ export const Viewport = {
     }
   },
 
-  updateSupernovaOutcome() {
-    const typeEl = document.getElementById('supernova-outcome-type');
-    const yieldsEl = document.getElementById('supernova-outcome-yields');
-    const archEl = document.getElementById('supernova-outcome-archetype');
-    const reasonsEl = document.getElementById('supernova-outcome-reasons');
-    const statusEl = document.getElementById('supernova-outcome-status');
-    const supernovaBtn = document.getElementById('btn-supernova');
-    
-    if (!typeEl || !yieldsEl) return;
 
-    const outcome = getSupernovaOutcome(gameState);
-    const eligibility = getSupernovaEligibility(gameState);
-
-    const SUPERNOVA_STATUS_LABELS = {
-      WRONG_EPOCH: 'Supernova is only available during Era III.',
-      INCOMPLETE_STELLAR_STATE: 'Reach the Main Sequence Stellar state.',
-      INSUFFICIENT_TEMPERATURE: 'Increase the Stellar core temperature to 100M K.',
-      IRON_FUSION_LOCKED: 'Unlock Iron fusion.',
-      INSUFFICIENT_IRON: 'Accumulate 1,000 Iron.'
-    };
-
-    let outcomeColor = '#ffffff';
-    if (outcome.outcome === 'neutron-star') outcomeColor = '#00cec9';
-    if (outcome.outcome === 'black-hole') outcomeColor = '#a29bfe';
-
-    // Update Text/HTML
-    typeEl.textContent = outcome.displayName;
-    typeEl.style.color = outcomeColor;
-
-    if (archEl) {
-      archEl.textContent = outcome.archetype.charAt(0).toUpperCase() + outcome.archetype.slice(1);
-    }
-
-    if (reasonsEl) {
-      reasonsEl.innerHTML = outcome.reasons.map(r => `• ${r}`).join('<br>');
-    }
-
-    let yields = [];
-    if (outcome.rewards.stardust.gt(0)) yields.push(`+${format(outcome.rewards.stardust)} ✨ Synaptic Dust`);
-    if (outcome.rewards.pulsarShards.gt(0)) yields.push(`+${format(outcome.rewards.pulsarShards)} 🌀 Neural Synapse`);
-    if (outcome.rewards.singularityMass.gt(0)) yields.push(`+${format(outcome.rewards.singularityMass)} 🌌 Core Density`);
-    yieldsEl.innerHTML = yields.join('<br>');
-
-    if (statusEl) {
-      if (eligibility.canTrigger) {
-        statusEl.textContent = "Ready for Supernova";
-        statusEl.style.color = "#00cec9";
-      } else {
-        const errorText = SUPERNOVA_STATUS_LABELS[eligibility.errorCode] || `Blocked: ${eligibility.errorCode}`;
-        statusEl.textContent = `Blocked: ${errorText}`;
-        statusEl.style.color = "#ff7675";
-      }
-    }
-
-    if (supernovaBtn) {
-      if (eligibility.canTrigger) {
-        supernovaBtn.disabled = false;
-        supernovaBtn.style.background = "#d63031";
-        supernovaBtn.style.color = "#fff";
-        supernovaBtn.textContent = "TRIGGER SUPERNOVA RESET SEQUENCE";
-        supernovaBtn.classList.add('upgrade-affordable');
-      } else {
-        supernovaBtn.disabled = true;
-        supernovaBtn.style.background = "rgba(255,255,255,0.03)";
-        supernovaBtn.style.color = "#4b4b4b";
-        const errorText = SUPERNOVA_STATUS_LABELS[eligibility.errorCode] || "Prerequisites not met";
-        supernovaBtn.textContent = `Requires: ${errorText}`;
-        supernovaBtn.classList.remove('upgrade-affordable');
-      }
-    }
-  },
 
   renderGenericTierList(containerId, category, costLabelText, displayColor, activeCurrencyField) {
     const container = document.getElementById(containerId);
@@ -1251,7 +1122,7 @@ export const Viewport = {
     if (prestigeBtn) prestigeBtn.disabled = !(gameState.era3.stage === "Main Sequence Star" || gameState.currencies.stardust.amount.gt(0));
     if (gameState.activeTab === 'prestige') {
       this.renderPrestigeVisibility();
-      this.updateSupernovaOutcome();
+      updateSupernovaOutcome();
     }
 
     const core = document.getElementById('star-core');
@@ -1494,44 +1365,9 @@ export const Viewport = {
 
     const logNode = document.getElementById('chrono-neural-log');
     if (logNode) {
-      let activeLog = "";
-      if (gameState.activeEpoch === 1) {
-        const unfold = gameState.unfold || {};
-        const qf = gameState.resources.quantumFluctuations.amount;
-        if (qf.gte(80000)) {
-          activeLog = COSMIC_REGISTRY.narrativeLogs.era1.nearInflation;
-        } else if (qf.gte(25000)) {
-          activeLog = COSMIC_REGISTRY.narrativeLogs.era1.qf25000;
-        } else if (qf.gte(10000)) {
-          activeLog = COSMIC_REGISTRY.narrativeLogs.era1.qf10000;
-        } else if (qf.gte(2500)) {
-          activeLog = COSMIC_REGISTRY.narrativeLogs.era1.qf2500;
-        } else if (qf.gte(500)) {
-          activeLog = COSMIC_REGISTRY.narrativeLogs.era1.qf500;
-        } else if (unfold.hasUnlocked100QF || qf.gte(100)) {
-          activeLog = "[SYSTEM]: Vacuum fluctuation rate stable. Fundamental force stratification operational.";
-        } else if (unfold.hasUnlocked10QF || qf.gte(10)) {
-          activeLog = "[SYSTEM]: Energy density sufficient. Compiling Fluctuation Condenser...";
-        } else if (unfold.hasUnlocked1QF || qf.gte(1)) {
-          activeLog = "[SYSTEM]: Quantum Foam compiled. Primary metric online.";
-        } else {
-          activeLog = "> [ACTION]: OBSERVE THE VOID (CLICK CORE)";
-        }
-      } else if (gameState.activeEpoch === 2) {
-        if (gameState.resources.protons.amount.gte(800000)) activeLog = COSMIC_REGISTRY.narrativeLogs.era2.nearRecomb;
-        else if (gameState.upgrades.plasma.plasmaAutomation.level > 0) activeLog = COSMIC_REGISTRY.narrativeLogs.era2.fuserActive;
-        else activeLog = COSMIC_REGISTRY.narrativeLogs.era2.initial;
-      } else if (gameState.activeEpoch === 3) {
-        activeLog = COSMIC_REGISTRY.narrativeLogs.era3.initial;
-      } else if (gameState.activeEpoch === 4) {
-        activeLog = COSMIC_REGISTRY.narrativeLogs.era4.initial;
-      }
-      if (logNode.getAttribute('data-active-text') !== activeLog) {
-        logNode.setAttribute('data-active-text', activeLog);
-        const vacCoh = (gameState.era1 && typeof gameState.era1.vacuumCoherence === 'number') ? gameState.era1.vacuumCoherence : gameState.coherence;
-        const corrupted = corruptText(activeLog, vacCoh);
-        typeWriter(logNode, corrupted, 25);
-      }
+      // P2 Codex Integration
+      const legacyNarrative = gameState.activeEpoch === 4 ? COSMIC_REGISTRY.narrativeLogs.era4.initial : null;
+      CodexEngine.update(gameState, { legacyNarrative });
     }
 
     if (gameState.activeEpoch === 1) {
