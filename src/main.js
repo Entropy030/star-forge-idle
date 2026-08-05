@@ -638,6 +638,9 @@ async function bootApp() {
     Viewport.switchTab(gameState.activeTab);
     Viewport.renderPrestigeVisibility();
 
+    // Ensure DOM runtime is initialized before revealing shell
+    initializeDomRuntime();
+
     if (gameState.activeEpoch === 1 && (!gameState.unfold || !gameState.unfold.introCompleted)) {
       showIntroScreenCinematic(() => {
         const shell = document.getElementById('game-shell');
@@ -675,13 +678,15 @@ async function bootApp() {
 }
 
 window.addEventListener('resize', () => Viewport.syncAnchor(true));
-
-bootApp();
-
 // ==========================================================================
 // [SEC-20] IRON-CLAD DECOUPLED RUNTIME EVENT BINDING INITIALIZER
 // ==========================================================================
-document.addEventListener('DOMContentLoaded', () => {
+let domRuntimeInitialized = false;
+
+export function initializeDomRuntime() {
+  if (domRuntimeInitialized) return;
+  domRuntimeInitialized = true;
+
   initFloatingTextPool();
   ArtifactManager.recalculateArtifactModifiers();
   Viewport.syncAnchor(true);
@@ -849,7 +854,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const devToggleBtn = document.querySelector('.btn-dev-toggle');
   if (devToggleBtn) devToggleBtn.addEventListener('click', toggleDevMatrix);
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeDomRuntime, { once: true });
+} else {
+  initializeDomRuntime();
+}
 
 // ==========================================================================
 // AI PLAYTEST HARNESS
@@ -1048,3 +1059,5 @@ window.addEventListener('solarFlareCollected', (e) => {
     window.Viewport.showToast(e.detail.message, "success");
   }
 });
+
+bootApp();

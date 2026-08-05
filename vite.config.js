@@ -16,6 +16,7 @@ export default defineConfig({
     })
   ],
   build: {
+    target: 'esnext',
     commonjsOptions: {
       include: [/break_infinity\.js$/, /node_modules/]
     }

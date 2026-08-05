@@ -50,15 +50,24 @@ export const CanvasCore = (function () {
   }
 
   function init() {
-    canvas = document.getElementById('core-fx-canvas');
-    if (!canvas) return;
-    ctx = canvas.getContext('2d');
-    resize();
+    try {
+      canvas = document.getElementById('core-fx-canvas');
+      if (!canvas) throw new Error("Canvas element not found");
+      ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error("Could not obtain 2D rendering context");
+      resize();
 
-    window.addEventListener('resize', resize);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+      window.addEventListener('resize', resize);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    start();
+      start();
+      
+      if (canvas.parentElement) {
+        canvas.parentElement.classList.add('canvas-active');
+      }
+    } catch (e) {
+      console.warn("CanvasCore initialization failed. Falling back to CSS-only core.", e);
+    }
   }
 
   function resize() {
