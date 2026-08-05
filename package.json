@@ -10,9 +10,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint src/",
+    "check:repo": "node scripts/check-repo-hygiene.mjs",
     "typecheck": "echo 'No typecheck yet'",
-    "test": "vitest run",
-    "test:run": "vitest run"
+    "test": "npm run check:repo && vitest run",
+    "test:run": "npm run check:repo && vitest run"
   },
   "keywords": [],
   "author": "",

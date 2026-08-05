@@ -1,5 +1,16 @@
 import { gameState } from '../core/state.js';
 
+export function dispatchEraRenderer(epoch, renderers, cx, cy) {
+  switch (epoch) {
+    case 1: renderers.drawEra1(cx, cy); break;
+    case 2: renderers.drawEra2(cx, cy); break;
+    case 3: renderers.drawEra3(cx, cy); break;
+    case 4: renderers.drawEra4(cx, cy); break;
+    case 5: renderers.drawEra5(cx, cy); break;
+    default: renderers.drawEra1(cx, cy); break;
+  }
+}
+
 // ==========================================================================
 // [SEC-CANVAS-01] HIGH-PERFORMANCE CANVAS 2D ENGINE & PARTICLE POOL
 // ==========================================================================
@@ -127,26 +138,10 @@ export const CanvasCore = (function () {
     const cy = height / 2;
     const epoch = (typeof gameState !== 'undefined' && gameState.activeEpoch) ? gameState.activeEpoch : 1;
 
-    switch (epoch) {
-      case 1:
-        drawEra1(cx, cy);
-        break;
-      case 2:
-        drawEra2(cx, cy);
-        break;
-      case 3:
-        drawEra3(cx, cy);
-        break;
-      case 4:
-        drawEra4(cx, cy);
-        break;
-      case 5:
-        drawEra5(cx, cy);
-        break;
-      default:
-        drawEra1(cx, cy);
-        break;
-    }
+    const renderers = {
+      drawEra1, drawEra2, drawEra3, drawEra4, drawEra5
+    };
+    dispatchEraRenderer(epoch, renderers, cx, cy);
 
     updateAndDrawParticles(ctx);
     updateAndDrawShockwaves(ctx);
