@@ -152,7 +152,7 @@ export const COSMIC_REGISTRY = {
     plasma: {
       quarkCondenser: { id: "quarkCondenser", name: "Quark Condenser", rarity: "uncommon", baseCost: new Decimal(20), costScaling: 1.3, gen: new Decimal(2), desc: "Condenses energy variables. Generates +2 Quarks/s." },
       gluonBinding: { id: "gluonBinding", name: "Gluon Matrix Synthesis", rarity: "uncommon", baseCost: new Decimal(120), costScaling: 1.4, gen: new Decimal(1.5), desc: "Binds strong color assets. Generates +1.5 Gluons/s. Requires Quark Condenser Lvl 3." },
-      leptonHarvest: { id: "leptonHarvest", name: "Lepton Collector", rarity: "rare", baseCost: new Decimal(400), costScaling: 1.45, gen: new Decimal(1), desc: "Extracts fundamental leptons. Generates +1 Lepton/s. Requires Gluon Matrix Lvl 2." },
+      leptonHarvest: { id: "leptonHarvest", name: "Lepton Collector", rarity: "rare", baseCost: new Decimal(400), costScaling: 1.45, gen: new Decimal(1), desc: "Extracts fundamental leptons. Generates +1 Lepton/s. (Leptons naturally decay into Electrons when Temperature < 500k). Requires Gluon Matrix Lvl 2." },
       plasmaAutomation: { id: "plasmaAutomation", name: "Proton Synthesizer", rarity: "rare", baseCost: new Decimal(2000), costScaling: 1.8, gen: new Decimal(1), desc: "Consumes 3 Quarks and 1 Gluon to synthesize 1 Proton/s. Requires Lepton Collector Lvl 1." },
       baryoRadiator: { id: "baryoRadiator", name: "Baryogenesis Radiator", rarity: "uncommon", baseCost: new Decimal(100), costScaling: 1.4, cooling: new Decimal(7500), desc: "Radiates excess thermal mass. Cools Universe by 7,500 K/s. Costs 2 Protons/s. Requires Proton Synthesizer Lvl 1." }
     },

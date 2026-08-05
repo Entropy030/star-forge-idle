@@ -68,36 +68,6 @@
     </div>
   </div>
 
-  <!-- Theatrical Prestige Overlay -->
-  <div id="theatrical-overlay" class="theatrical-hidden">
-    <h1 id="theatrical-title">Stellar Collapse</h1>
-    <div id="theatrical-core"></div>
-    <div id="theatrical-stats">
-      <p>Max Core Temperature: <span id="theatrical-temp" class="stat-highlight-gold"></span></p>
-      <p>Elements Forged: <span id="theatrical-elements" class="stat-highlight-teal"></span></p>
-      <hr class="divider-dark">
-      <p class="yield-title">YIELD</p>
-      <div id="theatrical-reward" class="reward-highlight"></div>
-      <button class="btn-reignite">Reignite Cosmos</button>
-    </div>
-  </div>
-
-  <!-- Era Transition Overlay -->
-  <div id="era-transition-overlay"
-    style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(3, 2, 8, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 10000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 30px; box-sizing: border-box;">
-    <div style="max-width: 600px; margin: auto;">
-      <h2 id="trans-title"
-        style="font-family: 'Rajdhani', sans-serif; font-size: 2rem; letter-spacing: 4px; color: var(--hydrogen-glow); margin-bottom: 20px; text-transform: uppercase;">
-      </h2>
-      <p id="trans-desc"
-        style="font-size: 0.95rem; line-height: 1.6; color: #b2bec3; margin-bottom: 30px; min-height: 120px; display: flex; align-items: center; justify-content: center; font-style: italic;">
-      </p>
-      <button id="btn-trans-confirm" class="btn-macro-shift bg-gradient-purple"
-        style="display: none; margin: 0 auto; min-width: 200px; padding: 12px 24px; font-size: 0.9rem; border-radius: 8px;">ENTER
-        NEW ERA</button>
-    </div>
-  </div>
-
   <!-- Black Screen Cinematic Intro Overlay -->
   <div id="intro-screen-overlay"
     style="display: none; position: fixed; inset: 0; width: 100vw; height: 100vh; background: #030208; z-index: 10001; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 40px 20px 80px 20px; box-sizing: border-box; transition: opacity 1.2s ease-out;">
@@ -116,20 +86,48 @@
     </div>
   </div>
 
-  <!-- Forge Artifacts Selection Drawer Modal -->
-  <div id="artifact-picker-modal" class="artifact-modal-overlay" style="display: none;">
-    <div class="artifact-modal-card cosmic-card">
-      <div class="artifact-modal-header">
-        <span class="artifact-modal-title"><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg> SELECT ARTIFACT (SLOT <span id="picker-slot-num">1</span>)</span>
-        <button class="artifact-close-btn" onclick="ArtifactManager.closePicker()">&times;</button>
-      </div>
-      <div id="artifact-picker-list" class="artifact-picker-list"></div>
-    </div>
-  </div>
-
-
-
   <div id="game-shell" hidden>
+
+    <!-- Theatrical Prestige Overlay -->
+    <div id="theatrical-overlay" class="theatrical-hidden">
+      <h1 id="theatrical-title">Stellar Collapse</h1>
+      <div id="theatrical-core"></div>
+      <div id="theatrical-stats">
+        <p>Max Core Temperature: <span id="theatrical-temp" class="stat-highlight-gold"></span></p>
+        <p>Elements Forged: <span id="theatrical-elements" class="stat-highlight-teal"></span></p>
+        <hr class="divider-dark">
+        <p class="yield-title">YIELD</p>
+        <div id="theatrical-reward" class="reward-highlight"></div>
+        <button class="btn-reignite">Reignite Cosmos</button>
+      </div>
+    </div>
+
+    <!-- Era Transition Overlay -->
+    <div id="era-transition-overlay"
+      style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(3, 2, 8, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); z-index: 10000; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 30px; box-sizing: border-box;">
+      <div style="max-width: 600px; margin: auto;">
+        <h2 id="trans-title"
+          style="font-family: 'Rajdhani', sans-serif; font-size: 2rem; letter-spacing: 4px; color: var(--hydrogen-glow); margin-bottom: 20px; text-transform: uppercase;">
+        </h2>
+        <p id="trans-desc"
+          style="font-size: 0.95rem; line-height: 1.6; color: #b2bec3; margin-bottom: 30px; min-height: 120px; display: flex; align-items: center; justify-content: center; font-style: italic;">
+        </p>
+        <button id="btn-trans-confirm" class="btn-macro-shift bg-gradient-purple"
+          style="display: none; margin: 0 auto; min-width: 200px; padding: 12px 24px; font-size: 0.9rem; border-radius: 8px;">ENTER
+          NEW ERA</button>
+      </div>
+    </div>
+
+    <!-- Forge Artifacts Selection Drawer Modal -->
+    <div id="artifact-picker-modal" class="artifact-modal-overlay" style="display: none;">
+      <div class="artifact-modal-card cosmic-card">
+        <div class="artifact-modal-header">
+          <span class="artifact-modal-title"><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg> SELECT ARTIFACT (SLOT <span id="picker-slot-num">1</span>)</span>
+          <button class="artifact-close-btn" onclick="ArtifactManager.closePicker()">&times;</button>
+        </div>
+        <div id="artifact-picker-list" class="artifact-picker-list"></div>
+      </div>
+    </div>
     <header class="game-header">
     <h1>STAR FORGE</h1>
     <p class="stage-text timeline-banner">TIMELINE: <span id="active-epoch-name">Era I: The Quantum Foam</span></p>
