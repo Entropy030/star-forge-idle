@@ -35,10 +35,6 @@ window.triggerBigBounce = triggerBigBounce;
 // ==========================================================================
 // [SEC-01] THIRD-PARTY INTEGRATIONS & SHIMS
 // ==========================================================================
-if (typeof Decimal === 'undefined' && typeof break_infinity !== 'undefined') {
-  window.Decimal = break_infinity.Decimal || break_infinity.default || break_infinity;
-}
-
 if (typeof Decimal !== 'undefined') {
   Decimal.affordGeometricSeries = function(resources, cost, ratio, currentLvl) {
     let r = new Decimal(resources);
