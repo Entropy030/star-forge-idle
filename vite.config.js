@@ -14,5 +14,13 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,json,svg,png,woff2}']
       }
     })
-  ]
+  ],
+  build: {
+    commonjsOptions: {
+      include: [/break_infinity\.js$/, /node_modules/]
+    }
+  },
+  optimizeDeps: {
+    include: ['break_infinity.js']
+  }
 });
