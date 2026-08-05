@@ -595,7 +595,8 @@ function renderLoop() {
 setInterval(function () { saveGame(); }, 5000);
 
 async function bootApp() {
-  if (import.meta.env.DEV && 'serviceWorker' in navigator) {
+  const isViteDev = import.meta.env?.DEV === true;
+  if (isViteDev && 'serviceWorker' in navigator) {
     try {
       console.log("[DEV] SW Controller:", navigator.serviceWorker.controller);
       const registrations = await navigator.serviceWorker.getRegistrations();
@@ -654,6 +655,19 @@ async function bootApp() {
     }
   } catch (e) {
     console.error("Boot sequence failed:", e);
+    document.documentElement.classList.add('app-ready');
+    document.body.classList.remove('booting');
+    
+    const errorBox = document.createElement('div');
+    errorBox.style.position = 'absolute';
+    errorBox.style.top = '20px';
+    errorBox.style.left = '20px';
+    errorBox.style.background = '#800000';
+    errorBox.style.color = '#fff';
+    errorBox.style.padding = '20px';
+    errorBox.style.zIndex = '999999';
+    errorBox.innerHTML = `<h3>Boot Failure</h3><pre>${e.toString()}</pre>`;
+    document.body.appendChild(errorBox);
   } finally {
     document.body.classList.remove('booting');
     requestAnimationFrame(() => {
