@@ -210,9 +210,15 @@ export const ActManager = {
       }
       let targetAct = 1;
       const protons = gameState.resources.protons ? gameState.resources.protons.amount : new Decimal(0);
-      if (protons.gte(800000) || (gameState.plasmaTemperature && gameState.plasmaTemperature.lte(3000))) {
+      
+      const hasGluonUnlocked = gameState.upgrades.plasma && gameState.upgrades.plasma.gluonBinding && 
+        (gameState.upgrades.plasma.gluonBinding.level > 0 || (gameState.upgrades.plasma.quarkCondenser && gameState.upgrades.plasma.quarkCondenser.level >= 3));
+        
+      const hasProtonSynthesizer = gameState.upgrades.plasma && gameState.upgrades.plasma.plasmaAutomation && gameState.upgrades.plasma.plasmaAutomation.level > 0;
+      
+      if (hasProtonSynthesizer || protons.gte(800000) || (gameState.plasmaTemperature && gameState.plasmaTemperature.lte(3000))) {
         targetAct = 3;
-      } else if (gameState.upgrades.plasma && gameState.upgrades.plasma.plasmaAutomation && gameState.upgrades.plasma.plasmaAutomation.level > 0) {
+      } else if (hasGluonUnlocked) {
         targetAct = 2;
       }
 

@@ -972,17 +972,12 @@ body[data-epoch="2"][data-era2-act="1"] #lepton-box,
 body[data-epoch="2"][data-era2-act="1"] #proton-box,
 body[data-epoch="2"][data-era2-act="1"] #electron-box,
 body[data-epoch="2"][data-era2-act="1"] #plasma-temp-box,
-body[data-epoch="2"][data-era2-act="1"] #plasma-row-gluonBinding,
-body[data-epoch="2"][data-era2-act="1"] #plasma-row-leptonHarvest,
-body[data-epoch="2"][data-era2-act="1"] #plasma-row-plasmaAutomation,
-body[data-epoch="2"][data-era2-act="1"] #plasma-row-baryoRadiator,
 body[data-epoch="2"][data-era2-act="1"] #btn-recombination {
   display: none !important;
 }
 
 body[data-epoch="2"][data-era2-act="2"] #proton-box,
 body[data-epoch="2"][data-era2-act="2"] #electron-box,
-body[data-epoch="2"][data-era2-act="2"] #plasma-row-plasmaAutomation,
 body[data-epoch="2"][data-era2-act="2"] #btn-recombination {
   display: none !important;
 }
