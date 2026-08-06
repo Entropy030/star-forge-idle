@@ -68,14 +68,23 @@ export const CanvasCore = (function () {
       if (!ctx) throw new Error("Could not obtain 2D rendering context");
       resize();
 
-      window.addEventListener('resize', resize);
+      if (canvas.parentElement) {
+        const ro = new ResizeObserver(() => {
+          resize();
+          // Avoid circular dependency by using global Viewport if available
+          if (typeof window !== 'undefined' && window.Viewport && window.Viewport.syncAnchor) {
+            window.Viewport.syncAnchor(true);
+          }
+        });
+        ro.observe(canvas.parentElement);
+        canvas.parentElement.classList.add('canvas-active');
+      } else {
+        window.addEventListener('resize', resize);
+      }
+
       document.addEventListener('visibilitychange', handleVisibilityChange);
 
       start();
-      
-      if (canvas.parentElement) {
-        canvas.parentElement.classList.add('canvas-active');
-      }
     } catch (e) {
       console.warn("CanvasCore initialization failed. Falling back to CSS-only core.", e);
     }

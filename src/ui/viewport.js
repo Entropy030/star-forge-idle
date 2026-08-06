@@ -14,7 +14,7 @@ import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
 import { gameState } from '../core/state.js';
 import { saveGame, exportSave, importSave, wipeSave } from '../core/persistence.js';
-import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, getStardustYield, getPulsarShardYield, getSingularityMassYield, getBuyMultiplierCount, getCumulativeCost, getFusionSurgeMultiplier } from '../core/economy.js';
+import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, getEnergyDensityRate, getStardustYield, getPulsarShardYield, getSingularityMassYield, getBuyMultiplierCount, getCumulativeCost, getFusionSurgeMultiplier } from '../core/economy.js';
 import { Templates } from './templates.js';
 import { Timeline } from '../core/timeline.js';
 
@@ -580,12 +580,12 @@ export const Viewport = {
 
 
   syncAnchor(force = false) {
-    const core = this.getEl('star-core');
-    if (!core) return;
+    const canvasContainer = document.querySelector('.core-canvas');
+    if (!canvasContainer) return;
     if (!force && this._coreAnchorCache && (Date.now() - this._coreAnchorCache.time < 500)) {
       return;
     }
-    const rect = core.getBoundingClientRect();
+    const rect = canvasContainer.getBoundingClientRect();
     const centerY = rect.top + (rect.height / 2);
     const centerX = rect.left + (rect.width / 2);
     this._coreAnchorCache = { x: centerX, y: centerY, time: Date.now() };
@@ -1441,7 +1441,7 @@ export const Viewport = {
       this.setTextContent('helium-count', format(gameState.resources.energyDensity.amount));
       // Energy density doesn't have a direct rate right now, but temperature determines it.
       // We can just show zero or omit rate.
-      this.updateResourceDelta('helium', new Decimal(0));
+      this.updateResourceDelta('helium', getEnergyDensityRate(gameState));
       // We can still display the temperature info somewhere else, or keep it in the name/label?
       // The plan replaced the helium-yield span with a delta indicator. Let's append the temp to the label instead.
       this.setTextContent('label-helium', t('label_energy_density') + ` (Temp: ${format(gameState.eraITemperature)} K)`);
@@ -1468,7 +1468,7 @@ export const Viewport = {
 
       this.setTextContent('label-helium', t('label_primordial_gluons'));
       this.setTextContent('helium-count', format(gameState.resources.gluons.amount));
-      this.updateResourceDelta('helium', new Decimal(0));
+      this.updateResourceDelta('helium', pRates.gluonsProduction.minus(pRates.gluonsConsumption));
 
       // Asymmetry Bonus indicator (Prio 2)
       // The asymmetry bonus is now replaced with a trade-off, hiding for now

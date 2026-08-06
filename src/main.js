@@ -746,7 +746,7 @@ async function bootApp() {
   requestAnimationFrame(renderLoop);
 }
 
-window.addEventListener('resize', () => Viewport.syncAnchor(true));
+// Resize handled by CanvasCore ResizeObserver
 // ==========================================================================
 // [SEC-20] IRON-CLAD DECOUPLED RUNTIME EVENT BINDING INITIALIZER
 // ==========================================================================
