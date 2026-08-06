@@ -1,4 +1,4 @@
-import { gameState, replaceGameState, ensureStateShape } from './state.js';
+import { gameState, replaceRuntimeState, ensureStateShape } from './state.js';
 import { SAVE_VERSION, MIGRATIONS } from '../state/migrations.js';
 import { serializeState, deserializeState } from '../state/serialization.js';
 
@@ -30,6 +30,14 @@ export function saveGame() {
   localStorage.setItem(getActiveSaveKey(), JSON.stringify(saveState));
 }
 
+export function isSerializedStatePayload(value) {
+  return (
+    value !== null &&
+    typeof value === 'object' &&
+    !Array.isArray(value)
+  );
+}
+
 export function loadGame() {
   try {
     let rawData = localStorage.getItem(getActiveSaveKey());
@@ -50,12 +58,13 @@ export function loadGame() {
       return { offlineSec: 0, offlineTimeStr: null };
     }
 
+    if (rawData === "[object Object]") {
+      throw new Error("Corrupted literal [object Object] save detected");
+    }
+
     let parsed = JSON.parse(rawData);
-    if (!parsed || !parsed.gameState) {
-      ensureStateShape(gameState);
-      document.body.setAttribute('data-epoch', gameState.activeEpoch);
-      document.body.setAttribute('data-tab', gameState.activeTab);
-      return { offlineSec: 0, offlineTimeStr: null };
+    if (!isSerializedStatePayload(parsed) || !isSerializedStatePayload(parsed.gameState)) {
+      throw new Error("Parsed save data or gameState is not a valid object payload");
     }
 
     let stateVersion = parsed.version || 13;
@@ -69,7 +78,7 @@ export function loadGame() {
       stateVersion = loadedState.version || (stateVersion + 1);
     }
 
-    replaceGameState(loadedState);
+    replaceRuntimeState(loadedState);
 
     const lastSaved = parsed.lastSavedTime || Date.now();
     const elapsedSec = Math.max(0, (Date.now() - lastSaved) / 1000);
@@ -88,6 +97,16 @@ export function loadGame() {
     return { offlineSec: 0, offlineTimeStr: null };
   } catch (e) {
     console.error("Failed to load save:", e);
+    const rawData = localStorage.getItem(getActiveSaveKey());
+    if (rawData) {
+      const ts = Date.now();
+      localStorage.setItem(`starForgeCorruptSave_${ts}`, rawData);
+      localStorage.removeItem(getActiveSaveKey());
+      if (typeof window !== 'undefined' && window.Viewport && window.Viewport.setSystemStatus) {
+        window.Viewport.setSystemStatus(`Corrupted save quarantined (starForgeCorruptSave_${ts}). Initializing fresh universe.`, 'error');
+      }
+    }
+
     ensureStateShape(gameState);
     document.body.setAttribute('data-epoch', gameState.activeEpoch);
     document.body.setAttribute('data-tab', gameState.activeTab);
@@ -115,7 +134,7 @@ export function importSave(input) {
     if (parsed && parsed.version === SAVE_VERSION) {
       try {
         const importedState = deserializeState(parsed.gameState);
-        replaceGameState(importedState);
+        replaceRuntimeState(importedState);
         localStorage.setItem(getActiveSaveKey(), decoded);
         return { success: true };
       } catch (e) {

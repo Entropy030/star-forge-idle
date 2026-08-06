@@ -21,8 +21,6 @@ import { Timeline } from '../core/timeline.js';
 
 let audioCtx;
 let transTypewriterInterval;
-let toastQueue = [];
-let toastIdCounter = 0;
 
 async function playIntroNarrative() {
   const target = document.getElementById('intro-narrative-text');
@@ -352,7 +350,7 @@ export const ArtifactManager = {
 
   openPicker(slotIndex) {
     if (!this.isSlotUnlocked(slotIndex)) {
-      Viewport.showToast(`Slot ${slotIndex + 1} is locked! Advance to Era ${slotIndex + 1} to unlock.`, "warning");
+      console.warn(`Slot ${slotIndex + 1} is locked! Advance to Era ${slotIndex + 1} to unlock.`);
       return;
     }
     this.activeSlotForPicker = slotIndex;
@@ -607,44 +605,33 @@ export const Viewport = {
     document.documentElement.style.setProperty('--cosmic-progress', totalProgress);
   },
 
-  showToast(message, type = 'info', duration = 3000) {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-
-    const id = ++toastIdCounter;
-    const el = document.createElement('div');
-    el.className = `toast-item toast-${type}`;
-    el.textContent = message;
-    el.dataset.toastId = id;
-
-    container.appendChild(el);
-    toastQueue.push({ id, el });
-
-    // Trigger enter animation on next frame
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        el.classList.add('toast-visible');
-      });
-    });
-
-    // Auto-dismiss
-    setTimeout(() => {
-      Viewport.dismissToast(id);
-    }, duration);
+  setSystemStatus(message, type = 'info') {
+    const el = document.getElementById('system-status');
+    if (!el) return;
+    el.textContent = `[System] ${message}`;
+    el.style.color = type === 'error' ? '#ff7675' : type === 'success' ? '#55efc4' : '#b2bec3';
   },
 
-  dismissToast(id) {
-    const idx = toastQueue.findIndex(t => t.id === id);
-    if (idx === -1) return;
+  setPlaytestStatus(msg, type = 'info') {
+    const el = document.getElementById('playtest-inline-status');
+    if (!el) return;
+    el.textContent = `[Playtest] ${msg}`;
+    el.style.color = type === 'error' ? '#ff7675' : type === 'success' ? '#55efc4' : '#b2bec3';
+  },
 
-    const { el } = toastQueue[idx];
-    el.classList.remove('toast-visible');
-    el.classList.add('toast-exit');
-
-    setTimeout(() => {
-      if (el.parentNode) el.parentNode.removeChild(el);
-      toastQueue.splice(idx, 1);
-    }, 300);
+  setInlineActionFeedback(elementId, message) {
+    let feedbackEl = document.getElementById(elementId + '-feedback');
+    if (!feedbackEl) {
+      const targetEl = document.getElementById(elementId);
+      if (!targetEl) return;
+      const parent = targetEl.parentElement;
+      feedbackEl = document.createElement('div');
+      feedbackEl.id = elementId + '-feedback';
+      feedbackEl.className = 'inline-feedback-text';
+      feedbackEl.style.cssText = "color: #ff7675; font-size: 0.8rem; margin-top: 5px; text-align: center;";
+      parent.appendChild(feedbackEl);
+    }
+    feedbackEl.textContent = message;
   },
 
   showTheatrical(outcome, titleColor, tempText, elementsText, rewardHTML) {
@@ -817,7 +804,14 @@ export const Viewport = {
         row.className = 'cosmic-card';
         row.innerHTML = Templates.genericTierListRow('#74b9ff', def.rarity || 'common');
         row.querySelector('.upgrade-btn').addEventListener('click', () => {
-          buyCelestialCard(key);
+          const res = buyCelestialCard(key);
+          if (res && !res.success) {
+            const msg = res.message || `Requires ${format(res.cost)} ${res.currency}`;
+            Viewport.setInlineActionFeedback(`card-row-${key}`, msg);
+          } else {
+            const fb = document.getElementById(`card-row-${key}-feedback`);
+            if (fb) fb.textContent = "";
+          }
         });
         cardsList.appendChild(row);
       }
@@ -838,7 +832,7 @@ export const Viewport = {
         if (btn) {
           let currencyLabel = def.currency === 'hydrogen' ? 'H' : def.currency === 'helium' ? 'He' : def.currency;
           btn.textContent = `Cost: ${format(state.cost)} ${currencyLabel}`;
-          btn.disabled = !canAfford;
+          // Removed btn.disabled to allow clicks to show inline feedback
           btn.style.background = canAfford ? '#74b9ff' : 'rgba(255,255,255,0.04)';
           btn.style.color = canAfford ? '#fff' : '#636e72';
           btn.style.borderColor = canAfford ? 'transparent' : 'rgba(255,255,255,0.05)';
@@ -879,7 +873,16 @@ export const Viewport = {
         row.style.display = 'none'; // start hidden
         row.innerHTML = Templates.genericTierListRow(displayColor, def.rarity || 'common');
         const btn = row.querySelector('.upgrade-btn');
-        btn.addEventListener('click', () => Economy.buy(category, key));
+        btn.addEventListener('click', () => {
+          const res = Economy.buy(category, key);
+          if (res && !res.success) {
+            const msg = res.message || `Requires ${format(res.cost)} ${res.currency}`;
+            Viewport.setInlineActionFeedback(`${category}-row-${key}`, msg);
+          } else {
+            const fb = document.getElementById(`${category}-row-${key}-feedback`);
+            if (fb) fb.textContent = "";
+          }
+        });
         row._cache = {
           name: row.querySelector('.name-display'),
           lvl: row.querySelector('.lvl-display'),
@@ -956,7 +959,7 @@ export const Viewport = {
         row._cache.lvl.textContent = "";
         row._cache.desc.textContent = "Insufficient theoretical framework...";
         btn.textContent = "LOCKED";
-        btn.disabled = true;
+        // Removed btn.disabled to allow clicks to show inline feedback
         btn.style.background = 'rgba(255, 255, 255, 0.04)';
         btn.style.color = '#64748b';
         btn.style.borderColor = 'transparent';
@@ -988,13 +991,11 @@ export const Viewport = {
 
       if (isMaxed) {
         btn.textContent = "MAXED";
-        btn.disabled = true;
         btn.style.background = 'rgba(255, 255, 255, 0.04)';
         btn.style.color = '#a0a8b0';
         btn.style.borderColor = 'rgba(255, 255, 255, 0.05)';
       } else {
         btn.textContent = `Cost (x${loops}):\n${format(displayCost)} ${currentCostLabel}`;
-        btn.disabled = !isAffordable;
         if (isAffordable) {
           btn.style.background = displayColor;
           btn.style.color = '#030208';
@@ -1051,7 +1052,7 @@ export const Viewport = {
         else card.classList.remove('upgrade-affordable');
       }
       if (btn) {
-        btn.disabled = !canAfford;
+        // Removed btn.disabled so button is always clickable for feedback
         if (canAfford) {
           btn.style.background = '#fdcb6e';
           btn.style.color = '#030208';
@@ -1408,7 +1409,7 @@ export const Viewport = {
         const progressBar = document.getElementById('objective-progress-bar');
         if (progressBar) progressBar.style.width = `${currentObj.progress}%`;
         
-        this.setTextContent('objective-progress-text', `${this.format(currentObj.current)} / ${this.format(currentObj.target)}`);
+        this.setTextContent('objective-progress-text', `${format(currentObj.current)} / ${format(currentObj.target)}`);
       } else {
         tracker.style.display = 'none';
       }

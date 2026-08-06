@@ -81,11 +81,11 @@ if (typeof Decimal !== 'undefined') {
 function checkAchievements() {
   if (gameState.resources.iron.amount.gte(1) && !gameState.achievements.firstIron.unlocked) {
     gameState.achievements.firstIron.unlocked = true;
-    Viewport.showToast("Achievement Unlocked: Heavy Metal! (Neon Core Skin active)", "success");
+    gameState.history.push({ time: gameState.totalGameTime, msg: "Achievement Unlocked: Heavy Metal! (Neon Core Skin active)", type: 'milestone' });
   }
   if (!gameState.achievements.firstBlackHole.unlocked && gameState.stats.firstBlackHoleTriggered) {
     gameState.achievements.firstBlackHole.unlocked = true;
-    Viewport.showToast("Achievement Unlocked: Stellar Collapse!", "success");
+    gameState.history.push({ time: gameState.totalGameTime, msg: "Achievement Unlocked: Stellar Collapse!", type: 'milestone' });
   }
 }
 
@@ -135,7 +135,7 @@ function checkDevMode() {
 window.enableDevMode = function() {
   localStorage.setItem('devMode', 'true');
   checkDevMode();
-  Viewport.showToast("Developer Mode explicitly enabled.");
+  console.info("Developer Mode explicitly enabled.");
 };
 
 function toggleDevMatrix() {
@@ -144,13 +144,12 @@ function toggleDevMatrix() {
   if (!matrix) return;
 
   if (gameState.flags.devMode) {
-    Viewport.showToast("Developer Matrix Enabled.", "success");
+    console.info("Developer Matrix Enabled.");
     document.getElementById('dev-matrix').classList.remove('dev-matrix-hidden');
   } else {
-    Viewport.showToast("Developer Matrix Disabled.", "warning");
+    console.warn("Developer Matrix Disabled.");
     document.getElementById('dev-matrix').classList.add('dev-matrix-hidden');
     if (tag) tag.style.display = 'none';
-    Viewport.showToast("Developer Matrix Disabled.");
   }
 }
 
@@ -195,7 +194,7 @@ function devSetEpoch(epochNum, callback) {
     gameState.activeEpoch = epochNum;
     document.body.setAttribute('data-epoch', epochNum);
     if (callback) callback();
-    Viewport.showToast(`Timeline Shifted to ${COSMIC_REGISTRY.universeChronology.epochs[epochNum].name}`);
+    gameState.history.push({ time: gameState.totalGameTime, msg: `Timeline Shifted to ${COSMIC_REGISTRY.universeChronology.epochs[epochNum].name}`, type: 'milestone' });
   }
 }
 
@@ -204,7 +203,11 @@ function devSetEpoch(epochNum, callback) {
 // ==========================================================================
 function triggerInflation() {
   if (gameState.resources.quantumFluctuations.amount.lt(COSMIC_REGISTRY.constants.inflationThreshold)) {
-    Viewport.showToast(`Requires ${format(COSMIC_REGISTRY.constants.inflationThreshold)} Quantum Fluctuations!`, "warning");
+    const msg = `Requires ${format(COSMIC_REGISTRY.constants.inflationThreshold)} Quantum Fluctuations!`;
+    console.warn(msg);
+    if (typeof window !== 'undefined' && window.Viewport) {
+      window.Viewport.setInlineActionFeedback('btn-inflation', msg);
+    }
     return;
   }
 
@@ -220,7 +223,7 @@ function triggerInflation() {
 
     if (!gameState.artifacts.unlocked.includes("quantum_lens")) {
       gameState.artifacts.unlocked.push("quantum_lens");
-      Viewport.showToast("Artifact Discovered: Quantum Lens", "success");
+      gameState.history.push({ time: gameState.totalGameTime, msg: "Artifact Discovered: Quantum Lens", type: 'milestone' });
     }
 
     const flashElement = document.createElement('div');
@@ -240,7 +243,11 @@ function triggerRecombination() {
   const result = engine.dispatch({ type: 'TRIGGER_RECOMBINATION' });
   if (!result.ok) {
     if (result.error.code === 'PREREQUISITES_NOT_MET') {
-      Viewport.showToast(`Requires ${format(COSMIC_REGISTRY.constants.recombinationProtonThreshold)} Protons or cooling below 3,000 K!`, "warning");
+      const msg = `Requires ${format(COSMIC_REGISTRY.constants.recombinationProtonThreshold)} Protons or cooling below 3,000 K!`;
+      console.warn(msg);
+      if (typeof window !== 'undefined' && window.Viewport) {
+        window.Viewport.setInlineActionFeedback('btn-recombination', msg);
+      }
     }
     return;
   }
@@ -600,7 +607,7 @@ async function processCatchupAsync() {
   const CHUNK_SIZE = 1; // 1 second
   const BATCH_SIZE = 250; // Process 250 chunks per batch
   
-  Viewport.showToast(`Processing offline catchup...`);
+  Viewport.setSystemStatus(`Processing offline catchup...`);
   
   while (catchupAccumulator > 0) {
     let chunksProcessed = 0;
@@ -618,7 +625,7 @@ async function processCatchupAsync() {
   catchupAccumulator = 0;
   isCatchingUp = false;
   lastSimTick = Date.now(); // reset timer so we don't catchup again immediately
-  Viewport.showToast(`Catchup complete.`);
+  Viewport.setSystemStatus(`Catchup complete.`);
 }
 
 document.addEventListener('visibilitychange', () => {
@@ -642,7 +649,7 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // Start the scheduler at 10Hz
-setInterval(simulationScheduler, 100);
+// (Now started after successful boot)
 
 function renderLoop() {
   if (isDirty) {
@@ -656,7 +663,7 @@ function renderLoop() {
   }
   requestAnimationFrame(renderLoop);
 }
-setInterval(function () { saveGame(); }, 5000);
+// Save interval moved to boot
 
 async function bootApp() {
   const isViteDev = import.meta.env?.DEV === true;
@@ -721,6 +728,12 @@ async function bootApp() {
         if (shell) shell.hidden = false;
       });
     }
+    
+    // Boot successful - Start simulation loops
+    setInterval(simulationScheduler, 100);
+    setInterval(function () { saveGame(); }, 5000);
+    requestAnimationFrame(renderLoop);
+    
   } catch (e) {
     console.error("Boot sequence failed:", e);
     document.documentElement.classList.add('app-ready');
@@ -742,8 +755,6 @@ async function bootApp() {
       document.documentElement.classList.add('app-ready');
     });
   }
-
-  requestAnimationFrame(renderLoop);
 }
 
 // Resize handled by CanvasCore ResizeObserver
@@ -848,9 +859,30 @@ export function initializeDomRuntime() {
 
   bindClick('btn-inflation', triggerInflation);
   bindClick('btn-recombination', triggerRecombination);
-  bindClick('btn-supernova', triggerSupernova);
-  bindClick('btn-galactic-merge', triggerGalacticMerge);
-  bindClick('btn-trigger-hypernova', triggerSupernova);
+  bindClick('btn-supernova', () => {
+    const res = triggerSupernova();
+    if (res && !res.ok) {
+      if (typeof window !== 'undefined' && window.Viewport) {
+        window.Viewport.setInlineActionFeedback('btn-supernova', `Requires ${format(COSMIC_REGISTRY.constants.supernovaTempThreshold)} K & 2,000,000 Helium!`);
+      }
+    }
+  });
+  bindClick('btn-galactic-merge', () => {
+    const res = triggerGalacticMerge();
+    if (res && !res.ok) {
+      if (typeof window !== 'undefined' && window.Viewport) {
+        window.Viewport.setInlineActionFeedback('btn-galactic-merge', `Requires 10,000 Dark Matter!`);
+      }
+    }
+  });
+  bindClick('btn-trigger-hypernova', () => {
+    const res = triggerSupernova();
+    if (res && !res.ok) {
+      if (typeof window !== 'undefined' && window.Viewport) {
+        window.Viewport.setInlineActionFeedback('btn-trigger-hypernova', `Requires ${format(COSMIC_REGISTRY.constants.supernovaTempThreshold)} K & 1,000 Iron!`);
+      }
+    }
+  });
   bindClick('btn-stabilize-arms', stabilizeArms);
   bindClick('btn-accrete-planet', accretePlanetConfiguration);
   bindClick('btn-embrace-entropy', triggerEraVTransition);
@@ -890,7 +922,7 @@ export function initializeDomRuntime() {
 
   bindClick('btn-export', () => {
     exportSave().then(res => {
-      Viewport.showToast(res.message, res.success ? "success" : "error");
+      Viewport.setSystemStatus(res.message, res.success ? "success" : "error");
     });
   });
   bindClick('btn-import', () => {
@@ -899,17 +931,26 @@ export function initializeDomRuntime() {
       const res = importSave(input);
       if (res.success) {
         engine.loadState(gameState);
-        Viewport.showToast("Universe loaded successfully.", "success");
+        Viewport.setSystemStatus("Universe loaded successfully.", "success");
         Viewport.switchTab(gameState.activeTab);
       } else {
-        Viewport.showToast(res.message, "error");
+        Viewport.setSystemStatus(res.message, "error");
       }
     }
   });
   bindClick('btn-wipe', wipeSave);
 
   ['gravity', 'fuser', 'compress', 'carbon', 'iron'].forEach(key => {
-    bindClick(`btn-${key}`, () => Economy.buy('core', key));
+    bindClick(`btn-${key}`, () => {
+      const res = Economy.buyCoreNodes(key, 1);
+      if (res && !res.success) {
+        const msg = res.message || `Requires ${format(res.cost)} ${res.currency}`;
+        Viewport.setInlineActionFeedback(`btn-${key}`, msg);
+      } else {
+        const fb = document.getElementById(`btn-${key}-feedback`);
+        if (fb) fb.textContent = "";
+      }
+    });
   });
 
   bindClick('dev-boost', devQuantumWarp);
@@ -1112,21 +1153,15 @@ export const runAIAction = function (cmd) {
 window.initAudio = initAudio;
 
 window.addEventListener('solarFlareSpawned', (e) => {
-  if (typeof window !== "undefined" && window.Viewport && window.Viewport.showToast) {
-    window.Viewport.showToast("☀️ SOLAR PROMINENCE DETECTED: Core-Turbulenz aktiv!", "warning");
-  }
+  console.warn("☀️ SOLAR PROMINENCE DETECTED: Core-Turbulenz aktiv!");
 });
 
 window.addEventListener('solarFlareMissed', (e) => {
-  if (typeof window !== "undefined" && window.Viewport && window.Viewport.showToast) {
-    window.Viewport.showToast(e.detail.message, "warning");
-  }
+  console.warn(e.detail.message);
 });
 
 window.addEventListener('solarFlareCollected', (e) => {
-  if (typeof window !== "undefined" && window.Viewport && window.Viewport.showToast) {
-    window.Viewport.showToast(e.detail.message, "success");
-  }
+  console.info(e.detail.message);
 });
 
 bootApp();

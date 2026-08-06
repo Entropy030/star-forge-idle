@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import Decimal from '../break_infinity.js';
+import Decimal from 'break_infinity.js';
 
 describe('P0 Runtime Bootstrap Hotfix', () => {
   it('break_infinity.js has a usable default Decimal export', () => {

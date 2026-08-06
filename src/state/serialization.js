@@ -38,8 +38,4 @@ function deepMergeMissing(target, source) {
   }
 }
 
-export const saveGame = function() {
-  const saveState = { version: SAVE_VERSION, gameState: serializeState(gameState), lastSavedTime: Date.now() };
-  localStorage.setItem('starForgeSave_v16', JSON.stringify(saveState));
-}
 

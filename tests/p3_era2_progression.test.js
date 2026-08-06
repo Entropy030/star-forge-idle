@@ -57,7 +57,7 @@ describe('Era-II Act Progression Integration Test', () => {
 
   test('Upgrade chain visibility is authoritative and updates seamlessly', async () => {
     // 1. Setup global state
-    const Decimal = (await import('../break_infinity.js')).default;
+    const Decimal = (await import('break_infinity.js')).default;
     window.Decimal = Decimal;
     const stateModule = await import('../src/core/state.js');
     const { gameState } = stateModule;

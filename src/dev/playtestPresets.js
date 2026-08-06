@@ -1,5 +1,5 @@
 import { getInitialGameState } from '../core/state.js';
-import Decimal from '../../break_infinity.js';
+import Decimal from 'break_infinity.js';
 
 export function getPresetFreshEraI() {
   const state = getInitialGameState();

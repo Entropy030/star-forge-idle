@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import Decimal from '../break_infinity.js';
+import Decimal from 'break_infinity.js';
 import { createInitialState } from '../src/state/createInitialState.js';
 import { stellarCommandHandlers } from '../src/eras/stellar/commands.js';
 import { COSMIC_REGISTRY } from '../src/config/registry.js';

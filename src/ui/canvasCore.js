@@ -1,3 +1,4 @@
+/* global ResizeObserver */
 import { gameState } from '../core/state.js';
 
 export function dispatchEraRenderer(epoch, renderers, cx, cy) {

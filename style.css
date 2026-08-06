@@ -847,67 +847,6 @@ min-height: 36px;
 .data-input-field { box-sizing: border-box; width: 100%; padding: 12px; background: rgba(0,0,0,0.4); color: #fff; border: 1px solid var(--glass-border); border-radius: 10px; font-family: monospace; font-size: 0.75rem; margin-bottom: 12px; }
 .btn-danger { background: rgba(234, 32, 39, 0.12); border: 1px solid #ea2027; color: #ff6b6b; cursor: pointer; padding: 12px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; min-height: 44px; }
 
-/* [CSS-SEC-08B] TOAST STACK SYSTEM */
-.toast-stack {
-  position: fixed;
-  top: calc(20px + var(--sat));
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  z-index: 9999;
-  pointer-events: none;
-  max-width: 88vw;
-}
-.toast-item {
-  background: rgba(95, 39, 205, 0.95);
-  border: 1px solid #7158e2;
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 600;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-  transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-  opacity: 0;
-  transform: translateY(-12px) scale(0.96);
-  pointer-events: auto;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-}
-.toast-item.toast-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-.toast-item.toast-exit {
-  opacity: 0;
-  transform: translateY(-8px) scale(0.95);
-}
-
-/* Toast type variants */
-.toast-item.toast-success {
-  background: rgba(0, 236, 198, 0.15);
-  border-color: var(--neon-teal);
-  color: var(--neon-teal);
-  box-shadow: 0 8px 24px rgba(0, 236, 198, 0.15);
-}
-.toast-item.toast-warning {
-  background: rgba(253, 203, 110, 0.15);
-  border-color: #fdcb6e;
-  color: #fdcb6e;
-  box-shadow: 0 8px 24px rgba(253, 203, 110, 0.15);
-}
-.toast-item.toast-critical {
-  background: rgba(255, 107, 107, 0.15);
-  border-color: #ff6b6b;
-  color: #ff6b6b;
-  box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
-}
-
 /* ==========================================================================
 [CSS-SEC-09B] UPGRADE RARITY TIERS
 ========================================================================== */

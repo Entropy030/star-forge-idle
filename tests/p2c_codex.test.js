@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import Decimal from '../break_infinity.js';
+import Decimal from 'break_infinity.js';
 import { CodexEngine } from '../src/ui/codex.js';
 import { CODEX_ENTRIES } from '../src/content/codex.js';
 import { createInitialState } from '../src/state/createInitialState.js';

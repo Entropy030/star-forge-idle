@@ -3,10 +3,10 @@
 export const i18n = {
   en: {
     log_era1_initial: "t=0.000... ░▒▓ E-R-R-O-R ▓▒░ I have mass. I am severed from nothingness. The first fluctuation pierces the void.",
-    toast_superposition_unlock: "Critical Energy Density Reached! Wave functions collapse. Quantum Superposition has awakened!",
-    toast_era1_to_era2: "Era II: The Primordial Soup begins. Energy cools. Quarks form building blocks, glued together by Gluons.",
-    toast_plasma_cooling: "Plasma Cooling Successful (3,000 K)! Recombination releases free electrons to form primordial atoms.",
-    toast_carbon_synthesis: "Carbon Synthesis Initiated (500M K)! The Triple-Alpha Process ignites. The path to the 2B K Iron Core is open!",
+    log_superposition_unlock: "Critical Energy Density Reached! Wave functions collapse. Quantum Superposition has awakened!",
+    log_era1_to_era2: "Era II: The Primordial Soup begins. Energy cools. Quarks form building blocks, glued together by Gluons.",
+    log_plasma_cooling: "Plasma Cooling Successful (3,000 K)! Recombination releases free electrons to form primordial atoms.",
+    log_carbon_synthesis: "Carbon Synthesis Initiated (500M K)! The Triple-Alpha Process ignites. The path to the 2B K Iron Core is open!",
     baryon_asymmetry_label: "Baryon Asymmetry (+{val}%)",
     baryon_asymmetry_tooltip: "A subtle imbalance—the dominance of matter over antimatter—serves as a catalyst for your yield.",
     milestone_tooltip: "Next Milestone (Lvl {lvl}): +5% Global Yield",
@@ -237,10 +237,10 @@ export const COSMIC_REGISTRY = {
     flare: {
       spawn: { minDelaySec: 90, maxDelaySec: 240, activeWindowSec: 12 },
       rewards: {
-        hydrogenSurge: { weight: 70, secondsOfProduction: 180, unlocked: () => true, toast: "Solar Flare Harvested!☀️" },
-        magneticSurge: { weight: 30, buff: { key: "fusionSurge", multiplier: 2, durationSec: 60 }, unlocked: (state) => state.era3.fusionYield.gt(0), toast: "Magnetic Flare Harvested!🧲" }
+        hydrogenSurge: { weight: 70, secondsOfProduction: 180, unlocked: () => true, log: "Solar Flare Harvested!☀️" },
+        magneticSurge: { weight: 30, buff: { key: "fusionSurge", multiplier: 2, durationSec: 60 }, unlocked: (state) => state.era3.fusionYield.gt(0), log: "Magnetic Flare Harvested!🧲" }
       },
-      miss: { tempPctOfCompression: 0.25, toast: "Solar Flare collapsed back into the star, boosting core temperature! 🔥" },
+      miss: { tempPctOfCompression: 0.25, log: "Solar Flare collapsed back into the star, boosting core temperature! 🔥" },
       fx: { emoji: "☀️" }
     }
   },

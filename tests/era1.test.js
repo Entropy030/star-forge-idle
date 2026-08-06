@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createGameEngine } from '../src/engine/createEngine.js';
 import { quantumCommandHandlers } from '../src/eras/quantum/commands.js';
 import { createInitialState } from '../src/state/createInitialState.js';
-import Decimal from '../break_infinity.js';
+import Decimal from 'break_infinity.js';
 
 describe('Era 1 Commands', () => {
   let engine;

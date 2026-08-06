@@ -87,8 +87,18 @@ export { serializeState, deserializeState };
 
 
 
-export function replaceGameState(newState) {
-  gameState = createReactiveState(newState, (prop) => {
+export function replaceRuntimeState(nextState) {
+  if (
+    nextState === null ||
+    typeof nextState !== 'object' ||
+    Array.isArray(nextState)
+  ) {
+    throw new TypeError(
+      `Invalid runtime state: expected object, received ${typeof nextState}`
+    );
+  }
+
+  gameState = createReactiveState(nextState, (prop) => {
     isDirty = true;
   });
   ensureStateShape(gameState);

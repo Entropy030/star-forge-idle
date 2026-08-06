@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import Decimal from '../break_infinity.js';
+import Decimal from 'break_infinity.js';
 import { Viewport } from '../src/ui/viewport.js';
 import { updateSupernovaOutcome } from '../src/ui/stellar.js';
 import { createInitialState } from '../src/state/createInitialState.js';

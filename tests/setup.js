@@ -1,4 +1,4 @@
-import Decimal from '../break_infinity.js';
+import Decimal from 'break_infinity.js';
 global.Decimal = Decimal;
 global.window = global.window || {};
 global.window.Decimal = Decimal;

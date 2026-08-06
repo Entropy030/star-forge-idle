@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
 import { JSDOM } from 'jsdom';
-import Decimal from '../break_infinity.js';
+import Decimal from 'break_infinity.js';
 import { getInitialGameState, setGameState, gameState } from '../src/core/state.js';
 import { computePlasmaStep } from '../src/eras/plasma/evaluator.js';
 import { simulatePlasmaEra } from '../src/eras/plasma/simulation.js';

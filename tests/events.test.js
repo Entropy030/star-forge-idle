@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { spawnFlare } from '../src/core/stellar.js';
 import { gameState, getInitialGameState } from '../src/core/state.js';
-import Decimal from '../break_infinity.js';
+import Decimal from 'break_infinity.js';
 
 describe('Event-driven Architecture', () => {
   it('spawnFlare dispatches solarFlareSpawned event', () => {

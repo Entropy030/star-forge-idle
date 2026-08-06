@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createInitialState } from '../src/state/createInitialState.js';
 import { simulateStellarEra } from '../src/eras/stellar/simulation.js';
-import Decimal from '../break_infinity.js';
+import Decimal from 'break_infinity.js';
 import { setGameState } from '../src/core/state.js';
 
 describe('P2B Stellar Simulation & Build Archetypes', () => {

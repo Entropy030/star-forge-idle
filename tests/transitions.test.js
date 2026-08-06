@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { triggerSupernova } from '../src/core/actions.js';
 import { gameState, getInitialGameState } from '../src/core/state.js';
-import Decimal from '../break_infinity.js';
+import Decimal from 'break_infinity.js';
 
 describe('Transitions Logic', () => {
   beforeEach(() => {

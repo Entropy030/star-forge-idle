@@ -1,7 +1,8 @@
+/* global sessionStorage */
 import { setPlaytestMode, setPlaytestSpeedMultiplier, getPlaytestSpeedMultiplier, exportSave, importSave } from '../core/persistence.js';
 import { gameState } from '../core/state.js';
 import { serializeState, deserializeState } from '../state/serialization.js';
-import { replaceGameState } from '../core/state.js';
+import { replaceRuntimeState } from '../core/state.js';
 import { Viewport } from '../ui/viewport.js';
 import { ArtifactManager } from '../ui/viewport.js'; // or similar, depending on how it's exported
 import * as presets from './playtestPresets.js';
@@ -31,10 +32,15 @@ export function enablePlaytestMode() {
   setPlaytestMode(true);
   
   // Serialize current real state to sessionStorage
-  sessionStorage.setItem('starForgeRealSaveBackup', serializeState(gameState));
+  const serializedBackup = serializeState(gameState);
+  sessionStorage.setItem('starForgeRealSaveBackup', JSON.stringify(serializedBackup));
   
   renderPlaytestUI();
-  Viewport.showToast("PLAYTEST MODE ENABLED");
+  const statusEl = document.getElementById('playtest-inline-status');
+  if (statusEl) {
+    statusEl.textContent = "PLAYTEST MODE ENABLED";
+    statusEl.style.color = '#00ecc6';
+  }
 }
 
 export function disablePlaytestMode() {
@@ -46,8 +52,9 @@ export function disablePlaytestMode() {
   
   const backup = sessionStorage.getItem('starForgeRealSaveBackup');
   if (backup) {
-    const loadedState = deserializeState(backup);
-    replaceGameState(loadedState);
+    const parsedBackup = JSON.parse(backup);
+    const loadedState = deserializeState(parsedBackup);
+    replaceRuntimeState(loadedState);
   }
   
   const ui = document.getElementById('playtest-mode-ui');
@@ -55,7 +62,7 @@ export function disablePlaytestMode() {
   
   Viewport.update();
   Viewport.syncAnchor(true);
-  Viewport.showToast("Playtest Mode Disabled. Save Restored.");
+  Viewport.setSystemStatus("Playtest Mode Disabled. Save Restored.", "warning");
 }
 
 function renderPlaytestUI() {
@@ -103,6 +110,7 @@ function renderPlaytestUI() {
       <button id="pt-export" style="cursor: pointer;">Export State</button>
       <button id="pt-restore" style="cursor: pointer;">Restore Normal Save</button>
     </div>
+    <div id="playtest-inline-status" style="margin-top: 5px; min-height: 14px;"></div>
   `;
 
   document.getElementById('pt-speed-1').onclick = () => { setPlaytestSpeedMultiplier(1); renderPlaytestUI(); };
@@ -113,7 +121,7 @@ function renderPlaytestUI() {
     const sel = document.getElementById('pt-presets').value;
     if (sel && presets[sel]) {
       const state = presets[sel]();
-      replaceGameState(state);
+      replaceRuntimeState(state);
       if (typeof window.ArtifactManager !== 'undefined' && window.ArtifactManager.recalculateArtifactModifiers) {
         window.ArtifactManager.recalculateArtifactModifiers();
       }
@@ -124,7 +132,13 @@ function renderPlaytestUI() {
   };
   
   document.getElementById('pt-export').onclick = () => {
-    exportSave().then(res => Viewport.showToast(res.message));
+    exportSave().then(res => {
+      const statusEl = document.getElementById('playtest-inline-status');
+      if (statusEl) {
+        statusEl.textContent = res.message;
+        statusEl.style.color = res.success ? '#00ecc6' : '#ff6b6b';
+      }
+    });
   };
   
   document.getElementById('pt-restore').onclick = () => {

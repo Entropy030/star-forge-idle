@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createGameEngine } from '../src/engine/createEngine.js';
 import { plasmaCommandHandlers } from '../src/eras/plasma/commands.js';
 import { createInitialState } from '../src/state/createInitialState.js';
-import Decimal from '../break_infinity.js';
+import Decimal from 'break_infinity.js';
 
 describe('Era 2 Commands', () => {
   let engine;

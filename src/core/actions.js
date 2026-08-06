@@ -8,8 +8,8 @@ export function triggerSupernova() {
   const result = engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
   if (result.ok) {
     const snEvent = result.events.find(ev => ev.type === 'SUPERNOVA_TRIGGERED');
-    if (snEvent && typeof window !== 'undefined' && window.Viewport) {
-       window.Viewport.showToast(`Supernova Yield: ${snEvent.yieldAmt} Stardust`, "success");
+    if (snEvent) {
+       gameState.history.push({ time: gameState.totalGameTime, msg: `Supernova Yield: ${snEvent.yieldAmt} Stardust`, type: 'milestone' });
     }
   }
   return result;
@@ -19,8 +19,8 @@ export function triggerBigBounce() {
   const result = engine.dispatch({ type: 'TRIGGER_BIG_BOUNCE' });
   if (result.ok) {
     const snEvent = result.events.find(ev => ev.type === 'BIG_BOUNCE_TRIGGERED');
-    if (snEvent && typeof window !== 'undefined' && window.Viewport) {
-       window.Viewport.showToast(`Big Bounce! Yield: ${snEvent.pulsarYield} Pulsar Shards, ${snEvent.bitsYield} Bits`, "success");
+    if (snEvent) {
+       gameState.history.push({ time: gameState.totalGameTime, msg: `Big Bounce! Yield: ${snEvent.pulsarYield} Pulsar Shards, ${snEvent.bitsYield} Bits`, type: 'milestone' });
     }
   }
   return result;
@@ -30,8 +30,8 @@ export function triggerGalacticMerge() {
   const result = engine.dispatch({ type: 'TRIGGER_GALACTIC_MERGE' });
   if (result.ok) {
     const snEvent = result.events.find(ev => ev.type === 'GALACTIC_MERGE_TRIGGERED');
-    if (snEvent && typeof window !== 'undefined' && window.Viewport) {
-       window.Viewport.showToast(`Merge complete! Yield: ${snEvent.yieldAmt} Singularity Mass`, "success");
+    if (snEvent) {
+       gameState.history.push({ time: gameState.totalGameTime, msg: `Merge complete! Yield: ${snEvent.yieldAmt} Singularity Mass`, type: 'milestone' });
     }
   }
   return result;
@@ -48,10 +48,10 @@ export function accretePlanetConfigurationAction() {
 export function buyCelestialCardAction(key) {
   let def = COSMIC_REGISTRY.celestialCards[key];
   let state = gameState.cards[key];
-  if (!def || !state) return { success: false };
+  if (!def || !state) return { success: false, message: "Invalid card" };
   
   const currencyAmount = gameState.currencies[def.currency]?.amount || new Decimal(0);
-  if (currencyAmount.lt(state.cost)) return { success: false };
+  if (currencyAmount.lt(state.cost)) return { success: false, cost: state.cost, currency: def.currency };
 
   gameState.currencies[def.currency].amount = currencyAmount.sub(state.cost);
   state.level += 1;

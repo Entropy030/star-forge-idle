@@ -68,7 +68,7 @@ export function expireFlare() {
 
   if (!flareSimSuppressed) {
     window.dispatchEvent(new CustomEvent('solarFlareMissed', {
-      detail: { message: COSMIC_REGISTRY.solarEvents.flare.miss.toast }
+      detail: { message: COSMIC_REGISTRY.solarEvents.flare.miss.log }
     }));
   }
 
@@ -96,7 +96,7 @@ export function collectFlare() {
   gameState.stats.flaresCollected = (gameState.stats.flaresCollected || new Decimal(0)).plus(1);
   
   window.dispatchEvent(new CustomEvent('solarFlareCollected', {
-    detail: { message: rewardDef.toast || "Flare stabilisiert!" }
+    detail: { message: rewardDef.log || "Flare stabilisiert!" }
   }));
 
   gameState.flares.active = null;
