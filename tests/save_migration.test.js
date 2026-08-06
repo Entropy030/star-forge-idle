@@ -72,7 +72,7 @@ describe('Save and Migration Regression Tests', () => {
       engine.dispatch({ type: 'CLICK_CORE' });
     }
     const state = engine.getStateUnsafe();
-    expect(state.unfold.hasUnlocked10QF).toBe(true);
+    expect(state.discoveries.has('qf_10')).toBe(true);
   });
 
   it('Successful import installs the imported state', () => {

@@ -137,6 +137,44 @@ export const COSMIC_REGISTRY = {
       ]
     }
   },
+  progression: [
+    {
+      id: "obj_qf_intro",
+      epoch: 1,
+      title: "Initialize Core",
+      instruction: "Gather 50 Quantum Fluctuations.",
+      explanation: "The void is unstable. Extract fluctuations to begin.",
+      target: 50,
+      getCurrent: (state) => state.resources.quantumFluctuations.amount.toNumber()
+    },
+    {
+      id: "obj_upgrade_gravity",
+      epoch: 1,
+      title: "Establish Gravity",
+      instruction: "Purchase Gravitational Coupling.",
+      explanation: "Generate passive quantum fluctuations to sustain the core.",
+      target: 1,
+      getCurrent: (state) => state.upgrades.quantum.gravityForce.level
+    },
+    {
+      id: "obj_density_intro",
+      epoch: 1,
+      title: "Synthesize Density",
+      instruction: "Accumulate 10,000 Energy Density.",
+      explanation: "Compress the vacuum to build internal heat and pressure.",
+      target: 10000,
+      getCurrent: (state) => state.resources.energyDensity.amount.toNumber()
+    },
+    {
+      id: "obj_era1_complete",
+      epoch: 1,
+      title: "Cosmic Inflation",
+      instruction: "Reach 100,000 Energy Density to trigger the Big Bang.",
+      explanation: "The singularity cannot hold. Prepare for expansion.",
+      target: 100000,
+      getCurrent: (state) => state.resources.energyDensity.amount.toNumber()
+    }
+  ],
   celestialCards: {
     quantum_stabilizer: { name: "Quantum Stabilizer", desc: "Expands baseline space-time coherence. (+10% Hydrogen Gen per level)", currency: "hydrogen", baseCost: new Decimal(500), costScaling: 1.5, effectTarget: "hydrogenGen", effectPerLevel: 0.10 },
     thermal_accumulator: { name: "Thermal Accumulator", desc: "Insulates core thermodynamic fields. (+15% Compression Heat per level)", currency: "helium", baseCost: new Decimal(50), costScaling: 1.6, effectTarget: "compressionHeat", effectPerLevel: 0.15 }

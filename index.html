@@ -164,6 +164,21 @@
       </div>
     </div>
 
+    <div id="objective-tracker" class="objective-tracker" style="display: none;">
+      <div class="objective-header">
+        <span class="objective-badge">OBJECTIVE</span>
+        <span id="objective-title">Initialize Core</span>
+      </div>
+      <div class="objective-body">
+        <p id="objective-instruction">Gather 50 Quantum Fluctuations.</p>
+        <small id="objective-explanation">The void is unstable. Extract fluctuations to begin.</small>
+      </div>
+      <div class="objective-progress-container">
+        <div id="objective-progress-bar" class="objective-progress-bar"></div>
+        <span id="objective-progress-text">0 / 50</span>
+      </div>
+    </div>
+
     <div class="dashboard">
       <div class="resource-box border-blue">
         <h3 id="label-hydrogen">QUANTUM FLUCTUATIONS</h3>
@@ -267,6 +282,19 @@
             <div style="position: absolute; left: 66.66%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.4); pointer-events: auto;" title="500M K: Carbon"></div>
           </div>
         </div>
+      </div>
+
+      <!-- Era II Process Map -->
+      <div id="era2-process-map" class="era2-only" style="max-width: 540px; margin: 15px auto; background: rgba(0,0,0,0.4); padding: 10px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">
+        <div style="font-size: 0.8rem; color: var(--neon-teal); font-weight: bold; margin-bottom: 8px; text-align: center;">QUARK-GLUON PLASMA PROCESS</div>
+        <div style="display: flex; gap: 10px; font-size: 0.75rem; color: #a4b0be; justify-content: center;">
+          <div style="flex: 1; text-align: center; border: 1px dashed rgba(255,255,255,0.2); padding: 5px; border-radius: 4px;">Quarks</div>
+          <div style="align-self: center; color: var(--neon-purple); font-weight: bold;">&rarr;</div>
+          <div style="flex: 1; text-align: center; border: 1px dashed rgba(255,255,255,0.2); padding: 5px; border-radius: 4px;">Gluons</div>
+          <div style="align-self: center; color: var(--neon-purple); font-weight: bold;">&rarr;</div>
+          <div style="flex: 1; text-align: center; border: 1px dashed rgba(255,255,255,0.2); padding: 5px; color: var(--neon-pink); border-radius: 4px;">Protons</div>
+        </div>
+        <div style="font-size: 0.7rem; color: #888; text-align: center; margin-top: 8px;">Bind Quarks using Gluons to synthesize Protons and cool the Universe.</div>
       </div>
 
       <div class="era-transition-shell">

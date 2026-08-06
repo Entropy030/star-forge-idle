@@ -24,10 +24,10 @@ export const quantumCommandHandlers = {
       state.resources.quantumFluctuations.amount = state.resources.quantumFluctuations.amount.plus(gain);
       state.era1.quantumFoam = state.resources.quantumFluctuations.amount.toNumber();
       
-      if (!state.unfold) state.unfold = {};
-      if (state.resources.quantumFluctuations.amount.gte(1)) state.unfold.hasUnlocked1QF = true;
-      if (state.resources.quantumFluctuations.amount.gte(10)) state.unfold.hasUnlocked10QF = true;
-      if (state.resources.quantumFluctuations.amount.gte(100)) state.unfold.hasUnlocked100QF = true;
+      if (!state.discoveries) state.discoveries = new Set();
+      if (state.resources.quantumFluctuations.amount.gte(1)) state.discoveries.add('qf_1');
+      if (state.resources.quantumFluctuations.amount.gte(10)) state.discoveries.add('qf_10');
+      if (state.resources.quantumFluctuations.amount.gte(100)) state.discoveries.add('qf_100');
 
       if (!state.stats.maxQF) state.stats.maxQF = new Decimal(0);
       if (state.resources.quantumFluctuations.amount.gt(state.stats.maxQF)) {

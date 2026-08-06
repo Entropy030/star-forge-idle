@@ -4,6 +4,7 @@
 
 export const serializeState = function(obj) {
   if (obj instanceof Decimal) return { __type: 'Decimal', value: obj.toString() };
+  if (obj instanceof Set) return { __type: 'Set', value: Array.from(obj) };
   if (Array.isArray(obj)) return obj.map(serializeState);
   if (obj !== null && typeof obj === 'object') {
     let res = {};
@@ -16,6 +17,7 @@ export const serializeState = function(obj) {
 export const deserializeState = function(obj) {
   if (obj !== null && typeof obj === 'object') {
     if (obj.__type === 'Decimal') return new Decimal(obj.value);
+    if (obj.__type === 'Set') return new Set(obj.value);
     if (Array.isArray(obj)) return obj.map(deserializeState);
     let res = {};
     for (let key in obj) res[key] = deserializeState(obj[key]);

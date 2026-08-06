@@ -4,8 +4,9 @@
 // [SEC-05] VISUAL FORMATTING & AUDIO HELPER ENGINES
 import { getInitialEra2State } from '../state/createInitialState.js';
 import { getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, getGalacticDarkMatterRate, getGalacticMergeYield, getCompressionsCompleted } from '../core/economy.js';
+import { getCurrentObjective } from './objectives.js';
 import { getPlasmaRates, getPlasmaUpgradeVisibility } from '../eras/plasma/selectors.js';
-import { getQuantumRates } from '../eras/quantum/selectors.js';
+import { getQuantumRates, getInflationEligibility } from '../eras/quantum/selectors.js';
 import { getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 import { updateSupernovaOutcome } from './stellar.js';
 import { CodexEngine } from './codex.js';
@@ -188,18 +189,19 @@ export const ActManager = {
       gameState.era1.quantumFoam = qf.toNumber();
 
       let targetAct = 1;
-      if (qf.gte(10000)) {
+      const eligibility = getInflationEligibility(gameState);
+      if (eligibility.isEligible) {
         targetAct = 3;
-      } else if (qf.gte(100) && gameState.era1.vacuumCoherence >= 1.0) {
+      } else if (eligibility.qf.gte(100) && eligibility.coherence >= 1.0) {
         targetAct = 2;
-      } else if (gameState.unfold && gameState.unfold.hasUnlocked100QF && gameState.era1.vacuumCoherence >= 1.0) {
+      } else if (gameState.discoveries && gameState.discoveries.has('qf_100') && eligibility.coherence >= 1.0) {
         targetAct = 2;
       }
 
       if (targetAct !== gameState.era1.currentAct) {
         gameState.era1.currentAct = targetAct;
-        if (targetAct === 2 && gameState.unfold) {
-          gameState.unfold.hasUnlocked10QF = true;
+        if (targetAct === 2 && gameState.discoveries) {
+          gameState.discoveries.add('qf_10');
         }
         this.triggerActPunctuation(1, targetAct);
       }
@@ -1394,27 +1396,45 @@ export const Viewport = {
       objNode.textContent = objectives[gameState.activeEpoch] || objectives[1];
     }
 
+    const tracker = document.getElementById('objective-tracker');
+    if (tracker) {
+      const currentObj = getCurrentObjective(gameState);
+      if (currentObj) {
+        tracker.style.display = 'flex';
+        this.setTextContent('objective-title', currentObj.title);
+        this.setTextContent('objective-instruction', currentObj.instruction);
+        this.setTextContent('objective-explanation', currentObj.explanation);
+        
+        const progressBar = document.getElementById('objective-progress-bar');
+        if (progressBar) progressBar.style.width = `${currentObj.progress}%`;
+        
+        this.setTextContent('objective-progress-text', `${this.format(currentObj.current)} / ${this.format(currentObj.target)}`);
+      } else {
+        tracker.style.display = 'none';
+      }
+    }
+
     // Era 1 Cold Boot Diegetic Unfolding visibility controls using permanent state flags
     const isEra1 = gameState.activeEpoch === 1;
-    const unfold = gameState.unfold || {};
+    const discoveries = gameState.discoveries || new Set();
 
     // HUD box visibility
     const hydroBox = this.getEl('label-hydrogen')?.closest('.resource-box');
-    if (hydroBox) hydroBox.style.display = (isEra1 && !unfold.hasUnlocked1QF) ? 'none' : '';
+    if (hydroBox) hydroBox.style.display = (isEra1 && !discoveries.has('qf_1')) ? 'none' : '';
 
     const heliumBox = this.getEl('label-helium')?.closest('.resource-box');
-    if (heliumBox) heliumBox.style.display = (isEra1 && !unfold.hasUnlocked10QF) ? 'none' : '';
+    if (heliumBox) heliumBox.style.display = (isEra1 && !discoveries.has('qf_10')) ? 'none' : '';
 
     // Navigation bar visibility
     const navMenu = document.querySelector('.tab-menu');
-    if (navMenu) navMenu.style.display = (isEra1 && !unfold.hasUnlocked10QF) ? 'none' : 'flex';
+    if (navMenu) navMenu.style.display = (isEra1 && !discoveries.has('qf_10')) ? 'none' : 'flex';
 
     const allPossibleTabs = ["core", "upgrades", "artifacts", "system", "shop", "pulsar", "singularity", "prestige", "settings"];
     allPossibleTabs.forEach(tabId => {
       const navBtn = document.getElementById(`nav-${tabId}`);
       if (navBtn) {
         let isTabAllowed = currentEpoch.tabs.includes(tabId);
-        if (isEra1 && !unfold.hasUnlocked10QF && tabId !== 'core') isTabAllowed = false;
+        if (isEra1 && !discoveries.has('qf_10') && tabId !== 'core') isTabAllowed = false;
         if (tabId === 'artifacts' && (!gameState.artifacts || !gameState.artifacts.unlocked || gameState.artifacts.unlocked.length === 0)) {
           isTabAllowed = false;
         }

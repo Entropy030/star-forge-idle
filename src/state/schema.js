@@ -7,6 +7,9 @@ export const ensureStateShape = function(gameState) {
   if (!gameState.unfold) {
     gameState.unfold = { hasUnlocked1QF: false, hasUnlocked10QF: false, hasUnlocked100QF: false, introCompleted: false };
   }
+  if (!gameState.discoveries) {
+    gameState.discoveries = new Set();
+  }
   if (typeof gameState.unfold.hasUnlocked1QF !== 'boolean') gameState.unfold.hasUnlocked1QF = false;
   if (typeof gameState.unfold.hasUnlocked10QF !== 'boolean') gameState.unfold.hasUnlocked10QF = false;
   if (typeof gameState.unfold.hasUnlocked100QF !== 'boolean') gameState.unfold.hasUnlocked100QF = false;

@@ -25,21 +25,32 @@ export function getMilestoneMultiplier(level) {
   return 1.0 + (milestones * 0.05);
 }
 
-export function getQuantumFluctuationRate() {
+export function getFundamentalLawSynergy(state) {
+  let qUpgrades = state?.upgrades?.quantum || {};
+  let totalLevels = 
+    (qUpgrades.gravityForce?.level || 0) +
+    (qUpgrades.weakForce?.level || 0) +
+    (qUpgrades.electromagneticForce?.level || 0) +
+    (qUpgrades.strongForce?.level || 0);
+  let milestoneBonus = Math.floor(totalLevels / 5) * 0.05;
+  return 1.0 + milestoneBonus;
+}
+
+export function getQuantumFluctuationRate(state = gameState) {
   let rate = new Decimal(0);
   for (let key in COSMIC_REGISTRY.upgrades.quantum) {
     let def = COSMIC_REGISTRY.upgrades.quantum[key];
-    let state = gameState.upgrades.quantum[key];
-    if (state && state.level > 0 && def.gen) {
-      let mult = getMilestoneMultiplier(state.level);
-      rate = rate.plus(def.gen.times(state.level).times(mult));
+    let upgradeState = state.upgrades.quantum[key];
+    if (upgradeState && upgradeState.level > 0 && def.gen) {
+      let mult = getMilestoneMultiplier(upgradeState.level);
+      rate = rate.plus(def.gen.times(upgradeState.level).times(mult));
     }
   }
   let artifactMult = 1.0;
-  if (gameState.artifacts && gameState.artifacts.modifiers) {
-    const mods = gameState.artifacts.modifiers;
+  if (state.artifacts && state.artifacts.modifiers) {
+    const mods = state.artifacts.modifiers;
     artifactMult *= (mods.productionMult || 1.0);
-    if (gameState.era1 && gameState.era1.currentAct === 3) {
+    if (state.era1 && state.era1.currentAct === 3) {
       artifactMult *= (mods.act3Multiplier || 1.0);
     }
     if (mods.activeClickBoostSec && mods.activeClickBoostSec > 0) {
@@ -47,22 +58,23 @@ export function getQuantumFluctuationRate() {
     }
   }
 
-  return rate.times(gameState.inflatonMultiplier || 1).times(artifactMult);
+  let synergyMult = getFundamentalLawSynergy(state);
+  return rate.times(state.inflatonMultiplier || 1).times(artifactMult).times(synergyMult);
 }
 
-
-
-export function getEnergyDensityRate() {
+export function getEnergyDensityRate(state = gameState) {
   let rate = new Decimal(0);
   for (let key in COSMIC_REGISTRY.upgrades.quantum) {
     let def = COSMIC_REGISTRY.upgrades.quantum[key];
-    let state = gameState.upgrades.quantum[key];
-    if (state && state.level > 0 && def.densityGen) {
-      let mult = getMilestoneMultiplier(state.level);
-      rate = rate.plus(def.densityGen.times(state.level).times(mult));
+    let upgradeState = state.upgrades.quantum[key];
+    if (upgradeState && upgradeState.level > 0 && def.densityGen) {
+      let mult = getMilestoneMultiplier(upgradeState.level);
+      rate = rate.plus(def.densityGen.times(upgradeState.level).times(mult));
     }
   }
-  return rate;
+
+  let synergyMult = getFundamentalLawSynergy(state);
+  return rate.times(synergyMult);
 }
 
 export function getPlasmaPassiveRates() {

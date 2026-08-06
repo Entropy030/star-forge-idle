@@ -96,11 +96,11 @@ function gameTick(dt) {
     }
 
     // Era 1 Act unfolding progression logic & permanent unfold flags
-    const currentQF = gameState.resources.quantumFluctuations.amount;
-    if (!gameState.unfold) gameState.unfold = {};
-    if (currentQF.gte(1)) gameState.unfold.hasUnlocked1QF = true;
-    if (currentQF.gte(10)) gameState.unfold.hasUnlocked10QF = true;
-    if (currentQF.gte(100)) gameState.unfold.hasUnlocked100QF = true;
+    if (!gameState.discoveries) gameState.discoveries = new Set();
+    const currentQF = getAmount('quantumFluctuations');
+    if (currentQF.gte(1)) gameState.discoveries.add('qf_1');
+    if (currentQF.gte(10)) gameState.discoveries.add('qf_10');
+    if (currentQF.gte(100)) gameState.discoveries.add('qf_100');
 
     if (!gameState.stats.maxQF) gameState.stats.maxQF = new Decimal(0);
     if (currentQF.gt(gameState.stats.maxQF)) {

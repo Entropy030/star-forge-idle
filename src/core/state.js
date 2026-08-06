@@ -17,7 +17,18 @@ export const createReactiveState = function(obj, onDirty) {
   return new Proxy(obj, {
     get(target, prop) {
       if (prop === '__isProxy') return true;
-      return target[prop];
+      let val = target[prop];
+      if (typeof val === 'function') {
+        return function(...args) {
+          const result = val.apply(target, args);
+          // Trigger dirty on Set mutations
+          if (target instanceof Set && (prop === 'add' || prop === 'delete' || prop === 'clear')) {
+            onDirty(prop);
+          }
+          return result;
+        };
+      }
+      return val;
     },
     set(target, prop, value) {
       if (target[prop] !== value) {
