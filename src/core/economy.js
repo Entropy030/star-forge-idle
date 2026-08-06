@@ -2,10 +2,10 @@
 
 // Haptics is on window
 const Haptics = window.Haptics;
-import { saveGame } from './state.js';
 // ==========================================================================
 /* eslint-disable import/no-cycle */
 import { gameState, isDirty, setIsDirty } from './state.js';
+import { saveGame } from './persistence.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 export function updateStatsData() {
   if (gameState.era3 && gameState.era3.temperature.gt(gameState.stats.maxTemp)) {

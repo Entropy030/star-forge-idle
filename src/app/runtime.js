@@ -1,4 +1,4 @@
-import { loadGame, saveGame } from '../core/state.js'; // Will be replaced by state/serialization later
+import { loadGame, saveGame } from '../core/persistence.js'; // Will be replaced by state/serialization later
 import { startLoop } from './loop.js';
 
 export function processOfflineProgress(engine, elapsedSeconds) {

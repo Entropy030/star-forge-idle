@@ -8,7 +8,9 @@ import { getGalacticMergeYield, getCompressionHeatYield, getCompressionsComplete
 import { triggerGalacticMerge, stabilizeArmsAction as stabilizeArms, accretePlanetConfigurationAction as accretePlanetConfiguration, triggerBigBounce } from './core/actions.js';
 import { expireFlare } from './core/stellar.js';
 let flareSimSuppressed = false;
-import { gameState, setGameState, isDirty, setIsDirty, saveGame, exportSave, importSave, wipeSave, ensureStateShape, getInitialGameState, deserializeState, loadGame, serializeState } from './core/state.js';
+import { gameState, setGameState, isDirty, setIsDirty, ensureStateShape, getInitialGameState, deserializeState, serializeState } from './core/state.js';
+import { saveGame, exportSave, importSave, wipeSave, loadGame, getPlaytestSpeedMultiplier } from './core/persistence.js';
+import { checkPlaytestMode } from './dev/playtestMode.js';
 import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, deduct, getStardustYield, getPulsarShardYield, getSingularityMassYield, getCardMultiplier, getBaryonAsymmetryMultiplier } from './core/economy.js';
 import { ArtifactManager, Viewport, format, ActManager, initAudio, playSupernovaSound, showIntroScreenCinematic, startEraTransition } from './ui/viewport.js';
 import { Templates } from './ui/templates.js';
@@ -557,37 +559,103 @@ function runParityHarness() {
 // ==========================================================================
 // [SEC-19] RUNTIME TIMERS & CORE BOOTSTRAP INITIALIZATION
 // ==========================================================================
-let simulationAccumulator = 0;
-let lastTick = Date.now();
+let lastSimTick = Date.now();
+let catchupAccumulator = 0;
+let isCatchingUp = false;
 
-function renderLoop() {
+function simulationScheduler() {
+  if (isCatchingUp) return; // Prevent double-ticking during async catchup
+
   let now = Date.now();
-  let dt = Math.max(0, (now - lastTick) / 1000);
+  let dt = Math.max(0, (now - lastSimTick) / 1000);
+  lastSimTick = now;
+
   let cMod = 1.0 + (0.12 * (gameState.cosmicConstants?.c || 0));
-  dt *= cMod;
+  let speedMult = getPlaytestSpeedMultiplier();
+  dt *= (cMod * speedMult);
 
-  if (dt > 1.5) dt = 1.5;
-  lastTick = now;
-
-  simulationAccumulator += dt;
-  if (simulationAccumulator >= 0.10) {
-    gameTick(simulationAccumulator);
-    simulationAccumulator = 0;
-
-    if (isDirty) {
-      try {
-        Viewport.update();
-      } catch (err) {
-        console.error("Viewport.update() failed:", err);
-      } finally {
-        setIsDirty(false);
-      }
-    }
+  if (dt > 1.5) {
+    // If the tick is too large (tab was frozen in background), push it to the catch-up loop
+    catchupAccumulator += dt;
+    processCatchupAsync();
+    return;
   }
 
-  requestAnimationFrame(renderLoop);
+  if (dt > 0) {
+    gameTick(dt);
+  }
 }
 
+async function processCatchupAsync() {
+  if (isCatchingUp || catchupAccumulator <= 0) return;
+  isCatchingUp = true;
+  
+  // Cap offline catchup to 8 hours
+  const MAX_CATCHUP_SEC = 28800;
+  if (catchupAccumulator > MAX_CATCHUP_SEC) {
+    console.warn(`Catchup capped from ${catchupAccumulator}s to ${MAX_CATCHUP_SEC}s`);
+    catchupAccumulator = MAX_CATCHUP_SEC;
+  }
+  
+  const CHUNK_SIZE = 1; // 1 second
+  const BATCH_SIZE = 250; // Process 250 chunks per batch
+  
+  Viewport.showToast(`Processing offline catchup...`);
+  
+  while (catchupAccumulator > 0) {
+    let chunksProcessed = 0;
+    while (catchupAccumulator > 0 && chunksProcessed < BATCH_SIZE) {
+      let dt = Math.min(catchupAccumulator, CHUNK_SIZE);
+      gameTick(dt);
+      catchupAccumulator -= dt;
+      chunksProcessed++;
+    }
+    
+    // Yield to main thread
+    await new Promise(r => setTimeout(r, 0));
+  }
+  
+  catchupAccumulator = 0;
+  isCatchingUp = false;
+  lastSimTick = Date.now(); // reset timer so we don't catchup again immediately
+  Viewport.showToast(`Catchup complete.`);
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    // Tab went hidden, do nothing specific
+  } else {
+    // Tab became visible
+    let now = Date.now();
+    let dt = Math.max(0, (now - lastSimTick) / 1000);
+    lastSimTick = now;
+    
+    let cMod = 1.0 + (0.12 * (gameState.cosmicConstants?.c || 0));
+    let speedMult = getPlaytestSpeedMultiplier();
+    dt *= (cMod * speedMult);
+    
+    if (dt > 1.5) {
+      catchupAccumulator += dt;
+      processCatchupAsync();
+    }
+  }
+});
+
+// Start the scheduler at 10Hz
+setInterval(simulationScheduler, 100);
+
+function renderLoop() {
+  if (isDirty) {
+    try {
+      Viewport.update();
+    } catch (err) {
+      console.error("Viewport.update() failed:", err);
+    } finally {
+      setIsDirty(false);
+    }
+  }
+  requestAnimationFrame(renderLoop);
+}
 setInterval(function () { saveGame(); }, 5000);
 
 async function bootApp() {
@@ -630,6 +698,7 @@ async function bootApp() {
     engine.loadState(gameState);
 
     checkDevMode();
+    checkPlaytestMode();
     if (new URLSearchParams(window.location.search).get('dev') === 'true') {
       runParityHarness();
     }

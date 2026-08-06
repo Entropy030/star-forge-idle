@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { MIGRATIONS } from '../src/state/migrations.js';
 import { createInitialState } from '../src/state/createInitialState.js';
-import { gameState, setGameState, loadGame, importSave } from '../src/core/state.js';
+import { gameState, setGameState } from '../src/core/state.js';
+import { loadGame, importSave } from '../src/core/persistence.js';
 import { serializeState } from '../src/state/serialization.js';
 import { engine } from '../src/engine/instance.js';
 /* global Decimal */

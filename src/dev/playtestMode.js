@@ -1,0 +1,133 @@
+import { setPlaytestMode, setPlaytestSpeedMultiplier, getPlaytestSpeedMultiplier, exportSave, importSave } from '../core/persistence.js';
+import { gameState } from '../core/state.js';
+import { serializeState, deserializeState } from '../state/serialization.js';
+import { replaceGameState } from '../core/state.js';
+import { Viewport } from '../ui/viewport.js';
+import { ArtifactManager } from '../ui/viewport.js'; // or similar, depending on how it's exported
+import * as presets from './playtestPresets.js';
+
+let isPlaytestActive = false;
+
+export function checkPlaytestMode() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('playtest') === '1') {
+    enablePlaytestMode();
+  }
+
+  window.addEventListener('keydown', (e) => {
+    if (e.shiftKey && e.key === 'F2') {
+      if (isPlaytestActive) {
+        disablePlaytestMode();
+      } else {
+        enablePlaytestMode();
+      }
+    }
+  });
+}
+
+export function enablePlaytestMode() {
+  if (isPlaytestActive) return;
+  isPlaytestActive = true;
+  setPlaytestMode(true);
+  
+  // Serialize current real state to sessionStorage
+  sessionStorage.setItem('starForgeRealSaveBackup', serializeState(gameState));
+  
+  renderPlaytestUI();
+  Viewport.showToast("PLAYTEST MODE ENABLED");
+}
+
+export function disablePlaytestMode() {
+  if (!isPlaytestActive) return;
+  
+  isPlaytestActive = false;
+  setPlaytestMode(false);
+  setPlaytestSpeedMultiplier(1);
+  
+  const backup = sessionStorage.getItem('starForgeRealSaveBackup');
+  if (backup) {
+    const loadedState = deserializeState(backup);
+    replaceGameState(loadedState);
+  }
+  
+  const ui = document.getElementById('playtest-mode-ui');
+  if (ui) ui.remove();
+  
+  Viewport.update();
+  Viewport.syncAnchor(true);
+  Viewport.showToast("Playtest Mode Disabled. Save Restored.");
+}
+
+function renderPlaytestUI() {
+  let ui = document.getElementById('playtest-mode-ui');
+  if (!ui) {
+    ui = document.createElement('div');
+    ui.id = 'playtest-mode-ui';
+    ui.style.position = 'fixed';
+    ui.style.bottom = '10px';
+    ui.style.left = '10px';
+    ui.style.backgroundColor = 'rgba(20, 0, 0, 0.9)';
+    ui.style.border = '1px solid red';
+    ui.style.padding = '10px';
+    ui.style.zIndex = '9999';
+    ui.style.color = '#fff';
+    ui.style.fontFamily = 'monospace';
+    ui.style.fontSize = '12px';
+    document.body.appendChild(ui);
+  }
+  
+  ui.innerHTML = `
+    <div style="font-weight: bold; color: red; margin-bottom: 5px;">PLAYTEST MODE · NORMAL SAVE PROTECTED</div>
+    <div style="margin-bottom: 5px;">
+      Speed: 
+      <button id="pt-speed-1" style="background: ${getPlaytestSpeedMultiplier() === 1 ? 'red' : '#333'}; color: white; cursor: pointer;">1x</button>
+      <button id="pt-speed-5" style="background: ${getPlaytestSpeedMultiplier() === 5 ? 'red' : '#333'}; color: white; cursor: pointer;">5x</button>
+      <button id="pt-speed-25" style="background: ${getPlaytestSpeedMultiplier() === 25 ? 'red' : '#333'}; color: white; cursor: pointer;">25x</button>
+    </div>
+    <div style="margin-bottom: 5px;">
+      Presets:
+      <select id="pt-presets">
+        <option value="">-- Select Preset --</option>
+        <option value="getPresetFreshEraI">Fresh Era I</option>
+        <option value="getPresetLateEraI">Late Era I</option>
+        <option value="getPresetFreshEraII">Fresh Era II</option>
+        <option value="getPresetEraIIUpgradeChain">Era II Upgrade Chain</option>
+        <option value="getPresetEraIIRecombinationReady">Era II Recombination Ready</option>
+        <option value="getPresetFreshEraIII">Fresh Era III</option>
+        <option value="getPresetMidEraIII">Mid Era III</option>
+        <option value="getPresetEraIIISupernovaReady">Era III Supernova Ready</option>
+      </select>
+      <button id="pt-load-preset" style="cursor: pointer;">Load</button>
+    </div>
+    <div style="display: flex; gap: 5px;">
+      <button id="pt-export" style="cursor: pointer;">Export State</button>
+      <button id="pt-restore" style="cursor: pointer;">Restore Normal Save</button>
+    </div>
+  `;
+
+  document.getElementById('pt-speed-1').onclick = () => { setPlaytestSpeedMultiplier(1); renderPlaytestUI(); };
+  document.getElementById('pt-speed-5').onclick = () => { setPlaytestSpeedMultiplier(5); renderPlaytestUI(); };
+  document.getElementById('pt-speed-25').onclick = () => { setPlaytestSpeedMultiplier(25); renderPlaytestUI(); };
+  
+  document.getElementById('pt-load-preset').onclick = () => {
+    const sel = document.getElementById('pt-presets').value;
+    if (sel && presets[sel]) {
+      const state = presets[sel]();
+      replaceGameState(state);
+      if (typeof window.ArtifactManager !== 'undefined' && window.ArtifactManager.recalculateArtifactModifiers) {
+        window.ArtifactManager.recalculateArtifactModifiers();
+      }
+      Viewport.switchTab('core');
+      Viewport.update();
+      Viewport.syncAnchor(true);
+    }
+  };
+  
+  document.getElementById('pt-export').onclick = () => {
+    exportSave().then(res => Viewport.showToast(res.message));
+  };
+  
+  document.getElementById('pt-restore').onclick = () => {
+    disablePlaytestMode();
+  };
+}

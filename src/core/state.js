@@ -76,122 +76,18 @@ export { serializeState, deserializeState };
 
 
 
-export const saveGame = function() {
-  const saveState = { version: SAVE_VERSION, gameState: serializeState(gameState), lastSavedTime: Date.now() };
-  localStorage.setItem('starForgeSave_v17', JSON.stringify(saveState));
-}
-
-
-
-export const loadGame = function() {
-  try {
-    let rawData = localStorage.getItem('starForgeSave_v17') || 
-                  localStorage.getItem('starForgeSave_v16') || 
-                  localStorage.getItem('starForgeSave_v15') || 
-                  localStorage.getItem('starForgeSave_v14') || 
-                  localStorage.getItem('starForgeSave_v13') || 
-                  localStorage.getItem('starForgeSave');
-    if (!rawData) {
-      ensureStateShape(gameState);
-      document.body.setAttribute('data-epoch', gameState.activeEpoch);
-      document.body.setAttribute('data-tab', gameState.activeTab);
-      return;
-    }
-
-    let parsed = JSON.parse(rawData);
-    if (!parsed || !parsed.gameState) {
-      ensureStateShape(gameState);
-      document.body.setAttribute('data-epoch', gameState.activeEpoch);
-      document.body.setAttribute('data-tab', gameState.activeTab);
-      return;
-    }
-
-    let stateVersion = parsed.version || 13;
-    if (stateVersion < 13) stateVersion = 13; // default to generic migration for very old saves
-    let loadedState = deserializeState(parsed.gameState);
-
-    // Chain migrations sequentially
-    while (stateVersion < SAVE_VERSION) {
-      const migrationFn = MIGRATIONS[stateVersion];
-      if (!migrationFn) break;
-      loadedState = migrationFn(loadedState);
-      stateVersion = loadedState.version || (stateVersion + 1);
-    }
-
-    gameState = createReactiveState(loadedState, (prop) => {
-      isDirty = true;
-    });
-    ensureStateShape(gameState);
-    document.body.setAttribute('data-epoch', gameState.activeEpoch);
-    document.body.setAttribute('data-tab', gameState.activeTab);
-
-    // Calculate offline progress
-    const lastSaved = parsed.lastSavedTime || Date.now();
-    const elapsedSec = Math.max(0, (Date.now() - lastSaved) / 1000);
-    if (elapsedSec > 5) {
-      const offlineSec = Math.min(elapsedSec, 43200); // capped at 12 hours max
-      const hrs = Math.floor(offlineSec / 3600);
-      const mins = Math.floor((offlineSec % 3600) / 60);
-      const secs = Math.floor(offlineSec % 60);
-      let timeStr = "";
-      if (hrs > 0) timeStr += `${hrs}h `;
-      if (mins > 0 || hrs > 0) timeStr += `${mins}m `;
-      timeStr += `${secs}s`;
-
-      return { offlineSec, offlineTimeStr: timeStr };
-    }
-    return { offlineSec: 0, offlineTimeStr: null };
-  } catch (e) {
-    console.error("Failed to load save:", e);
-    ensureStateShape(gameState);
+export function replaceGameState(newState) {
+  gameState = createReactiveState(newState, (prop) => {
+    isDirty = true;
+  });
+  ensureStateShape(gameState);
+  
+  if (typeof document !== 'undefined' && document.body) {
     document.body.setAttribute('data-epoch', gameState.activeEpoch);
     document.body.setAttribute('data-tab', gameState.activeTab);
   }
-}
-
-
-export const exportSave = function() {
-  saveGame();
-  let rawData = localStorage.getItem('starForgeSave_v17');
-  if (rawData) {
-    let encoded = btoa(rawData);
-    return navigator.clipboard.writeText(encoded)
-      .then(() => ({ success: true, message: "Universe encrypted to clipboard!" }))
-      .catch(() => ({ success: false, message: "Clipboard write permission blocked." }));
-  }
-  return Promise.resolve({ success: false, message: "No save data found." });
-}
-
-export const importSave = function(input) {
-  if (!input) return { success: false, message: "No input provided." };
-  try {
-    let decoded = atob(input);
-    let parsed = JSON.parse(decoded);
-    if (parsed && parsed.version === SAVE_VERSION) {
-      try {
-        const importedState = createReactiveState(deserializeState(parsed.gameState), (prop) => {
-          isDirty = true;
-        });
-        ensureStateShape(importedState);
-        gameState = importedState;
-        localStorage.setItem('starForgeSave_v17', decoded);
-        return { success: true };
-      } catch (e) {
-        return { success: false, message: "State format error during import." };
-      }
-    } else { return { success: false, message: "Unsupported timeline formatting configuration." }; }
-  } catch (e) { return { success: false, message: "Fatal transmission verification corruption." }; }
-}
-
-export function wipeSave() {
-  if (confirm("Are you sure you want to reset all universe progression? This cannot be undone.")) {
-    const overlay = document.getElementById('intro-screen-overlay');
-    if (overlay) delete overlay.dataset.initialized;
-    localStorage.removeItem('starForgeSave_v17');
-    localStorage.removeItem('starForgeSave_v16');
-    localStorage.removeItem('starForgeSave_v15');
-    location.reload();
-  }
+  isDirty = true;
 }
 
 // ==========================================================================
+

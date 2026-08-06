@@ -12,7 +12,8 @@ import { CodexEngine } from './codex.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
-import { gameState, saveGame, exportSave, importSave, wipeSave } from '../core/state.js';
+import { gameState } from '../core/state.js';
+import { saveGame, exportSave, importSave, wipeSave } from '../core/persistence.js';
 import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, getStardustYield, getPulsarShardYield, getSingularityMassYield, getBuyMultiplierCount, getCumulativeCost, getFusionSurgeMultiplier } from '../core/economy.js';
 import { Templates } from './templates.js';
 import { Timeline } from '../core/timeline.js';
