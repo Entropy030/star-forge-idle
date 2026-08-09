@@ -177,6 +177,7 @@ export function createInitialState() {
 
   state.systemRank = 1;
   state.completedMissions = [];
+  state.completedObjectives = [];
   state.cards = {};
   for (let key in COSMIC_REGISTRY.celestialCards) {
     let def = COSMIC_REGISTRY.celestialCards[key];

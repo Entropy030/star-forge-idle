@@ -1,36 +1,52 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import Decimal from 'decimal.js';
-import { getCurrentObjective } from '../src/ui/objectives.js';
+import { updateObjectiveProgress, getCurrentObjective } from '../src/ui/objectives.js';
+import { ensureStateShape } from '../src/core/state.js';
 import { getEnergyDensityRate } from '../src/core/economy.js';
 import { COSMIC_REGISTRY } from '../src/config/registry.js';
 import { serializeState, deserializeState } from '../src/state/serialization.js';
 
 describe('Narrative and Progression', () => {
-  it('getCurrentObjective returns correct objective for Era I', () => {
+  it('objective progression is monotonic and persists', () => {
     const mockState = {
       activeEpoch: 1,
+      stats: { maxQF: new Decimal(0) },
+      completedObjectives: [],
       resources: {
         quantumFluctuations: { amount: new Decimal(0) },
         energyDensity: { amount: new Decimal(0) }
       },
       upgrades: {
-        quantum: {
-          gravityForce: { level: 0 }
-        }
+        quantum: { gravityForce: { level: 0 } }
       }
     };
 
-    const obj = getCurrentObjective(mockState);
-    expect(obj).not.toBeNull();
+    // 1. Initial State
+    let obj = getCurrentObjective(mockState);
     expect(obj.id).toBe('obj_qf_intro');
-    expect(obj.target).toBe(50);
-    expect(obj.current).toBe(0);
-    expect(obj.progress).toBe(0);
+    expect(mockState.completedObjectives).toEqual([]);
 
-    mockState.resources.quantumFluctuations.amount = new Decimal(55);
-    const obj2 = getCurrentObjective(mockState);
-    expect(obj2.id).toBe('obj_upgrade_gravity');
-    expect(obj2.current).toBe(0);
+    // 2. Reach 50 maxQF
+    mockState.stats.maxQF = new Decimal(50);
+    updateObjectiveProgress(mockState);
+    expect(mockState.completedObjectives).toContain('obj_qf_intro');
+    
+    // 3. Spends QF (maxQF shouldn't regress, but even if it did, objective is completed)
+    mockState.stats.maxQF = new Decimal(10);
+    updateObjectiveProgress(mockState);
+    let obj2 = getCurrentObjective(mockState);
+    expect(obj2.id).toBe('obj_upgrade_gravity'); // Has moved to the next objective!
+    
+    // 4. Save and reload correctly migrates missing completedObjectives
+    const legacyState = { 
+      activeEpoch: 1, 
+      stats: { maxQF: new Decimal(0) },
+      resources: {},
+      currencies: {},
+      upgrades: { quantum: {} }
+    };
+    ensureStateShape(legacyState);
+    expect(Array.isArray(legacyState.completedObjectives)).toBe(true);
   });
 
   it('Fundamental Law Synergy applies +5% to Energy Density', () => {

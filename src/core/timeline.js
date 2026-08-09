@@ -8,6 +8,8 @@ import { gameState } from './state.js';
 import { Economy, getAmount, getCompressionScaling, processEraV, getQuantumFluctuationRate, getEnergyDensityRate, getPlasmaPassiveRates, getBaryonAsymmetryMultiplier, getProtonFusionCap, getHydrogenGenRate, getBuyLoopCount, getFusionCost, getFusionSurgeMultiplier, getCompressionHeatYield, getGalacticDebrisRate, getGalacticDarkMatterRate } from './economy.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 
+import { updateObjectiveProgress } from '../ui/objectives.js';
+
 import { simulateQuantumEra } from '../eras/quantum/simulation.js';
 import { simulatePlasmaEra } from '../eras/plasma/simulation.js';
 import { simulateStellarEra } from '../eras/stellar/simulation.js';
@@ -137,6 +139,7 @@ function gameTick(dt) {
     gameState.coherence = Decimal.max(0, new Decimal(100).minus(entropyVal));
   }
   Timeline.process(dt);
+  updateObjectiveProgress(gameState);
 
   // Achievement checks (inline — only need gameState + events)
   if (gameState.resources.iron && gameState.resources.iron.amount.gte(1) && !gameState.achievements.firstIron.unlocked) {

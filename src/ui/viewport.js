@@ -1385,17 +1385,6 @@ export const Viewport = {
 
     this.setTextContent('active-epoch-name', currentEpoch.name);
 
-    const objNode = document.getElementById('era-objective-text');
-    if (objNode) {
-      const objectives = {
-        1: "Accumulate 100,000 QF & Trigger Cosmic Inflation",
-        2: "Cool Plasma < 3,000 K or Forge 1,000,000 Protons",
-        3: "Heat Stellar Core to 100M K for Supernova",
-        4: "Stabilize Dark Matter Halo & Reach 10,000 Dark Matter",
-        5: "Maximize Bit Encoding before Entropy Reaches 100%"
-      };
-      objNode.textContent = objectives[gameState.activeEpoch] || objectives[1];
-    }
 
     const tracker = document.getElementById('objective-tracker');
     if (tracker) {
@@ -1404,7 +1393,6 @@ export const Viewport = {
         tracker.style.display = 'flex';
         this.setTextContent('objective-title', currentObj.title);
         this.setTextContent('objective-instruction', currentObj.instruction);
-        this.setTextContent('objective-explanation', currentObj.explanation);
         
         const progressBar = document.getElementById('objective-progress-bar');
         if (progressBar) progressBar.style.width = `${currentObj.progress}%`;
@@ -1469,11 +1457,29 @@ export const Viewport = {
 
       const inflationBtn = this.getEl('btn-inflation');
       const inflationCard = this.getEl('era1-locked-card');
-      const isInflationReady = gameState.resources.quantumFluctuations.amount.gte(COSMIC_REGISTRY.constants.inflationThreshold);
+      const eligibility = getInflationEligibility(gameState);
+      
       if (inflationBtn && inflationCard) {
-        inflationBtn.style.display = isInflationReady ? 'block' : 'none';
-        inflationCard.style.display = isInflationReady ? 'none' : 'block';
-        inflationBtn.disabled = !isInflationReady;
+        if (eligibility.isEligible) {
+          inflationBtn.style.display = 'block';
+          inflationBtn.disabled = false;
+          inflationCard.style.display = 'none';
+        } else {
+          inflationBtn.style.display = 'none';
+          inflationCard.style.display = 'block';
+          // Update inline requirements
+          const reqText = `Requires 100k QF (${format(eligibility.qf)}), 50k ED (${format(eligibility.ed)}), 100% Coherence (${Math.floor(eligibility.coherence)}%)`;
+          let reqDiv = inflationCard.querySelector('.req-text');
+          if (!reqDiv) {
+            reqDiv = document.createElement('div');
+            reqDiv.className = 'req-text';
+            reqDiv.style.fontSize = '0.75rem';
+            reqDiv.style.marginTop = '8px';
+            reqDiv.style.color = '#ff7675';
+            inflationCard.appendChild(reqDiv);
+          }
+          reqDiv.textContent = reqText;
+        }
       }
 
       if (gameState.activeTab === 'upgrades') {

@@ -1,3 +1,6 @@
+import Decimal from 'break_infinity.js';
+import { getInflationEligibility } from '../eras/quantum/inflation.js';
+
 // [SEC-01.5] CENTRAL i18n DICTIONARY ARCHITECTURE
 // ==========================================================================
 export const i18n = {
@@ -145,7 +148,7 @@ export const COSMIC_REGISTRY = {
       instruction: "Gather 50 Quantum Fluctuations.",
       explanation: "The void is unstable. Extract fluctuations to begin.",
       target: 50,
-      getCurrent: (state) => state.resources.quantumFluctuations.amount.toNumber()
+      getCurrent: (state) => state.stats.maxQF ? state.stats.maxQF.toNumber() : 0
     },
     {
       id: "obj_upgrade_gravity",
@@ -168,11 +171,11 @@ export const COSMIC_REGISTRY = {
     {
       id: "obj_era1_complete",
       epoch: 1,
-      title: "Cosmic Inflation",
-      instruction: "Reach 100,000 Energy Density to trigger the Big Bang.",
+      title: "Prepare Cosmic Inflation",
+      instruction: "Meet all Cosmic Inflation requirements.",
       explanation: "The singularity cannot hold. Prepare for expansion.",
-      target: 100000,
-      getCurrent: (state) => state.resources.energyDensity.amount.toNumber()
+      target: 1,
+      isComplete: (state) => getInflationEligibility(state).isEligible
     }
   ],
   celestialCards: {

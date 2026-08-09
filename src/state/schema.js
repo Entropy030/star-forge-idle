@@ -4,6 +4,9 @@ import { createInitialState, getInitialEra2State, getInitialEra3State, getInitia
 
 export const ensureStateShape = function(gameState) {
   const initialState = createInitialState();
+  if (!Array.isArray(gameState.completedObjectives)) {
+    gameState.completedObjectives = [];
+  }
   if (!gameState.unfold) {
     gameState.unfold = { hasUnlocked1QF: false, hasUnlocked10QF: false, hasUnlocked100QF: false, introCompleted: false };
   }
@@ -71,6 +74,7 @@ export const ensureStateShape = function(gameState) {
 
   if (!(gameState.coherence instanceof Decimal)) gameState.coherence = new Decimal(gameState.coherence || 0);
 
+  if (!gameState.resources) gameState.resources = {};
   for (let resKey in initialState.resources) {
     if (!gameState.resources[resKey]) {
       gameState.resources[resKey] = { amount: new Decimal(0) };
