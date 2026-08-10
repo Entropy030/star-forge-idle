@@ -4,18 +4,43 @@ export function getQuantumUpgradeEligibility(state, upgradeId) {
   const maxQF = state.stats?.maxQF || new Decimal(0);
   const getLevel = (id) => state.upgrades?.quantum?.[id]?.level || 0;
 
+  const requirement = (id, label, current, target) => ({
+    id,
+    label,
+    current,
+    target,
+    met: new Decimal(current).gte(target)
+  });
+
+  const result = (requirements = []) => ({
+    unlocked: requirements.every(item => item.met),
+    requirements
+  });
+
   switch (upgradeId) {
     case 'gravityForce':
-      return { unlocked: true };
+      return result();
     case 'weakForce':
-      return { unlocked: maxQF.gte(100) && getLevel('gravityForce') >= 5 };
+      return result([
+        requirement('peak-qf', 'Peak Quantum Fluctuations', maxQF, 100),
+        requirement('gravity-level', 'Gravitational Coupling level', getLevel('gravityForce'), 5)
+      ]);
     case 'electromagneticForce':
-      return { unlocked: maxQF.gte(500) && getLevel('weakForce') >= 5 };
+      return result([
+        requirement('peak-qf', 'Peak Quantum Fluctuations', maxQF, 500),
+        requirement('weak-level', 'Weak Nuclear Vector level', getLevel('weakForce'), 5)
+      ]);
     case 'vacuumResonance':
-      return { unlocked: maxQF.gte(2500) && getLevel('electromagneticForce') >= 5 };
+      return result([
+        requirement('peak-qf', 'Peak Quantum Fluctuations', maxQF, 2500),
+        requirement('electromagnetic-level', 'Electromagnetic Tensor level', getLevel('electromagneticForce'), 5)
+      ]);
     case 'strongForce':
-      return { unlocked: maxQF.gte(10000) && getLevel('vacuumResonance') >= 5 };
+      return result([
+        requirement('peak-qf', 'Peak Quantum Fluctuations', maxQF, 10000),
+        requirement('vacuum-level', 'Vacuum Resonance Field level', getLevel('vacuumResonance'), 5)
+      ]);
     default:
-      return { unlocked: true };
+      return result();
   }
 }

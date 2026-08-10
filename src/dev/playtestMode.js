@@ -71,8 +71,10 @@ function renderPlaytestUI() {
     ui = document.createElement('div');
     ui.id = 'playtest-mode-ui';
     ui.style.position = 'fixed';
-    ui.style.bottom = '10px';
+    ui.style.bottom = 'calc(var(--nav-height, 70px) + 12px)';
     ui.style.left = '10px';
+    ui.style.maxWidth = 'calc(100vw - 20px)';
+    ui.style.boxSizing = 'border-box';
     ui.style.backgroundColor = 'rgba(20, 0, 0, 0.9)';
     ui.style.border = '1px solid red';
     ui.style.padding = '10px';

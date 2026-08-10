@@ -2339,6 +2339,327 @@ body:not([data-tab="core"]) .core-canvas {
 }
 
 /* ==========================================================================
+   [CSS-SEC-28] FORGE DECISION HIERARCHY
+   ========================================================================== */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.forge-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding: 4px 2px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+#tab-content-upgrades,
+#tab-content-upgrades > div,
+#tab-content-upgrades .upgrade-grid {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+body[data-tab="upgrades"] main {
+  width: 100%;
+  min-width: 0;
+}
+
+.forge-page-header .section-desc {
+  max-width: 430px;
+  margin: 3px 0 0;
+}
+
+.forge-buy-mode {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(162, 155, 254, 0.25);
+  border-radius: 8px;
+  background: rgba(8, 14, 28, 0.78);
+}
+
+.forge-buy-label {
+  padding: 0 5px;
+  color: #8e9aaf;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.forge-buy-mode button {
+  min-width: 38px;
+  min-height: 36px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: #b2bec3;
+  font: 700 0.74rem 'Share Tech Mono', monospace;
+  cursor: pointer;
+}
+
+.forge-buy-mode button.active {
+  border-color: rgba(162, 155, 254, 0.65);
+  background: rgba(108, 92, 231, 0.3);
+  color: #fff;
+}
+
+.forge-buy-mode button:focus-visible,
+.forge-details summary:focus-visible {
+  outline: 2px solid var(--neon-teal);
+  outline-offset: 2px;
+}
+
+.forge-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  min-height: 0;
+  padding: 14px 16px;
+  opacity: 0.88;
+  filter: none;
+}
+
+.forge-card[data-forge-state="locked"] {
+  opacity: 0.72;
+  border-style: dashed;
+}
+
+.forge-card[data-forge-state="maxed"] {
+  opacity: 0.78;
+}
+
+.forge-card-header,
+.forge-card-heading,
+.forge-card-status,
+.forge-card-action {
+  display: flex;
+  align-items: center;
+}
+
+.forge-card-header,
+.forge-card-action {
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.forge-card-heading {
+  min-width: 0;
+  gap: 9px;
+}
+
+.forge-card-heading strong {
+  display: block;
+  color: #f4f7fb;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 1.02rem;
+  line-height: 1.15;
+}
+
+.forge-role-display {
+  margin-bottom: 2px;
+  color: #7f8da3;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.forge-rarity-accent {
+  width: 3px;
+  height: 30px;
+  flex: 0 0 3px;
+  border-radius: 2px;
+  background: #718096;
+}
+
+.forge-rarity-accent[data-rarity="uncommon"] { background: #00b894; }
+.forge-rarity-accent[data-rarity="rare"] { background: #6c5ce7; }
+.forge-rarity-accent[data-rarity="legendary"] { background: #fdcb6e; }
+
+.forge-card-status {
+  flex: 0 0 auto;
+  gap: 6px;
+}
+
+.forge-card-status .lvl-display,
+.forge-state-badge {
+  padding: 3px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #cbd5e1;
+  font: 700 0.63rem 'Share Tech Mono', monospace;
+  white-space: nowrap;
+}
+
+.forge-card[data-forge-state="affordable"] .forge-state-badge {
+  border-color: rgba(0, 236, 198, 0.5);
+  color: var(--neon-teal);
+}
+
+.forge-card[data-forge-state="locked"] .forge-state-badge,
+.forge-card[data-forge-state="unaffordable"] .forge-state-badge,
+.forge-card[data-forge-state="progressing"] .forge-state-badge {
+  border-color: rgba(255, 183, 77, 0.35);
+  color: #ffcc80;
+}
+
+.forge-effect-display {
+  margin: 1px 0 0;
+  color: #fff;
+  font: 700 0.95rem 'Share Tech Mono', monospace;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.forge-contribution-display {
+  margin: 0;
+  color: #9fb0c7;
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
+.forge-requirements {
+  padding: 8px 10px;
+  border-left: 2px solid rgba(255, 118, 117, 0.7);
+  background: rgba(255, 118, 117, 0.06);
+  font-size: 0.72rem;
+}
+
+.forge-requirements ul {
+  display: grid;
+  gap: 3px;
+  margin: 5px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.requirement-met { color: #7bed9f; }
+.requirement-missing { color: #ffb3b3; }
+
+.forge-details {
+  color: #8f9bad;
+  font-size: 0.72rem;
+}
+
+.forge-details summary {
+  width: fit-content;
+  color: #9ba8ba;
+  cursor: pointer;
+  user-select: none;
+}
+
+.forge-details p {
+  margin: 7px 0 0;
+  line-height: 1.45;
+}
+
+.forge-card-action {
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.forge-cost-block {
+  min-width: 0;
+}
+
+.forge-cost-label {
+  display: block;
+  color: #718096;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.forge-cost-display {
+  display: block;
+  margin-top: 2px;
+  color: #e2e8f0;
+  font: 700 0.82rem 'Share Tech Mono', monospace;
+}
+
+.forge-card .upgrade-btn {
+  width: auto;
+  min-width: 104px;
+  min-height: 42px;
+  padding: 8px 14px;
+}
+
+.forge-transition-label {
+  margin: 22px 2px 6px;
+  color: #a29bfe;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.forge-transition-card {
+  background: linear-gradient(135deg, rgba(36, 25, 74, 0.58), rgba(8, 14, 28, 0.92));
+  opacity: 0.9;
+}
+
+@media (max-width: 600px) {
+  .forge-page-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .forge-buy-mode {
+    align-self: flex-start;
+  }
+
+  .forge-buy-mode button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .forge-card {
+    gap: 7px;
+    padding: 12px;
+  }
+
+  .forge-card-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .forge-card-status {
+    align-items: flex-end;
+    flex-direction: column;
+  }
+
+  .forge-card-action {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .forge-card .upgrade-btn {
+    min-width: 112px;
+  }
+}
+
+/* ==========================================================================
    [CSS-SEC-27] P3.3B2 ERA-SPECIFIC RESOURCE HIERARCHY
    ========================================================================== */
 .resource-hud {

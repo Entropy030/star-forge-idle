@@ -1,7 +1,7 @@
 /* global Decimal */
 import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getBaryonAsymmetryMultiplier } from '../../core/economy.js'; // Will be extracted to selectors
-import { getRecombinationEligibility } from './eligibility.js';
+import { getPlasmaUpgradeEligibility, getRecombinationEligibility } from './eligibility.js';
 
 export const plasmaCommandHandlers = {
   CLICK_CORE_ERA2: (state, cmd) => {
@@ -69,6 +69,10 @@ export const plasmaCommandHandlers = {
     
     const def = registry[upgradeId];
     const upgradeState = state.upgrades.plasma[upgradeId];
+    const eligibility = getPlasmaUpgradeEligibility(state, upgradeId);
+    if (!eligibility.unlocked) {
+      return { ok: false, changed: false, events: [], error: { code: 'PREREQUISITES_NOT_MET' } };
+    }
     
     let currencyKey = 'protons';
     if (upgradeId === 'quarkCondenser' || upgradeId === 'plasmaAutomation') currencyKey = 'quarks';

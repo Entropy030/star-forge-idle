@@ -1,5 +1,6 @@
 import { computePlasmaStep } from './evaluator.js';
-export { getRecombinationEligibility } from './eligibility.js';
+import { getPlasmaUpgradeEligibility } from './eligibility.js';
+export { getPlasmaUpgradeEligibility, getRecombinationEligibility } from './eligibility.js';
 
 export function getPlasmaRates(state) {
   // Use the shared evaluator with dt = 1 to get the exact real rates per second
@@ -26,17 +27,10 @@ export function getPlasmaRates(state) {
 }
 
 export function getPlasmaUpgradeVisibility(state) {
-  const qcLevel = state.upgrades?.plasma?.quarkCondenser?.level || 0;
-  const gmLevel = state.upgrades?.plasma?.gluonBinding?.level || 0;
-  const lcLevel = state.upgrades?.plasma?.leptonHarvest?.level || 0;
-  const psLevel = state.upgrades?.plasma?.plasmaAutomation?.level || 0;
-  
-  // Return a complete map of display styles based on unlock logic
-  return {
-    quarkCondenser: 'flex', // Always visible in Era II
-    gluonBinding: qcLevel >= 3 ? 'flex' : 'none',
-    leptonHarvest: gmLevel >= 2 ? 'flex' : 'none',
-    plasmaAutomation: lcLevel >= 1 ? 'flex' : 'none',
-    baryoRadiator: psLevel >= 1 ? 'flex' : 'none'
-  };
+  return Object.fromEntries(
+    Object.keys(state.upgrades?.plasma || {}).map(upgradeId => [
+      upgradeId,
+      upgradeId === 'quarkCondenser' || getPlasmaUpgradeEligibility(state, upgradeId).unlocked ? 'flex' : 'none'
+    ])
+  );
 }

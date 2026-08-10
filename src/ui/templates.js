@@ -71,6 +71,39 @@ export const Templates = {
     </div>
     <button class="upgrade-btn" data-rarity="${rarity}" style="padding: 6px 14px; border-radius: 8px; font-weight: bold; font-size:0.78rem; margin:0; width:auto !important; min-height:unset;"></button>
   `,
+  forgeUpgradeCard: (rarity = 'common') => `
+    <div class="forge-card-header">
+      <div class="forge-card-heading">
+        <span class="forge-rarity-accent" data-rarity="${rarity}" aria-hidden="true"></span>
+        <div>
+          <div class="forge-role-display"></div>
+          <strong class="name-display"></strong>
+        </div>
+      </div>
+      <div class="forge-card-status">
+        <span class="lvl-display"></span>
+        <span class="forge-state-badge"></span>
+      </div>
+    </div>
+    <p class="forge-effect-display"></p>
+    <p class="forge-contribution-display"></p>
+    <div class="forge-requirements" hidden>
+      <strong>Requires</strong>
+      <ul class="forge-requirements-list"></ul>
+    </div>
+    <details class="forge-details">
+      <summary>Details</summary>
+      <p class="desc-display"></p>
+      <p class="forge-milestone-display"></p>
+    </details>
+    <div class="forge-card-action">
+      <div class="forge-cost-block">
+        <span class="forge-cost-label">Cost</span>
+        <strong class="forge-cost-display"></strong>
+      </div>
+      <button class="upgrade-btn" type="button">Buy</button>
+    </div>
+  `,
   era5Dashboard: `
     <div class="era5-dashboard">
       <div style="text-align: center; margin-bottom: 20px;">

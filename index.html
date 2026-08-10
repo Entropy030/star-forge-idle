@@ -13,7 +13,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=37">
+  <link rel="stylesheet" href="style.css?v=38">
   <link rel="manifest" href="manifest.json">
   <style id="critical-boot-guard">
     html:not(.app-ready) body {
@@ -239,8 +239,21 @@
       <button id="flare-button" class="era3-only visual-hidden"></button>
     </div>
 
-    <!-- Tab 2: Upgrades (Generators) -->
+    <!-- Tab 2: Forge (current-run construction) -->
     <div id="tab-content-upgrades" class="tab-content">
+      <header class="forge-page-header">
+        <div>
+          <div class="section-title color-purple">Forge</div>
+          <p class="section-desc">Construct and improve the active systems driving this universe.</p>
+        </div>
+        <div id="forge-buy-mode" class="forge-buy-mode" role="group" aria-label="Upgrade purchase quantity">
+          <span class="forge-buy-label">Buy</span>
+          <button type="button" data-buy-mode="1" aria-pressed="true">1</button>
+          <button type="button" data-buy-mode="10" aria-pressed="false">10</button>
+          <button type="button" data-buy-mode="max" aria-pressed="false">Max</button>
+          <span id="forge-buy-mode-current" class="sr-only" aria-live="polite">1 level</span>
+        </div>
+      </header>
       <!-- Dynamic Era Upgrades Containers injection points -->
       <div class="era1-only">
         <div id="quantum-upgrades-container" class="upgrade-grid"></div>
@@ -272,50 +285,52 @@
           style="font-size: 1.0rem; letter-spacing: 2px; margin-bottom: 15px; font-weight: bold;">STELLAR CORE
           INFRASTRUCTURE</div>
 
-        <div class="cosmic-card" id="era3-card-gravity" style="flex-wrap: wrap; gap: 8px;">
-          <div class="btn-meta" style="flex: 1; min-width: 180px;">
-            <strong>Strengthen Gravity <span class="lvl-display" style="font-size: 0.75em; color: #fdcb6e;">(Lvl <span
-                  id="gravity-lvl">0</span>)</span></strong>
-            <small id="gravity-desc">Increases base atomic drift</small>
+        <div class="cosmic-card forge-card forge-stellar-card" id="era3-card-gravity">
+          <div class="forge-card-header">
+            <div><div class="forge-role-display">Produces fuel</div><strong>Strengthen Gravity</strong></div>
+            <div class="forge-card-status"><span class="lvl-display">Lv <span id="gravity-lvl">0</span></span><span class="forge-state-badge">Needs resources</span></div>
           </div>
-          <button id="btn-gravity" class="upgrade-btn">Cost: <span id="cost">10</span> H</button>
+          <p class="forge-effect-display">Increases Hydrogen generation</p>
+          <p id="gravity-contribution" class="forge-contribution-display">Current gravity: 1</p>
+          <details class="forge-details"><summary>Details</summary><p id="gravity-desc">Increases base atomic drift.</p></details>
+          <div class="forge-card-action"><div class="forge-cost-block"><span class="forge-cost-label">Cost</span><strong class="forge-cost-display"><span id="cost">10</span> Hydrogen</strong></div><button id="btn-gravity" class="upgrade-btn">Buy</button></div>
           <button id="btn-autobuy-hydrogen" class="upgrade-btn" style="display: none; width: 100% !important; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #b2bec3; margin-top: 4px; font-size: 0.75rem; padding: 4px 8px;">[ Auto-Buy Hydrogen: OFF ]</button>
         </div>
 
-        <div class="cosmic-card" id="era3-card-fuser">
-          <div class="btn-meta">
-            <strong id="fuser-text">Unlock Auto-Fuser</strong><br>
-            <small>Automates conversion steps</small>
-          </div>
-          <button id="btn-fuser" class="upgrade-btn">Cost: <span id="fuser-cost-label">100 H</span></button>
+        <div class="cosmic-card forge-card forge-stellar-card" id="era3-card-fuser">
+          <div class="forge-card-header"><div><div class="forge-role-display">Converts fuel</div><strong id="fuser-text">Unlock Auto-Fuser</strong></div><div class="forge-card-status"><span id="fuser-level" class="lvl-display">Locked</span><span class="forge-state-badge">Needs resources</span></div></div>
+          <p class="forge-effect-display">Converts Hydrogen into Helium</p>
+          <p id="fuser-contribution" class="forge-contribution-display">Next level: +1 Helium yield</p>
+          <details class="forge-details"><summary>Details</summary><p>Automates the stellar fusion conversion step.</p></details>
+          <div class="forge-card-action"><div class="forge-cost-block"><span class="forge-cost-label">Cost</span><strong id="fuser-cost-label" class="forge-cost-display">100 Hydrogen</strong></div><button id="btn-fuser" class="upgrade-btn">Buy</button></div>
         </div>
 
-        <div class="cosmic-card" id="era3-card-compress">
-          <div class="btn-meta">
-            <strong>Compress Core <span class="lvl-display" style="font-size: 0.75em; color: #fdcb6e;">(Lvl <span
-                  id="compress-lvl">0</span>)</span></strong>
-            <small>Sparks thermodynamic scaling</small>
-          </div>
-          <button id="btn-compress" class="upgrade-btn">Cost: <span id="compress-cost">10</span> He</button>
+        <div class="cosmic-card forge-card forge-stellar-card" id="era3-card-compress">
+          <div class="forge-card-header"><div><div class="forge-role-display">Temperature action</div><strong>Compress Core</strong></div><div class="forge-card-status"><span class="lvl-display">Lv <span id="compress-lvl">0</span></span><span class="forge-state-badge">Needs resources</span></div></div>
+          <p id="compress-effect" class="forge-effect-display">Adds heat to the stellar core</p>
+          <p id="compress-threshold" class="forge-contribution-display">Next threshold: 10,000,000 K · Main Sequence</p>
+          <details class="forge-details"><summary>Details</summary><p>Sparks thermodynamic scaling through repeatable core compression.</p></details>
+          <div class="forge-card-action"><div class="forge-cost-block"><span class="forge-cost-label">Cost</span><strong class="forge-cost-display"><span id="compress-cost">10</span> Helium</strong></div><button id="btn-compress" class="upgrade-btn">Buy</button></div>
         </div>
 
-        <div class="cosmic-card" id="era3-card-carbon">
-          <div class="btn-meta">
-            <strong id="carbon-text">Unlock Carbon Fusion</strong><br>
-            <small>Advanced carbon matrix synthesis</small>
-          </div>
-          <button id="btn-carbon" class="upgrade-btn">Cost: <span id="carbon-cost-label">Locked</span></button>
+        <div class="cosmic-card forge-card forge-stellar-card" id="era3-card-carbon">
+          <div class="forge-card-header"><div><div class="forge-role-display">Element synthesis</div><strong id="carbon-text">Unlock Carbon Fusion</strong></div><div class="forge-card-status"><span id="carbon-level" class="lvl-display">Locked</span><span class="forge-state-badge">Locked</span></div></div>
+          <p class="forge-effect-display">Synthesizes Carbon from Helium</p>
+          <div id="carbon-requirements" class="forge-requirements"><strong>Requires</strong><ul class="forge-requirements-list"><li class="requirement-missing">✕ Main Sequence · 500,000,000 K</li></ul></div>
+          <details class="forge-details"><summary>Details</summary><p>Advanced carbon matrix synthesis.</p></details>
+          <div class="forge-card-action"><div class="forge-cost-block"><span class="forge-cost-label">Cost</span><strong id="carbon-cost-label" class="forge-cost-display">Locked</strong></div><button id="btn-carbon" class="upgrade-btn">Locked</button></div>
         </div>
 
-        <div class="cosmic-card" id="era3-card-iron">
-          <div class="btn-meta">
-            <strong id="iron-text">Unlock Iron Fusion</strong><br>
-            <small>Peak elemental generation profile</small>
-          </div>
-          <button id="btn-iron" class="upgrade-btn">Cost: <span id="iron-cost-label">Locked</span></button>
+        <div class="cosmic-card forge-card forge-stellar-card" id="era3-card-iron">
+          <div class="forge-card-header"><div><div class="forge-role-display">Element synthesis</div><strong id="iron-text">Unlock Iron Fusion</strong></div><div class="forge-card-status"><span id="iron-level" class="lvl-display">Locked</span><span class="forge-state-badge">Locked</span></div></div>
+          <p class="forge-effect-display">Synthesizes Iron from Carbon</p>
+          <div id="iron-requirements" class="forge-requirements"><strong>Requires</strong><ul class="forge-requirements-list"><li class="requirement-missing">✕ Main Sequence · 2,000,000,000 K</li></ul></div>
+          <details class="forge-details"><summary>Details</summary><p>Peak elemental generation profile.</p></details>
+          <div class="forge-card-action"><div class="forge-cost-block"><span class="forge-cost-label">Cost</span><strong id="iron-cost-label" class="forge-cost-display">Locked</strong></div><button id="btn-iron" class="upgrade-btn">Locked</button></div>
         </div>
 
-        <div class="cosmic-card" id="era3-card-gateway" style="border: 1px solid #a29bfe !important; flex-direction: column; align-items: stretch; gap: 10px;">
+        <div class="forge-transition-label">Irreversible era transition</div>
+        <div class="cosmic-card forge-card forge-transition-card" id="era3-card-gateway" style="border: 1px solid #a29bfe !important;">
           <div class="btn-meta" style="width: 100%;">
             <strong style="color: #a29bfe; font-size: 0.95rem; letter-spacing: 1px;">🌌 GALACTIC IGNITION (ERA IV GATEWAY)</strong>
             <small style="color: #b2bec3;">Iron core collapse creating an interstellar supernova & transition into The Galactic Matrix.</small>
@@ -478,7 +493,7 @@
 
   <nav class="tab-menu">
     <button id="nav-core" class="tab-btn active">Cosmos</button>
-    <button id="nav-upgrades" class="tab-btn">Upgrades</button>
+    <button id="nav-upgrades" class="tab-btn">Forge</button>
     <button id="nav-artifacts" class="tab-btn">Artifacts</button>
     <button id="nav-prestige" class="tab-btn">Prestige</button>
     <button id="nav-settings" class="tab-btn">System <svg class="ui-icon icon-grey" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>

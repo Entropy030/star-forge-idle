@@ -18,9 +18,16 @@ import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
 import { gameState, subscribeRuntimeState } from '../core/state.js';
 import { saveGame, exportSave, importSave, wipeSave } from '../core/persistence.js';
-import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, getEnergyDensityRate, getStardustYield, getPulsarShardYield, getSingularityMassYield, getBuyMultiplierCount, getCumulativeCost, getFusionSurgeMultiplier } from '../core/economy.js';
+import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, getEnergyDensityRate, getStardustYield, getPulsarShardYield, getSingularityMassYield, getBuyMultiplierCount, getCumulativeCost, getFusionSurgeMultiplier, getCompressionHeatYield } from '../core/economy.js';
 import { Templates } from './templates.js';
 import { Timeline } from '../core/timeline.js';
+import {
+  FORGE_BUY_MODES,
+  getForgeCardState,
+  getForgeEffectData,
+  getForgeUpgradeEligibility,
+  normalizeForgeBuyMode
+} from './forgePresentation.js';
 
 let audioCtx;
 let transTypewriterInterval;
@@ -864,17 +871,19 @@ export const Viewport = {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    this.renderForgeBuyControls();
+
     if (!container.dataset.initialized || container.dataset.category !== category) {
-      let headerText = category === 'quantum' ? 'FUNDAMENTAL PHYSICS STRATIFICATION' :
-        (category === 'plasma' ? 'PRIMORDIAL PLASMA CRUCIBLE INFRASTRUCTURE' : 'MACRO GALACTIC ACCRETION NETWORK');
+      let headerText = category === 'quantum' ? 'FUNDAMENTAL LAWS' :
+        (category === 'plasma' ? 'PRIMORDIAL PRODUCTION CHAIN' : 'MACRO GALACTIC ACCRETION NETWORK');
       container.innerHTML = `<div class="section-title" style="color: ${displayColor}; font-size: 1.0rem; letter-spacing: 2px; margin-bottom: 15px; font-weight: bold;">${headerText}</div>`;
       for (let key in COSMIC_REGISTRY.upgrades[category]) {
         const def = COSMIC_REGISTRY.upgrades[category][key];
         const row = document.createElement('div');
         row.id = `${category}-row-${key}`;
-        row.className = 'cosmic-card';
+        row.className = 'cosmic-card forge-card';
         row.style.display = 'none'; // start hidden
-        row.innerHTML = Templates.genericTierListRow(displayColor, def.rarity || 'common');
+        row.innerHTML = Templates.forgeUpgradeCard(def.rarity || 'common');
         const btn = row.querySelector('.upgrade-btn');
         btn.addEventListener('click', () => {
           const res = Economy.buy(category, key);
@@ -890,7 +899,15 @@ export const Viewport = {
           name: row.querySelector('.name-display'),
           lvl: row.querySelector('.lvl-display'),
           desc: row.querySelector('.desc-display'),
-          btn: btn
+          btn,
+          role: row.querySelector('.forge-role-display'),
+          effect: row.querySelector('.forge-effect-display'),
+          contribution: row.querySelector('.forge-contribution-display'),
+          stateBadge: row.querySelector('.forge-state-badge'),
+          cost: row.querySelector('.forge-cost-display'),
+          requirements: row.querySelector('.forge-requirements'),
+          requirementsList: row.querySelector('.forge-requirements-list'),
+          milestone: row.querySelector('.forge-milestone-display')
         };
         container.appendChild(row);
       }
@@ -910,68 +927,30 @@ export const Viewport = {
           name: row.querySelector('.name-display'),
           lvl: row.querySelector('.lvl-display'),
           desc: row.querySelector('.desc-display'),
-          btn: row.querySelector('.upgrade-btn')
+          btn: row.querySelector('.upgrade-btn'),
+          role: row.querySelector('.forge-role-display'),
+          effect: row.querySelector('.forge-effect-display'),
+          contribution: row.querySelector('.forge-contribution-display'),
+          stateBadge: row.querySelector('.forge-state-badge'),
+          cost: row.querySelector('.forge-cost-display'),
+          requirements: row.querySelector('.forge-requirements'),
+          requirementsList: row.querySelector('.forge-requirements-list'),
+          milestone: row.querySelector('.forge-milestone-display')
         };
       }
 
-      let isVisible = true;
-      let isPreview = false;
-
-      if (category === 'quantum') {
-        const qf = gameState.stats && gameState.stats.maxQF ? gameState.stats.maxQF.toNumber() : 0;
-        
-        let eligibility = getQuantumUpgradeEligibility(gameState, key);
-
-        if (key === 'gravityForce') {
-          if (qf < 1) { isVisible = false; }
-          else { isVisible = true; isPreview = false; }
-        } else if (key === 'weakForce') {
-          if (qf < 10) { isVisible = false; }
-          else if (!eligibility.unlocked) { isVisible = true; isPreview = true; }
-          else { isVisible = true; isPreview = false; }
-        } else if (key === 'electromagneticForce') {
-          if (qf < 100) { isVisible = false; }
-          else if (!eligibility.unlocked) { isVisible = true; isPreview = true; }
-          else { isVisible = true; isPreview = false; }
-        } else if (key === 'vacuumResonance') {
-          if (qf < 500) { isVisible = false; }
-          else if (!eligibility.unlocked) { isVisible = true; isPreview = true; }
-          else { isVisible = true; isPreview = false; }
-        } else if (key === 'strongForce') {
-          if (qf < 2500) { isVisible = false; }
-          else if (!eligibility.unlocked) { isVisible = true; isPreview = true; }
-          else { isVisible = true; isPreview = false; }
-        }
-      }
-
-      if (category === 'plasma') {
-        const plasmaVis = getPlasmaUpgradeVisibility(gameState);
-        if (plasmaVis[key]) {
-          isVisible = plasmaVis[key] !== 'none';
-        }
-      }
+      const eligibility = getForgeUpgradeEligibility(gameState, category, key);
+      const isVisible = eligibility.discovered;
 
       if (!isVisible) {
         row.style.display = 'none';
+        row.dataset.forgeState = 'undiscovered';
         continue;
       } else {
         row.style.display = 'flex';
       }
 
       const btn = row._cache.btn;
-
-      if (isPreview) {
-        row._cache.name.textContent = "???";
-        row._cache.lvl.textContent = "";
-        row._cache.desc.textContent = "Insufficient theoretical framework...";
-        btn.textContent = "LOCKED";
-        // Removed btn.disabled to allow clicks to show inline feedback
-        btn.style.background = 'rgba(255, 255, 255, 0.04)';
-        btn.style.color = '#64748b';
-        btn.style.borderColor = 'transparent';
-        row.classList.remove('upgrade-affordable');
-        continue;
-      }
 
       let currentCostLabel = typeof costLabelText === 'function' ? costLabelText(key) : costLabelText;
       const currencyKey = Economy.resolveCurrencyKey(category, key, def);
@@ -984,35 +963,71 @@ export const Viewport = {
       const displayCost = getCumulativeCost(discountedCost, def.costScaling, loops);
 
       let isMaxed = def.max !== undefined && state.level >= def.max;
-      let isAffordable = !isMaxed && actualFunding.gte(displayCost);
+      let isAffordable = eligibility.unlocked && !isMaxed && actualFunding.gte(displayCost);
+      const cardState = getForgeCardState({ eligibility, level: state.level, isMaxed, isAffordable });
+      const effect = getForgeEffectData(gameState, category, key);
 
       row._cache.name.textContent = def.name;
-      row._cache.lvl.textContent = isMaxed ? `(MAX)` : `(Lvl ${state.level})`;
+      row._cache.lvl.textContent = isMaxed ? 'MAX' : `Lv ${state.level}`;
+      row._cache.role.textContent = effect.role;
+      row._cache.effect.textContent = effect.primary;
+      row._cache.contribution.textContent = effect.contribution;
+      row._cache.stateBadge.textContent = cardState.label;
+      row._cache.cost.textContent = isMaxed ? 'Complete' : `${format(displayCost)} ${currentCostLabel}`;
+      row.dataset.forgeState = cardState.id;
+
       let nextMilestoneLvl = (Math.floor(state.level / 10) + 1) * 10;
-      let milestoneText = def.max !== undefined ? "" : ` • ${t("milestone_tooltip", { lvl: nextMilestoneLvl })}`;
-      row._cache.desc.textContent = def.desc + milestoneText;
+      row._cache.desc.textContent = def.desc;
+      row._cache.milestone.textContent = def.max !== undefined ? '' : t('milestone_tooltip', { lvl: nextMilestoneLvl });
+
+      row._cache.requirements.hidden = eligibility.unlocked || eligibility.requirements.length === 0;
+      row._cache.requirementsList.replaceChildren(...eligibility.requirements.map(requirement => {
+        const item = document.createElement('li');
+        item.className = requirement.met ? 'requirement-met' : 'requirement-missing';
+        item.textContent = `${requirement.met ? '✓' : '✕'} ${requirement.label} (${format(requirement.current)} / ${format(requirement.target)})`;
+        return item;
+      }));
 
       if (isAffordable) row.classList.add('upgrade-affordable');
       else row.classList.remove('upgrade-affordable');
 
-      if (isMaxed) {
-        btn.textContent = "MAXED";
-        btn.style.background = 'rgba(255, 255, 255, 0.04)';
-        btn.style.color = '#a0a8b0';
-        btn.style.borderColor = 'rgba(255, 255, 255, 0.05)';
-      } else {
-        btn.textContent = `Cost (x${loops}):\n${format(displayCost)} ${currentCostLabel}`;
-        if (isAffordable) {
-          btn.style.background = displayColor;
-          btn.style.color = '#030208';
-          btn.style.borderColor = 'transparent';
-        } else {
-          btn.style.background = '';
-          btn.style.color = '';
-          btn.style.borderColor = '';
-        }
-      }
+      btn.textContent = isMaxed ? 'Maxed' : eligibility.unlocked ? `Buy ×${loops}` : 'Locked';
+      btn.disabled = !isAffordable;
+      btn.setAttribute('aria-disabled', String(!isAffordable));
+      btn.setAttribute('aria-label', `${btn.textContent} ${def.name}`);
+      btn.style.background = isAffordable ? displayColor : '';
+      btn.style.color = isAffordable ? '#030208' : '';
+      btn.style.borderColor = isAffordable ? 'transparent' : '';
     }
+  },
+
+  setForgeBuyMode(mode) {
+    gameState.buyMode = normalizeForgeBuyMode(mode);
+    this.renderForgeBuyControls();
+  },
+
+  renderForgeBuyControls() {
+    const control = document.getElementById('forge-buy-mode');
+    if (!control) return;
+
+    if (control.dataset.bound !== 'true') {
+      control.querySelectorAll('[data-buy-mode]').forEach(button => {
+        button.addEventListener('click', () => this.setForgeBuyMode(button.dataset.buyMode));
+      });
+      control.dataset.bound = 'true';
+    }
+
+    const currentMode = normalizeForgeBuyMode(gameState.buyMode);
+    control.querySelectorAll('[data-buy-mode]').forEach(button => {
+      const value = normalizeForgeBuyMode(button.dataset.buyMode);
+      const active = value === currentMode;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+    const modeLabel = document.getElementById('forge-buy-mode-current');
+    if (modeLabel) modeLabel.textContent = currentMode === 'max' ? 'Max affordable' : `${currentMode} level${currentMode === 1 ? '' : 's'}`;
+
+    control.dataset.availableModes = FORGE_BUY_MODES.join(',');
   },
 
   updateStardustDisplays() {
@@ -1050,15 +1065,24 @@ export const Viewport = {
   },
 
   renderStellarNodeButtons() {
-    const updateCard = (cardId, btnId, canAfford) => {
+    this.renderForgeBuyControls();
+    const buyMode = normalizeForgeBuyMode(gameState.buyMode);
+    const buyLabel = buyMode === 'max' ? 'Max' : buyMode;
+
+    const updateCard = (cardId, btnId, canAfford, { locked = false } = {}) => {
       const card = this.getEl(cardId);
       const btn = this.getEl(btnId);
       if (card) {
         if (canAfford) card.classList.add('upgrade-affordable');
         else card.classList.remove('upgrade-affordable');
+        card.dataset.forgeState = locked ? 'locked' : canAfford ? 'affordable' : 'progressing';
+        const badge = card.querySelector('.forge-state-badge');
+        if (badge) badge.textContent = locked ? 'Locked' : canAfford ? 'Ready' : 'Needs resources';
       }
       if (btn) {
-        // Removed btn.disabled so button is always clickable for feedback
+        btn.disabled = locked || !canAfford;
+        btn.setAttribute('aria-disabled', String(locked || !canAfford));
+        btn.textContent = locked ? 'Locked' : `Buy ×${buyLabel}`;
         if (canAfford) {
           btn.style.background = '#fdcb6e';
           btn.style.color = '#030208';
@@ -1076,6 +1100,7 @@ export const Viewport = {
     const gravLvl = this.getEl('gravity-lvl');
     const gravLvlVal = gameState.era3.gravity ? gameState.era3.gravity.toNumber() : 0;
     if (gravLvl) gravLvl.textContent = format(gameState.era3.gravity);
+    this.setTextContent('gravity-contribution', `Current gravity: ${format(gameState.era3.gravity)} · Hydrogen rate ${format(getHydrogenGenRate())}/s`);
 
     const gravDesc = this.getEl('gravity-desc');
     if (gravDesc) {
@@ -1104,6 +1129,16 @@ export const Viewport = {
     updateCard('era3-card-compress', 'btn-compress', compressAfford);
     const compLvl = this.getEl('compress-lvl');
     if (compLvl) compLvl.textContent = getCompressionsCompleted();
+    this.setTextContent('compress-effect', `+${format(getCompressionHeatYield())} K per compression`);
+    let thresholdText = 'Iron threshold reached';
+    if (gameState.era3.temperature.lt(COSMIC_REGISTRY.constants.mainSequenceTempThreshold)) {
+      thresholdText = `Next threshold: ${format(COSMIC_REGISTRY.constants.mainSequenceTempThreshold)} K · Main Sequence`;
+    } else if (gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
+      thresholdText = `Next threshold: ${format(COSMIC_REGISTRY.resources.carbon.unlockTemp)} K · Carbon`;
+    } else if (gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.iron.unlockTemp)) {
+      thresholdText = `Next threshold: ${format(COSMIC_REGISTRY.resources.iron.unlockTemp)} K · Iron`;
+    }
+    this.setTextContent('compress-threshold', thresholdText);
 
     const fuserBtnText = this.getEl('fuser-text');
     const fuserCostLabel = this.getEl('fuser-cost-label');
@@ -1111,22 +1146,27 @@ export const Viewport = {
     if (fuserBtnText && fuserCostLabel) {
       if (gameState.era3.fusionYield.eq(0)) {
         fuserBtnText.textContent = "Unlock Auto-Fuser";
-        fuserCostLabel.textContent = `${format(gameState.era3.fuserCostHydrogen)} H`;
+        fuserCostLabel.textContent = `${format(gameState.era3.fuserCostHydrogen)} Hydrogen`;
         fuserAfford = gameState.resources.hydrogen.amount.gte(gameState.era3.fuserCostHydrogen);
       } else {
-        fuserBtnText.textContent = `Upgrade Fusion Yield (+${format(gameState.era3.fusionYield.plus(1))})`;
-        fuserCostLabel.textContent = `${format(gameState.era3.fuserCostHelium)} He`;
+        fuserBtnText.textContent = 'Upgrade Fusion Yield';
+        fuserCostLabel.textContent = `${format(gameState.era3.fuserCostHelium)} Helium`;
         fuserAfford = gameState.resources.helium.amount.gte(gameState.era3.fuserCostHelium);
       }
     }
+    this.setTextContent('fuser-level', gameState.era3.fusionYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.fusionYield)}`);
+    this.setTextContent('fuser-contribution', gameState.era3.fusionYield.eq(0)
+      ? 'Next level: unlocks 1 Helium yield'
+      : `Current yield: ${format(gameState.era3.fusionYield)} Helium per fusion cycle`);
     updateCard('era3-card-fuser', 'btn-fuser', fuserAfford);
 
     const carbonCostLabel = this.getEl('carbon-cost-label');
     const carbonText = this.getEl('carbon-text');
     let carbonAfford = false;
     if (carbonCostLabel) {
-      if (gameState.era3.stage !== "Main Sequence Star" || gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
-        carbonCostLabel.textContent = `Locked (${format(COSMIC_REGISTRY.resources.carbon.unlockTemp)} K)`;
+      const carbonLocked = gameState.era3.stage !== "Main Sequence Star" || gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.carbon.unlockTemp);
+      if (carbonLocked) {
+        carbonCostLabel.textContent = 'Locked';
         if (carbonText) carbonText.textContent = "Unlock Carbon Fusion";
       } else {
         if (gameState.era3.carbonYield.eq(0)) {
@@ -1139,15 +1179,26 @@ export const Viewport = {
           if (carbonText) carbonText.textContent = `Upgrade Carbon Yield (+${format(gameState.era3.carbonYield.plus(1))})`;
         }
       }
+      const carbonRequirements = this.getEl('carbon-requirements');
+      if (carbonRequirements) {
+        carbonRequirements.hidden = !carbonLocked;
+        const requirement = carbonRequirements.querySelector('li');
+        if (requirement) {
+          requirement.className = carbonLocked ? 'requirement-missing' : 'requirement-met';
+          requirement.textContent = `${carbonLocked ? '✕' : '✓'} Main Sequence · ${format(gameState.era3.temperature)} / ${format(COSMIC_REGISTRY.resources.carbon.unlockTemp)} K`;
+        }
+      }
+      this.setTextContent('carbon-level', gameState.era3.carbonYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.carbonYield)}`);
+      updateCard('era3-card-carbon', 'btn-carbon', carbonAfford, { locked: carbonLocked });
     }
-    updateCard('era3-card-carbon', 'btn-carbon', carbonAfford);
 
     const ironCostLabel = this.getEl('iron-cost-label');
     const ironText = this.getEl('iron-text');
     let ironAfford = false;
     if (ironCostLabel) {
-      if (gameState.era3.stage !== "Main Sequence Star" || gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.iron.unlockTemp)) {
-        ironCostLabel.textContent = `Locked (${format(COSMIC_REGISTRY.resources.iron.unlockTemp)} K)`;
+      const ironLocked = gameState.era3.stage !== "Main Sequence Star" || gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.iron.unlockTemp);
+      if (ironLocked) {
+        ironCostLabel.textContent = 'Locked';
         if (ironText) ironText.textContent = "Unlock Iron Fusion";
       } else {
         if (gameState.era3.ironYield.eq(0)) {
@@ -1160,8 +1211,18 @@ export const Viewport = {
           if (ironText) ironText.textContent = `Upgrade Iron Yield (+${format(gameState.era3.ironYield.plus(1))})`;
         }
       }
+      const ironRequirements = this.getEl('iron-requirements');
+      if (ironRequirements) {
+        ironRequirements.hidden = !ironLocked;
+        const requirement = ironRequirements.querySelector('li');
+        if (requirement) {
+          requirement.className = ironLocked ? 'requirement-missing' : 'requirement-met';
+          requirement.textContent = `${ironLocked ? '✕' : '✓'} Main Sequence · ${format(gameState.era3.temperature)} / ${format(COSMIC_REGISTRY.resources.iron.unlockTemp)} K`;
+        }
+      }
+      this.setTextContent('iron-level', gameState.era3.ironYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.ironYield)}`);
+      updateCard('era3-card-iron', 'btn-iron', ironAfford, { locked: ironLocked });
     }
-    updateCard('era3-card-iron', 'btn-iron', ironAfford);
 
     const gatewayTempStatus = document.getElementById('gateway-temp-status');
     const gatewayIronStatus = document.getElementById('gateway-iron-status');
