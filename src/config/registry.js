@@ -1,5 +1,4 @@
 import Decimal from 'break_infinity.js';
-import { getInflationEligibility } from '../eras/quantum/inflation.js';
 
 // [SEC-01.5] CENTRAL i18n DICTIONARY ARCHITECTURE
 // ==========================================================================
@@ -140,44 +139,6 @@ export const COSMIC_REGISTRY = {
       ]
     }
   },
-  progression: [
-    {
-      id: "obj_qf_intro",
-      epoch: 1,
-      title: "Initialize Core",
-      instruction: "Gather 50 Quantum Fluctuations.",
-      explanation: "The void is unstable. Extract fluctuations to begin.",
-      target: 50,
-      getCurrent: (state) => state.stats.maxQF ? state.stats.maxQF.toNumber() : 0
-    },
-    {
-      id: "obj_upgrade_gravity",
-      epoch: 1,
-      title: "Establish Gravity",
-      instruction: "Purchase Gravitational Coupling.",
-      explanation: "Generate passive quantum fluctuations to sustain the core.",
-      target: 1,
-      getCurrent: (state) => state.upgrades.quantum.gravityForce.level
-    },
-    {
-      id: "obj_density_intro",
-      epoch: 1,
-      title: "Synthesize Density",
-      instruction: "Accumulate 10,000 Energy Density.",
-      explanation: "Compress the vacuum to build internal heat and pressure.",
-      target: 10000,
-      getCurrent: (state) => state.resources.energyDensity.amount.toNumber()
-    },
-    {
-      id: "obj_era1_complete",
-      epoch: 1,
-      title: "Prepare Cosmic Inflation",
-      instruction: "Meet all Cosmic Inflation requirements.",
-      explanation: "The singularity cannot hold. Prepare for expansion.",
-      target: 1,
-      isComplete: (state) => getInflationEligibility(state).isEligible
-    }
-  ],
   celestialCards: {
     quantum_stabilizer: { name: "Quantum Stabilizer", desc: "Expands baseline space-time coherence. (+10% Hydrogen Gen per level)", currency: "hydrogen", baseCost: new Decimal(500), costScaling: 1.5, effectTarget: "hydrogenGen", effectPerLevel: 0.10 },
     thermal_accumulator: { name: "Thermal Accumulator", desc: "Insulates core thermodynamic fields. (+15% Compression Heat per level)", currency: "helium", baseCost: new Decimal(50), costScaling: 1.6, effectTarget: "compressionHeat", effectPerLevel: 0.15 }
@@ -360,4 +321,4 @@ export const ARTIFACT_DEFINITIONS = {
   }
 };
 
-// ==========================================================================
+// ==========================================================================

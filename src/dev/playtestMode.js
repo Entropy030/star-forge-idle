@@ -98,11 +98,11 @@ function renderPlaytestUI() {
         <option value="getPresetFreshEraI">Fresh Era I</option>
         <option value="getPresetLateEraI">Late Era I</option>
         <option value="getPresetFreshEraII">Fresh Era II</option>
-        <option value="getPresetEraIIUpgradeChain">Era II Upgrade Chain</option>
-        <option value="getPresetEraIIRecombinationReady">Era II Recombination Ready</option>
+        <option value="getPresetEraIIUpgradeChain">Mid Era II</option>
+        <option value="getPresetEraIIRecombinationReady">Recombination Ready</option>
         <option value="getPresetFreshEraIII">Fresh Era III</option>
         <option value="getPresetMidEraIII">Mid Era III</option>
-        <option value="getPresetEraIIISupernovaReady">Era III Supernova Ready</option>
+        <option value="getPresetEraIIISupernovaReady">Supernova Ready</option>
       </select>
       <button id="pt-load-preset" style="cursor: pointer;">Load</button>
     </div>

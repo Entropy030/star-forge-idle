@@ -1,4 +1,4 @@
-import { COSMIC_REGISTRY } from '../config/registry.js';
+import { OBJECTIVE_DEFINITIONS } from './objectiveDefinitions.js';
 
 export function isObjectiveComplete(objective, state) {
   if (objective.isComplete) {
@@ -10,12 +10,12 @@ export function isObjectiveComplete(objective, state) {
 }
 
 export function updateObjectiveProgress(state) {
-  if (!state || !COSMIC_REGISTRY.progression) return;
+  if (!state) return;
   if (!Array.isArray(state.completedObjectives)) {
     state.completedObjectives = [];
   }
   
-  for (let obj of COSMIC_REGISTRY.progression) {
+  for (let obj of OBJECTIVE_DEFINITIONS) {
     if (obj.epoch !== state.activeEpoch) continue;
     
     if (state.completedObjectives.includes(obj.id)) {
@@ -33,10 +33,10 @@ export function updateObjectiveProgress(state) {
 }
 
 export function getCurrentObjective(state) {
-  if (!state || !COSMIC_REGISTRY.progression) return null;
+  if (!state) return null;
   if (!Array.isArray(state.completedObjectives)) return null;
   
-  for (let obj of COSMIC_REGISTRY.progression) {
+  for (let obj of OBJECTIVE_DEFINITIONS) {
     if (obj.epoch !== state.activeEpoch) continue;
     if (state.completedObjectives.includes(obj.id)) continue;
     
@@ -49,6 +49,7 @@ export function getCurrentObjective(state) {
     
     return {
       id: obj.id,
+      epoch: obj.epoch,
       title: obj.title,
       instruction: obj.instruction,
       explanation: obj.explanation,

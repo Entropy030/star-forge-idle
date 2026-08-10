@@ -4,8 +4,9 @@
 // [SEC-05] VISUAL FORMATTING & AUDIO HELPER ENGINES
 import { getInitialEra2State } from '../state/createInitialState.js';
 import { getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, getGalacticDarkMatterRate, getGalacticMergeYield, getCompressionsCompleted } from '../core/economy.js';
-import { getCurrentObjective } from './objectives.js';
-import { getPlasmaRates, getPlasmaUpgradeVisibility } from '../eras/plasma/selectors.js';
+import { getCurrentObjective, updateObjectiveProgress } from './objectives.js';
+import { getPlasmaRates, getPlasmaUpgradeVisibility, getRecombinationEligibility } from '../eras/plasma/selectors.js';
+import { getCurrentPhase } from '../engine/selectors.js';
 import { getQuantumRates, getInflationEligibility, getQuantumUpgradeEligibility } from '../eras/quantum/selectors.js';
 import { getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 import { updateSupernovaOutcome } from './stellar.js';
@@ -13,7 +14,7 @@ import { CodexEngine } from './codex.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
-import { gameState } from '../core/state.js';
+import { gameState, subscribeRuntimeState } from '../core/state.js';
 import { saveGame, exportSave, importSave, wipeSave } from '../core/persistence.js';
 import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, getEnergyDensityRate, getStardustYield, getPulsarShardYield, getSingularityMassYield, getBuyMultiplierCount, getCumulativeCost, getFusionSurgeMultiplier } from '../core/economy.js';
 import { Templates } from './templates.js';
@@ -1367,6 +1368,7 @@ export const Viewport = {
       return;
     }
     ActManager.evaluate();
+    updateObjectiveProgress(gameState);
     if (gameState.activeTab === 'artifacts') {
       ArtifactManager.renderBar();
     }
@@ -1387,6 +1389,7 @@ export const Viewport = {
     }
 
     this.setTextContent('active-epoch-name', currentEpoch.name);
+    this.setTextContent('stage', getCurrentPhase(gameState));
 
 
     const tracker = document.getElementById('objective-tracker');
@@ -1396,6 +1399,7 @@ export const Viewport = {
         tracker.style.display = 'flex';
         this.setTextContent('objective-title', currentObj.title);
         this.setTextContent('objective-instruction', currentObj.instruction);
+        this.setTextContent('objective-explanation', currentObj.explanation || '');
         
         const progressBar = document.getElementById('objective-progress-bar');
         if (progressBar) progressBar.style.width = `${currentObj.progress}%`;
@@ -1403,7 +1407,37 @@ export const Viewport = {
         this.setTextContent('objective-progress-text', `${format(currentObj.current)} / ${format(currentObj.target)}`);
       } else {
         tracker.style.display = 'none';
+        this.setTextContent('objective-title', '');
+        this.setTextContent('objective-instruction', '');
+        this.setTextContent('objective-explanation', '');
+        const progressBar = document.getElementById('objective-progress-bar');
+        if (progressBar) progressBar.style.width = '0%';
+        this.setTextContent('objective-progress-text', '');
       }
+    }
+
+    if (gameState.activeEpoch !== 1) {
+      const inflationBtn = this.getEl('btn-inflation');
+      const inflationCard = this.getEl('era1-locked-card');
+      if (inflationBtn) {
+        inflationBtn.style.display = 'none';
+        inflationBtn.disabled = true;
+      }
+      if (inflationCard) {
+        inflationCard.style.display = 'none';
+        const reqText = inflationCard.querySelector('.req-text');
+        if (reqText) reqText.textContent = '';
+      }
+    }
+
+    if (gameState.activeEpoch !== 2) {
+      const recombinationBtn = this.getEl('btn-recombination');
+      const recombinationCard = this.getEl('era2-locked-card');
+      if (recombinationBtn) {
+        recombinationBtn.style.display = 'none';
+        recombinationBtn.disabled = true;
+      }
+      if (recombinationCard) recombinationCard.style.display = 'none';
     }
 
     // Era 1 Cold Boot Diegetic Unfolding visibility controls using permanent state flags
@@ -1467,8 +1501,11 @@ export const Viewport = {
           inflationBtn.style.display = 'block';
           inflationBtn.disabled = false;
           inflationCard.style.display = 'none';
+          const reqText = inflationCard.querySelector('.req-text');
+          if (reqText) reqText.textContent = '';
         } else {
           inflationBtn.style.display = 'none';
+          inflationBtn.disabled = true;
           inflationCard.style.display = 'block';
           // Update inline requirements
           const reqText = `Requires 100k QF (${format(eligibility.qf)}), 50k ED (${format(eligibility.ed)}), 100% Coherence (${Math.floor(eligibility.coherence.toNumber())}%)`;
@@ -1540,7 +1577,7 @@ export const Viewport = {
 
       const recombBtn = this.getEl('btn-recombination');
       const recombCard = this.getEl('era2-locked-card');
-      const isRecombReady = gameState.resources.protons.amount.gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) || gameState.plasmaTemperature.lte(3000);
+      const isRecombReady = getRecombinationEligibility(gameState).isEligible;
       if (recombBtn && recombCard) {
         recombBtn.style.display = isRecombReady ? 'block' : 'none';
         recombCard.style.display = isRecombReady ? 'none' : 'block';
@@ -1572,8 +1609,6 @@ export const Viewport = {
       this.setTextContent('temp', format(gameState.era3.temperature));
       this.setTextContent('multiplier', format(gameState.era3.tempMultiplier) + "x");
       this.setTextContent('compress-cost', format(gameState.era3.compressCost));
-      this.setTextContent('stage', gameState.era3.stage);
-
       this.setTextContent('carbon-count', format(gameState.resources.carbon.amount));
       const cBox = this.getEl('carbon-box');
       if (cBox) cBox.style.opacity = gameState.era3.stage === "Main Sequence Star" ? "1" : "0.3";
@@ -1710,5 +1745,11 @@ export const Viewport = {
     list.innerHTML = html;
   }
 };
+
+subscribeRuntimeState(() => {
+  Viewport.clearElCache();
+  ArtifactManager._lastRenderSignature = '';
+  CodexEngine.dispose();
+});
 
 // ==========================================================================

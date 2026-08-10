@@ -47,8 +47,19 @@ export function setIsDirty(val) {
 export let gameState = createReactiveState(getInitialGameState(), (prop) => {
   isDirty = true;
 });
+const runtimeStateSubscribers = new Set();
+
+export function getRuntimeState() {
+  return gameState;
+}
+
+export function subscribeRuntimeState(listener) {
+  runtimeStateSubscribers.add(listener);
+  return () => runtimeStateSubscribers.delete(listener);
+}
+
 export function setGameState(newState) {
-  gameState = newState;
+  return replaceRuntimeState(newState);
 }
 export let lastTick = Date.now();
 let audioCtx;
@@ -58,12 +69,16 @@ let flareSimSuppressed = false;
 
 function mergeDefaultsIntoLoadedState(target, source) {
   for (const key in source) {
-    if (source.hasOwnProperty(key)) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
       if (source[key] instanceof Decimal) {
-        if (!target[key]) target[key] = new Decimal(0);
+        if (target[key] === undefined || target[key] === null) target[key] = new Decimal(source[key]);
         else if (!(target[key] instanceof Decimal)) target[key] = new Decimal(target[key]);
-      } else if (source[key] !== null && typeof source[key] === 'object' && !Array.isArray(source[key])) {
-        if (!target[key]) {
+      } else if (source[key] instanceof Set) {
+        if (!(target[key] instanceof Set)) target[key] = new Set(source[key]);
+      } else if (Array.isArray(source[key])) {
+        if (!Array.isArray(target[key])) target[key] = [...source[key]];
+      } else if (source[key] !== null && typeof source[key] === 'object') {
+        if (target[key] === null || typeof target[key] !== 'object' || Array.isArray(target[key])) {
           target[key] = {};
         }
         mergeDefaultsIntoLoadedState(target[key], source[key]);
@@ -98,17 +113,21 @@ export function replaceRuntimeState(nextState) {
     );
   }
 
-  gameState = createReactiveState(nextState, (prop) => {
+  mergeDefaultsIntoLoadedState(nextState, getInitialGameState());
+  ensureStateShape(nextState);
+
+  gameState = createReactiveState(nextState, () => {
     isDirty = true;
   });
-  ensureStateShape(gameState);
+
+  runtimeStateSubscribers.forEach(listener => listener(gameState));
   
   if (typeof document !== 'undefined' && document.body) {
     document.body.setAttribute('data-epoch', gameState.activeEpoch);
     document.body.setAttribute('data-tab', gameState.activeTab);
   }
   isDirty = true;
+  return gameState;
 }
 
 // ==========================================================================
-

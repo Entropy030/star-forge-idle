@@ -8,3 +8,31 @@ export function getResourceAmount(state, resourceId) {
 export function getCurrencyAmount(state, currencyId) {
   return state.currencies[currencyId]?.amount || 0;
 }
+
+export function getCurrentPhase(state) {
+  if (!state) return '';
+
+  if (state.activeEpoch === 1) {
+    const phases = {
+      1: 'Quantum Observation',
+      2: 'Force Formation',
+      3: 'Inflation Threshold'
+    };
+    return phases[state.era1?.currentAct] || phases[1];
+  }
+
+  if (state.activeEpoch === 2) {
+    const phases = {
+      1: 'Quark-Gluon Plasma',
+      2: 'Particle Synthesis',
+      3: 'Recombination Threshold'
+    };
+    return phases[state.era2?.currentAct] || phases[1];
+  }
+
+  if (state.activeEpoch === 3) return state.era3?.stage || 'Stellar Dawn';
+  if (state.activeEpoch === 4) return 'Galactic Accretion';
+  if (state.activeEpoch === 5) return state.era5?.isHeatDeath ? 'Heat Death' : 'Event Horizon';
+
+  return '';
+}

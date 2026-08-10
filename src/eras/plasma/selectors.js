@@ -1,4 +1,5 @@
 import { computePlasmaStep } from './evaluator.js';
+export { getRecombinationEligibility } from './eligibility.js';
 
 export function getPlasmaRates(state) {
   // Use the shared evaluator with dt = 1 to get the exact real rates per second

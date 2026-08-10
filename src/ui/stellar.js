@@ -1,7 +1,7 @@
 /* eslint-disable import/no-cycle */
 import { getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 import { format } from './viewport.js';
-import { engine } from '../engine/instance.js';
+import { getRuntimeState } from '../core/state.js';
 
 const SUPERNOVA_STATUS_LABELS = {
   WRONG_EPOCH: 'Supernova is only available during Era III.',
@@ -21,7 +21,7 @@ export function updateSupernovaOutcome() {
   
   if (!typeEl || !yieldsEl) return;
 
-  const gameState = engine.getStateUnsafe();
+  const gameState = getRuntimeState();
   const outcome = getSupernovaOutcome(gameState);
   const eligibility = getSupernovaEligibility(gameState);
 

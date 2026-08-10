@@ -2,6 +2,7 @@
 /* eslint-disable import/no-cycle */
 import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getBaryonAsymmetryMultiplier } from '../../core/economy.js'; // Will be extracted to selectors
+import { getRecombinationEligibility } from './eligibility.js';
 
 export const plasmaCommandHandlers = {
   CLICK_CORE_ERA2: (state, cmd) => {
@@ -37,8 +38,9 @@ export const plasmaCommandHandlers = {
   },
 
   TRIGGER_RECOMBINATION: (state, cmd) => {
-    if (!state.resources.protons.amount.gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) && !state.plasmaTemperature.lte(3000)) {
-      return { ok: false, changed: false, events: [], error: { code: 'PREREQUISITES_NOT_MET' } };
+    const eligibility = getRecombinationEligibility(state);
+    if (!eligibility.isEligible) {
+      return { ok: false, changed: false, events: [], error: { code: eligibility.errorCode } };
     }
 
     state.activeEpoch = 3;
