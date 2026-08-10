@@ -7,10 +7,12 @@ import { getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, 
 import { getCurrentObjective, updateObjectiveProgress } from './objectives.js';
 import { getPlasmaRates, getPlasmaUpgradeVisibility, getRecombinationEligibility } from '../eras/plasma/selectors.js';
 import { getCurrentPhase, getTransitionPresentation } from '../engine/selectors.js';
-import { getQuantumRates, getInflationEligibility, getQuantumUpgradeEligibility } from '../eras/quantum/selectors.js';
-import { getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
+import { getEraResourcePresentation } from '../engine/resourcePresentation.js';
+import { getInflationEligibility, getQuantumUpgradeEligibility } from '../eras/quantum/selectors.js';
+import { getStellarRates, getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 import { updateSupernovaOutcome } from './stellar.js';
 import { CodexEngine } from './codex.js';
+import { renderResourceHud } from './resourceHud.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
@@ -1244,6 +1246,42 @@ export const Viewport = {
     }, 400);
   },
 
+  updateResourceHud() {
+    const container = document.getElementById('resource-hud');
+    if (!container) return;
+
+    const presentation = getEraResourcePresentation(gameState);
+    const rates = {};
+
+    if (gameState.activeEpoch === 1) {
+      rates.quantumFluctuations = getQuantumFluctuationRate(gameState);
+      rates.energyDensity = getEnergyDensityRate(gameState);
+    } else if (gameState.activeEpoch === 2) {
+      const plasmaRates = getPlasmaRates(gameState);
+      rates.quarks = plasmaRates.quarksProduction.minus(plasmaRates.quarksConsumption);
+      rates.gluons = plasmaRates.gluonsProduction.minus(plasmaRates.gluonsConsumption);
+      rates.leptons = plasmaRates.leptonsProduction.minus(plasmaRates.leptonsConsumption);
+      rates.protons = plasmaRates.protonsProduction.minus(plasmaRates.protonsConsumption);
+      rates.electrons = plasmaRates.electronsProduction.minus(plasmaRates.electronsConsumption);
+      rates.hydrogen = plasmaRates.hydrogenProduction;
+      rates.plasmaTemperature = plasmaRates.coolingRate.times(-1);
+    } else if (gameState.activeEpoch === 3) {
+      const stellarRates = getStellarRates(gameState);
+      rates.hydrogen = stellarRates.hydrogenProduction.minus(stellarRates.hydrogenConsumption);
+      rates.helium = stellarRates.heliumProduction.minus(stellarRates.heliumConsumption);
+      rates.carbon = stellarRates.carbonProduction.minus(stellarRates.carbonConsumption);
+      rates.iron = stellarRates.ironProduction;
+    } else if (gameState.activeEpoch === 4) {
+      rates.planetaryDebris = getGalacticDebrisRate();
+      rates.darkMatter = getGalacticDarkMatterRate();
+    }
+
+    const coherenceVisible = [...presentation.primary, ...presentation.support, ...presentation.details]
+      .some((item) => item.id === 'coherence');
+    document.body.dataset.coherenceRelevant = String(coherenceVisible);
+    renderResourceHud(container, presentation, rates);
+  },
+
   updateEraProgressBar() {
     const container = document.getElementById('era-progress-container');
     const bar = document.getElementById('era-progress-bar');
@@ -1391,6 +1429,7 @@ export const Viewport = {
     this.setTextContent('active-epoch-name', currentEpoch.name);
     this.setTextContent('stage', getCurrentPhase(gameState));
     this.setTextContent('coherence-display', `${format(gameState.coherence)}%`);
+    this.updateResourceHud();
 
     const transitionPresentation = getTransitionPresentation(gameState);
     const inflationContainer = this.getEl('era1-transition-container');
@@ -1451,13 +1490,6 @@ export const Viewport = {
     const isEra1 = gameState.activeEpoch === 1;
     const discoveries = gameState.discoveries || new Set();
 
-    // HUD box visibility
-    const hydroBox = this.getEl('label-hydrogen')?.closest('.resource-box');
-    if (hydroBox) hydroBox.style.display = (isEra1 && !discoveries.has('qf_1')) ? 'none' : '';
-
-    const heliumBox = this.getEl('label-helium')?.closest('.resource-box');
-    if (heliumBox) heliumBox.style.display = (isEra1 && !discoveries.has('qf_10')) ? 'none' : '';
-
     // Navigation bar visibility
     const navMenu = document.querySelector('.tab-menu');
     if (navMenu) navMenu.style.display = (isEra1 && !discoveries.has('qf_10')) ? 'none' : 'flex';
@@ -1514,8 +1546,8 @@ export const Viewport = {
           inflationBtn.style.display = 'none';
           inflationBtn.disabled = true;
           inflationCard.style.display = 'block';
-          // Update inline requirements
-          const reqText = `Requires 100k QF (${format(eligibility.qf)}), 50k ED (${format(eligibility.ed)}), 100% Coherence (${Math.floor(eligibility.coherence.toNumber())}%)`;
+          // The economy HUD owns the compact per-requirement readiness display.
+          const reqText = 'Readiness is tracked in the economy HUD above.';
           let reqDiv = inflationCard.querySelector('.req-text');
           if (!reqDiv) {
             reqDiv = document.createElement('div');

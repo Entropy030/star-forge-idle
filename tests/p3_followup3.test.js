@@ -13,7 +13,7 @@ import { COSMIC_REGISTRY } from '../src/config/registry.js';
 describe('P3 Follow-up 3: Complete Era-II Economy & Real Rendering', () => {
 
   describe('HTML Safe Default State', () => {
-    it('should have game-shell and prestige-bar hidden by default in the raw HTML', () => {
+    it('should have game-shell and the earned-meta summary hidden by default in the raw HTML', () => {
       const html = fs.readFileSync(path.resolve(__dirname, '../index.html'), 'utf-8');
       const dom = new JSDOM(html);
       const doc = dom.window.document;
@@ -22,9 +22,9 @@ describe('P3 Follow-up 3: Complete Era-II Economy & Real Rendering', () => {
       expect(gameShell).not.toBeNull();
       expect(gameShell.hasAttribute('hidden')).toBe(true);
 
-      const prestigeBar = doc.getElementById('prestige-bar');
-      expect(prestigeBar).not.toBeNull();
-      expect(prestigeBar.style.display).toBe('none');
+      const metaSummary = doc.getElementById('meta-resource-summary');
+      expect(metaSummary).not.toBeNull();
+      expect(metaSummary.hasAttribute('hidden')).toBe(true);
       
       const introScreen = doc.getElementById('intro-screen-overlay');
       expect(introScreen.style.display).toBe('none');

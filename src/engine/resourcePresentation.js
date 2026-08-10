@@ -1,0 +1,200 @@
+import Decimal from 'break_infinity.js';
+import { COSMIC_REGISTRY } from '../config/registry.js';
+
+const ZERO = new Decimal(0);
+
+function amount(state, key) {
+  return state.resources?.[key]?.amount || ZERO;
+}
+
+function currencyAmount(state, key) {
+  return state.currencies?.[key]?.amount || ZERO;
+}
+
+function level(state, category, key) {
+  return state.upgrades?.[category]?.[key]?.level || 0;
+}
+
+function hasDiscovery(state, id) {
+  return Boolean(state.discoveries?.has?.(id));
+}
+
+function resource(id, label, value, options = {}) {
+  return { id, label, value, ...options };
+}
+
+function getMetaResources(state) {
+  const definitions = [
+    ['stardust', 'Stardust'],
+    ['pulsarShards', 'Pulsar Shards'],
+    ['singularityMass', 'Singularity Mass']
+  ];
+
+  return definitions
+    .map(([id, label]) => resource(id, label, currencyAmount(state, id)))
+    .filter((item) => item.value.gt(0));
+}
+
+function getEraOnePresentation(state) {
+  const qf = amount(state, 'quantumFluctuations');
+  const energyDensity = amount(state, 'energyDensity');
+  const coherence = state.coherence || ZERO;
+  const densityIntroduced = energyDensity.gt(0) || level(state, 'quantum', 'gravityForce') > 0 || hasDiscovery(state, 'qf_10');
+  const inflationIntroduced = (state.era1?.currentAct || 1) >= 2 || hasDiscovery(state, 'qf_100') || qf.gte(100);
+
+  if (inflationIntroduced) {
+    const checks = [qf.gte(COSMIC_REGISTRY.constants.inflationThreshold), energyDensity.gte(50000), coherence.gte(100)];
+    const readyCount = checks.filter(Boolean).length;
+    const missing = !checks[0] ? 'Quantum Fluctuations' : !checks[1] ? 'Energy Density' : !checks[2] ? 'Coherence' : 'Ready';
+
+    return {
+      primary: [resource('inflationReadiness', 'Inflation Readiness', null, {
+        displayValue: `${readyCount} / 3`,
+        roleHint: missing === 'Ready' ? 'All requirements satisfied' : `Next requirement: ${missing}`,
+        status: missing
+      })],
+      support: [
+        resource('quantumFluctuations', 'Quantum Fluctuations', qf, { roleHint: 'Threshold: 100,000' }),
+        resource('energyDensity', 'Energy Density', energyDensity, { roleHint: 'Threshold: 50,000' }),
+        resource('coherence', 'Coherence', coherence, { unit: '%', roleHint: 'Threshold: 100%' })
+      ],
+      details: []
+    };
+  }
+
+  return {
+    primary: [resource('quantumFluctuations', 'Quantum Fluctuations', qf, { roleHint: 'Foundational currency' })],
+    support: densityIntroduced
+      ? [resource('energyDensity', 'Energy Density', energyDensity, { roleHint: 'Vacuum compression' })]
+      : [],
+    details: []
+  };
+}
+
+function getEraTwoPresentation(state) {
+  const quarks = amount(state, 'quarks');
+  const gluons = amount(state, 'gluons');
+  const leptons = amount(state, 'leptons');
+  const protons = amount(state, 'protons');
+  const electrons = amount(state, 'electrons');
+  const hydrogen = amount(state, 'hydrogen');
+  const temperature = state.plasmaTemperature || ZERO;
+
+  const gluonsIntroduced = level(state, 'plasma', 'gluonBinding') > 0 || level(state, 'plasma', 'quarkCondenser') >= 3;
+  const leptonsIntroduced = level(state, 'plasma', 'leptonHarvest') > 0 || leptons.gt(0);
+  const protonSynthesis = level(state, 'plasma', 'plasmaAutomation') > 0 || protons.gt(0);
+  const coolingActive = level(state, 'plasma', 'baryoRadiator') > 0 || temperature.lte(500000);
+  const electronsRelevant = temperature.lte(500000) || electrons.gt(0);
+
+  if (coolingActive) {
+    const support = [resource('protons', 'Protons', protons, { roleHint: 'Cooling fuel' })];
+    if (electronsRelevant) support.push(resource('electrons', 'Electrons', electrons, { roleHint: 'Recombination input' }));
+
+    const details = [
+      resource('quarks', 'Quarks', quarks),
+      resource('gluons', 'Gluons', gluons)
+    ];
+    if (leptonsIntroduced) details.push(resource('leptons', 'Leptons', leptons));
+    if (hydrogen.gt(0)) details.push(resource('hydrogen', 'Hydrogen', hydrogen));
+
+    return {
+      primary: [resource('plasmaTemperature', 'Plasma Temperature', temperature, {
+        unit: 'K',
+        roleHint: temperature.lte(3000) ? 'Recombination temperature reached' : 'Cool toward 3,000 K'
+      })],
+      support,
+      details
+    };
+  }
+
+  if (protonSynthesis) {
+    const details = [];
+    if (leptonsIntroduced) details.push(resource('leptons', 'Leptons', leptons));
+    if (electronsRelevant) details.push(resource('electrons', 'Electrons', electrons));
+
+    return {
+      primary: [resource('protons', 'Protons', protons, { roleHint: 'Synthesis output' })],
+      support: [
+        resource('quarks', 'Quarks', quarks, { roleHint: '3 per Proton' }),
+        resource('gluons', 'Gluons', gluons, { roleHint: '1 per Proton' })
+      ],
+      details
+    };
+  }
+
+  const details = [];
+  if (leptonsIntroduced) details.push(resource('leptons', 'Leptons', leptons));
+
+  return {
+    primary: [resource('quarks', 'Quarks', quarks, { roleHint: 'Condensation currency' })],
+    support: gluonsIntroduced ? [resource('gluons', 'Gluons', gluons, { roleHint: 'Binding input' })] : [],
+    details
+  };
+}
+
+function getEraThreePresentation(state) {
+  const temperature = state.era3?.temperature || ZERO;
+  const hydrogen = amount(state, 'hydrogen');
+  const helium = amount(state, 'helium');
+  const carbon = amount(state, 'carbon');
+  const iron = amount(state, 'iron');
+  const carbonRelevant = temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp) || (state.era3?.carbonYield || ZERO).gt(0) || carbon.gt(0);
+  const ironRelevant = temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) || (state.era3?.ironYield || ZERO).gt(0) || iron.gt(0);
+
+  let roleHint = 'Heat the protostar toward Main Sequence';
+  if (state.era3?.stage === 'Main Sequence Star' && !carbonRelevant) roleHint = 'Heat toward Carbon synthesis';
+  else if (carbonRelevant && !ironRelevant) roleHint = 'Heat toward Iron synthesis';
+  else if (ironRelevant) roleHint = temperature.gte(COSMIC_REGISTRY.constants.supernovaTempThreshold) ? 'Collapse heat reached' : 'Heat toward stellar collapse';
+
+  if (ironRelevant) {
+    return {
+      primary: [resource('coreTemperature', 'Core Temperature', temperature, { unit: 'K', roleHint })],
+      support: [
+        resource('iron', 'Iron', iron, { roleHint: 'Collapse material' }),
+        resource('carbon', 'Carbon', carbon, { roleHint: 'Iron synthesis fuel' }),
+        resource('helium', 'Helium', helium, { roleHint: 'Carbon synthesis fuel' })
+      ],
+      details: [resource('hydrogen', 'Hydrogen', hydrogen)]
+    };
+  }
+
+  const support = [
+    resource('hydrogen', 'Hydrogen', hydrogen, { roleHint: 'Stellar fuel' }),
+    resource('helium', 'Helium', helium, { roleHint: 'Fusion product' })
+  ];
+  if (carbonRelevant) support.push(resource('carbon', 'Carbon', carbon, { roleHint: 'Heavy-element target' }));
+
+  return {
+    primary: [resource('coreTemperature', 'Core Temperature', temperature, { unit: 'K', roleHint })],
+    support,
+    details: []
+  };
+}
+
+function getLaterEraPresentation(state) {
+  if (state.activeEpoch === 4) {
+    return {
+      primary: [resource('darkMatter', 'Dark Matter', amount(state, 'darkMatter'), { roleHint: 'Galactic progression' })],
+      support: [resource('planetaryDebris', 'Planetary Debris', amount(state, 'planetaryDebris'))],
+      details: [resource('hydrogen', 'Stellar Mass', amount(state, 'hydrogen'))]
+    };
+  }
+
+  return {
+    primary: [resource('hawkingRadiation', 'Hawking Radiation', currencyAmount(state, 'hawkingRadiation'), { roleHint: 'Deep-future progression' })],
+    support: [resource('bits', 'Information Bits', currencyAmount(state, 'bits'))],
+    details: []
+  };
+}
+
+export function getEraResourcePresentation(state) {
+  if (!state) return { primary: [], support: [], details: [], meta: [] };
+
+  let presentation;
+  if (state.activeEpoch === 1) presentation = getEraOnePresentation(state);
+  else if (state.activeEpoch === 2) presentation = getEraTwoPresentation(state);
+  else if (state.activeEpoch === 3) presentation = getEraThreePresentation(state);
+  else presentation = getLaterEraPresentation(state);
+
+  return { ...presentation, meta: getMetaResources(state) };
+}
