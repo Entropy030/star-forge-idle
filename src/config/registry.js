@@ -18,9 +18,9 @@ export const i18n = {
     gateway_req_iron: "Accumulated Iron: >= 1,000 Fe",
     gateway_btn: "[ Trigger Hypernova & Enter Era IV ]",
     header_stellar_core: "STELLAR CORE INFRASTRUCTURE",
-    header_prestige_stardust: "Synaptic Dust Infusion Matrix",
-    header_prestige_pulsar: "Neural Synapse Resonator",
-    header_prestige_singularity: "Core Density Event Horizon",
+    header_prestige_stardust: "Stardust Forge",
+    header_prestige_pulsar: "Pulsar Shard Engine",
+    header_prestige_singularity: "Singularity Mass Event Horizon",
     header_galactic_accretion: "MACRO GALACTIC ACCRETION NETWORK",
     btn_supernova_ready: "Trigger Supernova Collapse",
     btn_supernova_locked: "Requires 100M K (Current: {temp} K)",
@@ -51,11 +51,11 @@ export function t(key, params = {}) {
 export const COSMIC_REGISTRY = {
   universeChronology: {
     epochs: {
-      1: { id: "quantum_foam", name: "Era I: The Quantum Foam", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "artifacts", "settings"] },
-      2: { id: "plasma_crucible", name: "Era II: The Primordial Soup", canvasStyle: "plasma-haze", tabs: ["core", "upgrades", "artifacts", "settings"] },
-      3: { id: "stellar_dawn", name: "Era III: The Stellar Dawn", canvasStyle: "star-core", tabs: ["core", "upgrades", "artifacts", "prestige", "settings"] },
-      4: { id: "galactic_matrix", name: "Era IV: The Galactic Matrix", canvasStyle: "galaxy-wheel", tabs: ["core", "upgrades", "artifacts", "prestige", "settings"] },
-      5: { id: "deep_future", name: "Era V: The Event Horizon", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "artifacts", "prestige", "settings"] }
+      1: { id: "quantum_foam", name: "Era I: The Quantum Foam", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "prestige", "settings"] },
+      2: { id: "plasma_crucible", name: "Era II: The Primordial Soup", canvasStyle: "plasma-haze", tabs: ["core", "upgrades", "prestige", "settings"] },
+      3: { id: "stellar_dawn", name: "Era III: The Stellar Dawn", canvasStyle: "star-core", tabs: ["core", "upgrades", "prestige", "settings"] },
+      4: { id: "galactic_matrix", name: "Era IV: The Galactic Matrix", canvasStyle: "galaxy-wheel", tabs: ["core", "upgrades", "prestige", "settings"] },
+      5: { id: "deep_future", name: "Era V: The Event Horizon", canvasStyle: "singularity-point", tabs: ["core", "upgrades", "prestige", "settings"] }
     }
   },
   resources: {

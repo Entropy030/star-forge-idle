@@ -98,8 +98,8 @@ describe('Supernova UI', () => {
     expect(document.getElementById('supernova-outcome-archetype').textContent).toBe('Massive');
     expect(document.getElementById('supernova-outcome-type').textContent).toBe('Black Hole');
     const yieldsHtml = document.getElementById('supernova-outcome-yields').innerHTML;
-    expect(yieldsHtml).toContain('Synaptic Dust');
-    expect(yieldsHtml).toContain('Core Density');
+    expect(yieldsHtml).toContain('Stardust');
+    expect(yieldsHtml).toContain('Singularity Mass');
   });
 
   it('safely runs if optional elements are missing', () => {

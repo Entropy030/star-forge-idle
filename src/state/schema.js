@@ -4,6 +4,15 @@ import { createInitialState, getInitialEra2State, getInitialEra3State, getInitia
 
 export const ensureStateShape = function(gameState) {
   const initialState = createInitialState();
+  const legacyViewAliases = {
+    artifacts: 'prestige',
+    cosmos: 'core',
+    forge: 'upgrades',
+    legacy: 'prestige',
+    more: 'settings',
+    system: 'settings'
+  };
+  gameState.activeTab = legacyViewAliases[gameState.activeTab] || gameState.activeTab || 'core';
   if (!Array.isArray(gameState.completedObjectives)) {
     gameState.completedObjectives = [];
   }
@@ -134,4 +143,3 @@ export const ensureStateShape = function(gameState) {
     }
   }
 }
-

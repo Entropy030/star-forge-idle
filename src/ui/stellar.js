@@ -42,9 +42,9 @@ export function updateSupernovaOutcome() {
   }
 
   let yields = [];
-  if (outcome.rewards.stardust.gt(0)) yields.push(`+${format(outcome.rewards.stardust)} ✨ Synaptic Dust`);
-  if (outcome.rewards.pulsarShards.gt(0)) yields.push(`+${format(outcome.rewards.pulsarShards)} 🌀 Neural Synapse`);
-  if (outcome.rewards.singularityMass.gt(0)) yields.push(`+${format(outcome.rewards.singularityMass)} 🌌 Core Density`);
+  if (outcome.rewards.stardust.gt(0)) yields.push(`+${format(outcome.rewards.stardust)} ✨ Stardust`);
+  if (outcome.rewards.pulsarShards.gt(0)) yields.push(`+${format(outcome.rewards.pulsarShards)} 🌀 Pulsar Shards`);
+  if (outcome.rewards.singularityMass.gt(0)) yields.push(`+${format(outcome.rewards.singularityMass)} 🌌 Singularity Mass`);
   yieldsEl.innerHTML = yields.join('<br>');
 
   if (statusEl) {

@@ -28,6 +28,7 @@ import {
   getForgeUpgradeEligibility,
   normalizeForgeBuyMode
 } from './forgePresentation.js';
+import { getPrimaryNavigation, hasArtifactAccess, normalizeViewId } from './navigation.js';
 
 let audioCtx;
 let transTypewriterInterval;
@@ -674,31 +675,28 @@ export const Viewport = {
   },
 
   switchTab(tabId) {
-    const currentEpochDef = COSMIC_REGISTRY.universeChronology.epochs[gameState.activeEpoch] || COSMIC_REGISTRY.universeChronology.epochs[1];
-    if (!currentEpochDef.tabs.includes(tabId)) return;
+    const targetTabId = normalizeViewId(gameState, tabId);
 
-    gameState.activeTab = tabId;
-    document.body.setAttribute('data-tab', tabId);
+    gameState.activeTab = targetTabId;
+    document.body.setAttribute('data-tab', targetTabId);
 
     document.querySelectorAll('.tab-btn, .rail-btn').forEach(el => el.classList.remove('active'));
 
-    const targetNav = document.getElementById(`nav-${tabId}`);
+    const targetNav = document.getElementById(`nav-${targetTabId}`);
     if (targetNav) targetNav.classList.add('active');
 
-    if (tabId === 'artifacts') {
+    if (targetTabId === 'prestige' && hasArtifactAccess(gameState)) {
       ArtifactManager.renderBar();
       ArtifactManager.renderInventory();
     }
-    if (tabId === 'prestige') {
+    if (targetTabId === 'prestige') {
       this.renderShop('stardust');
       this.renderShop('pulsar');
       this.renderShop('singularity');
       this.renderPrestigeVisibility();
-      updateSupernovaOutcome();
-    }
-    if (tabId === 'settings') {
       this.renderStats();
       this.renderSystemTab();
+      if (gameState.activeEpoch === 3) updateSupernovaOutcome();
     }
   },
 
@@ -1247,8 +1245,6 @@ export const Viewport = {
       }
     }
 
-    const prestigeBtn = document.getElementById('nav-prestige');
-    if (prestigeBtn) prestigeBtn.disabled = !(gameState.era3.stage === "Main Sequence Star" || gameState.currencies.stardust.amount.gt(0));
     if (gameState.activeTab === 'prestige') {
       this.renderPrestigeVisibility();
       updateSupernovaOutcome();
@@ -1468,7 +1464,7 @@ export const Viewport = {
     }
     ActManager.evaluate();
     updateObjectiveProgress(gameState);
-    if (gameState.activeTab === 'artifacts') {
+    if (gameState.activeTab === 'prestige' && hasArtifactAccess(gameState)) {
       ArtifactManager.renderBar();
     }
     this.updateStardustDisplays();
@@ -1482,7 +1478,8 @@ export const Viewport = {
     if (document.body.getAttribute('data-era2-act') !== targetEra2Act) {
       document.body.setAttribute('data-era2-act', targetEra2Act);
     }
-    const targetTab = String(gameState.activeTab || 'core');
+    const targetTab = normalizeViewId(gameState, gameState.activeTab);
+    if (gameState.activeTab !== targetTab) gameState.activeTab = targetTab;
     if (document.body.getAttribute('data-tab') !== targetTab) {
       document.body.setAttribute('data-tab', targetTab);
     }
@@ -1547,26 +1544,25 @@ export const Viewport = {
       if (recombinationCard) recombinationCard.style.display = 'none';
     }
 
-    // Era 1 Cold Boot Diegetic Unfolding visibility controls using permanent state flags
-    const isEra1 = gameState.activeEpoch === 1;
-    const discoveries = gameState.discoveries || new Set();
-
-    // Navigation bar visibility
+    // Progressive primary navigation: Cosmos, Forge, Legacy, More.
+    const navigation = getPrimaryNavigation(gameState);
+    const visibleNavigationIds = new Set(navigation.map(destination => destination.id));
     const navMenu = document.querySelector('.tab-menu');
-    if (navMenu) navMenu.style.display = (isEra1 && !discoveries.has('qf_10')) ? 'none' : 'flex';
+    if (navMenu) {
+      navMenu.style.display = navigation.length > 1 ? 'flex' : 'none';
+      navMenu.dataset.destinationCount = String(navigation.length);
+    }
 
-    const allPossibleTabs = ["core", "upgrades", "artifacts", "system", "shop", "pulsar", "singularity", "prestige", "settings"];
-    allPossibleTabs.forEach(tabId => {
+    ['core', 'upgrades', 'prestige', 'settings'].forEach(tabId => {
       const navBtn = document.getElementById(`nav-${tabId}`);
       if (navBtn) {
-        let isTabAllowed = currentEpoch.tabs.includes(tabId);
-        if (isEra1 && !discoveries.has('qf_10') && tabId !== 'core') isTabAllowed = false;
-        if (tabId === 'artifacts' && (!gameState.artifacts || !gameState.artifacts.unlocked || gameState.artifacts.unlocked.length === 0)) {
-          isTabAllowed = false;
-        }
-        navBtn.style.display = isTabAllowed ? "" : "none";
+        navBtn.style.display = visibleNavigationIds.has(tabId) ? '' : 'none';
+        navBtn.classList.toggle('active', targetTab === tabId);
       }
     });
+
+    const legacyLoadout = document.getElementById('legacy-loadout-section');
+    if (legacyLoadout) legacyLoadout.hidden = !hasArtifactAccess(gameState);
 
     const coreCanvasElement = document.getElementById('star-core');
     if (coreCanvasElement) coreCanvasElement.setAttribute('data-canvas-style', currentEpoch.canvasStyle);
@@ -1808,7 +1804,15 @@ export const Viewport = {
       }
     }
 
-    if (gameState.activeTab === 'system') this.renderSystemTab();
+    if (gameState.activeTab === 'prestige') {
+      this.renderStats();
+      this.renderSystemTab();
+      this.renderPrestigeVisibility();
+      if (hasArtifactAccess(gameState)) {
+        ArtifactManager.renderBar();
+        ArtifactManager.renderInventory();
+      }
+    }
     this.renderFlare();
     this.updateEraProgressBar();
     this.updateVisualProgression();

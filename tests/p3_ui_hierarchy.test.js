@@ -123,11 +123,11 @@ describe('P3.3B1 global UI hierarchy', () => {
 
     replaceRuntimeState(getPresetFreshEraIII());
     Viewport.update();
-    expect(document.getElementById('nav-prestige').disabled).toBe(true);
+    expect(document.getElementById('nav-prestige').style.display).toBe('none');
 
     replaceRuntimeState(getPresetEraIIISupernovaReady());
     Viewport.update();
-    expect(document.getElementById('nav-prestige').disabled).toBe(false);
+    expect(document.getElementById('nav-prestige').style.display).not.toBe('none');
   });
 
   it('replaces stale Objective and Chrono content when presets change Era', () => {

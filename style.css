@@ -303,8 +303,8 @@ body.hydrating .btn-price {
   -webkit-backdrop-filter: blur(30px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
-  justify-content: flex-start;
-  overflow-x: auto;
+  justify-content: center;
+  overflow-x: hidden;
   scroll-behavior: smooth;
   gap: 6px;
   padding: 8px;
@@ -330,6 +330,8 @@ body.hydrating .btn-price {
   min-height: 44px; 
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+  flex: 1 1 0;
+  min-width: 0;
 }
 .tab-btn:active:not(:disabled) {
   transform: scale(0.95);
@@ -936,7 +938,6 @@ body[data-tab] .tab-content { display: none; }
 /* Active tab override — specificity (0,2,0) beats base (0,1,0) */
 body[data-tab="core"] #tab-content-core { display: block; pointer-events: auto; }
 body[data-tab="upgrades"] #tab-content-upgrades { display: block; }
-body[data-tab="artifacts"] #tab-content-artifacts { display: block; }
 body[data-tab="prestige"] #tab-content-prestige { display: block; }
 body[data-tab="settings"] #tab-content-settings { display: block; }
 
@@ -1031,7 +1032,8 @@ text-align: center; color: #fff; transition: opacity 0.8s ease; display: none; o
   100% { opacity: 0; background: transparent; }
 }
 
-.dev-matrix-hidden { display: none; background: rgba(230, 126, 34, 0.08); border: 1px dashed #e67e22; padding: 12px; margin: 12px auto; max-width: 600px; border-radius: 12px; }
+.dev-matrix-hidden { display: none !important; background: rgba(230, 126, 34, 0.08); border: 1px dashed #e67e22; padding: 12px; margin: 12px auto; max-width: 600px; border-radius: 12px; }
+.dev-toggle-hidden { display: none !important; }
 .dev-buttons-wrapper { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
 .btn-dev { padding: 6px 12px; font-size: 11px; color: white; cursor: pointer; border-radius: 6px; border: none; }
 .bg-orange { background: #e67e22; }
@@ -2905,5 +2907,173 @@ body[data-tab="upgrades"] main {
   .resource-card--detail {
     grid-template-columns: minmax(80px, 1fr) auto auto;
     gap: 8px;
+  }
+}
+
+/* ==========================================================================
+   [CSS-SEC-31] P3.3B4 NAVIGATION & META RESPONSIBILITIES
+   ========================================================================== */
+.meta-page-header {
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  border: 1px solid rgba(125, 214, 255, 0.14);
+  border-left: 3px solid rgba(0, 236, 198, 0.7);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(13, 18, 38, 0.88), rgba(8, 10, 25, 0.94));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.meta-page-header .section-title,
+.more-section .section-title,
+.legacy-section .section-title {
+  margin-top: 0;
+}
+
+.legacy-section,
+.more-section {
+  min-width: 0;
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  background: rgba(5, 9, 23, 0.56);
+  box-sizing: border-box;
+}
+
+.legacy-section[hidden] {
+  display: none !important;
+}
+
+.legacy-era3-plus {
+  display: none;
+}
+
+body[data-epoch="3"] .legacy-era3-plus,
+body[data-epoch="4"] .legacy-era3-plus,
+body[data-epoch="5"] .legacy-era3-plus {
+  display: block;
+}
+
+.legacy-achievements {
+  display: grid;
+  gap: 8px;
+}
+
+.space-top {
+  margin-top: 18px !important;
+}
+
+.settings-card {
+  display: grid;
+  gap: 10px;
+}
+
+.btn-settings-action,
+.btn-dev-toggle {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid rgba(125, 214, 255, 0.24);
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(16, 24, 48, 0.92), rgba(8, 13, 31, 0.96));
+  color: #dce8f5;
+  font: 600 0.78rem 'Rajdhani', sans-serif;
+  letter-spacing: 0.045em;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.btn-settings-action:hover,
+.btn-dev-toggle:hover {
+  border-color: rgba(0, 236, 198, 0.62);
+  color: #fff;
+}
+
+.border-teal { border-color: rgba(0, 236, 198, 0.45); }
+.border-blue { border-color: rgba(90, 168, 255, 0.45); }
+.border-purple { border-color: rgba(162, 155, 254, 0.48); }
+
+.import-wrapper {
+  display: grid;
+  gap: 8px;
+}
+
+.import-wrapper .data-input-field {
+  margin-bottom: 0;
+}
+
+.codex-layout .btn-macro-shift {
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid rgba(0, 236, 198, 0.18);
+  border-radius: 8px;
+  background: rgba(8, 17, 34, 0.9);
+  color: #b8c7d8;
+  font: 600 0.74rem 'Rajdhani', sans-serif;
+  letter-spacing: 0.035em;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.codex-layout .btn-macro-shift:hover {
+  border-color: rgba(0, 236, 198, 0.52);
+  color: #fff;
+}
+
+#dev-toggle-container {
+  margin-top: 18px;
+}
+
+#tab-content-prestige,
+#tab-content-settings,
+#tab-content-prestige > *,
+#tab-content-settings > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+#legacy-loadout-section .artifact-bar-container {
+  position: static;
+  width: 100%;
+}
+
+#legacy-loadout-section .artifact-slot {
+  color: inherit;
+  font: inherit;
+}
+
+@media (max-width: 600px) {
+  .tab-menu {
+    justify-content: center !important;
+    overflow-x: hidden !important;
+  }
+
+  .tab-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px 4px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .meta-page-header,
+  .legacy-section,
+  .more-section {
+    padding: 12px;
+  }
+
+  .codex-layout {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    max-height: none !important;
+  }
+
+  #codex-entry-list,
+  #codex-detail-view {
+    min-width: 0;
+    max-height: 280px;
+    box-sizing: border-box;
   }
 }

@@ -13,7 +13,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=38">
+  <link rel="stylesheet" href="style.css?v=39">
   <link rel="manifest" href="manifest.json">
   <style id="critical-boot-guard">
     html:not(.app-ready) body {
@@ -344,10 +344,14 @@
       </div>
     </div>
 
-    <!-- Era III: Consolidated Prestige Tab -->
-    <div id="tab-content-prestige" class="tab-content era3-only">
+    <!-- Legacy: meta progression, remnant terminal, achievements, and loadout -->
+    <div id="tab-content-prestige" class="tab-content">
+      <header class="meta-page-header">
+        <div class="section-title color-light-red">Legacy</div>
+        <p class="section-desc">Remnants, permanent progression, milestones, and equipment beyond the current moment.</p>
+      </header>
       <!-- Supernova Trigger (top) -->
-      <div class="prestige-section">
+      <div class="prestige-section era3-only">
         <div class="section-title color-light-red">Supernova Collapse Terminal</div>
         <div class="prestige-card-panel">
           <p>The star's core pressure matrix has scaled past critical thresholds.</p>
@@ -376,14 +380,14 @@
       <!-- Stardust Forge -->
       <div class="prestige-section" id="prestige-stardust-section" style="display: none;">
         <div class="section-title color-purple"><svg class="ui-icon icon-yellow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" fill="currentColor"/></svg> Stardust Forge</div>
-        <p class="section-desc">Deploy permanent Memory Traces to warp underlying metrics.</p>
+        <p class="section-desc">Spend Stardust on permanent modifiers that carry beyond the current star.</p>
         <div id="stardust-shop-list"></div>
       </div>
 
       <!-- Pulsar Engine -->
       <div class="prestige-section" id="prestige-pulsar-section" style="display: none;">
         <div class="section-title color-teal"><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15,9 22,12 15,15 12,22 9,15 2,12 9,9"/></svg> Pulsar Engine</div>
-        <p class="section-desc">Spend Pulsar Cores to hardcode structural macro-routines.</p>
+        <p class="section-desc">Spend Pulsar Shards on permanent structural routines.</p>
         <div id="pulsar-shop-list"></div>
       </div>
 
@@ -393,40 +397,55 @@
         <p class="section-desc">Sacrifice absolute mass metrics to invoke exponential calculation shifts.</p>
         <div id="singularity-shop-list"></div>
       </div>
+
+      <section class="legacy-section" aria-labelledby="legacy-record-title">
+        <div id="legacy-record-title" class="section-title color-blue">Lifetime Record</div>
+        <div class="stats-card">
+          <p>Supernovas Triggered: <span id="stat-supernovas" class="stat-value">0</span></p>
+          <p>Total Stardust Earned: <span id="stat-stardust" class="stat-value">0</span></p>
+          <p>Highest Core Temp: <span id="stat-max-temp" class="stat-value">0 K</span></p>
+        </div>
+      </section>
+
+      <section class="legacy-section" aria-labelledby="legacy-milestones-title">
+        <div id="legacy-milestones-title" class="section-title color-yellow">Achievements</div>
+        <div id="achievements-list" class="legacy-achievements"></div>
+      </section>
+
+      <section class="legacy-section legacy-era3-plus" aria-labelledby="legacy-missions-title">
+        <div id="legacy-missions-title" class="section-title color-yellow">System Ranks & Missions</div>
+        <p class="section-desc">Complete deep-space criteria to increase structural authority.</p>
+        <div id="system-rank-info"></div>
+
+        <div class="section-title color-blue space-top">Celestial Cards</div>
+        <p class="section-desc">Acquire permanent performance modifiers.</p>
+        <div id="celestial-cards-list"></div>
+      </section>
+
+      <section id="legacy-loadout-section" class="legacy-section" hidden aria-labelledby="legacy-loadout-title">
+        <div id="legacy-loadout-title" class="section-title color-teal"><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg> Artifact Loadout</div>
+        <p class="section-desc">Equip up to three unlocked macro-modifiers.</p>
+        <div id="artifact-bar" class="artifact-bar-container" style="display: flex;">
+          <div class="artifact-slots-wrapper">
+            <button type="button" class="artifact-slot" data-slot="0" onclick="ArtifactManager.openPicker(0)" aria-label="Manage artifact slot 1"></button>
+            <button type="button" class="artifact-slot" data-slot="1" onclick="ArtifactManager.openPicker(1)" aria-label="Manage artifact slot 2"></button>
+            <button type="button" class="artifact-slot" data-slot="2" onclick="ArtifactManager.openPicker(2)" aria-label="Manage artifact slot 3"></button>
+          </div>
+        </div>
+        <div class="section-title color-purple space-top">Unlocked Artifact Inventory</div>
+        <div id="artifact-inventory-list" class="artifact-picker-list"></div>
+      </section>
     </div>
 
     <div id="tab-content-settings" class="tab-content">
-      <div id="dev-toggle-container" class="dev-toggle-hidden">
-        <div class="section-title">System Configuration</div>
-        <button class="btn-dev-toggle">Toggle Developer Sandbox</button>
-      </div>
+      <header class="meta-page-header">
+        <div class="section-title color-blue">More</div>
+        <p class="section-desc">Archive, accessibility, saves, and universe settings.</p>
+      </header>
 
-      <div class="section-title color-blue">Lifetime Statistics</div>
-      <div class="stats-card">
-        <p>Supernovas Triggered: <span id="stat-supernovas" class="stat-value">0</span></p>
-        <p>Total Memory Earned: <span id="stat-stardust" class="stat-value">0</span></p>
-        <p>Highest Core Temp: <span id="stat-max-temp" class="stat-value">0 K</span></p>
-      </div>
-
-      <!-- Injected Achievements Render Node Mount Point -->
-      <div class="section-title color-yellow space-top">Cosmic Evolution Milestones</div>
-      <div id="achievements-list"
-        style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; width: 100%;"></div>
-
-      <!-- System Ranks & Missions (Era 3+) -->
-      <div class="era3-only">
-        <div class="section-title color-yellow space-top">System Ranks & Cosmic Missions</div>
-        <p class="section-desc">Complete deep-space criteria configurations to rank up system structural authority.</p>
-        <div id="system-rank-info"></div>
-
-        <div class="section-title color-blue space-top">Celestial Card Matrix</div>
-        <p class="section-desc">Acquire permanent performance scaling modifiers.</p>
-        <div id="celestial-cards-list"></div>
-      </div>
-
-      <!-- Cosmic Codex Infotainment Center -->
-      <div class="section-title color-teal space-top">Cosmic Codex</div>
-      <p class="section-desc">Review real astrophysics logs unlocked by expanding universal fields.</p>
+      <section id="archive-section" class="more-section" aria-labelledby="archive-title">
+      <div id="archive-title" class="section-title color-teal">Archive / Codex</div>
+      <p class="section-desc">Review unlocked scientific knowledge and past narrative.</p>
       <div class="codex-layout" style="display: flex; gap: 16px; margin-top: 12px; max-height: 400px;">
         <div id="codex-entry-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; border: 1px solid rgba(255,255,255,0.05); padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.2);"></div>
         <div id="codex-detail-view" style="flex: 2; padding: 16px; border: 1px solid rgba(255,255,255,0.05); border-radius: 4px; background: rgba(0,0,0,0.3); overflow-y: auto;">
@@ -434,9 +453,11 @@
           <p id="codex-detail-body" style="color: #b2bec3; line-height: 1.6; font-size: 0.9em; margin: 0;"></p>
         </div>
       </div>
+      </section>
 
-      <div class="section-title color-purple space-top">Data Management</div>
-      <p class="section-desc">Backup, migrate, or clear universe data footprint profiles.</p>
+      <section id="settings-section" class="more-section" aria-labelledby="settings-title">
+      <div id="settings-title" class="section-title color-purple">Settings & Save Data</div>
+      <p class="section-desc">Accessibility preferences, backup, import, and reset controls.</p>
 
       <div class="settings-card">
         <button id="btn-toggle-motion" class="btn-settings-action border-teal">Toggle Reduced Motion: OFF</button>
@@ -449,6 +470,11 @@
         <hr class="divider-subtle">
         <div id="system-status" style="font-size: 0.85em; text-align: center; margin-bottom: 8px; font-family: monospace; min-height: 1.2em;"></div>
         <button id="btn-wipe" class="btn-danger width-full">Wipe Universe Tracking Footprint</button>
+      </div>
+
+      <div id="dev-toggle-container" class="dev-toggle-hidden">
+        <div class="section-title">Developer Settings</div>
+        <button class="btn-dev-toggle">Toggle Developer Sandbox</button>
       </div>
 
       <!-- Developer & Bot Control Sandbox (Strictly relative inside Settings tab) -->
@@ -467,25 +493,9 @@
         </button>
         <span id="playtest-status-text" style="font-size: 0.75rem; font-family: monospace; color: #b2bec3; width: 100%; text-align: center; margin-top: 4px;"></span>
       </div>
+      </section>
     </div>
 
-    <!-- Tab 3: Artifacts (Equipment Loadout & Unlocked Inventory) -->
-    <div id="tab-content-artifacts" class="tab-content">
-      <div class="section-title color-teal"><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" fill="currentColor"/></svg> FORGE ARTIFACT LOADOUT</div>
-      <p class="section-desc">Equip up to 3 macro-modifiers to warp universal constants.</p>
-
-      <div id="artifact-bar" class="artifact-bar-container" style="display: flex;">
-        <div class="artifact-slots-wrapper">
-          <div class="artifact-slot" data-slot="0" onclick="ArtifactManager.openPicker(0)"></div>
-          <div class="artifact-slot" data-slot="1" onclick="ArtifactManager.openPicker(1)"></div>
-          <div class="artifact-slot" data-slot="2" onclick="ArtifactManager.openPicker(2)"></div>
-        </div>
-      </div>
-
-      <div class="section-title color-purple space-top" style="margin-top: 24px;">UNLOCKED ARTIFACT INVENTORY</div>
-      <p class="section-desc">Click any unlocked artifact below to manage equipment slots.</p>
-      <div id="artifact-inventory-list" class="artifact-picker-list" style="margin-top: 12px; max-height: unset;"></div>
-    </div>
   </main>
 
 
@@ -494,9 +504,8 @@
   <nav class="tab-menu">
     <button id="nav-core" class="tab-btn active">Cosmos</button>
     <button id="nav-upgrades" class="tab-btn">Forge</button>
-    <button id="nav-artifacts" class="tab-btn">Artifacts</button>
-    <button id="nav-prestige" class="tab-btn">Prestige</button>
-    <button id="nav-settings" class="tab-btn">System <svg class="ui-icon icon-grey" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    <button id="nav-prestige" class="tab-btn">Legacy</button>
+    <button id="nav-settings" class="tab-btn">More</button>
   </nav>
   </div>
 

@@ -914,13 +914,15 @@ export function initializeDomRuntime() {
     });
   });
   bindClick('btn-import', () => {
-    const input = prompt("Paste your universe string here:");
+    const importField = document.getElementById('import-string');
+    const input = importField?.value?.trim() || prompt("Paste your universe string here:");
     if (input) {
       const res = importSave(input);
       if (res.success) {
         engine.loadState(gameState);
         Viewport.setSystemStatus("Universe loaded successfully.", "success");
         Viewport.switchTab(gameState.activeTab);
+        if (importField) importField.value = '';
       } else {
         Viewport.setSystemStatus(res.message, "error");
       }
