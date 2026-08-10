@@ -1,9 +1,8 @@
 /* global Decimal */
-/* eslint-disable import/no-cycle */
 import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getCardMultiplier } from '../../core/economy.js'; // Will be extracted to selectors later
+import { getQuantumUpgradeEligibility } from './eligibility.js';
 import { getInflationEligibility } from './inflation.js';
-import { getQuantumUpgradeEligibility } from './selectors.js';
 
 export const quantumCommandHandlers = {
   CLICK_CORE: (state, cmd) => {

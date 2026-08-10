@@ -1,5 +1,4 @@
 /* global Decimal */
-/* eslint-disable import/no-cycle */
 import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getCompressionHeatYield } from '../../core/economy.js';
 

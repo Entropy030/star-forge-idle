@@ -1,5 +1,4 @@
 /* global Decimal */
-/* eslint-disable import/no-cycle */
 import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getBaryonAsymmetryMultiplier } from '../../core/economy.js'; // Will be extracted to selectors
 import { getRecombinationEligibility } from './eligibility.js';

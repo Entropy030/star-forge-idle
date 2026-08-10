@@ -3,11 +3,11 @@
 // Haptics is on window
 const Haptics = window.Haptics;
 // ==========================================================================
-/* eslint-disable import/no-cycle */
 import { gameState, isDirty, setIsDirty } from './state.js';
 import { saveGame } from './persistence.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
-import { getQuantumUpgradeEligibility } from '../eras/quantum/selectors.js';
+import { dispatchEngineCommand } from '../engine/dispatch.js';
+import { getQuantumUpgradeEligibility } from '../eras/quantum/eligibility.js';
 export function updateStatsData() {
   if (gameState.era3 && gameState.era3.temperature.gt(gameState.stats.maxTemp)) {
     gameState.stats.maxTemp = gameState.era3.temperature;
@@ -325,43 +325,33 @@ export const Economy = {
     const loops = getBuyLoopCount();
 
     if (category === 'core') {
-      import('../engine/instance.js').then(({ engine }) => {
-        engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key, loops } });
-        this.refreshUI();
-      });
-      return;
+      const result = dispatchEngineCommand({ type: 'BUY_CORE_NODE', payload: { key, loops } });
+      this.refreshUI();
+      return result;
     }
 
     if (category === 'quantum') {
-      import('../engine/instance.js').then(({ engine }) => {
-        engine.dispatch({ type: 'BUY_UPGRADE', payload: { category, upgradeId: key, loops } });
-        this.refreshUI();
-      });
-      return;
+      const result = dispatchEngineCommand({ type: 'BUY_UPGRADE', payload: { category, upgradeId: key, loops } });
+      this.refreshUI();
+      return result;
     }
 
     if (category === 'plasma') {
-      import('../engine/instance.js').then(({ engine }) => {
-        engine.dispatch({ type: 'BUY_UPGRADE_PLASMA', payload: { category, upgradeId: key, loops } });
-        this.refreshUI();
-      });
-      return;
+      const result = dispatchEngineCommand({ type: 'BUY_UPGRADE_PLASMA', payload: { category, upgradeId: key, loops } });
+      this.refreshUI();
+      return result;
     }
 
     if (category === 'galaxy') {
-      import('../engine/instance.js').then(({ engine }) => {
-        engine.dispatch({ type: 'BUY_UPGRADE_GALAXY', payload: { category, upgradeId: key, loops } });
-        this.refreshUI();
-      });
-      return;
+      const result = dispatchEngineCommand({ type: 'BUY_UPGRADE_GALAXY', payload: { category, upgradeId: key, loops } });
+      this.refreshUI();
+      return result;
     }
 
     if (category === 'era5') {
-      import('../engine/instance.js').then(({ engine }) => {
-        engine.dispatch({ type: 'BUY_UPGRADE_ERA5', payload: { category, upgradeId: key, loops } });
-        this.refreshUI();
-      });
-      return;
+      const result = dispatchEngineCommand({ type: 'BUY_UPGRADE_ERA5', payload: { category, upgradeId: key, loops } });
+      this.refreshUI();
+      return result;
     }
 
     const registry = COSMIC_REGISTRY.upgrades[category];
@@ -547,4 +537,3 @@ export function getFusionSurgeMultiplier() {
   }
   return 1;
 }
-
