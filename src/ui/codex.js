@@ -26,7 +26,7 @@ function corruptText(cleanText, coherenceValue, gameState) {
 
   if (coh >= 1.0) return cleanText;
 
-  let corruptionChance = (1.0 - coh) * 0.8;
+  let corruptionChance = (1.0 - coh) * 0.06;
   if (corruptionChance <= 0) return cleanText;
 
   const pool = ['#', '%', '░', '█', 'Ø', '§', 'Δ', 'X', '0'];
@@ -73,11 +73,12 @@ export const CodexEngine = {
     if (activeNarrativeId !== nextNarrativeId) {
       activeNarrativeId = nextNarrativeId;
       logNode.setAttribute('data-active-text', narrativeText);
+      logNode.title = narrativeText;
 
       const vacCoh = gameState.coherence ? gameState.coherence.toNumber() : 100.0;
       const corrupted = corruptText(narrativeText, vacCoh, gameState);
       
-      this._typeWriter(logNode, corrupted, 25);
+      this._typeWriter(logNode, corrupted, 12);
     }
   },
 

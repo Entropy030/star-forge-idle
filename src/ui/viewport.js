@@ -6,7 +6,7 @@ import { getInitialEra2State } from '../state/createInitialState.js';
 import { getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, getGalacticDarkMatterRate, getGalacticMergeYield, getCompressionsCompleted } from '../core/economy.js';
 import { getCurrentObjective, updateObjectiveProgress } from './objectives.js';
 import { getPlasmaRates, getPlasmaUpgradeVisibility, getRecombinationEligibility } from '../eras/plasma/selectors.js';
-import { getCurrentPhase } from '../engine/selectors.js';
+import { getCurrentPhase, getTransitionPresentation } from '../engine/selectors.js';
 import { getQuantumRates, getInflationEligibility, getQuantumUpgradeEligibility } from '../eras/quantum/selectors.js';
 import { getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 import { updateSupernovaOutcome } from './stellar.js';
@@ -1390,6 +1390,13 @@ export const Viewport = {
 
     this.setTextContent('active-epoch-name', currentEpoch.name);
     this.setTextContent('stage', getCurrentPhase(gameState));
+    this.setTextContent('coherence-display', `${format(gameState.coherence)}%`);
+
+    const transitionPresentation = getTransitionPresentation(gameState);
+    const inflationContainer = this.getEl('era1-transition-container');
+    const recombinationContainer = this.getEl('era2-transition-container');
+    if (inflationContainer) inflationContainer.style.display = transitionPresentation.inflation ? '' : 'none';
+    if (recombinationContainer) recombinationContainer.style.display = transitionPresentation.recombination ? '' : 'none';
 
 
     const tracker = document.getElementById('objective-tracker');

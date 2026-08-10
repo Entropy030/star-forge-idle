@@ -4,7 +4,7 @@ export const CODEX_ENTRIES = [
     category: 'foundations',
     title: 'The Void',
     body: 'The initial state of nothingness. Before the cosmos began, there was only the void. Observation alone begins the cascade.',
-    narrativeText: '> [ACTION]: OBSERVE THE VOID (CLICK CORE)',
+    narrativeText: 'CHRONO_LOG // The void answers observation. A universe begins to resolve.',
     unlockCondition: { type: 'epoch_reached', epoch: 1 },
     sortOrder: 10
   },

@@ -13,7 +13,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=34">
+  <link rel="stylesheet" href="style.css?v=35">
   <link rel="manifest" href="manifest.json">
   <style id="critical-boot-guard">
     html:not(.app-ready) body {
@@ -129,11 +129,13 @@
       </div>
     </div>
     <header class="game-header">
-    <h1>STAR FORGE</h1>
-    <p class="stage-text timeline-banner">TIMELINE: <span id="active-epoch-name">Era I: The Quantum Foam</span></p>
-    <p class="stage-text cosmic-phase-banner">Cosmic Phase: <span id="stage">Protostar</span></p>
-    <p class="stage-text coherence-banner">Vacuum Coherence: <span id="coherence-display">0.0%</span></p>
-  </header>
+      <h1>STAR FORGE</h1>
+      <div class="header-context" aria-label="Current cosmic context">
+        <p class="stage-text timeline-banner"><span class="context-label">Timeline</span><span id="active-epoch-name">Era I: The Quantum Foam</span></p>
+        <p class="stage-text cosmic-phase-banner"><span class="context-label">Phase</span><span id="stage">Quantum Observation</span></p>
+        <p class="stage-text coherence-banner"><span class="context-label">Coherence</span><span id="coherence-display">0%</span></p>
+      </div>
+    </header>
 
   <!-- Developer Sandbox Interface -->
   <div id="dev-matrix" class="dev-matrix-hidden">
@@ -152,134 +154,109 @@
 
 
 
-  <!-- Minimal Persistent Primary Metrics Readout HUD -->
-  <div class="dashboard-container">
-    <div id="prestige-bar" class="currency-prestige-bar" style="display: none;">
-      <svg class="ui-icon icon-yellow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" fill="currentColor"/></svg> Synaptic Dust: <span id="stardust-count">0</span> (<span id="stardust-boost">0</span>% Boost)
-      <div id="tier2-currencies" class="tier2-hidden">
-        <span><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15,9 22,12 15,15 12,22 9,15 2,12 9,9"/></svg> Neural Synapse: <span id="pulsar-count">0</span></span> |
-        <span><svg class="ui-icon icon-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Core Density: <span id="singularity-count">0</span></span>
-      </div>
-    </div>
-
-    <div id="objective-tracker" class="objective-tracker" style="display: none;">
-      <div class="objective-header">
-        <span class="objective-badge">OBJECTIVE</span>
-        <span id="objective-title">Initialize Core</span>
-      </div>
-      <div class="objective-body">
-        <p id="objective-instruction">Gather 50 Quantum Fluctuations.</p>
-        <small id="objective-explanation">The void is unstable. Extract fluctuations to begin.</small>
-      </div>
-      <div class="objective-progress-container">
-        <div id="objective-progress-bar" class="objective-progress-bar"></div>
-        <span id="objective-progress-text">0 / 50</span>
-      </div>
-    </div>
-
-    <div class="dashboard">
-      <div class="resource-box border-blue">
-        <h3 id="label-hydrogen">QUANTUM FLUCTUATIONS</h3>
-        <h2 id="count">0</h2>
-        <small id="delta-hydrogen" class="resource-delta">—</small>
-      </div>
-
-      <div class="resource-box border-purple">
-        <h3 id="label-helium">ENERGY DENSITY</h3>
-        <h2 id="helium-count">0</h2>
-        <small id="delta-helium" class="resource-delta">—</small>
-      </div>
-
-      <!-- Era II Lepton Generation Tracking Anchor Element -->
-      <div id="lepton-box" class="resource-box border-purple era2-only">
-        <h3>LEPTONS</h3>
-        <h2 id="lepton-count">0</h2>
-        <small id="delta-leptons" class="resource-delta">—</small>
-      </div>
-
-      <!-- Era II Proton Generation -->
-      <div id="proton-box" class="resource-box border-orange era2-only">
-        <h3>SYNTHESIZED PROTONS</h3>
-        <h2 id="proton-count">0</h2>
-        <small id="delta-protons" class="resource-delta">—</small>
-      </div>
-
-      <!-- Era II Electron Generation -->
-      <div id="electron-box" class="resource-box border-yellow era2-only">
-        <h3>FREE ELECTRONS</h3>
-        <h2 id="electron-count">0</h2>
-        <small id="delta-electrons" class="resource-delta">—</small>
-      </div>
-
-      <!-- Era II Temperature cooling -->
-      <div id="plasma-temp-box" class="resource-box border-red era2-only">
-        <h3>PLASMA TEMPERATURE</h3>
-        <h2 id="plasma-temp-count">0 K</h2>
-        <small id="delta-temperature" class="resource-delta">—</small>
-      </div>
-
-      <div id="carbon-box" class="resource-box border-red era3-only">
-        <h3>CARBON</h3>
-        <h2 id="carbon-count">0</h2>
-        <small id="delta-carbon" class="resource-delta">—</small>
-      </div>
-
-      <div id="iron-box" class="resource-box border-grey era3-only">
-        <h3>IRON</h3>
-        <h2 id="iron-count">0</h2>
-        <small id="delta-iron" class="resource-delta">—</small>
-      </div>
-
-      <!-- Era IV Galactic Accretion Dashboard Targets -->
-      <div id="debris-box" class="resource-box border-blue era4-only">
-        <h3>PLANETARY DEBRIS</h3>
-        <h2 id="debris-count">0</h2>
-        <small id="delta-debris" class="resource-delta">—</small>
-      </div>
-
-      <div id="darkmatter-box" class="resource-box border-purple era4-only">
-        <h3>DARK MATTER</h3>
-        <h2 id="darkmatter-count">0</h2>
-        <small id="delta-darkmatter" class="resource-delta">—</small>
-      </div>
-
-      <!-- Era V Dashboard Container -->
-      <div id="era5-dashboard-container" class="era5-only" style="width:100%;"></div>
-    </div>
-  </div>
-
-  <!-- Visualizer (Background) -->
-  <div class="core-canvas">
-    <canvas id="core-fx-canvas" aria-hidden="true"></canvas>
-    <div class="canvas-scanner-line"></div>
-    <div id="star-core" tabindex="0" role="button" aria-label="Star Core Clicker">
-      <div class="core-inner-glow"></div>
-      <div class="core-orbit orbit-1"></div>
-      <div class="core-orbit orbit-2"></div>
-      <div class="core-orbit orbit-3"></div>
-    </div>
-  </div>
-
   <!-- Main Viewport Screens -->
   <main>
     <!-- Tab 1: Cosmos (The Core, Objective & Terminal) -->
     <div id="tab-content-core" class="tab-content">
 
-      <div class="neural-log-wrapper" style="max-width:540px; margin: 12px auto 0 auto; padding: 0 16px;">
-        <p id="chrono-neural-log"
-          style="font-size:0.75rem; font-style:italic; color:#b2bec3; letter-spacing:0.5px; line-height:1.4; margin:0; min-height:2.8em; display:flex; align-items:center; justify-content:center;">
-        </p>
-        <div id="era-progress-container"
-          style="width: 100%; height: 8px; background: rgba(255, 255, 255, 0.05); border-radius: 4px; margin-top: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); display: none; position: relative;">
-          <div id="era-progress-bar"
-            style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-teal), var(--hydrogen-glow)); transition: width 0.3s ease; box-shadow: 0 0 8px var(--neon-teal);">
-          </div>
-          <div id="era3-progress-nodes" style="display: none; position: absolute; inset: 0;">
-            <div style="position: absolute; left: 33.33%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.4); pointer-events: auto;" title="100M K: Supernova"></div>
-            <div style="position: absolute; left: 66.66%; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.4); pointer-events: auto;" title="500M K: Carbon"></div>
-          </div>
+      <section id="objective-tracker" class="objective-tracker" style="display: none;" aria-live="polite" aria-atomic="true">
+        <div class="objective-header">
+          <span class="objective-badge">NEXT</span>
+          <span id="objective-title">Initialize Core</span>
+        </div>
+        <div class="objective-body">
+          <p id="objective-instruction">Gather 50 Quantum Fluctuations.</p>
+        </div>
+        <div class="objective-progress-container" aria-label="Objective progress">
+          <div id="objective-progress-bar" class="objective-progress-bar"></div>
+          <span id="objective-progress-text">0 / 50</span>
+        </div>
+      </section>
+
+      <div class="core-canvas">
+        <canvas id="core-fx-canvas" aria-hidden="true"></canvas>
+        <div class="canvas-scanner-line"></div>
+        <div id="star-core" tabindex="0" role="button" aria-label="Star Core Clicker">
+          <div class="core-inner-glow"></div>
+          <div class="core-orbit orbit-1"></div>
+          <div class="core-orbit orbit-2"></div>
+          <div class="core-orbit orbit-3"></div>
         </div>
       </div>
+
+      <section class="dashboard-container" aria-label="Current economy">
+        <div id="prestige-bar" class="currency-prestige-bar" style="display: none;">
+          <svg class="ui-icon icon-yellow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" fill="currentColor"/></svg> Synaptic Dust: <span id="stardust-count">0</span> (<span id="stardust-boost">0</span>% Boost)
+          <div id="tier2-currencies" class="tier2-hidden">
+            <span><svg class="ui-icon icon-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15,9 22,12 15,15 12,22 9,15 2,12 9,9"/></svg> Neural Synapse: <span id="pulsar-count">0</span></span> |
+            <span><svg class="ui-icon icon-purple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4" fill="currentColor"/><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg> Core Density: <span id="singularity-count">0</span></span>
+          </div>
+        </div>
+
+        <div class="dashboard">
+          <div class="resource-box border-blue">
+            <h3 id="label-hydrogen">QUANTUM FLUCTUATIONS</h3>
+            <h2 id="count">0</h2>
+            <small id="delta-hydrogen" class="resource-delta">—</small>
+          </div>
+
+          <div class="resource-box border-purple">
+            <h3 id="label-helium">ENERGY DENSITY</h3>
+            <h2 id="helium-count">0</h2>
+            <small id="delta-helium" class="resource-delta">—</small>
+          </div>
+
+          <div id="lepton-box" class="resource-box border-purple era2-only">
+            <h3>LEPTONS</h3>
+            <h2 id="lepton-count">0</h2>
+            <small id="delta-leptons" class="resource-delta">—</small>
+          </div>
+
+          <div id="proton-box" class="resource-box border-orange era2-only">
+            <h3>SYNTHESIZED PROTONS</h3>
+            <h2 id="proton-count">0</h2>
+            <small id="delta-protons" class="resource-delta">—</small>
+          </div>
+
+          <div id="electron-box" class="resource-box border-yellow era2-only">
+            <h3>FREE ELECTRONS</h3>
+            <h2 id="electron-count">0</h2>
+            <small id="delta-electrons" class="resource-delta">—</small>
+          </div>
+
+          <div id="plasma-temp-box" class="resource-box border-red era2-only">
+            <h3>PLASMA TEMPERATURE</h3>
+            <h2 id="plasma-temp-count">0 K</h2>
+            <small id="delta-temperature" class="resource-delta">—</small>
+          </div>
+
+          <div id="carbon-box" class="resource-box border-red era3-only">
+            <h3>CARBON</h3>
+            <h2 id="carbon-count">0</h2>
+            <small id="delta-carbon" class="resource-delta">—</small>
+          </div>
+
+          <div id="iron-box" class="resource-box border-grey era3-only">
+            <h3>IRON</h3>
+            <h2 id="iron-count">0</h2>
+            <small id="delta-iron" class="resource-delta">—</small>
+          </div>
+
+          <div id="debris-box" class="resource-box border-blue era4-only">
+            <h3>PLANETARY DEBRIS</h3>
+            <h2 id="debris-count">0</h2>
+            <small id="delta-debris" class="resource-delta">—</small>
+          </div>
+
+          <div id="darkmatter-box" class="resource-box border-purple era4-only">
+            <h3>DARK MATTER</h3>
+            <h2 id="darkmatter-count">0</h2>
+            <small id="delta-darkmatter" class="resource-delta">—</small>
+          </div>
+
+          <div id="era5-dashboard-container" class="era5-only" style="width:100%;"></div>
+        </div>
+      </section>
 
       <!-- Era II Process Map -->
       <div id="era2-process-map" class="era2-only" style="max-width: 540px; margin: 15px auto; background: rgba(0,0,0,0.4); padding: 10px; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">
@@ -294,16 +271,31 @@
         <div style="font-size: 0.7rem; color: #888; text-align: center; margin-top: 8px;">Bind Quarks using Gluons to synthesize Protons and cool the Universe.</div>
       </div>
 
+      <div class="progress-context" aria-label="Era process progress">
+        <div id="era-progress-container">
+          <div id="era-progress-bar"></div>
+          <div id="era3-progress-nodes" style="display: none;">
+            <div class="era-progress-node node-supernova" title="100M K: Supernova"></div>
+            <div class="era-progress-node node-carbon" title="500M K: Carbon"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="neural-log-wrapper">
+        <span class="chrono-label">CHRONO</span>
+        <p id="chrono-neural-log" aria-live="polite"></p>
+      </div>
+
       <div class="era-transition-shell">
-        <div id="era1-transition-container" class="era1-only" style="margin-top: 20px;">
-          <div id="era1-locked-card" class="cosmic-card locked-card">
+        <div id="era1-transition-container" class="era1-only">
+          <div id="era1-locked-card" class="cosmic-card locked-card transition-card">
             <div class="locked-card-title">COSMIC INFLATION</div>
           </div>
           <button id="btn-inflation" class="btn-macro-shift bg-gradient-purple" style="width: 100%; display: none;">TRIGGER COSMIC INFLATION</button>
         </div>
 
-        <div id="era2-transition-container" class="era2-only" style="margin-top: 20px;">
-          <div id="era2-locked-card" class="cosmic-card" style="text-align: center; color: #a0a8b0; padding: 15px; border-style: dashed;">
+        <div id="era2-transition-container" class="era2-only">
+          <div id="era2-locked-card" class="cosmic-card transition-card">
             <div style="font-weight: bold; letter-spacing: 1px;">COSMIC RECOMBINATION</div>
             <div style="font-size: 0.8rem; margin-top: 5px;">Requires 3,000 K Cooling or 1,000,000 Protons</div>
           </div>

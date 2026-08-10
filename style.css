@@ -934,7 +934,7 @@ body[data-epoch="2"][data-era2-act="2"] #btn-recombination {
 body[data-tab] .tab-content { display: none; }
 
 /* Active tab override — specificity (0,2,0) beats base (0,1,0) */
-body[data-tab="core"] #tab-content-core { display: block; pointer-events: none; }
+body[data-tab="core"] #tab-content-core { display: block; pointer-events: auto; }
 body[data-tab="upgrades"] #tab-content-upgrades { display: block; }
 body[data-tab="artifacts"] #tab-content-artifacts { display: block; }
 body[data-tab="prestige"] #tab-content-prestige { display: block; }
@@ -1128,11 +1128,6 @@ body[data-epoch="5"] { --theme-accent: #d63031; }
 .currency-prestige-bar { font-size: 0.78rem; margin-bottom: 8px; }
 h1 { font-size: 1.25rem; letter-spacing: 4px; }
 .buy-mode-container { top: calc(10px + var(--sat)); right: 12px; }
-.core-canvas { top: 130px !important; }
-body[data-epoch="3"] .core-canvas,
-body[data-epoch="4"] .core-canvas {
-  top: 190px !important;
-}
 .tab-content { padding-right: 0; }
 }
 
@@ -1996,4 +1991,349 @@ body[data-tab="core"] .era-transition-shell {
   font-weight: 700;
   letter-spacing: 1px;
   opacity: 0.7;
+}
+
+/* ==========================================================================
+   [CSS-SEC-26] P3.3B1 GLOBAL HIERARCHY
+   ========================================================================== */
+#game-shell:not([hidden]) {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+}
+
+.game-header {
+  width: min(100%, 960px);
+  margin: 0 auto;
+  padding: calc(10px + var(--sat)) 16px 8px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.game-header h1 {
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1;
+  letter-spacing: 0.22em;
+}
+
+.header-context {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.header-context .stage-text {
+  min-width: 0;
+  margin: 0;
+  padding: 4px 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 0.72rem;
+  line-height: 1.15;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.context-label {
+  margin-right: 5px;
+  color: #718096;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.coherence-banner {
+  display: none;
+  margin-top: 0;
+  text-shadow: none;
+}
+
+body[data-epoch="1"] .coherence-banner {
+  display: inline-flex;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+.tab-content {
+  margin-top: 0;
+  padding-top: 10px;
+}
+
+#tab-content-core {
+  width: 100%;
+  max-width: 760px;
+}
+
+.core-canvas {
+  min-height: 230px;
+  flex: none;
+  margin: 2px 0 4px;
+}
+
+body:not([data-tab="core"]) .core-canvas {
+  display: none;
+}
+
+.dashboard-container {
+  z-index: 6;
+  padding: 4px 0 8px;
+  background: none;
+  border-bottom: 0;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.currency-prestige-bar {
+  margin-bottom: 7px;
+  font-size: 0.74rem;
+  opacity: 0.78;
+}
+
+.progress-context {
+  width: min(100%, 540px);
+  margin: 8px auto 0;
+  padding: 0 12px;
+  box-sizing: border-box;
+  opacity: 0.58;
+}
+
+#era-progress-container {
+  position: relative;
+  display: none;
+  width: 100%;
+  height: 4px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+#era-progress-bar {
+  width: 0%;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+#era3-progress-nodes {
+  position: absolute;
+  inset: 0;
+}
+
+.era-progress-node {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.era-progress-node.node-supernova { left: 33.33%; }
+.era-progress-node.node-carbon { left: 66.66%; }
+
+.neural-log-wrapper {
+  width: min(100%, 580px);
+  margin: 8px auto 0;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #8d99a6;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.chrono-label {
+  flex: 0 0 auto;
+  color: #64748b;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+#chrono-neural-log {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #9ca7b3;
+  font-size: 0.7rem;
+  font-style: italic;
+  line-height: 1.35;
+  letter-spacing: 0.02em;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+[data-act="1"] #chrono-neural-log,
+[data-act="2"] #chrono-neural-log {
+  border-left: 0;
+  box-shadow: none;
+}
+
+.era-transition-shell {
+  width: min(100%, 560px);
+  margin: 8px auto 0;
+}
+
+#era1-transition-container,
+#era2-transition-container {
+  margin-top: 0;
+}
+
+.transition-card {
+  min-height: 0;
+  margin: 0 0 7px;
+  padding: 8px 12px;
+  justify-content: center;
+  border-style: dashed;
+  color: #87919c;
+  font-size: 0.72rem;
+  text-align: center;
+  opacity: 0.72;
+}
+
+.era-transition-shell .btn-macro-shift {
+  min-height: 48px;
+  box-shadow: 0 0 24px color-mix(in srgb, var(--theme-accent) 26%, transparent);
+}
+
+.objective-tracker {
+  width: min(100%, 680px);
+  margin: 0 auto 6px;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  flex-flow: row wrap;
+  align-items: center;
+  gap: 6px 10px;
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  border-left: 2px solid var(--neon-teal);
+  border-radius: 5px;
+  background: linear-gradient(90deg, rgba(8, 20, 42, 0.82), rgba(4, 10, 26, 0.58));
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.28);
+}
+
+.objective-header {
+  flex: 0 1 auto;
+  min-width: 0;
+  gap: 6px;
+}
+
+.objective-badge {
+  padding: 2px 5px;
+  font-size: 0.56rem;
+}
+
+#objective-title {
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.objective-body {
+  min-width: 160px;
+  flex: 1 1 220px;
+  text-align: left;
+}
+
+.objective-body p {
+  overflow: hidden;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.objective-progress-container {
+  width: 140px;
+  height: 10px;
+  flex: 0 1 140px;
+  margin-top: 0;
+  border-radius: 6px;
+}
+
+#objective-progress-text {
+  font-size: 0.55rem;
+}
+
+@media (max-width: 600px) {
+  .game-header {
+    padding: calc(8px + var(--sat)) 12px 6px;
+    gap: 10px;
+  }
+
+  .game-header h1 {
+    font-size: 1.02rem;
+    letter-spacing: 0.16em;
+  }
+
+  .header-context {
+    gap: 3px;
+  }
+
+  .header-context .stage-text {
+    max-width: 42vw;
+    padding: 3px 5px;
+    overflow: hidden;
+    font-size: 0.64rem;
+    text-overflow: ellipsis;
+  }
+
+  .context-label,
+  .coherence-banner {
+    display: none !important;
+  }
+
+  .tab-content {
+    padding: 8px 12px calc(100px + var(--sab));
+  }
+
+  .objective-tracker {
+    margin-bottom: 2px;
+    padding: 7px 8px;
+  }
+
+  .objective-header {
+    flex: 1 1 auto;
+  }
+
+  .objective-body {
+    flex: 1 1 100%;
+    order: 3;
+  }
+
+  .objective-progress-container {
+    width: 96px;
+    flex-basis: 96px;
+  }
+
+  .core-canvas {
+    min-height: 175px;
+    margin: 0;
+  }
+
+  .dashboard-container {
+    padding: 0 0 5px;
+  }
+
+  .progress-context {
+    margin-top: 6px;
+  }
+
+  .neural-log-wrapper {
+    margin-top: 6px;
+    padding: 5px 8px;
+  }
+
+  .transition-card {
+    padding: 7px 9px;
+  }
 }

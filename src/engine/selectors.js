@@ -36,3 +36,19 @@ export function getCurrentPhase(state) {
 
   return '';
 }
+
+export function getTransitionPresentation(state) {
+  if (!state) {
+    return { inflation: false, recombination: false, supernova: false };
+  }
+
+  return {
+    inflation: state.activeEpoch === 1 && (state.era1?.currentAct || 1) >= 2,
+    recombination: state.activeEpoch === 2 && (
+      (state.era2?.currentAct || 1) >= 3 ||
+      (state.upgrades?.plasma?.plasmaAutomation?.level || 0) > 0 ||
+      (state.upgrades?.plasma?.baryoRadiator?.level || 0) > 0
+    ),
+    supernova: state.activeEpoch === 3 && state.era3?.stage === 'Main Sequence Star'
+  };
+}
