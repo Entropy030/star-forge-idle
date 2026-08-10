@@ -23,6 +23,10 @@
   --sab: env(safe-area-inset-bottom);
 }
 
+html {
+  min-height: 100%;
+}
+
 body { 
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   text-align: center; 
@@ -31,10 +35,12 @@ body {
   color: #e2e8f0; 
   margin: 0;
   padding: 0;
-  height: 100dvh;
+  min-height: 100dvh;
+  height: auto;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   touch-action: manipulation;
@@ -55,9 +61,8 @@ main {
   position: relative;
   z-index: 5;
   contain: layout;
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  flex: 1 0 auto;
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
