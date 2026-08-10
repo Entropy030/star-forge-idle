@@ -202,30 +202,19 @@ function devSetEpoch(epochNum, callback) {
 // [SEC-11] PRESTIGE & MACRO-TIMELINE SHIFT MILESTONES
 // ==========================================================================
 function triggerInflation() {
-  if (gameState.resources.quantumFluctuations.amount.lt(COSMIC_REGISTRY.constants.inflationThreshold)) {
-    const msg = `Requires ${format(COSMIC_REGISTRY.constants.inflationThreshold)} Quantum Fluctuations!`;
-    console.warn(msg);
-    if (typeof window !== 'undefined' && window.Viewport) {
-      window.Viewport.setInlineActionFeedback('btn-inflation', msg);
+  const result = engine.dispatch({ type: 'TRIGGER_INFLATION' });
+  if (!result.ok) {
+    if (result.error.code === 'PREREQUISITES_NOT_MET' || result.error.code === 'INSUFFICIENT_QF') {
+      const msg = `Insufficient QF, ED, or Coherence for Cosmic Inflation.`;
+      console.warn(msg);
+      if (typeof window !== 'undefined' && window.Viewport) {
+        window.Viewport.setInlineActionFeedback('btn-inflation', msg);
+      }
     }
     return;
   }
 
-  let leftover = gameState.resources.quantumFluctuations.amount.minus(COSMIC_REGISTRY.constants.inflationThreshold);
-  let bonusFactor = new Decimal(1).plus(leftover.div(100000).times(0.1));
-  gameState.inflatonMultiplier = (gameState.inflatonMultiplier || new Decimal(1)).times(bonusFactor);
-
   startEraTransition(2, "The infinite expansion cools the temperature of space-time. The violent quantum foam condenses, binding energy variables into the first physical matter: Quarks and Gluons. We enter the Primordial Soup.", () => {
-    gameState.activeEpoch = 2;
-    document.body.setAttribute('data-epoch', 2);
-    gameState.plasmaTemperature = new Decimal(10000000);
-    gameState.cosmicAge = new Decimal(0);
-
-    if (!gameState.artifacts.unlocked.includes("quantum_lens")) {
-      gameState.artifacts.unlocked.push("quantum_lens");
-      gameState.history.push({ time: gameState.totalGameTime, msg: "Artifact Discovered: Quantum Lens", type: 'milestone' });
-    }
-
     const flashElement = document.createElement('div');
     flashElement.style.cssText = "position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #fff; z-index: 99999; pointer-events: none; animation: flashEffect 1.2s forwards;";
     document.body.appendChild(flashElement);
@@ -574,22 +563,22 @@ function simulationScheduler() {
   if (isCatchingUp) return; // Prevent double-ticking during async catchup
 
   let now = Date.now();
-  let dt = Math.max(0, (now - lastSimTick) / 1000);
+  let realElapsedSec = Math.max(0, (now - lastSimTick) / 1000);
   lastSimTick = now;
 
   let cMod = 1.0 + (0.12 * (gameState.cosmicConstants?.c || 0));
   let speedMult = getPlaytestSpeedMultiplier();
-  dt *= (cMod * speedMult);
-
-  if (dt > 1.5) {
+  
+  if (realElapsedSec > 1.5) {
     // If the tick is too large (tab was frozen in background), push it to the catch-up loop
-    catchupAccumulator += dt;
+    catchupAccumulator += (realElapsedSec * cMod * speedMult);
     processCatchupAsync();
     return;
   }
 
-  if (dt > 0) {
-    gameTick(dt);
+  let simulatedElapsedSec = realElapsedSec * cMod * speedMult;
+  if (simulatedElapsedSec > 0) {
+    gameTick(simulatedElapsedSec);
   }
 }
 
@@ -634,15 +623,14 @@ document.addEventListener('visibilitychange', () => {
   } else {
     // Tab became visible
     let now = Date.now();
-    let dt = Math.max(0, (now - lastSimTick) / 1000);
+    let realElapsedSec = Math.max(0, (now - lastSimTick) / 1000);
     lastSimTick = now;
     
     let cMod = 1.0 + (0.12 * (gameState.cosmicConstants?.c || 0));
     let speedMult = getPlaytestSpeedMultiplier();
-    dt *= (cMod * speedMult);
     
-    if (dt > 1.5) {
-      catchupAccumulator += dt;
+    if (realElapsedSec > 1.5) {
+      catchupAccumulator += (realElapsedSec * cMod * speedMult);
       processCatchupAsync();
     }
   }

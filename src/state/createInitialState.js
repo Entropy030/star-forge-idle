@@ -105,7 +105,6 @@ export function createInitialState() {
     era1: {
       currentAct: 1,
       quantumFoam: 0,
-      vacuumCoherence: 0.0,
       asymmetryBias: 0.5,
       unfoldCount: 0
     },

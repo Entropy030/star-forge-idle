@@ -2,6 +2,8 @@
 /* eslint-disable import/no-cycle */
 import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getCardMultiplier } from '../../core/economy.js'; // Will be extracted to selectors later
+import { getInflationEligibility } from './inflation.js';
+import { getQuantumUpgradeEligibility } from './selectors.js';
 
 export const quantumCommandHandlers = {
   CLICK_CORE: (state, cmd) => {
@@ -10,12 +12,13 @@ export const quantumCommandHandlers = {
     
     // In era 1, clicking does quantum fluctuation gathering
     if (state.activeEpoch === 1) {
-      if (!state.era1) state.era1 = { currentAct: 1, quantumFoam: 0, vacuumCoherence: 0.0, unfoldCount: 0 };
+      if (!state.era1) state.era1 = { currentAct: 1, quantumFoam: 0, unfoldCount: 0 };
       state.era1.unfoldCount = (state.era1.unfoldCount || 0) + 1;
       
-      if (state.era1.vacuumCoherence < 1.0) {
+      if (state.coherence && state.coherence.lt(100)) {
         let cMod = 1.0 - (0.08 * (state.cosmicConstants?.c || 0));
-        state.era1.vacuumCoherence = Math.min(1.0, (state.era1.vacuumCoherence || 0) + (0.10 * cMod));
+        let gain = new Decimal(0.5).times(cMod);
+        state.coherence = Decimal.min(100, state.coherence.plus(gain));
       }
       
       let mult = getCardMultiplier("hydrogenGen"); // Use actual selector later
@@ -53,11 +56,20 @@ export const quantumCommandHandlers = {
 
   TRIGGER_INFLATION: (state, cmd) => {
     if (state.activeEpoch !== 1) return { ok: false, changed: false, events: [], error: { code: 'WRONG_EPOCH' } };
-    if (state.resources.quantumFluctuations.amount.lt(COSMIC_REGISTRY.constants.inflationThreshold)) {
-      return { ok: false, changed: false, events: [], error: { code: 'INSUFFICIENT_QF' } };
+    
+    const eligibility = getInflationEligibility(state);
+    if (!eligibility.isEligible) {
+      return { ok: false, changed: false, events: [], error: { code: 'PREREQUISITES_NOT_MET' } };
     }
     
+    let leftover = state.resources.quantumFluctuations.amount.minus(100000);
+    let bonusFactor = new Decimal(1).plus(leftover.div(100000).times(0.1));
+    state.inflatonMultiplier = (state.inflatonMultiplier || new Decimal(1)).times(bonusFactor);
+    
     state.activeEpoch = 2;
+    state.plasmaTemperature = new Decimal(10000000);
+    state.cosmicAge = new Decimal(0);
+    if (!state.era1) state.era1 = {};
     state.era1.currentAct = 4;
     return {
       ok: true,
@@ -75,6 +87,12 @@ export const quantumCommandHandlers = {
     if (!registry || !registry[upgradeId]) return { ok: false, changed: false, events: [], error: { code: 'UNKNOWN_UPGRADE' } };
     
     const def = registry[upgradeId];
+    
+    const eligibility = getQuantumUpgradeEligibility(state, upgradeId);
+    if (!eligibility.unlocked) {
+      return { ok: false, changed: false, events: [], error: { code: 'LOCKED_UPGRADE' } };
+    }
+    
     const upgradeState = state.upgrades.quantum[upgradeId];
     
     const discount = state.artifacts?.modifiers?.costDiscount || 0.0;

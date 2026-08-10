@@ -97,19 +97,36 @@ function gameTick(dt) {
       gameState.coherence = Decimal.min(100, gameState.coherence.plus(new Decimal(0.1).times(dt)));
     }
 
-    // Era 1 Act unfolding progression logic & permanent unfold flags
     if (!gameState.discoveries) gameState.discoveries = new Set();
     const currentQF = getAmount('quantumFluctuations');
-    if (currentQF.gte(1)) gameState.discoveries.add('qf_1');
-    if (currentQF.gte(10)) gameState.discoveries.add('qf_10');
-    if (currentQF.gte(100)) gameState.discoveries.add('qf_100');
 
     if (!gameState.stats.maxQF) gameState.stats.maxQF = new Decimal(0);
     if (currentQF.gt(gameState.stats.maxQF)) {
       gameState.stats.maxQF = currentQF;
     }
 
-    // Era 1 Act unfolding progression removed from here (handled by ActManager)
+    // Narrative Milestones Check
+    const recordNarrativeMilestone = (id, message) => {
+      if (!gameState.discoveries.has(id)) {
+        gameState.discoveries.add(id);
+        if (!gameState.history) gameState.history = [];
+        gameState.history.push({ time: gameState.totalGameTime, msg: message, type: 'milestone', id });
+        if (typeof window !== 'undefined' && window.Viewport && window.Viewport.logChrono) {
+          window.Viewport.logChrono(message);
+        } else if (typeof window !== 'undefined' && window.document) {
+          const logNode = document.getElementById('chrono-neural-log');
+          if (logNode) logNode.textContent = message;
+        }
+      }
+    };
+
+    if (currentQF.gte(1)) recordNarrativeMilestone('qf_1', '[SYSTEM]: Quantum Foam compiled. Primary metric online.');
+    if (currentQF.gte(10)) recordNarrativeMilestone('qf_10', '[SYSTEM]: Energy density sufficient. Compiling Fluctuation Condenser...');
+    if (currentQF.gte(100)) recordNarrativeMilestone('qf_100', '[SYSTEM]: Weak Nuclear Vector unlocked. Symmetry breaking begins.');
+    if (currentQF.gte(500)) recordNarrativeMilestone('qf_500', '[SYSTEM]: Electromagnetic Tensor engaged. Photons propagating.');
+    if (currentQF.gte(2500)) recordNarrativeMilestone('qf_2500', '[SYSTEM]: Vacuum Resonance stabilized. Coherence recovering.');
+    if (currentQF.gte(10000)) recordNarrativeMilestone('qf_10000', '[SYSTEM]: Strong Color Force bound. Baryogenesis imminent.');
+
   } else if (gameState.activeEpoch === 2) {
     // Era 2 Coherence Equilibrium: high temp (>8M K) slightly drains coherence, cooling (<500k K) recovers it toward 100%
     if (gameState.plasmaTemperature.gt(8000000)) {

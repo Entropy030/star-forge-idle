@@ -6,7 +6,7 @@ import { getInitialEra2State } from '../state/createInitialState.js';
 import { getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, getGalacticDarkMatterRate, getGalacticMergeYield, getCompressionsCompleted } from '../core/economy.js';
 import { getCurrentObjective } from './objectives.js';
 import { getPlasmaRates, getPlasmaUpgradeVisibility } from '../eras/plasma/selectors.js';
-import { getQuantumRates, getInflationEligibility } from '../eras/quantum/selectors.js';
+import { getQuantumRates, getInflationEligibility, getQuantumUpgradeEligibility } from '../eras/quantum/selectors.js';
 import { getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 import { updateSupernovaOutcome } from './stellar.js';
 import { CodexEngine } from './codex.js';
@@ -916,24 +916,27 @@ export const Viewport = {
 
       if (category === 'quantum') {
         const qf = gameState.stats && gameState.stats.maxQF ? gameState.stats.maxQF.toNumber() : 0;
+        
+        let eligibility = getQuantumUpgradeEligibility(gameState, key);
+
         if (key === 'gravityForce') {
-          if (qf < 10) { isVisible = false; }
+          if (qf < 1) { isVisible = false; }
           else { isVisible = true; isPreview = false; }
         } else if (key === 'weakForce') {
           if (qf < 10) { isVisible = false; }
-          else if (qf < 100) { isVisible = true; isPreview = true; }
+          else if (!eligibility.unlocked) { isVisible = true; isPreview = true; }
           else { isVisible = true; isPreview = false; }
         } else if (key === 'electromagneticForce') {
           if (qf < 100) { isVisible = false; }
-          else if (qf < 500) { isVisible = true; isPreview = true; }
+          else if (!eligibility.unlocked) { isVisible = true; isPreview = true; }
           else { isVisible = true; isPreview = false; }
         } else if (key === 'vacuumResonance') {
           if (qf < 500) { isVisible = false; }
-          else if (qf < 2500) { isVisible = true; isPreview = true; }
+          else if (!eligibility.unlocked) { isVisible = true; isPreview = true; }
           else { isVisible = true; isPreview = false; }
         } else if (key === 'strongForce') {
           if (qf < 2500) { isVisible = false; }
-          else if (qf < 10000) { isVisible = true; isPreview = true; }
+          else if (!eligibility.unlocked) { isVisible = true; isPreview = true; }
           else { isVisible = true; isPreview = false; }
         }
       }
@@ -1468,7 +1471,7 @@ export const Viewport = {
           inflationBtn.style.display = 'none';
           inflationCard.style.display = 'block';
           // Update inline requirements
-          const reqText = `Requires 100k QF (${format(eligibility.qf)}), 50k ED (${format(eligibility.ed)}), 100% Coherence (${Math.floor(eligibility.coherence)}%)`;
+          const reqText = `Requires 100k QF (${format(eligibility.qf)}), 50k ED (${format(eligibility.ed)}), 100% Coherence (${Math.floor(eligibility.coherence.toNumber())}%)`;
           let reqDiv = inflationCard.querySelector('.req-text');
           if (!reqDiv) {
             reqDiv = document.createElement('div');

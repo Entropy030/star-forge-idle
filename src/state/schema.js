@@ -18,11 +18,19 @@ export const ensureStateShape = function(gameState) {
   if (typeof gameState.unfold.hasUnlocked100QF !== 'boolean') gameState.unfold.hasUnlocked100QF = false;
   if (typeof gameState.unfold.introCompleted !== 'boolean') gameState.unfold.introCompleted = false;
   if (!gameState.era1) {
-    gameState.era1 = { currentAct: 1, quantumFoam: 0, vacuumCoherence: 0.0, unfoldCount: 0 };
+    gameState.era1 = { currentAct: 1, quantumFoam: 0, unfoldCount: 0 };
   }
+  
+  // Migrate legacy era1.vacuumCoherence (0-1) to state.coherence (0-100)
+  if (gameState.era1 && typeof gameState.era1.vacuumCoherence === 'number') {
+    if (gameState.coherence === undefined || (gameState.coherence instanceof Decimal && gameState.coherence.eq(0)) || gameState.coherence === 0) {
+      gameState.coherence = new Decimal(gameState.era1.vacuumCoherence * 100);
+    }
+    delete gameState.era1.vacuumCoherence;
+  }
+  
   if (typeof gameState.era1.currentAct !== 'number') gameState.era1.currentAct = 1;
   if (typeof gameState.era1.quantumFoam !== 'number') gameState.era1.quantumFoam = 0;
-  if (typeof gameState.era1.vacuumCoherence !== 'number') gameState.era1.vacuumCoherence = 0.0;
   if (typeof gameState.era1.unfoldCount !== 'number') gameState.era1.unfoldCount = 0;
 
   if (!gameState.era2 || typeof gameState.era2 !== 'object') {

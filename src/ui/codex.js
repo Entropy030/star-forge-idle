@@ -10,21 +10,17 @@ function corruptText(cleanText, coherenceValue, gameState) {
   if (gameState.prestige && gameState.prestige.autoStabilizer === true) {
     return cleanText;
   }
-  if (gameState.era1) {
-    if (gameState.era1.currentAct > 1 || gameState.era1.vacuumCoherence >= 1.0) {
-      return cleanText;
-    }
-  }
-
+  
   let coh = 0.0;
   if (typeof coherenceValue === 'number') {
     coh = coherenceValue;
   } else if (coherenceValue instanceof Decimal) {
     coh = coherenceValue.toNumber();
-  } else if (gameState.era1 && typeof gameState.era1.vacuumCoherence === 'number') {
-    coh = gameState.era1.vacuumCoherence;
+  } else if (gameState.coherence instanceof Decimal) {
+    coh = gameState.coherence.toNumber();
   }
 
+  // Ensure coh is scaled 0-1 for corruption chance math
   if (coh > 1.0) coh = coh / 100.0;
   coh = Math.max(0.0, Math.min(1.0, coh));
 
@@ -78,7 +74,7 @@ export const CodexEngine = {
       activeNarrativeId = nextNarrativeId;
       logNode.setAttribute('data-active-text', narrativeText);
 
-      const vacCoh = (gameState.era1 && typeof gameState.era1.vacuumCoherence === 'number') ? gameState.era1.vacuumCoherence : (gameState.coherence || 1.0);
+      const vacCoh = gameState.coherence ? gameState.coherence.toNumber() : 100.0;
       const corrupted = corruptText(narrativeText, vacCoh, gameState);
       
       this._typeWriter(logNode, corrupted, 25);

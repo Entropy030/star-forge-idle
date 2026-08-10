@@ -7,6 +7,7 @@ const Haptics = window.Haptics;
 import { gameState, isDirty, setIsDirty } from './state.js';
 import { saveGame } from './persistence.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
+import { getQuantumUpgradeEligibility } from '../eras/quantum/selectors.js';
 export function updateStatsData() {
   if (gameState.era3 && gameState.era3.temperature.gt(gameState.stats.maxTemp)) {
     gameState.stats.maxTemp = gameState.era3.temperature;
@@ -27,13 +28,30 @@ export function getMilestoneMultiplier(level) {
 
 export function getFundamentalLawSynergy(state) {
   let qUpgrades = state?.upgrades?.quantum || {};
-  let totalLevels = 
-    (qUpgrades.gravityForce?.level || 0) +
-    (qUpgrades.weakForce?.level || 0) +
-    (qUpgrades.electromagneticForce?.level || 0) +
-    (qUpgrades.strongForce?.level || 0);
-  let milestoneBonus = Math.floor(totalLevels / 5) * 0.05;
-  return 1.0 + milestoneBonus;
+  let validKeys = ['gravityForce', 'weakForce', 'electromagneticForce', 'vacuumResonance', 'strongForce'];
+  
+  let levels = [];
+  for (let key of validKeys) {
+    if (getQuantumUpgradeEligibility(state, key).unlocked) {
+      levels.push(qUpgrades[key]?.level || 0);
+    }
+  }
+
+  let currentTier = 0;
+  if (levels.length > 0) {
+    currentTier = Math.floor(Math.min(...levels) / 5);
+  }
+
+  if (!state.stats) state.stats = {};
+  if (typeof state.stats.highestHarmony !== 'number') {
+    state.stats.highestHarmony = 0;
+  }
+  
+  if (currentTier > state.stats.highestHarmony) {
+    state.stats.highestHarmony = currentTier;
+  }
+  
+  return 1.0 + (state.stats.highestHarmony * 0.05);
 }
 
 export function getQuantumFluctuationRate(state = gameState) {

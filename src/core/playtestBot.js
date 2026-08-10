@@ -161,18 +161,33 @@ class PlaytestEngine {
   }
 
   handleEra1Upgrades(state) {
-    const priorityKeys = ['gravityForce', 'weakForce', 'electromagneticForce', 'strongForce'];
+    const priorityKeys = ['gravityForce', 'weakForce', 'electromagneticForce', 'vacuumResonance', 'strongForce'];
+    
+    // Telemetry: Track when things unlock
+    const currentQF = state.stats?.maxQF || new Decimal(0);
+    const coh = state.coherence || new Decimal(0);
+    const ed = this.getResAmount('energyDensity', state);
+    if (coh.gte(100)) this.logMilestone("Coherence Reached 100%");
+    if (ed.gte(50000)) this.logMilestone("Energy Density Reached 50k");
+    
     for (let key of priorityKeys) {
       const upState = state.upgrades?.quantum?.[key];
       const def = COSMIC_REGISTRY.upgrades.quantum[key];
+      
+      // Assume getQuantumUpgradeEligibility can be verified if it exists
+      if (typeof window !== 'undefined' && window.getQuantumUpgradeEligibility) {
+        if (!window.getQuantumUpgradeEligibility(state, key).unlocked) continue;
+      }
+
       if (upState && def) {
         const currencyKey = Economy.resolveCurrencyKey('quantum', key, def);
         const balance = this.getResAmount(currencyKey, state);
         if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
           engine.dispatch({ type: this.getCommandType('quantum'), payload: { category: 'quantum', upgradeId: key } });
           this.stats.totalUpgradesBought++;
-          if (key === 'electromagneticForce' && upState.level === 1) {
-            this.logMilestone("Unlocked Electromagnetic Tensor");
+          
+          if (upState.level === 0) {
+            this.logMilestone(`Unlocked ${def.name}`);
           }
           break;
         }
