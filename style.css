@@ -10,6 +10,7 @@
   --glass-blur: 12px;
   --header-height: 140px;
   --nav-height: 70px;
+  --bottom-nav-clearance: calc(var(--nav-height) + 34px + env(safe-area-inset-bottom, 0px));
   
   --hydrogen-glow: #00d2ff;
   --helium-glow: #70a1ff;
@@ -293,7 +294,7 @@ body.hydrating .btn-price {
  ========================================================================== */
 .tab-menu {
   position: fixed;
-  bottom: 12px;
+  bottom: max(12px, var(--sab));
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 24px);
@@ -314,7 +315,7 @@ body.hydrating .btn-price {
   -ms-overflow-style: none;
   scrollbar-width: none; 
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7);
-  margin-bottom: var(--sab);
+  margin-bottom: 0;
 }
 .tab-menu::-webkit-scrollbar { display: none; }
 
@@ -356,7 +357,7 @@ body.hydrating .btn-price {
   display: none;
   max-width: 680px;
   margin: 0 auto;
-  padding: 16px 16px calc(110px + var(--sab)) 16px;
+  padding: 16px 16px var(--bottom-nav-clearance);
   box-sizing: border-box;
   animation: viewFadeIn 0.3s ease-out;
 }
@@ -1814,6 +1815,13 @@ body {
 [CSS-SEC-20B] REDUCED MOTION ACCESSIBILITY
 ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
   body.reduced-motion * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -2295,7 +2303,7 @@ body:not([data-tab="core"]) .core-canvas {
   }
 
   .tab-content {
-    padding: 8px 12px calc(100px + var(--sab));
+    padding: 8px 12px var(--bottom-nav-clearance);
   }
 
   .objective-tracker {
@@ -2616,7 +2624,7 @@ body[data-tab="upgrades"] main {
 .forge-card .upgrade-btn {
   width: auto;
   min-width: 104px;
-  min-height: 42px;
+  min-height: 44px;
   padding: 8px 14px;
 }
 
@@ -2653,6 +2661,11 @@ body[data-tab="upgrades"] main {
   .forge-card {
     gap: 7px;
     padding: 12px;
+  }
+
+  .forge-card[data-forge-state="locked"] {
+    gap: 5px;
+    padding: 10px 12px;
   }
 
   .forge-card-header {
@@ -3111,6 +3124,15 @@ body[data-epoch="5"] .legacy-era3-plus {
   background: rgba(10, 12, 25, 0.72);
 }
 
+.cosmos-process-panel {
+  border-color: rgba(162, 155, 254, 0.18);
+  background: rgba(10, 12, 25, 0.56);
+}
+
+.cosmos-permanent-transition {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
 .cosmos-status-panel[hidden],
 .cosmos-process-panel[hidden],
 .core-context[hidden],
@@ -3196,9 +3218,42 @@ body[data-epoch="5"] .legacy-era3-plus {
 
 #objective-progress-text { font-variant-numeric: tabular-nums; }
 
+#coherence-display,
+.forge-contribution-display,
+.forge-cost-display,
+.resource-card-value,
+.resource-card-rate,
+.cosmos-status-value,
+.cosmos-progress-label,
+.cosmos-check-value {
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 520px) {
   .cosmos-process-network { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cosmos-status-panel, .cosmos-process-panel, .cosmos-permanent-transition { padding: 11px; }
   .cosmos-check, .forge-requirements-list li { gap: 5px; }
   .cosmos-check-value, .forge-requirement-value { font-size: 0.68rem; }
+}
+
+/* P3.3C: keep the Era legible before showing secondary phase context. */
+@media (max-width: 480px) {
+  .game-header {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 9px;
+  }
+
+  .header-context {
+    justify-content: flex-start;
+  }
+
+  .header-context .timeline-banner {
+    flex: 1 1 auto;
+    max-width: none;
+  }
+
+  .header-context .cosmic-phase-banner {
+    display: none;
+  }
 }
