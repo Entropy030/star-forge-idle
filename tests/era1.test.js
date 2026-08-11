@@ -62,3 +62,43 @@ describe('Era 1 Commands', () => {
     expect(state.resources.quantumFluctuations.amount.toNumber()).toBe(31);
   });
 });
+
+describe('Cosmic Inflation Authority', () => {
+  let engine;
+  beforeEach(() => {
+    let initialState = createInitialState();
+    initialState.activeEpoch = 1;
+    initialState.resources.quantumFluctuations.amount = new Decimal(150000);
+    initialState.resources.energyDensity = { amount: new Decimal(60000) };
+    initialState.coherence = new Decimal(100);
+    
+    engine = createGameEngine({
+      initialState,
+      commandHandlers: { ...quantumCommandHandlers }
+    });
+  });
+
+  it('fails if missing Coherence', () => {
+    engine.getStateUnsafe().coherence = new Decimal(99);
+    const result = engine.dispatch({ type: 'TRIGGER_INFLATION' });
+    expect(result.ok).toBe(false);
+  });
+
+  it('fails if missing QF', () => {
+    engine.getStateUnsafe().resources.quantumFluctuations.amount = new Decimal(90000);
+    const result = engine.dispatch({ type: 'TRIGGER_INFLATION' });
+    expect(result.ok).toBe(false);
+  });
+
+  it('fails if missing ED', () => {
+    engine.getStateUnsafe().resources.energyDensity.amount = new Decimal(40000);
+    const result = engine.dispatch({ type: 'TRIGGER_INFLATION' });
+    expect(result.ok).toBe(false);
+  });
+
+  it('succeeds when all conditions are met', () => {
+    const result = engine.dispatch({ type: 'TRIGGER_INFLATION' });
+    expect(result.ok).toBe(true);
+    expect(engine.getStateUnsafe().activeEpoch).toBe(2);
+  });
+});

@@ -1,6 +1,5 @@
 /* global Decimal */
 /* global localStorage, SAVE_VERSION, gameState */
-/* eslint-disable no-restricted-globals */
 
 export const serializeState = function(obj) {
   if (obj instanceof Decimal) return { __type: 'Decimal', value: obj.toString() };
