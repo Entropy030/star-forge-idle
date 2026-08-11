@@ -2,7 +2,7 @@
 import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getCompressionHeatYield, getCompressionScaling, getGravityCostMultiplier } from '../../core/economy.js';
 import { createInitialState } from '../../state/createInitialState.js';
-import { getSupernovaEligibility, getSupernovaOutcome } from './selectors.js';
+import { getGalacticIgnitionEligibility, getSupernovaEligibility, getSupernovaOutcome } from './selectors.js';
 
 export const stellarCommandHandlers = {
   CLICK_CORE_ERA3: (state, cmd) => {
@@ -115,8 +115,8 @@ export const stellarCommandHandlers = {
       });
     } else if (key === 'compress') {
       tryBuy('helium', 'compressCost', () => {
-        era3.temperature = era3.temperature.plus(getCompressionHeatYield());
-        era3.compressCost = era3.compressCost.times(getCompressionScaling()).floor();
+        era3.temperature = era3.temperature.plus(getCompressionHeatYield(state));
+        era3.compressCost = era3.compressCost.times(getCompressionScaling(state)).floor();
         let baseDiv = era3.temperature.div(1000000).plus(1);
         era3.tempMultiplier = new Decimal(1.0 + Math.log10(baseDiv.toNumber()));
         
@@ -246,6 +246,22 @@ export const stellarCommandHandlers = {
         { type: "STELLAR_RUN_STARTED", runNumber: 2 },
         { type: "STATE_RESET" }
       ]
+    };
+  },
+
+  TRIGGER_GALACTIC_IGNITION: (state) => {
+    const eligibility = getGalacticIgnitionEligibility(state);
+    if (!eligibility.isEligible) {
+      return { ok: false, changed: false, events: [], error: { code: eligibility.errorCode } };
+    }
+
+    state.activeEpoch = 4;
+    state.activeTab = 'core';
+
+    return {
+      ok: true,
+      changed: true,
+      events: [{ type: 'ERA_TRANSITION', targetEra: 4 }]
     };
   }
 };

@@ -3077,3 +3077,92 @@ body[data-epoch="5"] .legacy-era3-plus {
     box-sizing: border-box;
   }
 }
+/* P3.3B5: era-specific Cosmos progression primitives */
+.cosmos-status-panel,
+.cosmos-process-panel,
+.core-context,
+.cosmos-permanent-transition {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cosmos-status-panel,
+.cosmos-process-panel,
+.cosmos-permanent-transition {
+  padding: 14px;
+  border: 1px solid rgba(162, 155, 254, 0.28);
+  border-radius: 10px;
+  background: rgba(10, 12, 25, 0.72);
+}
+
+.cosmos-status-panel[hidden],
+.cosmos-process-panel[hidden],
+.core-context[hidden],
+.cosmos-permanent-transition[hidden] { display: none !important; }
+
+.cosmos-status-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cosmos-eyebrow,
+.cosmos-process-role {
+  display: block;
+  color: #a29bfe;
+  font: 0.66rem/1.3 'Share Tech Mono', monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cosmos-status-title,
+.cosmos-process-title,
+.core-context-title,
+.cosmos-transition-title {
+  margin: 3px 0;
+  color: #f5f6fa;
+  font-size: 1rem;
+}
+
+.cosmos-status-value { color: var(--hydrogen-glow); font-size: 1.2rem; }
+.cosmos-status-summary,
+.cosmos-process-summary,
+.core-context-instruction,
+.cosmos-permanent-transition p { margin: 5px 0 0; color: #b2bec3; font-size: 0.8rem; line-height: 1.45; }
+
+.core-context { text-align: center; padding: 5px 12px 12px; }
+
+.cosmos-progress {
+  position: relative;
+  overflow: hidden;
+  min-height: 22px;
+  margin-top: 10px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.cosmos-progress-fill { position: absolute; inset: 0 auto 0 0; background: rgba(0, 236, 198, 0.24); }
+.cosmos-progress-label { position: relative; display: block; padding: 4px 8px; font-size: 0.7rem; }
+
+.cosmos-check-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 5px; }
+.cosmos-check { padding: 6px 8px; border-radius: 5px; font-size: 0.75rem; background: rgba(255, 255, 255, 0.04); }
+.cosmos-check--met { color: #55efc4; }
+.cosmos-check--missing { color: #fab1a0; }
+
+.cosmos-process-network { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 7px; margin-top: 10px; }
+.cosmos-process-node { display: grid; gap: 3px; padding: 8px; border-left: 2px solid #74b9ff; background: rgba(255, 255, 255, 0.035); }
+.cosmos-process-node--active { border-color: #00ecc6; }
+.cosmos-process-node--blocked { border-color: #ff7675; }
+.cosmos-process-node--consumed { border-color: #fdcb6e; }
+.cosmos-process-label { font-size: 0.78rem; }
+.cosmos-process-value { color: #b2bec3; font-size: 0.7rem; }
+.cosmos-bottleneck { margin: 9px 0 0; color: #fab1a0; font-size: 0.74rem; }
+.cosmos-current-action { width: 100%; margin-top: 10px; padding: 9px; border: 1px solid #6c5ce7; border-radius: 6px; background: rgba(108, 92, 231, 0.22); color: #fff; cursor: pointer; }
+.cosmos-current-action:disabled { opacity: 0.45; cursor: not-allowed; }
+.cosmos-permanent-transition { border-color: rgba(162, 155, 254, 0.6); }
+
+@media (max-width: 520px) {
+  .cosmos-process-network { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cosmos-status-panel, .cosmos-process-panel, .cosmos-permanent-transition { padding: 11px; }
+}

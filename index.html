@@ -13,7 +13,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=39">
+  <link rel="stylesheet" href="style.css?v=40">
   <link rel="manifest" href="manifest.json">
   <style id="critical-boot-guard">
     html:not(.app-ready) body {
@@ -173,6 +173,8 @@
         </div>
       </section>
 
+      <section id="cosmos-primary-status" class="cosmos-status-panel" aria-live="polite" aria-atomic="true" hidden></section>
+
       <div class="core-canvas">
         <canvas id="core-fx-canvas" aria-hidden="true"></canvas>
         <div class="canvas-scanner-line"></div>
@@ -183,6 +185,9 @@
           <div class="core-orbit orbit-3"></div>
         </div>
       </div>
+
+      <section id="core-context" class="core-context" aria-live="polite" hidden></section>
+      <section id="cosmos-process-status" class="cosmos-process-panel" aria-live="polite" aria-atomic="true" hidden></section>
 
       <section id="resource-hud" class="dashboard-container resource-hud" aria-label="Current economy" aria-live="polite">
         <div id="resource-primary-region" class="resource-primary-region"></div>
@@ -229,9 +234,20 @@
         <div id="era2-transition-container" class="era2-only">
           <div id="era2-locked-card" class="cosmic-card transition-card">
             <div style="font-weight: bold; letter-spacing: 1px;">COSMIC RECOMBINATION</div>
-            <div style="font-size: 0.8rem; margin-top: 5px;">Readiness is tracked in the economy HUD above.</div>
+            <div style="font-size: 0.8rem; margin-top: 5px;">Complete either readiness route above.</div>
           </div>
           <button id="btn-recombination" class="btn-macro-shift bg-gradient-purple" style="width: 100%; display: none;">INITIATE COSMIC RECOMBINATION</button>
+        </div>
+
+        <div id="era3-card-gateway" class="cosmic-card cosmos-permanent-transition era3-only" hidden>
+          <span class="cosmos-eyebrow">PERMANENT ERA TRANSITION</span>
+          <strong class="cosmos-transition-title">Galactic Ignition · Era IV</strong>
+          <p>Advances the cosmos permanently. This does not grant a remnant; repeatable Supernova remains in Legacy.</p>
+          <ul class="cosmos-check-list">
+            <li id="gateway-temp-status">○ Core Temperature · 0 / 2.00B K</li>
+            <li id="gateway-iron-status">○ Accumulated Iron · 0 / 1,000</li>
+          </ul>
+          <button id="btn-trigger-hypernova" class="btn-macro-shift bg-gradient-purple" style="width: 100%;" disabled>ENTER ERA IV · PERMANENT</button>
         </div>
       </div>
 
@@ -329,18 +345,6 @@
           <div class="forge-card-action"><div class="forge-cost-block"><span class="forge-cost-label">Cost</span><strong id="iron-cost-label" class="forge-cost-display">Locked</strong></div><button id="btn-iron" class="upgrade-btn">Locked</button></div>
         </div>
 
-        <div class="forge-transition-label">Irreversible era transition</div>
-        <div class="cosmic-card forge-card forge-transition-card" id="era3-card-gateway" style="border: 1px solid #a29bfe !important;">
-          <div class="btn-meta" style="width: 100%;">
-            <strong style="color: #a29bfe; font-size: 0.95rem; letter-spacing: 1px;">🌌 GALACTIC IGNITION (ERA IV GATEWAY)</strong>
-            <small style="color: #b2bec3;">Iron core collapse creating an interstellar supernova & transition into The Galactic Matrix.</small>
-          </div>
-          <div style="font-size: 0.78rem; font-family: monospace; text-align: left; background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
-            <div>• Core Temperature: <span id="gateway-temp-status" style="color: #ff7675;">0 / 2,000M K</span></div>
-            <div>• Accumulated Iron: <span id="gateway-iron-status" style="color: #ff7675;">0 / 1,000 Fe</span></div>
-          </div>
-          <button id="btn-trigger-hypernova" class="btn-macro-shift bg-gradient-purple" style="width: 100%; font-size: 0.85rem; padding: 10px;" disabled>[ Trigger Hypernova & Enter Era IV ]</button>
-        </div>
       </div>
     </div>
 

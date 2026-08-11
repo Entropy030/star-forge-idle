@@ -43,16 +43,8 @@ function getEraOnePresentation(state) {
   const inflationIntroduced = (state.era1?.currentAct || 1) >= 2 || hasDiscovery(state, 'qf_100') || qf.gte(100);
 
   if (inflationIntroduced) {
-    const checks = [qf.gte(COSMIC_REGISTRY.constants.inflationThreshold), energyDensity.gte(50000), coherence.gte(100)];
-    const readyCount = checks.filter(Boolean).length;
-    const missing = !checks[0] ? 'Quantum Fluctuations' : !checks[1] ? 'Energy Density' : !checks[2] ? 'Coherence' : 'Ready';
-
     return {
-      primary: [resource('inflationReadiness', 'Inflation Readiness', null, {
-        displayValue: `${readyCount} / 3`,
-        roleHint: missing === 'Ready' ? 'All requirements satisfied' : `Next requirement: ${missing}`,
-        status: missing
-      })],
+      primary: [],
       support: [
         resource('quantumFluctuations', 'Quantum Fluctuations', qf, { roleHint: 'Threshold: 100,000' }),
         resource('energyDensity', 'Energy Density', energyDensity, { roleHint: 'Threshold: 50,000' }),
@@ -141,14 +133,9 @@ function getEraThreePresentation(state) {
   const carbonRelevant = temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp) || (state.era3?.carbonYield || ZERO).gt(0) || carbon.gt(0);
   const ironRelevant = temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) || (state.era3?.ironYield || ZERO).gt(0) || iron.gt(0);
 
-  let roleHint = 'Heat the protostar toward Main Sequence';
-  if (state.era3?.stage === 'Main Sequence Star' && !carbonRelevant) roleHint = 'Heat toward Carbon synthesis';
-  else if (carbonRelevant && !ironRelevant) roleHint = 'Heat toward Iron synthesis';
-  else if (ironRelevant) roleHint = temperature.gte(COSMIC_REGISTRY.constants.supernovaTempThreshold) ? 'Collapse heat reached' : 'Heat toward stellar collapse';
-
   if (ironRelevant) {
     return {
-      primary: [resource('coreTemperature', 'Core Temperature', temperature, { unit: 'K', roleHint })],
+      primary: [],
       support: [
         resource('iron', 'Iron', iron, { roleHint: 'Collapse material' }),
         resource('carbon', 'Carbon', carbon, { roleHint: 'Iron synthesis fuel' }),
@@ -165,7 +152,7 @@ function getEraThreePresentation(state) {
   if (carbonRelevant) support.push(resource('carbon', 'Carbon', carbon, { roleHint: 'Heavy-element target' }));
 
   return {
-    primary: [resource('coreTemperature', 'Core Temperature', temperature, { unit: 'K', roleHint })],
+    primary: [],
     support,
     details: []
   };

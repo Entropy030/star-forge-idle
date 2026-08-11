@@ -1,6 +1,6 @@
 import { getInflationEligibility } from '../eras/quantum/inflation.js';
 import { getRecombinationEligibility } from '../eras/plasma/eligibility.js';
-import { getSupernovaEligibility } from '../eras/stellar/selectors.js';
+import { getGalacticIgnitionEligibility, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 
 export const OBJECTIVE_DEFINITIONS = [
   {
@@ -145,9 +145,7 @@ export const OBJECTIVE_DEFINITIONS = [
     title: 'Ignite the Galaxy',
     instruction: 'Trigger Galactic Ignition.',
     target: 1,
-    getCurrent: (state) => (
-      state.era3.temperature.gte(2000000000) && state.resources.iron.amount.gte(1000)
-    ) ? 1 : 0,
+    getCurrent: (state) => getGalacticIgnitionEligibility(state).isEligible ? 1 : 0,
     isComplete: (state) => state.activeEpoch > 3
   }
 ];

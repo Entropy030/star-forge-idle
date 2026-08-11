@@ -1,6 +1,6 @@
 /* eslint-disable import/no-cycle */
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, t, i18n } from './config/registry.js';
-import { triggerSupernova } from './core/actions.js';
+import { triggerGalacticIgnition, triggerSupernova } from './core/actions.js';
 import { updateStatsData, recalcTempMultiplier } from './core/economy.js';
 import { spawnFlare, collectFlare } from './core/stellar.js';
 import { getInitialEra3State } from './state/createInitialState.js';
@@ -864,10 +864,10 @@ export function initializeDomRuntime() {
     }
   });
   bindClick('btn-trigger-hypernova', () => {
-    const res = triggerSupernova();
+    const res = triggerGalacticIgnition();
     if (res && !res.ok) {
       if (typeof window !== 'undefined' && window.Viewport) {
-        window.Viewport.setInlineActionFeedback('btn-trigger-hypernova', `Requires ${format(COSMIC_REGISTRY.constants.supernovaTempThreshold)} K & 1,000 Iron!`);
+        window.Viewport.setInlineActionFeedback('btn-trigger-hypernova', `Requires ${format(COSMIC_REGISTRY.resources.iron.unlockTemp)} K & 1,000 Iron!`);
       }
     }
   });

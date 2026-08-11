@@ -144,7 +144,7 @@ describe('P3.3B3 Forge decision hierarchy', () => {
 
     expect(document.getElementById('compress-effect').textContent).toMatch(/^\+[\d,.]+(?: [A-Z])? K per compression$/);
     expect(document.getElementById('compress-threshold').textContent).toContain('Main Sequence');
-    expect(document.getElementById('era3-card-gateway').previousElementSibling.textContent)
-      .toBe('Irreversible era transition');
+    expect(document.getElementById('era3-card-gateway').closest('#tab-content-core')).not.toBeNull();
+    expect(document.querySelector('#tab-content-upgrades #era3-card-gateway')).toBeNull();
   });
 });

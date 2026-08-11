@@ -1,6 +1,5 @@
 /* global Decimal */
 import { COSMIC_REGISTRY } from '../../config/registry.js';
-import { getCompressionHeatYield } from '../../core/economy.js';
 
 export function getStellarRates(state) {
   let rates = {
@@ -87,6 +86,44 @@ export function getSupernovaEligibility(state) {
   else canTrigger = true;
 
   return { canTrigger, errorCode, checks };
+}
+
+export function getGalacticIgnitionEligibility(state) {
+  const temperatureThreshold = COSMIC_REGISTRY.resources.iron.unlockTemp;
+  const ironThreshold = new Decimal(1000);
+  const correctEpoch = state.activeEpoch === 3;
+  const temperature = state.era3?.temperature || new Decimal(0);
+  const iron = state.resources?.iron?.amount || new Decimal(0);
+  const requirements = [
+    {
+      id: 'core-temperature',
+      label: 'Core Temperature',
+      current: temperature,
+      target: temperatureThreshold,
+      unit: 'K',
+      met: temperature.gte(temperatureThreshold)
+    },
+    {
+      id: 'accumulated-iron',
+      label: 'Accumulated Iron',
+      current: iron,
+      target: ironThreshold,
+      unit: 'Fe',
+      met: iron.gte(ironThreshold)
+    }
+  ];
+  const isEligible = correctEpoch && requirements.every(requirement => requirement.met);
+
+  return {
+    isEligible,
+    errorCode: correctEpoch ? (isEligible ? null : 'PREREQUISITES_NOT_MET') : 'WRONG_EPOCH',
+    correctEpoch,
+    temperature,
+    temperatureThreshold,
+    iron,
+    ironThreshold,
+    requirements
+  };
 }
 
 export function getSupernovaOutcome(state) {

@@ -6,13 +6,15 @@ import { getInitialEra2State } from '../state/createInitialState.js';
 import { getProtonFusionCap, getCarbonGravityMultiplier, getGalacticDebrisRate, getGalacticDarkMatterRate, getGalacticMergeYield, getCompressionsCompleted } from '../core/economy.js';
 import { getCurrentObjective, updateObjectiveProgress } from './objectives.js';
 import { getPlasmaRates, getPlasmaUpgradeVisibility, getRecombinationEligibility } from '../eras/plasma/selectors.js';
-import { getCurrentPhase, getTransitionPresentation } from '../engine/selectors.js';
+import { getCurrentPhase } from '../engine/selectors.js';
+import { getCosmosPresentation } from '../engine/cosmosPresentation.js';
 import { getEraResourcePresentation } from '../engine/resourcePresentation.js';
 import { getInflationEligibility, getQuantumUpgradeEligibility } from '../eras/quantum/selectors.js';
-import { getStellarRates, getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
+import { getGalacticIgnitionEligibility, getStellarRates, getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 import { updateSupernovaOutcome } from './stellar.js';
 import { CodexEngine } from './codex.js';
 import { renderResourceHud } from './resourceHud.js';
+import { renderCosmosExperience } from './cosmosExperience.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
@@ -1226,17 +1228,19 @@ export const Viewport = {
     const gatewayIronStatus = document.getElementById('gateway-iron-status');
     const btnHypernova = document.getElementById('btn-trigger-hypernova');
     if (gatewayTempStatus && gatewayIronStatus && btnHypernova) {
-      const tempOk = gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp);
-      const ironOk = gameState.resources.iron.amount.gte(1000);
+      const ignition = getGalacticIgnitionEligibility(gameState);
+      const [temperatureRequirement, ironRequirement] = ignition.requirements;
+      const tempOk = temperatureRequirement.met;
+      const ironOk = ironRequirement.met;
 
-      gatewayTempStatus.textContent = `${format(gameState.era3.temperature)} / 2,000 M K`;
-      gatewayTempStatus.style.color = tempOk ? "#2ed573" : "#ff7675";
+      gatewayTempStatus.textContent = `${tempOk ? '✓' : '○'} Core Temperature · ${format(temperatureRequirement.current)} / ${format(temperatureRequirement.target)} K`;
+      gatewayTempStatus.className = `cosmos-check cosmos-check--${tempOk ? 'met' : 'missing'}`;
 
-      gatewayIronStatus.textContent = `${format(gameState.resources.iron.amount)} / 1,000 Fe`;
-      gatewayIronStatus.style.color = ironOk ? "#2ed573" : "#ff7675";
+      gatewayIronStatus.textContent = `${ironOk ? '✓' : '○'} Accumulated Iron · ${format(ironRequirement.current)} / ${format(ironRequirement.target)}`;
+      gatewayIronStatus.className = `cosmos-check cosmos-check--${ironOk ? 'met' : 'missing'}`;
 
-      btnHypernova.disabled = !(tempOk && ironOk);
-      if (tempOk && ironOk) {
+      btnHypernova.disabled = !ignition.isEligible;
+      if (ignition.isEligible) {
         btnHypernova.style.opacity = "1";
         btnHypernova.style.cursor = "pointer";
       } else {
@@ -1489,11 +1493,19 @@ export const Viewport = {
     this.setTextContent('coherence-display', `${format(gameState.coherence)}%`);
     this.updateResourceHud();
 
-    const transitionPresentation = getTransitionPresentation(gameState);
+    const cosmosPresentation = getCosmosPresentation(gameState);
+    renderCosmosExperience(document, cosmosPresentation, (action) => {
+      if (action.kind === 'core-node') Economy.buyCoreNodes(action.id, 1);
+      else if (action.kind === 'view') this.switchTab(action.id);
+    });
+    document.body.dataset.cosmosTransitionReady = String(Boolean(cosmosPresentation.transition.ready));
+
     const inflationContainer = this.getEl('era1-transition-container');
     const recombinationContainer = this.getEl('era2-transition-container');
-    if (inflationContainer) inflationContainer.style.display = transitionPresentation.inflation ? '' : 'none';
-    if (recombinationContainer) recombinationContainer.style.display = transitionPresentation.recombination ? '' : 'none';
+    const stellarContainer = this.getEl('era3-card-gateway');
+    if (inflationContainer) inflationContainer.style.display = cosmosPresentation.transition.type === 'inflation' && cosmosPresentation.transition.visible ? '' : 'none';
+    if (recombinationContainer) recombinationContainer.style.display = cosmosPresentation.transition.type === 'recombination' && cosmosPresentation.transition.visible ? '' : 'none';
+    if (stellarContainer) stellarContainer.hidden = !(cosmosPresentation.transition.type === 'galactic-ignition' && cosmosPresentation.transition.visible);
 
 
     const tracker = document.getElementById('objective-tracker');
@@ -1603,8 +1615,7 @@ export const Viewport = {
           inflationBtn.style.display = 'none';
           inflationBtn.disabled = true;
           inflationCard.style.display = 'block';
-          // The economy HUD owns the compact per-requirement readiness display.
-          const reqText = 'Readiness is tracked in the economy HUD above.';
+          const reqText = 'Complete the preparation requirements above.';
           let reqDiv = inflationCard.querySelector('.req-text');
           if (!reqDiv) {
             reqDiv = document.createElement('div');
@@ -1675,8 +1686,9 @@ export const Viewport = {
       const recombCard = this.getEl('era2-locked-card');
       const isRecombReady = getRecombinationEligibility(gameState).isEligible;
       if (recombBtn && recombCard) {
-        recombBtn.style.display = isRecombReady ? 'block' : 'none';
-        recombCard.style.display = isRecombReady ? 'none' : 'block';
+        const transitionVisible = cosmosPresentation.transition.type === 'recombination' && cosmosPresentation.transition.visible;
+        recombBtn.style.display = transitionVisible && isRecombReady ? 'block' : 'none';
+        recombCard.style.display = transitionVisible && !isRecombReady ? 'block' : 'none';
         recombBtn.disabled = !isRecombReady;
       }
 

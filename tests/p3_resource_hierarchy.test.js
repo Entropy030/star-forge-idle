@@ -72,11 +72,10 @@ describe('P3.3B2 era-specific resource hierarchy', () => {
     expect(allIds(presentation)).not.toContain('coherence');
   });
 
-  it('promotes compact readiness and all three requirements for Inflation preparation', () => {
+  it('leaves Inflation readiness to the Cosmos progression panel', () => {
     const presentation = getEraResourcePresentation(getPresetLateEraI());
-    expect(ids(presentation.primary)).toEqual(['inflationReadiness']);
+    expect(ids(presentation.primary)).toEqual([]);
     expect(ids(presentation.support)).toEqual(['quantumFluctuations', 'energyDensity', 'coherence']);
-    expect(presentation.primary[0].displayValue).toMatch(/^\d \/ 3$/);
   });
 
   it('hides unintroduced Era II intermediates even when dormant values exist', () => {
@@ -109,7 +108,7 @@ describe('P3.3B2 era-specific resource hierarchy', () => {
   it('keeps Era III temperature-first and hides Carbon and Iron before relevance', () => {
     for (const state of [getPresetFreshEraIII(), getPresetMidEraIII()]) {
       const presentation = getEraResourcePresentation(state);
-      expect(ids(presentation.primary)).toEqual(['coreTemperature']);
+      expect(ids(presentation.primary)).toEqual([]);
       expect(ids(presentation.support)).toEqual(['hydrogen', 'helium']);
       expect(allIds(presentation)).not.toContain('carbon');
       expect(allIds(presentation)).not.toContain('iron');
@@ -124,7 +123,7 @@ describe('P3.3B2 era-specific resource hierarchy', () => {
     expect(allIds(carbonPresentation)).not.toContain('iron');
 
     const latePresentation = getEraResourcePresentation(getPresetEraIIISupernovaReady());
-    expect(ids(latePresentation.primary)).toEqual(['coreTemperature']);
+    expect(ids(latePresentation.primary)).toEqual([]);
     expect(ids(latePresentation.support)).toEqual(['iron', 'carbon', 'helium']);
     expect(ids(latePresentation.details)).toEqual(['hydrogen']);
   });

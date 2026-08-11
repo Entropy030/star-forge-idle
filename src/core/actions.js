@@ -15,6 +15,10 @@ export function triggerSupernova() {
   return result;
 }
 
+export function triggerGalacticIgnition() {
+  return engine.dispatch({ type: 'TRIGGER_GALACTIC_IGNITION' });
+}
+
 export function triggerBigBounce() {
   const result = engine.dispatch({ type: 'TRIGGER_BIG_BOUNCE' });
   if (result.ok) {

@@ -119,7 +119,7 @@ describe('P3.3B1 global UI hierarchy', () => {
 
     replaceRuntimeState(getPresetEraIIUpgradeChain());
     Viewport.update();
-    expect(document.getElementById('era2-transition-container').style.display).not.toBe('none');
+    expect(document.getElementById('era2-transition-container').style.display).toBe('none');
 
     replaceRuntimeState(getPresetFreshEraIII());
     Viewport.update();

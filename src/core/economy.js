@@ -132,11 +132,11 @@ export function getBaryonAsymmetryMultiplier() {
   return new Decimal(1).plus(new Decimal(logPrimitiveResult).times(0.05));
 }
 
-export function getCardMultiplier(target) {
+export function getCardMultiplier(target, state = gameState) {
   let mult = new Decimal(1);
-  for (let key in gameState.cards) {
+  for (let key in state.cards) {
     let def = COSMIC_REGISTRY.celestialCards[key];
-    let cardState = gameState.cards[key];
+    let cardState = state.cards[key];
     if (def && def.effectTarget === target && cardState.level > 0) {
       mult = mult.plus(new Decimal(cardState.level).times(def.effectPerLevel));
     }
@@ -214,27 +214,27 @@ export function getFusionCost() {
   return new Decimal(COSMIC_REGISTRY.resources.helium.fusionCost - ((gameState.upgrades.stardust.fusionDiscount?.level ?? 0) * 2));
 }
 
-export function getCompressionScaling() {
-  let alpha = gameState.cosmicConstants?.alpha || 0;
+export function getCompressionScaling(state = gameState) {
+  let alpha = state.cosmicConstants?.alpha || 0;
   return 1.75 + (0.03 * alpha);
 }
 
-export function getCompressionsCompleted() {
-  let logPrimitive = gameState.era3.compressCost.div(10).log10();
-  let exponent = logPrimitive / Math.log10(getCompressionScaling());
+export function getCompressionsCompleted(state = gameState) {
+  let logPrimitive = state.era3.compressCost.div(10).log10();
+  let exponent = logPrimitive / Math.log10(getCompressionScaling(state));
   return Math.max(0, Math.round(exponent));
 }
 
-export function getCompressionHeatYield() {
-  let gMod = 1.0 + (0.20 * (gameState.cosmicConstants?.G || 0));
-  let compressLevel = getCompressionsCompleted();
+export function getCompressionHeatYield(state = gameState) {
+  let gMod = 1.0 + (0.20 * (state.cosmicConstants?.G || 0));
+  let compressLevel = getCompressionsCompleted(state);
   let milestoneMult = getMilestoneMultiplier(compressLevel);
-  let shopMultiplier = new Decimal(1.0 + ((gameState.upgrades.stardust.thermalInsulation?.level ?? 0) * 0.20));
-  let ironMultiplier = gameState.resources.iron.amount.times(COSMIC_REGISTRY.constants.ironHeatCoefficient).plus(1);
+  let shopMultiplier = new Decimal(1.0 + ((state.upgrades.stardust.thermalInsulation?.level ?? 0) * 0.20));
+  let ironMultiplier = state.resources.iron.amount.times(COSMIC_REGISTRY.constants.ironHeatCoefficient).plus(1);
   let runGrowth = new Decimal(COSMIC_REGISTRY.constants.compressionScaling).pow(compressLevel);
   let baseHeat = new Decimal(COSMIC_REGISTRY.constants.baseCompressionHeat).times(milestoneMult).times(shopMultiplier).times(ironMultiplier).times(runGrowth);
-  let exponent = new Decimal(1).plus(new Decimal(0.05).times(gameState.upgrades.singularity.stellarIgnition.level));
-  let finalHeat = baseHeat.pow(exponent).times(getCardMultiplier("compressionHeat")).times(gMod).round();
+  let exponent = new Decimal(1).plus(new Decimal(0.05).times(state.upgrades.singularity.stellarIgnition.level));
+  let finalHeat = baseHeat.pow(exponent).times(getCardMultiplier("compressionHeat", state)).times(gMod).round();
   return finalHeat;
 }
 
