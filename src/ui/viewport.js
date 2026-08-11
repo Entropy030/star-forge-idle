@@ -15,6 +15,7 @@ import { updateSupernovaOutcome } from './stellar.js';
 import { CodexEngine } from './codex.js';
 import { renderResourceHud } from './resourceHud.js';
 import { renderCosmosExperience } from './cosmosExperience.js';
+import { getActionFailureMessage, isActionSuccessful } from './actionFeedback.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
@@ -637,14 +638,25 @@ export const Viewport = {
     if (!feedbackEl) {
       const targetEl = document.getElementById(elementId);
       if (!targetEl) return;
-      const parent = targetEl.parentElement;
+      const parent = targetEl.matches('.forge-card, .cosmic-card')
+        ? targetEl
+        : targetEl.closest('.forge-card, .cosmic-card') || targetEl.parentElement;
       feedbackEl = document.createElement('div');
       feedbackEl.id = elementId + '-feedback';
       feedbackEl.className = 'inline-feedback-text';
-      feedbackEl.style.cssText = "color: #ff7675; font-size: 0.8rem; margin-top: 5px; text-align: center;";
+      feedbackEl.setAttribute('role', 'status');
+      feedbackEl.setAttribute('aria-live', 'polite');
       parent.appendChild(feedbackEl);
     }
     feedbackEl.textContent = message;
+  },
+
+  clearInlineActionFeedback(elementId) {
+    if (elementId) {
+      document.getElementById(`${elementId}-feedback`)?.remove();
+      return;
+    }
+    document.querySelectorAll('.inline-feedback-text').forEach(element => element.remove());
   },
 
   showTheatrical(outcome, titleColor, tempText, elementsText, rewardHTML) {
@@ -815,12 +827,10 @@ export const Viewport = {
         row.innerHTML = Templates.genericTierListRow('#74b9ff', def.rarity || 'common');
         row.querySelector('.upgrade-btn').addEventListener('click', () => {
           const res = buyCelestialCard(key);
-          if (res && !res.success) {
-            const msg = res.message || `Requires ${format(res.cost)} ${res.currency}`;
-            Viewport.setInlineActionFeedback(`card-row-${key}`, msg);
+          if (res && !isActionSuccessful(res)) {
+            Viewport.setInlineActionFeedback(`card-row-${key}`, getActionFailureMessage(res));
           } else {
-            const fb = document.getElementById(`card-row-${key}-feedback`);
-            if (fb) fb.textContent = "";
+            Viewport.clearInlineActionFeedback(`card-row-${key}`);
           }
         });
         cardsList.appendChild(row);
@@ -887,12 +897,10 @@ export const Viewport = {
         const btn = row.querySelector('.upgrade-btn');
         btn.addEventListener('click', () => {
           const res = Economy.buy(category, key);
-          if (res && !res.success) {
-            const msg = res.message || `Requires ${format(res.cost)} ${res.currency}`;
-            Viewport.setInlineActionFeedback(`${category}-row-${key}`, msg);
+          if (res && !isActionSuccessful(res)) {
+            Viewport.setInlineActionFeedback(`${category}-row-${key}`, getActionFailureMessage(res));
           } else {
-            const fb = document.getElementById(`${category}-row-${key}-feedback`);
-            if (fb) fb.textContent = "";
+            Viewport.clearInlineActionFeedback(`${category}-row-${key}`);
           }
         });
         row._cache = {
@@ -945,6 +953,7 @@ export const Viewport = {
       if (!isVisible) {
         row.style.display = 'none';
         row.dataset.forgeState = 'undiscovered';
+        this.clearInlineActionFeedback(`${category}-row-${key}`);
         continue;
       } else {
         row.style.display = 'flex';
@@ -984,7 +993,16 @@ export const Viewport = {
       row._cache.requirementsList.replaceChildren(...eligibility.requirements.map(requirement => {
         const item = document.createElement('li');
         item.className = requirement.met ? 'requirement-met' : 'requirement-missing';
-        item.textContent = `${requirement.met ? '✓' : '✕'} ${requirement.label} (${format(requirement.current)} / ${format(requirement.target)})`;
+        const icon = document.createElement('span');
+        icon.className = 'forge-requirement-icon';
+        icon.textContent = requirement.met ? '✓' : '✕';
+        const label = document.createElement('span');
+        label.className = 'forge-requirement-label';
+        label.textContent = requirement.label;
+        const value = document.createElement('span');
+        value.className = 'forge-requirement-value';
+        value.textContent = `${format(requirement.current)} / ${format(requirement.target)}`;
+        item.append(icon, label, value);
         return item;
       }));
 
@@ -1068,6 +1086,16 @@ export const Viewport = {
     this.renderForgeBuyControls();
     const buyMode = normalizeForgeBuyMode(gameState.buyMode);
     const buyLabel = buyMode === 'max' ? 'Max' : buyMode;
+    const updateRequirement = (row, met, label, value) => {
+      if (!row) return;
+      row.className = met ? 'requirement-met' : 'requirement-missing';
+      const icon = row.querySelector('.forge-requirement-icon');
+      const labelNode = row.querySelector('.forge-requirement-label');
+      const valueNode = row.querySelector('.forge-requirement-value');
+      if (icon) icon.textContent = met ? '✓' : '✕';
+      if (labelNode) labelNode.textContent = label;
+      if (valueNode) valueNode.textContent = value;
+    };
 
     const updateCard = (cardId, btnId, canAfford, { locked = false } = {}) => {
       const card = this.getEl(cardId);
@@ -1183,10 +1211,7 @@ export const Viewport = {
       if (carbonRequirements) {
         carbonRequirements.hidden = !carbonLocked;
         const requirement = carbonRequirements.querySelector('li');
-        if (requirement) {
-          requirement.className = carbonLocked ? 'requirement-missing' : 'requirement-met';
-          requirement.textContent = `${carbonLocked ? '✕' : '✓'} Main Sequence · ${format(gameState.era3.temperature)} / ${format(COSMIC_REGISTRY.resources.carbon.unlockTemp)} K`;
-        }
+        updateRequirement(requirement, !carbonLocked, 'Main Sequence', `${format(gameState.era3.temperature)} / ${format(COSMIC_REGISTRY.resources.carbon.unlockTemp)} K`);
       }
       this.setTextContent('carbon-level', gameState.era3.carbonYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.carbonYield)}`);
       updateCard('era3-card-carbon', 'btn-carbon', carbonAfford, { locked: carbonLocked });
@@ -1215,10 +1240,7 @@ export const Viewport = {
       if (ironRequirements) {
         ironRequirements.hidden = !ironLocked;
         const requirement = ironRequirements.querySelector('li');
-        if (requirement) {
-          requirement.className = ironLocked ? 'requirement-missing' : 'requirement-met';
-          requirement.textContent = `${ironLocked ? '✕' : '✓'} Main Sequence · ${format(gameState.era3.temperature)} / ${format(COSMIC_REGISTRY.resources.iron.unlockTemp)} K`;
-        }
+        updateRequirement(requirement, !ironLocked, 'Main Sequence', `${format(gameState.era3.temperature)} / ${format(COSMIC_REGISTRY.resources.iron.unlockTemp)} K`);
       }
       this.setTextContent('iron-level', gameState.era3.ironYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.ironYield)}`);
       updateCard('era3-card-iron', 'btn-iron', ironAfford, { locked: ironLocked });
@@ -1233,11 +1255,13 @@ export const Viewport = {
       const tempOk = temperatureRequirement.met;
       const ironOk = ironRequirement.met;
 
-      gatewayTempStatus.textContent = `${tempOk ? '✓' : '○'} Core Temperature · ${format(temperatureRequirement.current)} / ${format(temperatureRequirement.target)} K`;
       gatewayTempStatus.className = `cosmos-check cosmos-check--${tempOk ? 'met' : 'missing'}`;
+      gatewayTempStatus.querySelector('.cosmos-check-icon').textContent = tempOk ? '✓' : '○';
+      gatewayTempStatus.querySelector('.cosmos-check-value').textContent = `${format(temperatureRequirement.current)} / ${format(temperatureRequirement.target)} K`;
 
-      gatewayIronStatus.textContent = `${ironOk ? '✓' : '○'} Accumulated Iron · ${format(ironRequirement.current)} / ${format(ironRequirement.target)}`;
       gatewayIronStatus.className = `cosmos-check cosmos-check--${ironOk ? 'met' : 'missing'}`;
+      gatewayIronStatus.querySelector('.cosmos-check-icon').textContent = ironOk ? '✓' : '○';
+      gatewayIronStatus.querySelector('.cosmos-check-value').textContent = `${format(ironRequirement.current)} / ${format(ironRequirement.target)}`;
 
       btnHypernova.disabled = !ignition.isEligible;
       if (ignition.isEligible) {
@@ -1462,6 +1486,11 @@ export const Viewport = {
   },
 
   update() {
+    const targetEpoch = String(gameState.activeEpoch);
+    if (document.body.dataset.epoch !== targetEpoch) {
+      this.clearInlineActionFeedback();
+      document.body.dataset.epoch = targetEpoch;
+    }
     const overlay = document.getElementById('intro-screen-overlay');
     if (!gameState.unfold?.introCompleted && overlay && overlay.style.display !== 'none') {
       return;

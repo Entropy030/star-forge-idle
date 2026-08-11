@@ -78,8 +78,12 @@ describe('P3.3B3 Forge decision hierarchy', () => {
     expect(row.dataset.forgeState).toBe('locked');
     expect(row.querySelector('.forge-requirements').hidden).toBe(false);
     expect(requirements).toHaveLength(2);
-    expect(requirements[0].textContent).toContain('✓ Peak Quantum Fluctuations');
-    expect(requirements[1].textContent).toContain('✕ Gravitational Coupling level (3 / 5)');
+    expect(requirements[0].querySelector('.forge-requirement-icon').textContent).toBe('✓');
+    expect(requirements[0].querySelector('.forge-requirement-label').textContent).toBe('Peak Quantum Fluctuations');
+    expect(requirements[0].querySelector('.forge-requirement-value').textContent).toBe('100 / 100');
+    expect(requirements[1].querySelector('.forge-requirement-icon').textContent).toBe('✕');
+    expect(requirements[1].querySelector('.forge-requirement-label').textContent).toBe('Gravitational Coupling level');
+    expect(requirements[1].querySelector('.forge-requirement-value').textContent).toBe('3 / 5');
     expect(row.querySelector('.upgrade-btn').disabled).toBe(true);
   });
 

@@ -18,6 +18,7 @@ import { Timeline, gameTick } from './core/timeline.js';
 import { startAutoPlaytest, stopAutoPlaytest, runHeadlessSim, playtestHarness, getTelemetryHistory } from './core/playtestBot.js';
 import { CanvasCore } from './ui/canvasCore.js';
 import { engine } from './engine/instance.js';
+import { getActionFailureMessage, isActionSuccessful } from './ui/actionFeedback.js';
 
 // Re-export or attach globals needed by inline HTML (like onclick)
 const Haptics = {
@@ -933,12 +934,10 @@ export function initializeDomRuntime() {
   ['gravity', 'fuser', 'compress', 'carbon', 'iron'].forEach(key => {
     bindClick(`btn-${key}`, () => {
       const res = Economy.buyCoreNodes(key, 1);
-      if (res && !res.success) {
-        const msg = res.message || `Requires ${format(res.cost)} ${res.currency}`;
-        Viewport.setInlineActionFeedback(`btn-${key}`, msg);
+      if (res && !isActionSuccessful(res)) {
+        Viewport.setInlineActionFeedback(`btn-${key}`, getActionFailureMessage(res));
       } else {
-        const fb = document.getElementById(`btn-${key}-feedback`);
-        if (fb) fb.textContent = "";
+        Viewport.clearInlineActionFeedback(`btn-${key}`);
       }
     });
   });

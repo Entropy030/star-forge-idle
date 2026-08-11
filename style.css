@@ -2553,6 +2553,20 @@ body[data-tab="upgrades"] main {
   list-style: none;
 }
 
+.forge-requirements-list li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 6px;
+  text-align: left;
+}
+
+.forge-requirement-value {
+  font-family: 'Share Tech Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 .requirement-met { color: #7bed9f; }
 .requirement-missing { color: #ffb3b3; }
 
@@ -2761,6 +2775,7 @@ body[data-tab="upgrades"] main {
   line-height: 1;
   text-align: right;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .resource-card--primary .resource-card-value {
@@ -2774,6 +2789,7 @@ body[data-tab="upgrades"] main {
   font-size: 0.68rem;
   text-align: right;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .resource-card-rate[data-direction="positive"] { color: var(--neon-teal); }
@@ -3101,12 +3117,13 @@ body[data-epoch="5"] .legacy-era3-plus {
 .cosmos-permanent-transition[hidden] { display: none !important; }
 
 .cosmos-status-heading {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 3px 10px;
 }
+
+.cosmos-status-heading .cosmos-eyebrow { grid-column: 1 / -1; }
 
 .cosmos-eyebrow,
 .cosmos-process-role {
@@ -3126,7 +3143,7 @@ body[data-epoch="5"] .legacy-era3-plus {
   font-size: 1rem;
 }
 
-.cosmos-status-value { color: var(--hydrogen-glow); font-size: 1.2rem; }
+.cosmos-status-value { color: var(--hydrogen-glow); font-size: 1.2rem; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .cosmos-status-summary,
 .cosmos-process-summary,
 .core-context-instruction,
@@ -3143,10 +3160,11 @@ body[data-epoch="5"] .legacy-era3-plus {
   background: rgba(255, 255, 255, 0.06);
 }
 .cosmos-progress-fill { position: absolute; inset: 0 auto 0 0; background: rgba(0, 236, 198, 0.24); }
-.cosmos-progress-label { position: relative; display: block; padding: 4px 8px; font-size: 0.7rem; }
+.cosmos-progress-label { position: relative; display: block; padding: 4px 8px; font-size: 0.7rem; font-variant-numeric: tabular-nums; }
 
 .cosmos-check-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 5px; }
-.cosmos-check { padding: 6px 8px; border-radius: 5px; font-size: 0.75rem; background: rgba(255, 255, 255, 0.04); }
+.cosmos-check { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; gap: 7px; padding: 6px 8px; border-radius: 5px; font-size: 0.75rem; text-align: left; background: rgba(255, 255, 255, 0.04); }
+.cosmos-check-value { font-family: 'Share Tech Mono', monospace; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .cosmos-check--met { color: #55efc4; }
 .cosmos-check--missing { color: #fab1a0; }
 
@@ -3162,7 +3180,25 @@ body[data-epoch="5"] .legacy-era3-plus {
 .cosmos-current-action:disabled { opacity: 0.45; cursor: not-allowed; }
 .cosmos-permanent-transition { border-color: rgba(162, 155, 254, 0.6); }
 
+.inline-feedback-text {
+  order: 99;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 2px;
+  padding: 6px 8px;
+  border-left: 2px solid #ff7675;
+  background: rgba(255, 118, 117, 0.06);
+  color: #ffb3b3;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-align: left;
+}
+
+#objective-progress-text { font-variant-numeric: tabular-nums; }
+
 @media (max-width: 520px) {
   .cosmos-process-network { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cosmos-status-panel, .cosmos-process-panel, .cosmos-permanent-transition { padding: 11px; }
+  .cosmos-check, .forge-requirements-list li { gap: 5px; }
+  .cosmos-check-value, .forge-requirement-value { font-size: 0.68rem; }
 }

@@ -16,7 +16,11 @@ function renderChecks(documentRef, checks, mode) {
     row.className = `cosmos-check cosmos-check--${check.met ? 'met' : 'missing'}`;
     row.dataset.requirementId = check.id;
     const comparison = check.comparison === 'lte' ? '≤' : '/';
-    row.textContent = `${check.met ? '✓' : '○'} ${check.label} · ${formatHudNumber(check.current)} ${comparison} ${formatHudValue(check.target, check.unit || '')}`;
+    const icon = textNode(documentRef, 'span', 'cosmos-check-icon', check.met ? '✓' : '○');
+    icon.setAttribute('aria-label', check.met ? 'Requirement met' : 'Requirement not met');
+    const label = textNode(documentRef, 'span', 'cosmos-check-label', check.label);
+    const value = textNode(documentRef, 'span', 'cosmos-check-value', `${formatHudNumber(check.current)} ${comparison} ${formatHudValue(check.target, check.unit || '')}`);
+    row.append(icon, label, value);
     list.append(row);
   }
   return list;

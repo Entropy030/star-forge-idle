@@ -13,7 +13,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=40">
+  <link rel="stylesheet" href="style.css?v=41">
   <link rel="manifest" href="manifest.json">
   <style id="critical-boot-guard">
     html:not(.app-ready) body {
@@ -244,8 +244,8 @@
           <strong class="cosmos-transition-title">Galactic Ignition · Era IV</strong>
           <p>Advances the cosmos permanently. This does not grant a remnant; repeatable Supernova remains in Legacy.</p>
           <ul class="cosmos-check-list">
-            <li id="gateway-temp-status">○ Core Temperature · 0 / 2.00B K</li>
-            <li id="gateway-iron-status">○ Accumulated Iron · 0 / 1,000</li>
+            <li id="gateway-temp-status" class="cosmos-check cosmos-check--missing"><span class="cosmos-check-icon">○</span><span class="cosmos-check-label">Core Temperature</span><span class="cosmos-check-value">0 / 2.00B K</span></li>
+            <li id="gateway-iron-status" class="cosmos-check cosmos-check--missing"><span class="cosmos-check-icon">○</span><span class="cosmos-check-label">Accumulated Iron</span><span class="cosmos-check-value">0 / 1,000</span></li>
           </ul>
           <button id="btn-trigger-hypernova" class="btn-macro-shift bg-gradient-purple" style="width: 100%;" disabled>ENTER ERA IV · PERMANENT</button>
         </div>
@@ -332,7 +332,7 @@
         <div class="cosmic-card forge-card forge-stellar-card" id="era3-card-carbon">
           <div class="forge-card-header"><div><div class="forge-role-display">Element synthesis</div><strong id="carbon-text">Unlock Carbon Fusion</strong></div><div class="forge-card-status"><span id="carbon-level" class="lvl-display">Locked</span><span class="forge-state-badge">Locked</span></div></div>
           <p class="forge-effect-display">Synthesizes Carbon from Helium</p>
-          <div id="carbon-requirements" class="forge-requirements"><strong>Requires</strong><ul class="forge-requirements-list"><li class="requirement-missing">✕ Main Sequence · 500,000,000 K</li></ul></div>
+          <div id="carbon-requirements" class="forge-requirements"><strong>Requires</strong><ul class="forge-requirements-list"><li class="requirement-missing"><span class="forge-requirement-icon">✕</span><span class="forge-requirement-label">Main Sequence</span><span class="forge-requirement-value">0 / 500,000,000 K</span></li></ul></div>
           <details class="forge-details"><summary>Details</summary><p>Advanced carbon matrix synthesis.</p></details>
           <div class="forge-card-action"><div class="forge-cost-block"><span class="forge-cost-label">Cost</span><strong id="carbon-cost-label" class="forge-cost-display">Locked</strong></div><button id="btn-carbon" class="upgrade-btn">Locked</button></div>
         </div>
@@ -340,7 +340,7 @@
         <div class="cosmic-card forge-card forge-stellar-card" id="era3-card-iron">
           <div class="forge-card-header"><div><div class="forge-role-display">Element synthesis</div><strong id="iron-text">Unlock Iron Fusion</strong></div><div class="forge-card-status"><span id="iron-level" class="lvl-display">Locked</span><span class="forge-state-badge">Locked</span></div></div>
           <p class="forge-effect-display">Synthesizes Iron from Carbon</p>
-          <div id="iron-requirements" class="forge-requirements"><strong>Requires</strong><ul class="forge-requirements-list"><li class="requirement-missing">✕ Main Sequence · 2,000,000,000 K</li></ul></div>
+          <div id="iron-requirements" class="forge-requirements"><strong>Requires</strong><ul class="forge-requirements-list"><li class="requirement-missing"><span class="forge-requirement-icon">✕</span><span class="forge-requirement-label">Main Sequence</span><span class="forge-requirement-value">0 / 2,000,000,000 K</span></li></ul></div>
           <details class="forge-details"><summary>Details</summary><p>Peak elemental generation profile.</p></details>
           <div class="forge-card-action"><div class="forge-cost-block"><span class="forge-cost-label">Cost</span><strong id="iron-cost-label" class="forge-cost-display">Locked</strong></div><button id="btn-iron" class="upgrade-btn">Locked</button></div>
         </div>
