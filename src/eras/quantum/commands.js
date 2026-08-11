@@ -3,6 +3,7 @@ import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getCardMultiplier } from '../../core/economy.js'; // Will be extracted to selectors later
 import { getQuantumUpgradeEligibility } from './eligibility.js';
 import { getInflationEligibility } from './inflation.js';
+import { getVacuumCoherenceRates } from './coherence.js';
 
 export const quantumCommandHandlers = {
   CLICK_CORE: (state, cmd) => {
@@ -13,11 +14,12 @@ export const quantumCommandHandlers = {
     if (state.activeEpoch === 1) {
       if (!state.era1) state.era1 = { currentAct: 1, quantumFoam: 0, unfoldCount: 0 };
       state.era1.unfoldCount = (state.era1.unfoldCount || 0) + 1;
+      const coherenceRates = getVacuumCoherenceRates(state);
+      let coherenceGain = new Decimal(0);
       
       if (state.coherence && state.coherence.lt(100)) {
-        let cMod = 1.0 - (0.08 * (state.cosmicConstants?.c || 0));
-        let gain = new Decimal(0.5).times(cMod);
-        state.coherence = Decimal.min(100, state.coherence.plus(gain));
+        coherenceGain = Decimal.min(coherenceRates.observationGain, new Decimal(100).minus(state.coherence));
+        state.coherence = state.coherence.plus(coherenceGain);
       }
       
       let mult = getCardMultiplier("hydrogenGen"); // Use actual selector later
@@ -45,7 +47,7 @@ export const quantumCommandHandlers = {
         ok: true,
         changed: true,
         events: [
-          { type: 'CORE_CLICKED', epoch: 1, gain: gain.toString(), resource: 'quantumFluctuations' }
+          { type: 'CORE_CLICKED', epoch: 1, gain: gain.toString(), coherenceGain: coherenceGain.toString(), resource: 'quantumFluctuations' }
         ]
       };
     }

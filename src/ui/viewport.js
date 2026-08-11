@@ -1519,6 +1519,7 @@ export const Viewport = {
 
     this.setTextContent('active-epoch-name', currentEpoch.name);
     this.setTextContent('stage', getCurrentPhase(gameState));
+    this.setTextContent('coherence-label', gameState.activeEpoch === 1 ? 'Vacuum Coherence' : 'Coherence');
     this.setTextContent('coherence-display', `${format(gameState.coherence)}%`);
     this.updateResourceHud();
 

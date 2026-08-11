@@ -8,7 +8,7 @@ export function getInflationEligibility(state) {
   const requirements = [
     { id: 'quantumFluctuations', label: 'Quantum Fluctuations', current: qf, target: new Decimal(100000), met: qf.gte(100000) },
     { id: 'energyDensity', label: 'Energy Density', current: ed, target: new Decimal(50000), met: ed.gte(50000) },
-    { id: 'coherence', label: 'Coherence', current: coherence, target: new Decimal(100), unit: '%', met: coherence.gte(100) }
+    { id: 'coherence', label: 'Vacuum Coherence', current: coherence, target: new Decimal(100), unit: '%', met: coherence.gte(100) }
   ];
 
   return {

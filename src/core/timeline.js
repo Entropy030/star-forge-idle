@@ -13,6 +13,7 @@ import { updateObjectiveProgress } from '../ui/objectives.js';
 import { simulateQuantumEra } from '../eras/quantum/simulation.js';
 import { simulatePlasmaEra } from '../eras/plasma/simulation.js';
 import { simulateStellarEra } from '../eras/stellar/simulation.js';
+import { getVacuumCoherenceRates } from '../eras/quantum/coherence.js';
 
 const simulationHandlers = {
   1: simulateQuantumEra,
@@ -94,7 +95,8 @@ function gameTick(dt) {
       (gameState.upgrades.quantum.strongForce?.level ?? 0);
     // Baseline passive equilibrium recovery in Era 1
     if (gameState.coherence.lt(100)) {
-      gameState.coherence = Decimal.min(100, gameState.coherence.plus(new Decimal(0.1).times(dt)));
+      const { passiveRate } = getVacuumCoherenceRates(gameState);
+      gameState.coherence = Decimal.min(100, gameState.coherence.plus(passiveRate.times(dt)));
     }
 
     if (!gameState.discoveries) gameState.discoveries = new Set();

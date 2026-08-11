@@ -1,5 +1,6 @@
 import Decimal from 'break_infinity.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
+import { getVacuumCoherenceRates } from '../eras/quantum/coherence.js';
 
 const ZERO = new Decimal(0);
 
@@ -39,6 +40,7 @@ function getEraOnePresentation(state) {
   const qf = amount(state, 'quantumFluctuations');
   const energyDensity = amount(state, 'energyDensity');
   const coherence = state.coherence || ZERO;
+  const coherenceRates = getVacuumCoherenceRates(state);
   const densityIntroduced = energyDensity.gt(0) || level(state, 'quantum', 'gravityForce') > 0 || hasDiscovery(state, 'qf_10');
   const inflationIntroduced = (state.era1?.currentAct || 1) >= 2 || hasDiscovery(state, 'qf_100') || qf.gte(100);
 
@@ -48,7 +50,10 @@ function getEraOnePresentation(state) {
       support: [
         resource('quantumFluctuations', 'Quantum Fluctuations', qf, { roleHint: 'Threshold: 100,000' }),
         resource('energyDensity', 'Energy Density', energyDensity, { roleHint: 'Threshold: 50,000' }),
-        resource('coherence', 'Coherence', coherence, { unit: '%', roleHint: 'Threshold: 100%' })
+        resource('coherence', 'Vacuum Coherence', coherence, {
+          unit: '%',
+          roleHint: `Inflation target: 100% · passive ${coherenceRates.passiveRate.toString()}%/s · observe +${coherenceRates.observationGain.toString()}%`
+        })
       ],
       details: []
     };

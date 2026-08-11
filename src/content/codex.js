@@ -36,6 +36,15 @@ export const CODEX_ENTRIES = [
     sortOrder: 40
   },
   {
+    id: 'vacuum-coherence',
+    category: 'foundations',
+    title: 'Vacuum Coherence',
+    body: 'Vacuum Coherence measures the stability of the emerging universe. It rises passively as the vacuum settles, while observation accelerates that stabilization. Reaching 100% is required to initiate Cosmic Inflation.',
+    narrativeText: 'CHRONO_LOG // Vacuum Coherence measures the stability of the emerging universe. Observation accelerates its settling.',
+    unlockCondition: { type: 'quantum_fluctuations', amount: 100 },
+    sortOrder: 39
+  },
+  {
     id: 'weak-nuclear',
     category: 'foundations',
     title: 'Weak Nuclear Vectors',

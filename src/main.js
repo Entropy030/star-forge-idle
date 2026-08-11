@@ -380,7 +380,10 @@ function clickCore(e) {
     if (result.ok) {
       const clickEvent = result.events.find(ev => ev.type === 'CORE_CLICKED');
       if (clickEvent) {
-        spawnFloatingText(`+${format(new Decimal(clickEvent.gain))} Fluctuations`, 'var(--neon-teal)', e);
+        const coherenceText = new Decimal(clickEvent.coherenceGain || 0).gt(0) && gameState.resources.quantumFluctuations.amount.gte(100)
+          ? ` · +${new Decimal(clickEvent.coherenceGain).toString()}% Vacuum Coherence`
+          : '';
+        spawnFloatingText(`+${format(new Decimal(clickEvent.gain))} Fluctuations${coherenceText}`, 'var(--neon-teal)', e);
       }
     }
   }

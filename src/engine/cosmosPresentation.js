@@ -2,6 +2,7 @@ import Decimal from 'break_infinity.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import { getCompressionHeatYield, getMilestoneMultiplier } from '../core/economy.js';
 import { getInflationEligibility } from '../eras/quantum/inflation.js';
+import { getVacuumCoherenceRates, isVacuumCoherenceRelevant } from '../eras/quantum/coherence.js';
 import { computePlasmaStep } from '../eras/plasma/evaluator.js';
 import { getRecombinationEligibility } from '../eras/plasma/eligibility.js';
 import { getGalacticIgnitionEligibility, getSupernovaEligibility } from '../eras/stellar/selectors.js';
@@ -19,8 +20,9 @@ function level(state, category, key) {
 function getEraOnePresentation(state) {
   const qf = amount(state, 'quantumFluctuations');
   const passiveActive = Object.values(state.upgrades?.quantum || {}).some(upgrade => (upgrade?.level || 0) > 0);
-  const inflationRelevant = (state.era1?.currentAct || 1) >= 2 || state.discoveries?.has?.('qf_100') || qf.gte(100);
+  const inflationRelevant = isVacuumCoherenceRelevant(state);
   const eligibility = getInflationEligibility(state);
+  const coherenceRates = getVacuumCoherenceRates(state);
   const readyCount = eligibility.requirements.filter(requirement => requirement.met).length;
   const bottleneck = eligibility.requirements.find(requirement => !requirement.met) || null;
 
@@ -32,21 +34,25 @@ function getEraOnePresentation(state) {
       title: eligibility.isEligible ? 'Spacetime is ready to expand' : 'Prepare Cosmic Inflation',
       summary: eligibility.isEligible
         ? 'All three requirements are satisfied. Inflation is now the primary action.'
-        : `Current bottleneck: ${bottleneck.label}.`,
+        : `Current bottleneck: ${bottleneck.label}. Vacuum Coherence builds passively; observation accelerates it.`,
       progress: { current: readyCount, target: eligibility.requirements.length, label: `${readyCount} of ${eligibility.requirements.length} requirements ready` },
       checks: eligibility.requirements,
       ready: eligibility.isEligible,
       mode: 'all'
     } : null,
     core: {
-      eyebrow: passiveActive ? 'Forming universe' : 'Observation point',
-      title: passiveActive ? 'Fundamental laws are taking over' : 'Observe the quantum void',
-      instruction: passiveActive
+      eyebrow: inflationRelevant ? 'Observe core' : passiveActive ? 'Forming universe' : 'Observation point',
+      title: inflationRelevant ? 'Observation accelerates vacuum stabilization' : passiveActive ? 'Fundamental laws are taking over' : 'Observe the quantum void',
+      instruction: inflationRelevant
+        ? `Passive stabilization continues at ${coherenceRates.passiveRate.toString()}%/s. Observation is optional acceleration: each interaction adds ${coherenceRates.observationGain.toString()}% Vacuum Coherence toward the 100% Inflation requirement.`
+        : passiveActive
         ? 'The Core now reflects the state of the forming universe. Observation remains optional support.'
         : 'Interact with the Core to collapse a fluctuation into existence.',
-      ariaLabel: passiveActive
-        ? 'Forming universe core. Interact to add a supporting quantum fluctuation.'
-        : 'Observe the quantum core and collect one Quantum Fluctuation.'
+      ariaLabel: inflationRelevant
+        ? `Observe the core to add a quantum fluctuation and ${coherenceRates.observationGain.toString()} percent Vacuum Coherence.`
+        : passiveActive
+          ? 'Forming universe core. Interact to add a supporting quantum fluctuation.'
+          : 'Observe the quantum core and collect one Quantum Fluctuation.'
     },
     process: passiveActive && !inflationRelevant ? {
       eyebrow: 'Current process',
