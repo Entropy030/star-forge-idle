@@ -52,9 +52,13 @@ describe('P3.3B5.2 Vacuum Coherence semantics', () => {
     const coherence = getEraResourcePresentation(state).support.find(item => item.id === 'coherence');
     const cosmos = getCosmosPresentation(state);
     expect(coherence.label).toBe('Vacuum Coherence');
-    expect(coherence.roleHint).toContain('passive 0.1%/s');
-    expect(coherence.roleHint).toContain('observe +0.5%');
-    expect(cosmos.core.instruction).toContain('100% Inflation requirement');
+    expect(coherence.roleHint).toContain('Inflation target: 100%');
+    expect(cosmos.core.instruction).toBe('Vacuum Coherence is required to initiate Cosmic Inflation. Observation is optional acceleration.');
+    expect(cosmos.core.metrics).toEqual(expect.arrayContaining([
+      expect.objectContaining({ label: 'Passive stabilization', unit: '%/s' }),
+      expect.objectContaining({ label: 'Observation', unit: '%' }),
+      expect.objectContaining({ label: 'Inflation target', value: expect.any(Decimal) })
+    ]));
   });
 
   it('names Vacuum Coherence and its 100% target in Inflation eligibility', () => {

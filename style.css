@@ -3049,6 +3049,56 @@ body[data-epoch="5"] .legacy-era3-plus {
   color: #fff;
 }
 
+.archive-layout {
+  display: grid;
+  grid-template-columns: minmax(160px, 1fr) minmax(0, 2fr);
+  gap: 16px;
+  height: 400px;
+  margin-top: 12px;
+}
+
+.archive-list,
+.archive-detail {
+  min-height: 0;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.archive-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.archive-detail {
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  text-align: left;
+}
+
+.archive-detail-title {
+  margin: 0 0 12px;
+  color: var(--neon-teal);
+  font-size: 1.1em;
+}
+
+.archive-detail-body {
+  margin: 0;
+  color: #b2bec3;
+  font-size: 0.9em;
+  line-height: 1.6;
+}
+
+.archive-list .btn-macro-shift {
+  width: 100%;
+  margin: 0;
+  text-align: left;
+}
+
 #dev-toggle-container {
   margin-top: 18px;
 }
@@ -3093,17 +3143,18 @@ body[data-epoch="5"] .legacy-era3-plus {
     padding: 12px;
   }
 
-  .codex-layout {
+  .archive-layout {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr);
-    max-height: none !important;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    height: 360px;
+    overflow: hidden;
   }
 
-  #codex-entry-list,
-  #codex-detail-view {
+  .archive-list,
+  .archive-detail {
     min-width: 0;
-    max-height: 280px;
-    box-sizing: border-box;
+    min-height: 0;
   }
 }
 /* P3.3B5: era-specific Cosmos progression primitives */
@@ -3172,6 +3223,30 @@ body[data-epoch="5"] .legacy-era3-plus {
 .cosmos-permanent-transition p { margin: 5px 0 0; color: #b2bec3; font-size: 0.8rem; line-height: 1.45; }
 
 .core-context { text-align: center; padding: 5px 12px 12px; }
+
+.cosmos-live-metrics {
+  display: grid;
+  gap: 4px;
+  margin: 10px auto 0;
+  max-width: 360px;
+  text-align: left;
+}
+
+.cosmos-live-metric {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  color: #9ba8ba;
+  font-size: 0.72rem;
+}
+
+.cosmos-live-metric-value {
+  color: #e8f6ff;
+  font-family: 'Share Tech Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
 
 .cosmos-progress {
   position: relative;

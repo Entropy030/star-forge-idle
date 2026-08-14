@@ -187,9 +187,6 @@ export const CodexEngine = {
     unlocked.forEach(entry => {
       const btn = document.createElement('button');
       btn.className = 'btn-macro-shift';
-      btn.style.width = '100%';
-      btn.style.textAlign = 'left';
-      btn.style.marginBottom = '8px';
       
       let titleText = entry.title;
       // Remnant dynamic text

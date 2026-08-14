@@ -22,8 +22,11 @@ function createResourceCard(documentRef, id) {
 
 function updateResourceCard(card, item, hierarchy, rates) {
   card.className = `resource-card resource-card--${hierarchy}`;
-  card.querySelector('.resource-card-level').textContent = hierarchy === 'primary' ? 'PRIMARY' : hierarchy === 'support' ? 'SUPPORT' : '';
-  card.querySelector('.resource-card-label').textContent = item.label;
+  const levelNode = card.querySelector('.resource-card-level');
+  const levelText = hierarchy === 'primary' ? 'PRIMARY' : hierarchy === 'support' ? 'SUPPORT' : '';
+  if (levelNode.textContent !== levelText) levelNode.textContent = levelText;
+  const labelNode = card.querySelector('.resource-card-label');
+  if (labelNode.textContent !== item.label) labelNode.textContent = item.label;
   card.querySelector('.resource-card-value').textContent = item.displayValue || formatHudValue(item.value, item.unit);
 
   const rateValue = rates[item.id];

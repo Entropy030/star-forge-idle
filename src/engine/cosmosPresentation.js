@@ -2,7 +2,7 @@ import Decimal from 'break_infinity.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import { getCompressionHeatYield, getMilestoneMultiplier } from '../core/economy.js';
 import { getInflationEligibility } from '../eras/quantum/inflation.js';
-import { getVacuumCoherenceRates, isVacuumCoherenceRelevant } from '../eras/quantum/coherence.js';
+import { getVacuumCoherenceRates, isInflationPreparationRelevant, isVacuumCoherenceRelevant } from '../eras/quantum/coherence.js';
 import { computePlasmaStep } from '../eras/plasma/evaluator.js';
 import { getRecombinationEligibility } from '../eras/plasma/eligibility.js';
 import { getGalacticIgnitionEligibility, getSupernovaEligibility } from '../eras/stellar/selectors.js';
@@ -20,7 +20,8 @@ function level(state, category, key) {
 function getEraOnePresentation(state) {
   const qf = amount(state, 'quantumFluctuations');
   const passiveActive = Object.values(state.upgrades?.quantum || {}).some(upgrade => (upgrade?.level || 0) > 0);
-  const inflationRelevant = isVacuumCoherenceRelevant(state);
+  const coherenceRelevant = isVacuumCoherenceRelevant(state);
+  const inflationRelevant = isInflationPreparationRelevant(state);
   const eligibility = getInflationEligibility(state);
   const coherenceRates = getVacuumCoherenceRates(state);
   const readyCount = eligibility.requirements.filter(requirement => requirement.met).length;
@@ -28,33 +29,40 @@ function getEraOnePresentation(state) {
 
   return {
     epoch: 1,
-    mode: inflationRelevant ? 'inflation' : passiveActive ? 'formation' : 'observation',
+    mode: inflationRelevant ? 'inflation' : coherenceRelevant ? 'stabilization' : passiveActive ? 'formation' : 'observation',
     primary: inflationRelevant ? {
       eyebrow: 'Inflation preparation',
       title: eligibility.isEligible ? 'Spacetime is ready to expand' : 'Prepare Cosmic Inflation',
       summary: eligibility.isEligible
         ? 'All three requirements are satisfied. Inflation is now the primary action.'
-        : `Current bottleneck: ${bottleneck.label}. Vacuum Coherence builds passively; observation accelerates it.`,
+        : `Current bottleneck: ${bottleneck.label}. Complete the three conditions to open the Inflation Horizon.`,
       progress: { current: readyCount, target: eligibility.requirements.length, label: `${readyCount} of ${eligibility.requirements.length} requirements ready` },
       checks: eligibility.requirements,
       ready: eligibility.isEligible,
       mode: 'all'
     } : null,
     core: {
-      eyebrow: inflationRelevant ? 'Observe core' : passiveActive ? 'Forming universe' : 'Observation point',
-      title: inflationRelevant ? 'Observation accelerates vacuum stabilization' : passiveActive ? 'Fundamental laws are taking over' : 'Observe the quantum void',
+      eyebrow: inflationRelevant ? 'Observe core' : coherenceRelevant ? 'Vacuum stabilization' : passiveActive ? 'Forming universe' : 'Observation point',
+      title: inflationRelevant ? 'Observation accelerates vacuum stabilization' : coherenceRelevant ? 'The emerging vacuum is stabilizing' : passiveActive ? 'Fundamental laws are taking over' : 'Observe the quantum void',
       instruction: inflationRelevant
-        ? `Passive stabilization continues at ${coherenceRates.passiveRate.toString()}%/s. Observation is optional acceleration: each interaction adds ${coherenceRates.observationGain.toString()}% Vacuum Coherence toward the 100% Inflation requirement.`
+        ? 'Vacuum Coherence is required to initiate Cosmic Inflation. Observation is optional acceleration.'
+        : coherenceRelevant
+        ? 'Vacuum Coherence measures the stability of the emerging vacuum. Observation is optional acceleration.'
         : passiveActive
         ? 'The Core now reflects the state of the forming universe. Observation remains optional support.'
         : 'Interact with the Core to collapse a fluctuation into existence.',
+      metrics: coherenceRelevant ? [
+        { label: 'Passive stabilization', value: coherenceRates.passiveRate, unit: '%/s', prefix: '+' },
+        { label: 'Observation', value: coherenceRates.observationGain, unit: '%', prefix: '+' },
+        ...(inflationRelevant ? [{ label: 'Inflation target', value: new Decimal(100), unit: '%' }] : [])
+      ] : [],
       ariaLabel: inflationRelevant
         ? `Observe the core to add a quantum fluctuation and ${coherenceRates.observationGain.toString()} percent Vacuum Coherence.`
         : passiveActive
           ? 'Forming universe core. Interact to add a supporting quantum fluctuation.'
           : 'Observe the quantum core and collect one Quantum Fluctuation.'
     },
-    process: passiveActive && !inflationRelevant ? {
+    process: passiveActive && !coherenceRelevant ? {
       eyebrow: 'Current process',
       title: 'Passive law generation',
       summary: 'Constructed fundamental laws now sustain production without continuous observation.',

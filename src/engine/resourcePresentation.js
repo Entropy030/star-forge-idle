@@ -1,6 +1,6 @@
 import Decimal from 'break_infinity.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
-import { getVacuumCoherenceRates } from '../eras/quantum/coherence.js';
+import { isInflationPreparationRelevant, isVacuumCoherenceRelevant } from '../eras/quantum/coherence.js';
 
 const ZERO = new Decimal(0);
 
@@ -40,9 +40,9 @@ function getEraOnePresentation(state) {
   const qf = amount(state, 'quantumFluctuations');
   const energyDensity = amount(state, 'energyDensity');
   const coherence = state.coherence || ZERO;
-  const coherenceRates = getVacuumCoherenceRates(state);
   const densityIntroduced = energyDensity.gt(0) || level(state, 'quantum', 'gravityForce') > 0 || hasDiscovery(state, 'qf_10');
-  const inflationIntroduced = (state.era1?.currentAct || 1) >= 2 || hasDiscovery(state, 'qf_100') || qf.gte(100);
+  const coherenceIntroduced = isVacuumCoherenceRelevant(state);
+  const inflationIntroduced = isInflationPreparationRelevant(state);
 
   if (inflationIntroduced) {
     return {
@@ -52,7 +52,7 @@ function getEraOnePresentation(state) {
         resource('energyDensity', 'Energy Density', energyDensity, { roleHint: 'Threshold: 50,000' }),
         resource('coherence', 'Vacuum Coherence', coherence, {
           unit: '%',
-          roleHint: `Inflation target: 100% · passive ${coherenceRates.passiveRate.toString()}%/s · observe +${coherenceRates.observationGain.toString()}%`
+          roleHint: 'Inflation target: 100%'
         })
       ],
       details: []
@@ -62,7 +62,10 @@ function getEraOnePresentation(state) {
   return {
     primary: [resource('quantumFluctuations', 'Quantum Fluctuations', qf, { roleHint: 'Foundational currency' })],
     support: densityIntroduced
-      ? [resource('energyDensity', 'Energy Density', energyDensity, { roleHint: 'Vacuum compression' })]
+      ? [
+          resource('energyDensity', 'Energy Density', energyDensity, { roleHint: 'Vacuum compression' }),
+          ...(coherenceIntroduced ? [resource('coherence', 'Vacuum Coherence', coherence, { unit: '%', roleHint: 'Vacuum stability' })] : [])
+        ]
       : [],
     details: []
   };
