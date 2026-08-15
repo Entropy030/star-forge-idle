@@ -3,6 +3,7 @@ import { advanceGameTick } from './runtimeTick.js';
 import { OFFLINE_TICK_CONTEXT } from './tickContext.js';
 import { getGameplayTimeMultiplier } from './time.js';
 import { reconcileCodexUnlocks } from './codexProgression.js';
+import { captureOfflineSnapshot } from './offlineSummary.js';
 
 export const OFFLINE_CHUNK_SECONDS = 1;
 export const OFFLINE_BATCH_SIZE = 250;
@@ -74,17 +75,21 @@ export async function runOfflineCatchUp(loadMetadata, options = {}) {
     return { applied: false, reason: 'NO_CREDITED_TIME', checkpoint: null };
   }
 
+  const beforeSnapshot = captureOfflineSnapshot(gameState);
   const progression = await advanceOfflineProgress({
     creditedElapsedSeconds: loadMetadata.creditedElapsedSeconds,
     batchSize: options.batchSize,
     yieldControl: options.yieldControl
   });
+  const afterSnapshot = captureOfflineSnapshot(gameState);
   const checkpoint = options.checkpoint ? options.checkpoint() : null;
 
   return {
     applied: true,
     reason: null,
     progression,
+    beforeSnapshot,
+    afterSnapshot,
     checkpoint
   };
 }

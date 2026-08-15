@@ -24,6 +24,8 @@ import { getLiveSimulationMultiplier } from './core/time.js';
 import { reconcileCodexUnlocks } from './core/codexProgression.js';
 import { runOfflineCatchUp } from './core/offline.js';
 import { consumeLiveElapsedSeconds, resetLiveSimulationClock } from './core/liveClock.js';
+import { createOfflineSummary } from './core/offlineSummary.js';
+import { renderOfflineBriefing } from './ui/offlineBriefing.js';
 
 // Re-export or attach globals needed by inline HTML (like onclick)
 const Haptics = {
@@ -568,6 +570,13 @@ async function performBoot() {
     engine.loadState(gameState);
 
     const offlineResult = await runOfflineCatchUp(loadMetadata, { checkpoint: saveGame });
+    const offlineSummary = offlineResult.applied ? createOfflineSummary({
+      loadMetadata,
+      beforeSnapshot: offlineResult.beforeSnapshot,
+      afterSnapshot: offlineResult.afterSnapshot,
+      progression: offlineResult.progression,
+      checkpoint: offlineResult.checkpoint
+    }) : null;
     resetLiveSimulationClock();
     catchupAccumulator = 0;
 
@@ -576,6 +585,7 @@ async function performBoot() {
     Viewport.update();
     Viewport.switchTab(gameState.activeTab);
     Viewport.renderPrestigeVisibility();
+    renderOfflineBriefing(offlineSummary);
 
     if (offlineResult.applied && offlineResult.checkpoint && !offlineResult.checkpoint.success) {
       Viewport.setSystemStatus(offlineResult.checkpoint.message, 'error');
