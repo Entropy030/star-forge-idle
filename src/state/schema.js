@@ -58,7 +58,7 @@ export const ensureStateShape = function(gameState) {
     gameState.artifacts = {
       equipped: [null, null, null],
       unlocked: ["quantum_lens", "density_compressor", "pulse_coupler", "singularity_core", "vacuum_stabilizer", "big_bang_catalyst"],
-      modifiers: { productionMult: 1.0, costDiscount: 0.0, clickCoherenceBonus: 0.0, clickPassiveBoost: 0.0, act3Multiplier: 1.0, activeClickBoostSec: 0 }
+      modifiers: { productionMult: 1.0, costDiscount: 0.0, clickPassiveBoost: 0.0, act3Multiplier: 1.0, activeClickBoostSec: 0 }
     };
   }
   if (!Array.isArray(gameState.artifacts.equipped)) gameState.artifacts.equipped = [null, null, null];
@@ -67,7 +67,7 @@ export const ensureStateShape = function(gameState) {
     gameState.artifacts.unlocked = ["quantum_lens", "density_compressor", "pulse_coupler", "singularity_core", "vacuum_stabilizer", "big_bang_catalyst"];
   }
   if (!gameState.artifacts.modifiers) {
-    gameState.artifacts.modifiers = { productionMult: 1.0, costDiscount: 0.0, clickCoherenceBonus: 0.0, clickPassiveBoost: 0.0, act3Multiplier: 1.0, activeClickBoostSec: 0 };
+    gameState.artifacts.modifiers = { productionMult: 1.0, costDiscount: 0.0, clickPassiveBoost: 0.0, act3Multiplier: 1.0, activeClickBoostSec: 0 };
   }
 
   if (typeof gameState.era1Collapses !== 'number') gameState.era1Collapses = 0;

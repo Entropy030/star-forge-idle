@@ -28,7 +28,8 @@ describe('Supernova outcome model', () => {
     expect(result.outcome).toBe('white-dwarf');
     expect(result.rewards.stardust.toNumber()).toBe(30); // 20 * 1.5
     expect(result.rewards.pulsarShards.toNumber()).toBe(0);
-    expect(result.modifiers.coherenceBonus).toBe(15);
+    expect(result.modifiers.secondRunStabilityMult).toBe(1.2);
+    expect(result.modifiers).not.toHaveProperty('coherenceBonus');
   });
 
   it('classifies massive archetype correctly', () => {

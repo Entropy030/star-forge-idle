@@ -3,7 +3,7 @@ import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getCardMultiplier } from '../../core/economy.js'; // Will be extracted to selectors later
 import { getQuantumUpgradeEligibility } from './eligibility.js';
 import { getInflationEligibility } from './inflation.js';
-import { getVacuumCoherenceRates } from './coherence.js';
+import { getVacuumCoherence, getVacuumCoherenceRates, setVacuumCoherence } from './coherence.js';
 
 export const quantumCommandHandlers = {
   CLICK_CORE: (state, cmd) => {
@@ -15,11 +15,12 @@ export const quantumCommandHandlers = {
       if (!state.era1) state.era1 = { currentAct: 1, quantumFoam: 0, unfoldCount: 0 };
       state.era1.unfoldCount = (state.era1.unfoldCount || 0) + 1;
       const coherenceRates = getVacuumCoherenceRates(state);
+      const vacuumCoherence = getVacuumCoherence(state);
       let coherenceGain = new Decimal(0);
       
-      if (state.coherence && state.coherence.lt(100)) {
-        coherenceGain = Decimal.min(coherenceRates.observationGain, new Decimal(100).minus(state.coherence));
-        state.coherence = state.coherence.plus(coherenceGain);
+      if (vacuumCoherence.lt(100)) {
+        coherenceGain = Decimal.min(coherenceRates.observationGain, new Decimal(100).minus(vacuumCoherence));
+        setVacuumCoherence(state, vacuumCoherence.plus(coherenceGain));
       }
       
       let mult = getCardMultiplier("hydrogenGen"); // Use actual selector later

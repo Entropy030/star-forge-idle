@@ -1,6 +1,7 @@
 import { getInitialGameState } from '../core/state.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import Decimal from 'break_infinity.js';
+import { setVacuumCoherence } from '../eras/quantum/coherence.js';
 
 function setUpgradeLevel(state, category, key, level) {
   const def = COSMIC_REGISTRY.upgrades[category][key];
@@ -22,7 +23,7 @@ export function getPresetLateEraI() {
   state.resources.quantumFluctuations.amount = new Decimal(50000);
   state.resources.energyDensity.amount = new Decimal(25000);
   state.stats.maxQF = new Decimal(50000);
-  state.coherence = new Decimal(80);
+  setVacuumCoherence(state, new Decimal(80));
   state.discoveries = new Set(['qf_1', 'qf_10', 'qf_100', 'qf_500', 'qf_2500', 'qf_10000']);
 
   setUpgradeLevel(state, 'quantum', 'gravityForce', 5);

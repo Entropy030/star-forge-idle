@@ -152,7 +152,6 @@ export function getSupernovaOutcome(state) {
   let pulsarShards = new Decimal(0);
   let singularityMass = new Decimal(0);
 
-  let coherenceBonus = 0;
   let secondRunProductionMult = 1.0;
   let secondRunStabilityMult = 1.0;
 
@@ -163,7 +162,6 @@ export function getSupernovaOutcome(state) {
     displayName = 'White Dwarf';
     reasons.push('High stability and fuel efficiency resulted in a gentle collapse.');
     stardust = baseStardust.times(1.5).floor();
-    coherenceBonus = 15;
     secondRunStabilityMult = 1.2;
   } else if (archetype === 'massive') {
     outcome = 'black-hole';
@@ -201,7 +199,6 @@ export function getSupernovaOutcome(state) {
       singularityMass
     },
     modifiers: {
-      coherenceBonus,
       secondRunProductionMult,
       secondRunStabilityMult
     },

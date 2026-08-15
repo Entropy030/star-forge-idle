@@ -139,6 +139,18 @@ describe('Codex Engine - Typewriter (fake timers)', () => {
     expect(el.textContent).not.toContain('ACTION');
   });
 
+  it('does not reinterpret stored Vacuum Coherence as later-era narrative integrity', () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+    state.activeEpoch = 2;
+    state.coherence = new Decimal(0);
+
+    CodexEngine.update(state);
+    vi.runAllTimers();
+
+    const el = document.getElementById('chrono-neural-log');
+    expect(el.textContent).toBe(el.title);
+  });
+
   it('dispose clears active timer', () => {
     CodexEngine.update(state);
     vi.advanceTimersByTime(25 * 2);

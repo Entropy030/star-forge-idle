@@ -9,6 +9,7 @@ import { format } from '../ui/viewport.js';
 /* global Decimal */
 import { getInflationEligibility } from '../eras/quantum/inflation.js';
 import { getQuantumUpgradeEligibility } from '../eras/quantum/eligibility.js';
+import { getVacuumCoherence } from '../eras/quantum/coherence.js';
 import { getPlasmaUpgradeEligibility, getRecombinationEligibility } from '../eras/plasma/eligibility.js';
 import { getSupernovaEligibility, getSupernovaOutcome, getStellarRates } from '../eras/stellar/selectors.js';
 
@@ -166,9 +167,9 @@ class PlaytestEngine {
     
     // Telemetry: Track when things unlock
     const currentQF = state.stats?.maxQF || new Decimal(0);
-    const coh = state.coherence || new Decimal(0);
+    const coh = getVacuumCoherence(state);
     const ed = this.getResAmount('energyDensity', state);
-    if (coh.gte(100)) this.logMilestone("Coherence Reached 100%");
+    if (coh.gte(100)) this.logMilestone("Vacuum Coherence Reached 100%");
     if (ed.gte(50000)) this.logMilestone("Energy Density Reached 50k");
     
     for (let key of priorityKeys) {
@@ -510,7 +511,7 @@ class PlaytestEngine {
       gameTimeSec: this.stats.gameSecondsElapsed.toFixed(1) + "s",
       ticks: this.stats.ticksElapsed,
       epoch: state.activeEpoch,
-      coherence: state.coherence.toFixed(1) + "%",
+      ...(state.activeEpoch === 1 ? { vacuumCoherence: getVacuumCoherence(state).toFixed(1) + "%" } : {}),
       clicks: this.stats.totalClicks,
       leaps: this.stats.totalLeaps,
       upgradesBought: this.stats.totalUpgradesBought,

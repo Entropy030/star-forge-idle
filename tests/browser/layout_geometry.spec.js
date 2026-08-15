@@ -62,7 +62,7 @@ test.describe('live layout geometry contracts', () => {
     expectStable(await measureContracts(page, [
       { name: 'header Era label', anchor: '.timeline-banner .context-label', target: '#active-epoch-name', values: ['Era I: The Quantum Foam', 'Era III: The Stellar Dawn'] },
       { name: 'header phase label', anchor: '.cosmic-phase-banner .context-label', target: '#stage', values: ['Observation', 'Inflation Preparation'] },
-      { name: 'header Coherence label', anchor: '.coherence-banner .context-label', target: '#coherence-display', values: ['9.9%', '10.0%', '99.9%', '100.0%'] },
+      { name: 'header Vacuum Coherence label', anchor: '.coherence-banner .context-label', target: '#coherence-display', values: ['9.9%', '10.0%', '99.9%', '100.0%'] },
       { name: 'support resource label', anchor: '#resource-support-region .resource-card-label', target: '#resource-support-region .resource-card-value', values: NUMBER_BOUNDARIES },
       { name: 'Cosmos live metric label', anchor: '.cosmos-live-metric-label', target: '.cosmos-live-metric-value', values: NUMBER_BOUNDARIES },
       { name: 'objective title', anchor: '#objective-title', target: '#objective-progress-text', values: NUMBER_BOUNDARIES },

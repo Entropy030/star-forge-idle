@@ -10,6 +10,7 @@ import { getCurrentPhase } from '../engine/selectors.js';
 import { getCosmosPresentation } from '../engine/cosmosPresentation.js';
 import { getEraResourcePresentation } from '../engine/resourcePresentation.js';
 import { getInflationEligibility, getQuantumUpgradeEligibility } from '../eras/quantum/selectors.js';
+import { getVacuumCoherence } from '../eras/quantum/coherence.js';
 import { getGalacticIgnitionEligibility, getStellarRates, getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 import { updateSupernovaOutcome } from './stellar.js';
 import { CodexEngine } from './codex.js';
@@ -195,7 +196,7 @@ export const ActManager = {
 
     if (gameState.activeEpoch === 1) {
       if (!gameState.era1) {
-        gameState.era1 = { currentAct: 1, quantumFoam: 0, vacuumCoherence: 0.0, unfoldCount: 0 };
+        gameState.era1 = { currentAct: 1, quantumFoam: 0, unfoldCount: 0 };
       }
       const qf = gameState.resources.quantumFluctuations ? gameState.resources.quantumFluctuations.amount : new Decimal(0);
       gameState.era1.quantumFoam = qf.toNumber();
@@ -204,9 +205,9 @@ export const ActManager = {
       const eligibility = getInflationEligibility(gameState);
       if (eligibility.isEligible) {
         targetAct = 3;
-      } else if (eligibility.qf.gte(100) && eligibility.coherence >= 1.0) {
+      } else if (eligibility.qf.gte(100) && eligibility.vacuumCoherence.gte(1)) {
         targetAct = 2;
-      } else if (gameState.discoveries && gameState.discoveries.has('qf_100') && eligibility.coherence >= 1.0) {
+      } else if (gameState.discoveries && gameState.discoveries.has('qf_100') && eligibility.vacuumCoherence.gte(1)) {
         targetAct = 2;
       }
 
@@ -286,17 +287,15 @@ export const ArtifactManager = {
       gameState.artifacts = {
         equipped: [null, null, null],
         unlocked: ["quantum_lens", "density_compressor", "pulse_coupler", "singularity_core", "vacuum_stabilizer", "big_bang_catalyst"],
-        modifiers: { productionMult: 1.0, costDiscount: 0.0, clickCoherenceBonus: 0.0, clickPassiveBoost: 0.0, act3Multiplier: 1.0, activeClickBoostSec: 0 }
+        modifiers: { productionMult: 1.0, costDiscount: 0.0, clickPassiveBoost: 0.0, act3Multiplier: 1.0, activeClickBoostSec: 0 }
       };
     }
 
     const mods = {
       productionMult: 1.0,
       costDiscount: 0.0,
-      clickCoherenceBonus: 0.0,
       clickPassiveBoost: 0.0,
       act3Multiplier: 1.0,
-      hasVacuumStabilizer: false,
       extraPrestige: 0,
       activeClickBoostSec: gameState.artifacts.modifiers ? (gameState.artifacts.modifiers.activeClickBoostSec || 0) : 0
     };
@@ -313,10 +312,6 @@ export const ArtifactManager = {
       if (eff.type === 'costDiscount') mods.costDiscount = Math.min(0.9, mods.costDiscount + eff.value);
       if (eff.type === 'clickPassiveBoost') mods.clickPassiveBoost += eff.value;
       if (eff.type === 'act3Multiplier') mods.act3Multiplier *= eff.value;
-      if (eff.type === 'vacuumCoherenceLock') {
-        mods.hasVacuumStabilizer = true;
-        if (gameState.era1) gameState.era1.vacuumCoherence = 1.0;
-      }
       if (eff.type === 'extraPrestige') mods.extraPrestige += eff.value;
     }
 
@@ -1550,8 +1545,8 @@ export const Viewport = {
 
     this.setTextContent('active-epoch-name', currentEpoch.name);
     this.setTextContent('stage', getCurrentPhase(gameState));
-    this.setTextContent('coherence-label', gameState.activeEpoch === 1 ? 'Vacuum Coherence' : 'Coherence');
-    this.setTextContent('coherence-display', `${format(gameState.coherence)}%`);
+    this.setTextContent('coherence-label', 'Vacuum Coherence');
+    this.setTextContent('coherence-display', `${format(getVacuumCoherence(gameState))}%`);
     this.updateResourceHud();
 
     const cosmosPresentation = getCosmosPresentation(gameState);

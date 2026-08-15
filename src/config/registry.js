@@ -159,7 +159,7 @@ export const COSMIC_REGISTRY = {
       baryoRadiator: { id: "baryoRadiator", name: "Baryogenesis Radiator", rarity: "uncommon", baseCost: new Decimal(100), costScaling: 1.4, cooling: new Decimal(7500), desc: "Radiates excess thermal mass. Cools Universe by 7,500 K/s. Costs 2 Protons/s. Requires Proton Synthesizer Lvl 1." }
     },
     stellar: {
-      efficient: { id: "efficient", name: "Efficient Build", rarity: "rare", baseCost: new Decimal(100), currency: "helium", costScaling: 1.5, desc: "Increases fuel efficiency and stability. Better coherence." },
+      efficient: { id: "efficient", name: "Efficient Build", rarity: "rare", baseCost: new Decimal(100), currency: "helium", costScaling: 1.5, desc: "Increases fuel efficiency and structural stability." },
       massive: { id: "massive", name: "Massive Build", rarity: "rare", baseCost: new Decimal(100), currency: "helium", costScaling: 1.5, desc: "Increases generation speed and Iron yield, but reduces stability." },
       compact: { id: "compact", name: "Compact Build", rarity: "rare", baseCost: new Decimal(100), currency: "helium", costScaling: 1.5, desc: "Focuses on density. Rewards Pulsar Shards and automation rules." }
     },
@@ -192,7 +192,7 @@ export const COSMIC_REGISTRY = {
     },
     tuning: {
       G: { id: "G", name: "Gravitational Constant (G)", baseCost: new Decimal(50), currency: "bits", costScaling: 3.0, desc: "+20% Heating & Hydrogen Gen in Era 3. -10% Halo Stability in Era 4." },
-      c: { id: "c", name: "Speed of Light (c)", baseCost: new Decimal(100), currency: "bits", costScaling: 3.0, desc: "+12% Global Tick Speed. -8% Coherence Generation in Era 1." },
+      c: { id: "c", name: "Speed of Light (c)", baseCost: new Decimal(100), currency: "bits", costScaling: 3.0, desc: "+12% Global Tick Speed. -8% Vacuum Coherence Generation in Era 1." },
       alpha: { id: "alpha", name: "Fine-structure Constant (α)", baseCost: new Decimal(150), currency: "bits", costScaling: 3.0, desc: "+30% Fusion Yields (He, C, Fe). +3% Compression Cost." },
       hbar: { id: "hbar", name: "Planck Constant (ħ)", baseCost: new Decimal(200), currency: "bits", costScaling: 3.0, desc: "Increases Era 1 Peak Window. +20% Supernova Stardust Yield." }
     }
@@ -306,8 +306,8 @@ export const ARTIFACT_DEFINITIONS = {
     rarity: 'Rare',
     color: '#00ff88',
     image: 'assets/artifacts/vacuum_stabilizer.png',
-    description: 'Permanently sets Coherence to 1.0 (protects against glitches).',
-    effect: { type: 'vacuumCoherenceLock', value: 1.0 }
+    description: 'A legacy vacuum-stability artifact with no active modifier.',
+    effect: { type: 'cosmetic' }
   },
   big_bang_catalyst: {
     id: 'big_bang_catalyst',

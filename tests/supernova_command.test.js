@@ -65,7 +65,8 @@ describe('TRIGGER_SUPERNOVA command', () => {
     expect(state.meta.stellarRunsCompleted).toBe(1);
     expect(state.meta.lastSupernovaOutcome).toBe('white-dwarf');
     expect(state.meta.stellarLegacyModifiers).toBeDefined();
-    expect(state.meta.stellarLegacyModifiers.coherenceBonus).toBe(15);
+    expect(state.meta.stellarLegacyModifiers.secondRunStabilityMult).toBe(1.2);
+    expect(state.meta.stellarLegacyModifiers).not.toHaveProperty('coherenceBonus');
     
     // Ensure Decimal types remained Decimals
     expect(state.currencies.stardust.amount instanceof Decimal).toBe(true);

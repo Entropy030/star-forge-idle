@@ -3,7 +3,7 @@ import { gameState } from './state.js';
 import { getAmount } from './economy.js';
 import { Timeline } from './timeline.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
-import { getVacuumCoherenceRates } from '../eras/quantum/coherence.js';
+import { getVacuumCoherence, getVacuumCoherenceRates, setVacuumCoherence } from '../eras/quantum/coherence.js';
 import { updateObjectiveProgress } from './objectives.js';
 
 export function advanceGameTick(dt, effectSink) {
@@ -19,9 +19,10 @@ export function advanceGameTick(dt, effectSink) {
 
   if (gameState.activeEpoch === 1) {
     // Baseline passive equilibrium recovery in Era 1
-    if (gameState.coherence.lt(100)) {
+    const vacuumCoherence = getVacuumCoherence(gameState);
+    if (vacuumCoherence.lt(100)) {
       const { passiveRate } = getVacuumCoherenceRates(gameState);
-      gameState.coherence = Decimal.min(100, gameState.coherence.plus(passiveRate.times(dt)));
+      setVacuumCoherence(gameState, Decimal.min(100, vacuumCoherence.plus(passiveRate.times(dt))));
     }
 
     if (!gameState.discoveries) gameState.discoveries = new Set();
@@ -46,31 +47,8 @@ export function advanceGameTick(dt, effectSink) {
     if (currentQF.gte(10)) recordNarrativeMilestone('qf_10', '[SYSTEM]: Energy density sufficient. Compiling Fluctuation Condenser...');
     if (currentQF.gte(100)) recordNarrativeMilestone('qf_100', '[SYSTEM]: Weak Nuclear Vector unlocked. Symmetry breaking begins.');
     if (currentQF.gte(500)) recordNarrativeMilestone('qf_500', '[SYSTEM]: Electromagnetic Tensor engaged. Photons propagating.');
-    if (currentQF.gte(2500)) recordNarrativeMilestone('qf_2500', '[SYSTEM]: Vacuum Resonance stabilized. Coherence recovering.');
+    if (currentQF.gte(2500)) recordNarrativeMilestone('qf_2500', '[SYSTEM]: Vacuum Resonance stabilized. Vacuum Coherence recovering.');
     if (currentQF.gte(10000)) recordNarrativeMilestone('qf_10000', '[SYSTEM]: Strong Color Force bound. Baryogenesis imminent.');
-  } else if (gameState.activeEpoch === 2) {
-    // Era 2 Coherence Equilibrium: high temp (>8M K) slightly drains coherence, cooling (<500k K) recovers it toward 100%
-    if (gameState.plasmaTemperature.gt(8000000)) {
-      gameState.coherence = Decimal.max(10, gameState.coherence.minus(new Decimal(0.2).times(dt)));
-    } else if (gameState.coherence.lt(100)) {
-      gameState.coherence = Decimal.min(100, gameState.coherence.plus(new Decimal(0.5).times(dt)));
-    }
-  } else if (gameState.activeEpoch === 3) {
-    // Era 3 Coherence Equilibrium: extreme temp (>1.5B K) causes subtle coherence stress, normal operation recovers it
-    if (gameState.era3.temperature.gt(1500000000)) {
-      gameState.coherence = Decimal.max(20, gameState.coherence.minus(new Decimal(0.1).times(dt)));
-    } else if (gameState.coherence.lt(100)) {
-      gameState.coherence = Decimal.min(100, gameState.coherence.plus(new Decimal(0.5).times(dt)));
-    }
-  } else if (gameState.activeEpoch === 4) {
-    // Era 4 Coherence Integration: Coherence tracks Galaxy Stability
-    if (gameState.era4 && gameState.era4.stability) {
-      gameState.coherence = Decimal.min(100, Decimal.max(0, gameState.era4.stability));
-    }
-  } else if (gameState.activeEpoch === 5) {
-    // Era 5 Coherence Integration: Coherence dissolves inversely to rising Entropy
-    const entropyVal = gameState.era5?.entropy || 0;
-    gameState.coherence = Decimal.max(0, new Decimal(100).minus(entropyVal));
   }
 
   Timeline.process(dt);

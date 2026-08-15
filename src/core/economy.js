@@ -8,6 +8,7 @@ import { saveGame } from './persistence.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import { dispatchEngineCommand } from '../engine/dispatch.js';
 import { getQuantumUpgradeEligibility } from '../eras/quantum/eligibility.js';
+import { getEntropyBitProductionMultiplier } from '../eras/galactic/selectors.js';
 export function updateStatsData() {
   if (gameState.era3 && gameState.era3.temperature.gt(gameState.stats.maxTemp)) {
     gameState.stats.maxTemp = gameState.era3.temperature;
@@ -281,6 +282,10 @@ export function processEraV(dt) {
   if (gameState.activeEpoch !== 5) return;
   if (gameState.era5.isHeatDeath) return;
 
+  // Preserve production ordering: the multiplier observes entropy at the start
+  // of this simulation step, before the step's entropy increase.
+  const entropyBitProductionMultiplier = getEntropyBitProductionMultiplier(gameState);
+
   // NEW: Passive Hawking Radiation generation from Hawking Collector upgrades
   let collectorLvl = gameState.upgrades.era5?.hawkingCollector?.level || 0;
   if (collectorLvl > 0) {
@@ -309,10 +314,11 @@ export function processEraV(dt) {
   if (infoExtractors > 0 && hr.gte(10)) {
     let toConvert = Math.min(hr.toNumber(), infoExtractors * 10 * dt);
     deduct('hawkingRadiation', toConvert);
-    const coherenceBonus = 1.0 + (gameState.coherence.toNumber() / 100) * 0.5; // up to +50% at 100% Coherence
     const compressorLvl = gameState.upgrades.era5?.bitCompressor?.level || 0;
     const compressorMult = Math.pow(1.1, compressorLvl);
-    gameState.currencies.bits.amount = gameState.currencies.bits.amount.plus((toConvert / 10) * coherenceBonus * compressorMult);
+    gameState.currencies.bits.amount = gameState.currencies.bits.amount.plus(
+      new Decimal(toConvert).div(10).times(entropyBitProductionMultiplier).times(compressorMult)
+    );
   }
 }
 

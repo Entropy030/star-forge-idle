@@ -123,7 +123,6 @@ export function createInitialState() {
       modifiers: {
         productionMult: 1.0,
         costDiscount: 0.0,
-        clickCoherenceBonus: 0.0,
         clickPassiveBoost: 0.0,
         act3Multiplier: 1.0,
         activeClickBoostSec: 0
@@ -132,6 +131,7 @@ export function createInitialState() {
     settings: {
       crtOverlay: true
     },
+    // Save v17 compatibility key; authoritative only as Era I Vacuum Coherence.
     coherence: new Decimal(0),
     activeTab: "core",
     buyMode: 1,
@@ -185,4 +185,3 @@ export function createInitialState() {
 
   return state;
 }
-

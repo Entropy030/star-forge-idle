@@ -11,39 +11,14 @@ export function simulateStellarEra(state, dt) {
   let compactLvl = state.upgrades.stellar?.compact?.level || 0;
 
   // 1. Calculate build metrics
-  let stability = new Decimal(100).plus(efficientLvl * 10).minus(massiveLvl * 10);
   let fuelEfficiency = new Decimal(1.0).plus(efficientLvl * 0.1);
   let speedMult = new Decimal(1.0).plus(massiveLvl * 0.1);
 
   if (state.meta && state.meta.stellarLegacyModifiers) {
-    stability = stability.times(state.meta.stellarLegacyModifiers.secondRunStabilityMult || 1.0);
     speedMult = speedMult.times(state.meta.stellarLegacyModifiers.secondRunProductionMult || 1.0);
   }
-  
-  // Completed stellar phases (based on temperature and stage)
-  let phases = 1;
-  if (state.era3.stage === "Main Sequence Star") phases = 2;
-  if (state.era3.stage === "Red Giant" || state.era3.temperature.gte(500000000)) phases = 3;
-  if (state.era3.stage === "Supernova" || state.era3.temperature.gte(1000000000)) phases = 4;
 
-  // 2. Coherence = Stability * Fuel Efficiency * Completed Phases
-  // Diminishing returns (e.g. square root or logarithmic caps)
-  let rawCoherence = stability.times(fuelEfficiency).times(phases);
-  // Soft cap or diminishing returns on rawCoherence
-  let actualCoherence = rawCoherence.pow(0.85); // Diminishing returns
-  
-  if (!state.coherence.eq(actualCoherence)) {
-    // Actually, coherence might be an accumulating resource or a static value?
-    // In P1, coherence was passively increasing/decreasing based on temp.
-    // "Replace time-based Coherence with Stability × Fuel Efficiency × completed stellar phases"
-    // implies it's now a derived stat for Era 3, or it smoothly approaches it.
-    // Let's set it as the target.
-    let diff = actualCoherence.minus(state.coherence);
-    state.coherence = state.coherence.plus(diff.times(dt).times(0.1)); // Approaches target over time
-    anyChanged = true;
-  }
-
-  // 3. Stellar mechanics (from timeline.js)
+  // 2. Stellar mechanics (from timeline.js)
   // Hydrogen Generation (Gravity node effect)
   let hydrogenRate = state.era3.gravity.times(10).times(speedMult);
   if (hydrogenRate.gt(0)) {
@@ -94,7 +69,7 @@ export function simulateStellarEra(state, dt) {
     }
   }
 
-  // 4. Compact Rewards
+  // 3. Compact Rewards
   if (compactLvl > 0) {
     let shardChance = new Decimal(compactLvl).times(0.01).times(dt);
     if (shardChance.gt(Math.random())) {
@@ -103,7 +78,7 @@ export function simulateStellarEra(state, dt) {
     }
   }
 
-  // 5. AutoBuyer (Gravity)
+  // 4. AutoBuyer (Gravity)
   if (state.autoBuyer && state.autoBuyer.hydrogen && state.autoBuyer.hydrogen.active) {
     if (state.era3.temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
       if (state.resources.hydrogen.amount.gte(state.era3.gravityCost)) {
@@ -118,7 +93,7 @@ export function simulateStellarEra(state, dt) {
     }
   }
 
-  // 6. AutoCompress
+  // 5. AutoCompress
   let autoCompressLvl = state.upgrades.pulsar?.autoCompress?.level || 0;
   if (autoCompressLvl > 0) {
     // Actually we can just do one compression per tick if affordable, proportional to level
@@ -136,7 +111,7 @@ export function simulateStellarEra(state, dt) {
     }
   }
 
-  // 7. Flares
+  // 6. Flares
   if (state.flares && state.flares.active) {
     state.flares.active.expiresInSec = state.flares.active.expiresInSec.minus(dt);
     if (state.flares.active.expiresInSec.lte(0)) {

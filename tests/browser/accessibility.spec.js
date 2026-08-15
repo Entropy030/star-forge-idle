@@ -36,7 +36,12 @@ test.describe('keyboard and semantic browser contracts', () => {
 
   test('progress, readiness and grouped controls expose meaning without color alone', async ({ page }) => {
     await expect(page.locator('#nav-core')).toHaveAttribute('aria-current', 'page');
+    await loadPlaytestPreset(page, 'Late Era I');
+    await expect(page.locator('.coherence-banner')).toBeVisible();
+    await expect(page.locator('#coherence-label')).toHaveText('Vacuum Coherence');
     await loadPlaytestPreset(page, 'Mid Era III');
+    await expect(page.locator('.coherence-banner')).toBeHidden();
+    expect(await page.locator('body').innerText()).not.toContain('Coherence');
     await expect(page.locator('#cosmos-primary-status [role="progressbar"]').first()).toHaveAttribute('aria-valuenow');
     await expect(page.locator('#btn-trigger-hypernova')).toBeDisabled();
     await loadPlaytestPreset(page, 'Supernova Ready');

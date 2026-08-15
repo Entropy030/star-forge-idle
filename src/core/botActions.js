@@ -2,6 +2,7 @@ import { gameState } from './state.js';
 import { Economy, getAmount } from './economy.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import { Viewport } from '../ui/viewport.js';
+import { getVacuumCoherence } from '../eras/quantum/coherence.js';
 
 export const getAIState = function (copyToClipboard = true) {
   const epoch = gameState.activeEpoch;
@@ -10,13 +11,14 @@ export const getAIState = function (copyToClipboard = true) {
     meta: {
       activeEpoch: epoch,
       epochName: COSMIC_REGISTRY.universeChronology.epochs[epoch]?.name,
-      activeTab: gameState.activeTab,
-      coherence: gameState.coherence.toString()
+      activeTab: gameState.activeTab
     },
     resources: {},
     availableUpgrades: [],
     specialActions: {}
   };
+
+  if (epoch === 1) state.meta.vacuumCoherence = getVacuumCoherence(gameState).toString();
 
   if (epoch === 1) {
     state.resources = {

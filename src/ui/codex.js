@@ -1,5 +1,6 @@
 /* global Decimal */
 import { CODEX_ENTRIES } from '../content/codex.js';
+import { getVacuumCoherence } from '../eras/quantum/coherence.js';
 
 let typewriterInterval = null;
 let activeNarrativeId = null;
@@ -16,8 +17,10 @@ function corruptText(cleanText, coherenceValue, gameState) {
     coh = coherenceValue;
   } else if (coherenceValue instanceof Decimal) {
     coh = coherenceValue.toNumber();
-  } else if (gameState.coherence instanceof Decimal) {
-    coh = gameState.coherence.toNumber();
+  } else if (gameState.activeEpoch === 1) {
+    coh = getVacuumCoherence(gameState).toNumber();
+  } else {
+    coh = 100;
   }
 
   // Ensure coh is scaled 0-1 for corruption chance math
@@ -75,7 +78,7 @@ export const CodexEngine = {
       logNode.setAttribute('data-active-text', narrativeText);
       logNode.title = narrativeText;
 
-      const vacCoh = gameState.coherence ? gameState.coherence.toNumber() : 100.0;
+      const vacCoh = gameState.activeEpoch === 1 ? getVacuumCoherence(gameState) : new Decimal(100);
       const corrupted = corruptText(narrativeText, vacCoh, gameState);
       
       this._typeWriter(logNode, corrupted, 12);

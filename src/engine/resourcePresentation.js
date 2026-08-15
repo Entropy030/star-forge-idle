@@ -1,6 +1,6 @@
 import Decimal from 'break_infinity.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
-import { isInflationPreparationRelevant, isVacuumCoherenceRelevant } from '../eras/quantum/coherence.js';
+import { getVacuumCoherence, isInflationPreparationRelevant, isVacuumCoherenceRelevant } from '../eras/quantum/coherence.js';
 
 const ZERO = new Decimal(0);
 
@@ -39,7 +39,7 @@ function getMetaResources(state) {
 function getEraOnePresentation(state) {
   const qf = amount(state, 'quantumFluctuations');
   const energyDensity = amount(state, 'energyDensity');
-  const coherence = state.coherence || ZERO;
+  const coherence = getVacuumCoherence(state);
   const densityIntroduced = energyDensity.gt(0) || level(state, 'quantum', 'gravityForce') > 0 || hasDiscovery(state, 'qf_10');
   const coherenceIntroduced = isVacuumCoherenceRelevant(state);
   const inflationIntroduced = isInflationPreparationRelevant(state);

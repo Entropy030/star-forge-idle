@@ -13,24 +13,17 @@ describe('Era III stellar simulation and build archetypes', () => {
     setGameState(state);
   });
 
-  it('calculates coherence correctly based on stability, fuel efficiency and phases', () => {
+  it('keeps Era I Vacuum Coherence outside stellar simulation ownership', () => {
+    state.coherence = new Decimal(73);
     state.upgrades.stellar = {
-      efficient: { level: 2 }, // Stability: +20, Fuel Efficiency: +0.2
+      efficient: { level: 2 },
       massive: { level: 0 },
       compact: { level: 0 }
     };
-    state.era3.stage = "Protostar"; // phase 1
-    
-    // stability = 100 + 20 = 120
-    // fuelEfficiency = 1.0 + 0.2 = 1.2
-    // phases = 1
-    // rawCoherence = 120 * 1.2 * 1 = 144
-    // actualCoherence = 144 ^ 0.85 = ~67.14
     
     simulateStellarEra(state, 1.0);
-    expect(state.coherence.toNumber()).toBeGreaterThan(0);
-    // target is ~67.14, diff = 67.14. At 0.1 rate, it approaches by 6.714
-    expect(state.coherence.toNumber()).toBeCloseTo(6.83, 2);
+
+    expect(state.coherence.eq(73)).toBe(true);
   });
 
   describe('Efficient Build', () => {
@@ -49,7 +42,7 @@ describe('Era III stellar simulation and build archetypes', () => {
   });
 
   describe('Massive Build', () => {
-    it('increases generation speed and Iron yield, lowers stability', () => {
+    it('increases generation speed and Iron yield', () => {
       state.upgrades.stellar = { massive: { level: 4 } }; 
       state.era3.gravity = new Decimal(1);
       state.era3.stage = "Main Sequence Star";

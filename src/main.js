@@ -19,6 +19,7 @@ import { startAutoPlaytest, stopAutoPlaytest, runHeadlessSim, playtestHarness, g
 import { CanvasCore } from './ui/canvasCore.js';
 import { engine } from './engine/instance.js';
 import { getActionFailureMessage, isActionSuccessful } from './ui/actionFeedback.js';
+import { getVacuumCoherence } from './eras/quantum/coherence.js';
 
 // Re-export or attach globals needed by inline HTML (like onclick)
 const Haptics = {
@@ -206,7 +207,7 @@ function triggerInflation() {
   const result = engine.dispatch({ type: 'TRIGGER_INFLATION' });
   if (!result.ok) {
     if (result.error.code === 'PREREQUISITES_NOT_MET' || result.error.code === 'INSUFFICIENT_QF') {
-      const msg = `Insufficient QF, ED, or Coherence for Cosmic Inflation.`;
+      const msg = `Insufficient QF, ED, or Vacuum Coherence for Cosmic Inflation.`;
       console.warn(msg);
       if (typeof window !== 'undefined' && window.Viewport) {
         window.Viewport.setInlineActionFeedback('btn-inflation', msg);
@@ -975,13 +976,14 @@ export const getAIState = function (copyToClipboard = true) {
     meta: {
       activeEpoch: epoch,
       epochName: COSMIC_REGISTRY.universeChronology.epochs[epoch]?.name,
-      activeTab: gameState.activeTab,
-      coherence: gameState.coherence.toString()
+      activeTab: gameState.activeTab
     },
     resources: {},
     availableUpgrades: [],
     specialActions: {}
   };
+
+  if (epoch === 1) state.meta.vacuumCoherence = getVacuumCoherence(gameState).toString();
 
   if (epoch === 1) {
     state.resources = {
