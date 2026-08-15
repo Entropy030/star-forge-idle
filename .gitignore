@@ -13,3 +13,5 @@ Thumbs.db
 # Build and dependencies
 node_modules/
 dist/
+playwright-report/
+test-results/

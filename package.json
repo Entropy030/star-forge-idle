@@ -16,7 +16,10 @@
     "test:run": "npm run test:full",
     "test:fast": "vitest run --exclude tests/simulation/bot_longrun.test.js",
     "test:full": "npm run check:repo && npm run test:fast",
-    "test:telemetry": "vitest run tests/simulation/bot_longrun.test.js"
+    "test:telemetry": "vitest run tests/simulation/bot_longrun.test.js",
+    "test:browser": "npm run build && playwright test",
+    "test:browser:install": "playwright install chromium",
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",
@@ -26,6 +29,7 @@
     "node": ">=22.13.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "eslint": "^9.0.0",
     "eslint-plugin-import": "^2.29.1",
     "vite": "^5.0.0",
