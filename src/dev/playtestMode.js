@@ -27,13 +27,19 @@ export function checkPlaytestMode() {
 }
 
 export function enablePlaytestMode() {
-  if (isPlaytestActive) return;
+  if (isPlaytestActive) return true;
+
+  try {
+    // The normal session must be recoverable before save ownership changes.
+    const serializedBackup = serializeState(gameState);
+    sessionStorage.setItem('starForgeRealSaveBackup', JSON.stringify(serializedBackup));
+  } catch {
+    Viewport.setSystemStatus('Playtest mode could not start because session backup storage is unavailable.', 'error');
+    return false;
+  }
+
   isPlaytestActive = true;
   setPlaytestMode(true);
-  
-  // Serialize current real state to sessionStorage
-  const serializedBackup = serializeState(gameState);
-  sessionStorage.setItem('starForgeRealSaveBackup', JSON.stringify(serializedBackup));
   
   renderPlaytestUI();
   const statusEl = document.getElementById('playtest-inline-status');
@@ -41,21 +47,28 @@ export function enablePlaytestMode() {
     statusEl.textContent = "PLAYTEST MODE ENABLED";
     statusEl.style.color = '#00ecc6';
   }
+  return true;
 }
 
 export function disablePlaytestMode() {
-  if (!isPlaytestActive) return;
-  
-  isPlaytestActive = false;
-  setPlaytestMode(false);
-  setPlaytestSpeedMultiplier(1);
-  
-  const backup = sessionStorage.getItem('starForgeRealSaveBackup');
-  if (backup) {
+  if (!isPlaytestActive) return true;
+
+  try {
+    const backup = sessionStorage.getItem('starForgeRealSaveBackup');
+    if (!backup) throw new Error('Missing normal-session backup');
     const parsedBackup = JSON.parse(backup);
     const loadedState = deserializeState(parsedBackup);
     replaceRuntimeState(loadedState);
+  } catch {
+    Viewport.setPlaytestStatus('Normal save restore failed. Playtest mode remains active.', 'error');
+    Viewport.setSystemStatus('Normal save restore failed. Playtest mode remains active.', 'error');
+    return false;
   }
+
+  isPlaytestActive = false;
+  setPlaytestMode(false);
+  setPlaytestSpeedMultiplier(1);
+  try { sessionStorage.removeItem('starForgeRealSaveBackup'); } catch { /* no-op */ }
   
   const ui = document.getElementById('playtest-mode-ui');
   if (ui) ui.remove();
@@ -63,6 +76,7 @@ export function disablePlaytestMode() {
   Viewport.update();
   Viewport.syncAnchor(true);
   Viewport.setSystemStatus("Playtest Mode Disabled. Save Restored.", "warning");
+  return true;
 }
 
 function renderPlaytestUI() {

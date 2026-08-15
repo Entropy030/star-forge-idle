@@ -1,9 +1,68 @@
-import { gameState, replaceRuntimeState, ensureStateShape } from './state.js';
+import { gameState, replaceRuntimeState, ensureStateShape, getInitialGameState } from './state.js';
 import { SAVE_VERSION, MIGRATIONS } from '../state/migrations.js';
 import { serializeState, deserializeState } from '../state/serialization.js';
 
 let isPlaytestMode = false;
 let playtestSpeedMultiplier = 1;
+const CORRUPT_SAVE_PREFIX = 'starForgeCorruptSave_';
+const MAX_CORRUPT_SAVES = 3;
+
+function setPersistenceStatus(message, type = 'error') {
+  if (typeof window !== 'undefined' && window.Viewport?.setSystemStatus) {
+    window.Viewport.setSystemStatus(message, type);
+  }
+}
+
+function syncDocumentState() {
+  if (typeof document === 'undefined' || !document.body) return;
+  document.body.setAttribute('data-epoch', gameState.activeEpoch);
+  document.body.setAttribute('data-tab', gameState.activeTab);
+}
+
+function installFreshRuntimeState() {
+  replaceRuntimeState(getInitialGameState());
+  syncDocumentState();
+}
+
+function pruneCorruptSaves() {
+  try {
+    const quarantineKeys = [];
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index);
+      if (key?.startsWith(CORRUPT_SAVE_PREFIX)) quarantineKeys.push(key);
+    }
+    quarantineKeys
+      .sort((left, right) => right.localeCompare(left))
+      .slice(MAX_CORRUPT_SAVES)
+      .forEach(key => localStorage.removeItem(key));
+  } catch {
+    // Recovery must remain non-fatal even when the storage backend is unavailable.
+  }
+}
+
+function quarantineActiveSave(rawData, activeKey) {
+  let quarantineKey = null;
+  if (rawData !== null) {
+    try {
+      const timestamp = Date.now();
+      let suffix = 0;
+      do {
+        quarantineKey = `${CORRUPT_SAVE_PREFIX}${timestamp}${suffix ? `_${suffix}` : ''}`;
+        suffix += 1;
+      } while (localStorage.getItem(quarantineKey) !== null);
+      localStorage.setItem(quarantineKey, rawData);
+      pruneCorruptSaves();
+    } catch {
+      quarantineKey = null;
+    }
+  }
+  try {
+    localStorage.removeItem(activeKey);
+  } catch {
+    // A denied storage backend must not prevent a fresh in-memory boot.
+  }
+  return quarantineKey;
+}
 
 export function setPlaytestMode(enabled) {
   isPlaytestMode = enabled;
@@ -26,8 +85,15 @@ export function getActiveSaveKey() {
 }
 
 export function saveGame() {
-  const saveState = { version: SAVE_VERSION, gameState: serializeState(gameState), lastSavedTime: Date.now() };
-  localStorage.setItem(getActiveSaveKey(), JSON.stringify(saveState));
+  try {
+    const saveState = { version: SAVE_VERSION, gameState: serializeState(gameState), lastSavedTime: Date.now() };
+    localStorage.setItem(getActiveSaveKey(), JSON.stringify(saveState));
+    return { success: true };
+  } catch {
+    const message = 'Save failed: browser storage is unavailable or full. Progress remains active in this session.';
+    setPersistenceStatus(message, 'error');
+    return { success: false, message };
+  }
 }
 
 export function isSerializedStatePayload(value) {
@@ -39,26 +105,35 @@ export function isSerializedStatePayload(value) {
 }
 
 export function loadGame() {
+  const activeKey = getActiveSaveKey();
+  let sourceKey = activeKey;
+  let rawData = null;
   try {
-    let rawData = localStorage.getItem(getActiveSaveKey());
+    rawData = localStorage.getItem(activeKey);
     
     // Fallbacks only apply to the normal save slot
-    if (!isPlaytestMode && !rawData) {
-      rawData = localStorage.getItem('starForgeSave_v16') || 
-                localStorage.getItem('starForgeSave_v15') || 
-                localStorage.getItem('starForgeSave_v14') || 
-                localStorage.getItem('starForgeSave_v13') || 
-                localStorage.getItem('starForgeSave');
+    if (!isPlaytestMode && rawData === null) {
+      for (const legacyKey of ['starForgeSave_v16', 'starForgeSave_v15', 'starForgeSave_v14', 'starForgeSave_v13', 'starForgeSave']) {
+        const legacyData = localStorage.getItem(legacyKey);
+        if (legacyData !== null) {
+          rawData = legacyData;
+          sourceKey = legacyKey;
+          break;
+        }
+      }
     }
 
-    if (!rawData) {
+    if (rawData === null) {
       ensureStateShape(gameState);
-      document.body.setAttribute('data-epoch', gameState.activeEpoch);
-      document.body.setAttribute('data-tab', gameState.activeTab);
+      syncDocumentState();
       return { offlineSec: 0, offlineTimeStr: null };
     }
 
-    if (rawData === "[object Object]") {
+    if (rawData.trim() === '') {
+      throw new Error('Empty save payload detected');
+    }
+
+    if (rawData === '[object Object]') {
       throw new Error("Corrupted literal [object Object] save detected");
     }
 
@@ -67,7 +142,9 @@ export function loadGame() {
       throw new Error("Parsed save data or gameState is not a valid object payload");
     }
 
-    let stateVersion = parsed.version || 13;
+    let stateVersion = parsed.version ?? 13;
+    if (!Number.isInteger(stateVersion)) throw new Error('Invalid save version');
+    if (stateVersion > SAVE_VERSION) throw new Error(`Future save version ${stateVersion} is not supported`);
     if (stateVersion < 13) stateVersion = 13;
     let loadedState = deserializeState(parsed.gameState);
 
@@ -77,6 +154,7 @@ export function loadGame() {
       loadedState = migrationFn(loadedState);
       stateVersion = loadedState.version || (stateVersion + 1);
     }
+    if (stateVersion !== SAVE_VERSION) throw new Error(`No complete migration path to save version ${SAVE_VERSION}`);
 
     replaceRuntimeState(loadedState);
 
@@ -96,34 +174,32 @@ export function loadGame() {
     }
     return { offlineSec: 0, offlineTimeStr: null };
   } catch (e) {
-    console.error("Failed to load save:", e);
-    const rawData = localStorage.getItem(getActiveSaveKey());
-    if (rawData) {
-      const ts = Date.now();
-      localStorage.setItem(`starForgeCorruptSave_${ts}`, rawData);
-      localStorage.removeItem(getActiveSaveKey());
-      if (typeof window !== 'undefined' && window.Viewport && window.Viewport.setSystemStatus) {
-        window.Viewport.setSystemStatus(`Corrupted save quarantined (starForgeCorruptSave_${ts}). Initializing fresh universe.`, 'error');
-      }
-    }
-
-    ensureStateShape(gameState);
-    document.body.setAttribute('data-epoch', gameState.activeEpoch);
-    document.body.setAttribute('data-tab', gameState.activeTab);
+    console.warn('Failed to load save; initializing a fresh universe:', e);
+    const quarantineKey = quarantineActiveSave(rawData, sourceKey);
+    const recoveryDetail = quarantineKey ? ` Quarantined as ${quarantineKey}.` : '';
+    setPersistenceStatus(`Save recovery activated.${recoveryDetail} Initializing fresh universe.`, 'error');
+    installFreshRuntimeState();
     return { offlineSec: 0, offlineTimeStr: null };
   }
 }
 
 export function exportSave() {
-  saveGame();
-  let rawData = localStorage.getItem(getActiveSaveKey());
-  if (rawData) {
-    let encoded = btoa(rawData);
-    return navigator.clipboard.writeText(encoded)
-      .then(() => ({ success: true, message: "Universe encrypted to clipboard!" }))
-      .catch(() => ({ success: false, message: "Clipboard write permission blocked." }));
+  const saveResult = saveGame();
+  if (!saveResult.success) return Promise.resolve(saveResult);
+
+  try {
+    const rawData = localStorage.getItem(getActiveSaveKey());
+    if (!rawData) return Promise.resolve({ success: false, message: 'No save data found.' });
+    if (!navigator.clipboard?.writeText) {
+      return Promise.resolve({ success: false, message: 'Clipboard access is unavailable. Use a supported secure browser context.' });
+    }
+    const encoded = btoa(rawData);
+    return Promise.resolve(navigator.clipboard.writeText(encoded))
+      .then(() => ({ success: true, message: 'Universe encrypted to clipboard!' }))
+      .catch(() => ({ success: false, message: 'Clipboard write permission blocked.' }));
+  } catch {
+    return Promise.resolve({ success: false, message: 'Save export could not access browser storage.' });
   }
-  return Promise.resolve({ success: false, message: "No save data found." });
 }
 
 export function importSave(input) {
@@ -131,14 +207,14 @@ export function importSave(input) {
   try {
     let decoded = atob(input);
     let parsed = JSON.parse(decoded);
-    if (parsed && parsed.version === SAVE_VERSION) {
+    if (isSerializedStatePayload(parsed) && parsed.version === SAVE_VERSION && isSerializedStatePayload(parsed.gameState)) {
       try {
         const importedState = deserializeState(parsed.gameState);
-        replaceRuntimeState(importedState);
         localStorage.setItem(getActiveSaveKey(), decoded);
+        replaceRuntimeState(importedState);
         return { success: true };
       } catch (e) {
-        return { success: false, message: "State format error during import." };
+        return { success: false, message: 'State import failed. Browser storage may be unavailable or the state format is invalid.' };
       }
     } else { return { success: false, message: "Unsupported timeline formatting configuration." }; }
   } catch (e) { return { success: false, message: "Fatal transmission verification corruption." }; }
