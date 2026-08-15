@@ -1,12 +1,12 @@
 # Star Forge Idle — Handover
 
-Last verified against `main` during P3 Stabilization S4 (2026-08-15).
+Last verified during P3 Stabilization S6 (2026-08-15).
 
 ## Project and status
 
 Star Forge Idle is a browser incremental game in which the player observes and shapes a universe from quantum fluctuations through plasma, recombination, and stellar evolution.
 
-Current milestone: **P3 STABLE WITH DOCUMENTED DEBT**.
+Current milestone: **P3 STABLE WITH ACCEPTED DEBT**.
 
 Supported player journey:
 
@@ -16,7 +16,13 @@ Supported player journey:
 
 Era IV/V source and selected command tests exist as prototype/future scaffolding. They are not a supported P3 experience and are not permission to begin P4.
 
-The final live-metric jitter defect is closed. Its permanent engineering contract is documented below and in [the audit](docs/P3_STABILIZATION_AUDIT.md#resolved-live-data-layout-contract). The remaining P1 findings are extension-boundary work required before P4, not confirmed defects in the supported P3 journey.
+The final live-metric jitter defect is closed. Its permanent engineering contract is documented below and in [the audit](docs/P3_STABILIZATION_AUDIT.md#resolved-live-data-layout-contract). S6 also reproduced and closed a release-blocking console exception in the repeatable Supernova UI wrapper; the reset itself, remnant rewards, second-run state, and Chrono continuity now complete together without an exception.
+
+## P3 freeze baseline
+
+The S6 release gate completed clean installation, repository hygiene, lint, FAST, FULL, BROWSER, TELEMETRY, production build, production dependency audit, all eight playtest presets, the supported Era I–III journey, Supernova reset, persistence/isolation acceptance, remote Actions inspection, and live Pages boot.
+
+The recommended release tag is `p3-stable-v1`, pointing at the final P3 freeze commit. S6 does not create or push that tag. External red-team review is the next activity; P4 implementation remains out of scope until that review is triaged.
 
 ## Architecture map
 
@@ -97,7 +103,7 @@ npm run test:telemetry
 npm run build
 ```
 
-`npm run test` maps to `test:full`: repository hygiene plus all 236 correctness tests. `test:fast` runs the same inexpensive Vitest correctness contracts without repeating hygiene. `test:browser` builds and runs 15 production-preview Playwright contracts; install Chromium once with `npm run test:browser:install`. `test:telemetry` separately runs three multi-million-tick bot profiles. `npm run typecheck` is currently a placeholder and provides no type safety.
+`npm run test` maps to `test:full`: repository hygiene plus all 237 correctness tests. `test:fast` runs the same inexpensive Vitest correctness contracts without repeating hygiene. `test:browser` builds and runs 15 production-preview Playwright contracts; install Chromium once with `npm run test:browser:install`. `test:telemetry` separately runs three multi-million-tick bot profiles. `npm run typecheck` is currently a placeholder and provides no type safety.
 
 ## Playtest
 
@@ -147,17 +153,31 @@ The historical literal `[object Object]` write failure and browser storage/clipb
 
 `.github/workflows/deploy-pages.yml` validates pull requests to `main` with hygiene, lint, FAST/build and a parallel required BROWSER job, without deployment. Pushes to `main` and manual dispatch run FULL/build plus BROWSER; Pages deploys only after both required jobs succeed. `.github/workflows/telemetry.yml` runs the long bot profiles weekly or manually and does not block routine PRs or deployment.
 
+## Dependency security
+
+At the S6 freeze, `npm audit --omit=dev` reports zero production vulnerabilities. The full development graph still reports two moderate, two high, and one critical advisory in Vite/Vitest/vite-node tooling and their esbuild/Nanoid dependencies. Those packages are not shipped as reachable browser runtime dependencies in the current static production artifact. Remediation requires a coordinated major Vite/Vitest toolchain upgrade and is intentionally deferred; do not interpret this as approval to ignore future production-reachable advisories.
+
 ## Known technical debt
 
-P1 pre-P4:
+Accepted P3 debt:
 
-- manual dev `getAIState()` and the unused `core/botActions.js` compatibility copy still expose simplified telemetry flags, but the active playtest bot no longer consumes them;
+- boot reports capped offline elapsed time but intentionally does not apply it to simulation;
+- manual import accepts the exact current save version and does not migrate older exports;
+- automated accessibility contracts are present, while manual screen-reader validation remains a release smoke;
+- one S6 TELEMETRY run completed correctly but took 516.47 s, above the prior 130–260 s local range. Outcomes and checkpoints did not drift; telemetry duration remains an observation, not a correctness target.
 
-P2:
+P4 prerequisites:
 
+- review or remove the simplified telemetry flags exposed by manual dev `getAIState()` and the unused `core/botActions.js` compatibility copy before extending bot/runtime authority;
+- preserve the single `advanceGameTick()` production/headless boundary and Era-I-only Vacuum Coherence model when adding later-era systems.
+
+Future maintenance:
+
+- perform the coordinated Vite/Vitest major security-tooling upgrade and re-audit the full graph;
+- update GitHub Actions whose Node 20 runtimes are currently forced onto Node 24, and consider immutable action SHA pinning;
 - the `Viewport` ↔ `ui/stellar.js` presentation cycle still has scoped suppressions;
-- manual screen-reader validation remains a release smoke activity;
-- large composition modules remain migration debt.
+- large composition modules remain migration debt;
+- `npm run typecheck` remains a placeholder.
 
 ## Before P4
 
@@ -166,6 +186,8 @@ P2:
 3. **S4 complete:** durable test naming, bounded bot correctness, long-run telemetry, PR validation and proportionate FAST/FULL/TELEMETRY lanes are established.
 4. **S5 complete:** production-preview browser persistence, failure handling, keyboard/ARIA, geometry/CLS, PWA/offline shell and required CI coverage are established. Boot still intentionally does not consume returned offline elapsed time.
 5. **S5.5 complete:** Vacuum Coherence is Era-I-only; later eras use Plasma Temperature, stellar state, Galaxy Stability, and Entropy without mirroring them into `state.coherence`.
-6. **Next:** security triage, then S6 final verification. Re-run all eight presets, save/load/import/export cases, bot progression, lint, tests, build, and real-device smoke before P4 implementation.
+6. **Security triage complete:** production dependencies have zero known vulnerabilities; development-tooling remediation is deferred as documented debt.
+7. **S6 complete:** final local gates, all presets, supported Era I–III progression, persistence/PWA acceptance, remote CI, live deployment, and the repeatable Supernova reset are verified.
+8. **Next:** conduct external red-team review, triage its evidence, and only then plan P4 implementation.
 
 Full evidence and follow-up boundaries are in [docs/P3_STABILIZATION_AUDIT.md](docs/P3_STABILIZATION_AUDIT.md).

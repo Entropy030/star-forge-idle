@@ -2,17 +2,17 @@
 
 ## Current inventory
 
-S5.5 snapshot on 2026-08-15:
+S6 freeze snapshot on 2026-08-15:
 
 | Lane | Files | Tests | Measured local wall time | Purpose |
 |---|---:|---:|---:|---|
-| FAST | 44 | 236 | 5.43 s | Durable correctness and regression feedback |
-| FULL | 44 | 236 | 4.26 s | FAST plus repository hygiene; main/release correctness |
-| BROWSER | 5 | 15 | 54.82 s | Production-preview persistence, interaction, geometry and PWA acceptance |
-| TELEMETRY | 1 | 3 | 129.28 s | Long-run strategy viability and balance signals |
-| Vitest total | 45 | 239 | — | Union of correctness and telemetry coverage |
+| FAST | 44 | 237 | 4.94 s | Durable correctness and regression feedback |
+| FULL | 44 | 237 | 5.15 s | FAST plus repository hygiene; main/release correctness |
+| BROWSER | 5 | 15 | 75.99 s | Production-preview persistence, interaction, geometry and PWA acceptance |
+| TELEMETRY | 1 | 3 | 516.47 s | Long-run strategy viability and balance signals |
+| Vitest total | 45 | 240 | — | Union of correctness and telemetry coverage |
 
-The pre-S4 default suite had 43 files and 227 tests and most recently took 158.60 s. `p2c_bot.test.js` alone took 156.42 s. Counts and timings are dated evidence, not quality targets. S5.5 FAST and FULL were measured as separate sequential commands; the warm FULL run was faster than the later standalone FAST run.
+The pre-S4 default suite had 43 files and 227 tests and most recently took 158.60 s. `p2c_bot.test.js` alone took 156.42 s. Counts and timings are dated evidence, not quality targets. S6 FAST and FULL were measured as separate sequential commands. The S6 TELEMETRY run completed with the expected three outcomes and second-run checkpoints but exceeded its prior 130–260 s local range; this is accepted performance variance to monitor, not correctness drift. One preceding BROWSER attempt saw a transient Google Fonts CDN 404; its isolated retry and the complete final 15-test run passed without code or test changes.
 
 ## Commands and lanes
 
