@@ -152,7 +152,7 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 
 **Why:** A denied storage or clipboard API must not crash simulation, expose playtest state to the normal slot, or replace a usable in-memory universe with data that could not be persisted.
 
-**Consequences:** Normal loads keep sequential migration support, while manual imports remain exact-current-version only. Offline elapsed time remains characterized but unconsumed by boot.
+**Consequences:** Normal loads keep sequential migration support, while manual imports remain exact-current-version only. PRE-P4.2 consumes valid normal-save elapsed time through the authoritative tick and immediately checkpoints successful catch-up; import and playtest establish independent anchors.
 
 ## D20 — Vacuum Coherence ends with Era I
 
@@ -171,3 +171,11 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Why:** Direct Core-node, Celestial-Card, Legacy-purchase, transition-history, and dev-eligibility copies created multiple places where one interaction could disagree with or bypass the engine.
 
 **Consequences:** `Economy`, `src/core/actions.js`, and Cosmic-Tuning UI wiring are dispatch-only for migrated actions. Buy 1/10/Max is one command with one mutation sequence. The unused `core/botActions.js` copy is removed, while the remaining manual AI snapshot consumes authoritative eligibility selectors. Save version stays 17; normalization removes the abandoned Era-I `asymmetryBias`, `annihilationEnergy`, and `survivingMatter` keys while preserving `antimatterResidue` and other future compatibility state.
+
+## D22 — Offline progression shares live gameplay authority
+
+**Decision:** Valid normal cold returns credit at most eight wall-clock hours. Catch-up advances one-second logical chunks through `advanceGameTick()` with normal gameplay-time modifiers, while a deny-by-default offline context suppresses purchases, autobuy, stochastic auto-compress, flares, random rewards, and every major transition/reset command.
+
+**Why:** Star Forge is an idle game, but readiness is not consent. Passive universe evolution should continue while Inflation, Recombination, Supernova, and Galactic Ignition remain player-authored decisions.
+
+**Consequences:** Playtest speed never affects cold-return credit. Domain achievements, objectives, missions, narrative, and Codex reconcile headlessly; presentation effects are summarized once rather than replayed. Successful catch-up is checkpointed before live scheduling. The return briefing is ephemeral and never serialized. Storage failure preserves the caught-up in-memory universe but cannot promise durability beyond the existing storage boundary.

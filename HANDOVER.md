@@ -103,7 +103,7 @@ npm run test:telemetry
 npm run build
 ```
 
-`npm run test` maps to `test:full`: repository hygiene plus all 237 correctness tests. `test:fast` runs the same inexpensive Vitest correctness contracts without repeating hygiene. `test:browser` builds and runs 15 production-preview Playwright contracts; install Chromium once with `npm run test:browser:install`. `test:telemetry` separately runs three multi-million-tick bot profiles. `npm run typecheck` is currently a placeholder and provides no type safety.
+`npm run test` maps to `test:full`: repository hygiene plus 295 correctness tests at the PRE-P4.2 baseline. `test:fast` runs the same inexpensive Vitest correctness contracts without repeating hygiene. `test:browser` builds and runs 16 production-preview Playwright contracts; install Chromium once with `npm run test:browser:install`. `test:telemetry` separately runs three multi-million-tick bot profiles. `test:offline-performance` profiles authoritative 1s catch-up batches. `npm run typecheck` is currently a placeholder and provides no type safety.
 
 ## Playtest
 
@@ -140,7 +140,8 @@ The bot owns strategy, not legality. Inflation, Fundamental Law, Recombination, 
 - Saves are `{ version, gameState, lastSavedTime }`, recursively serialized, JSON-stringified, then written.
 - `Decimal` and `Set` values are tagged by `src/state/serialization.js` and revived on load.
 - Normal loads migrate supported older versions, then replace/normalize runtime state.
-- `loadGame()` reports offline elapsed time capped at eight hours, but current boot does not consume that return value; only in-session scheduler/visibility gaps enter production catch-up.
+- `loadGame()` returns structured source/elapsed/cap/anomaly/recovery metadata. Valid normal cold returns consume at most eight hours through `advanceGameTick()` before first render, then checkpoint and reset the live clock.
+- Offline progression allows deterministic passive systems and reconciliation, but never purchases, autobuy, stochastic auto-compress/flares, Inflation, Recombination, Supernova, or Galactic Ignition. Readiness may become true for later player action.
 - Corrupt/empty/future active saves recover to a known fresh state, are removed from the active slot, and retain at most three timestamped quarantine diagnostics when storage permits.
 - Export copies base64-encoded serialized JSON to the clipboard.
 - Import currently accepts only the exact current save version; unlike normal load, it does not migrate older exports.
@@ -161,7 +162,7 @@ At the S6 freeze, `npm audit --omit=dev` reports zero production vulnerabilities
 
 Accepted P3 debt:
 
-- boot reports capped offline elapsed time but intentionally does not apply it to simulation;
+- post-catch-up storage denial preserves the in-memory universe but cannot durably prevent a later reload from crediting the still-unmodified save interval;
 - manual import accepts the exact current save version and does not migrate older exports;
 - automated accessibility contracts are present, while manual screen-reader validation remains a release smoke;
 - one S6 TELEMETRY run completed correctly but took 516.47 s, above the prior 130–260 s local range. Outcomes and checkpoints did not drift; telemetry duration remains an observation, not a correctness target.
@@ -184,11 +185,12 @@ Future maintenance:
 1. **S2 complete:** production tick ordering and gameplay eligibility are characterized.
 2. **S3 complete:** one authoritative production/headless tick exists; dead runtimes are removed; browser effects are injected outside simulation ownership.
 3. **S4 complete:** durable test naming, bounded bot correctness, long-run telemetry, PR validation and proportionate FAST/FULL/TELEMETRY lanes are established.
-4. **S5 complete:** production-preview browser persistence, failure handling, keyboard/ARIA, geometry/CLS, PWA/offline shell and required CI coverage are established. Boot still intentionally does not consume returned offline elapsed time.
+4. **S5 complete:** production-preview browser persistence, failure handling, keyboard/ARIA, geometry/CLS, PWA/offline shell and required CI coverage are established. Its no-cold-catch-up observation is historical and was superseded by PRE-P4.2.
 5. **S5.5 complete:** Vacuum Coherence is Era-I-only; later eras use Plasma Temperature, stellar state, Galaxy Stability, and Entropy without mirroring them into `state.coherence`.
 6. **Security triage complete:** production dependencies have zero known vulnerabilities; development-tooling remediation is deferred as documented debt.
 7. **S6 complete:** final local gates, all presets, supported Era I–III progression, persistence/PWA acceptance, remote CI, live deployment, and the repeatable Supernova reset are verified.
 8. **PRE-P4.1 complete:** runtime history is canonical, abandoned Era-I baryon-simulation fields are normalized out of v17 state, and legacy UI/dev action paths no longer duplicate gameplay authority.
-8. **Next:** conduct external red-team review, triage its evidence, and only then plan P4 implementation.
+9. **PRE-P4.2 complete:** valid cold returns share the authoritative runtime tick, major decisions remain player-authored, successful catch-up checkpoints before live scheduling, and an ephemeral accessible briefing summarizes meaningful change.
+10. **Next:** PRE-P4.3 interaction/Core prototype planning may begin; no prototype work is included here.
 
 Full evidence and follow-up boundaries are in [docs/P3_STABILIZATION_AUDIT.md](docs/P3_STABILIZATION_AUDIT.md).

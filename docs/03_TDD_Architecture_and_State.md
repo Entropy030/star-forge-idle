@@ -88,7 +88,7 @@ Presentation selectors must not mutate, normalize, or dispatch.
 
 ## Simulation ownership
 
-The production scheduler in `src/main.js` measures real elapsed time and scales it by the speed-of-light modifier and playtest multiplier. Normal ticks call `advanceGameTick(simulatedSeconds, applyRuntimeEffect)`. Large/background intervals are processed asynchronously in one-second chunks, capped at eight hours.
+The production scheduler in `src/main.js` measures real elapsed time and scales it by the speed-of-light modifier and playtest multiplier. Normal ticks call `advanceGameTick(simulatedSeconds, applyRuntimeEffect)`. Large/background intervals are processed asynchronously in one-second chunks with the offline capability policy.
 
 Simulation and rendering are separate clocks:
 
@@ -97,7 +97,7 @@ Simulation and rendering are separate clocks:
 3. `advanceGameTick()` mutates the reactive state, which marks it dirty.
 4. An independent RAF renders `Viewport.update()` only when dirty, then clears the flag.
 
-`loadGame()` calculates and returns saved offline elapsed time, but the current `bootApp()` does not consume that return value. The active catch-up path therefore handles scheduler/visibility gaps in the running browser session; persisted close/reopen offline progress is not currently fed into simulation. S5 characterized this behavior and intentionally did not enable offline progression.
+`loadGame()` returns structured metadata describing source, actual and credited elapsed time, cap/anomaly/recovery state, and whether a save was loaded. It does not return a second gameplay state. `bootApp()` detects playtest ownership before load, applies valid normal-save catch-up before first render, checkpoints the caught-up state, resets the live clock, and only then starts scheduler/autosave/RAF.
 
 Within `advanceGameTick()` the observable ordering remains:
 
@@ -111,9 +111,9 @@ Within `advanceGameTick()` the observable ordering remains:
 
 Eligibility and transition readiness are derived on demand rather than stored. A selector called after simulation sees the new state in the same tick. By contrast, Era I peak-QF law unlocks and passive-production narrative thresholds become visible on the following tick because their checks precede production. Characterization tests intentionally protect both behaviors.
 
-`src/core/runtimeTick.js` is the authoritative production/headless advancement boundary. It owns tick ordering, Era I passive Vacuum Coherence and narrative domain mutation, Timeline invocation, objective progression, achievement mutation, and missions. It accepts an optional effect sink and emits narrative/achievement facts at their original ordering points.
+`src/core/runtimeTick.js` is the authoritative production/headless/offline advancement boundary. It owns tick ordering, Era I passive Vacuum Coherence and narrative domain mutation, Timeline invocation, objective progression, achievement mutation, and missions. It accepts an optional effect sink plus a centralized tick context. Live is the default; offline denies automation and random systems while retaining deterministic physics.
 
-`src/core/timeline.js` now owns chunking and Era simulation only. Objective definitions/progression live in `src/core/objectiveDefinitions.js` and `src/core/objectives.js`; UI compatibility facades re-export their APIs. `src/ui/runtimeEffects.js` owns Chrono/DOM and achievement `CustomEvent` effects. Production injects that sink; headless automation omits it while still applying the exact same domain tick.
+`src/core/timeline.js` owns Era simulation and passes the tick context to Era handlers. `src/core/offline.js` owns credited catch-up batching: one-second chunks, bounded batches, event-loop yields, before/after snapshots, Codex reconciliation, and checkpoint handoff. Objective definitions/progression live in `src/core/objectiveDefinitions.js` and `src/core/objectives.js`; `src/core/codexProgression.js` owns headless unlock evaluation. `src/ui/runtimeEffects.js` owns live Chrono/DOM effects; offline collects domain facts without replaying presentation.
 
 Do not call `engine.tick()` or `Timeline.process()` alongside `advanceGameTick()` for the same logical step; that would create divergent clocks or double simulation.
 
@@ -148,7 +148,7 @@ Normal and playtest slots are isolated. Entering playtest writes the serialized 
 
 Export/import wraps serialized JSON in base64. Manual import intentionally accepts only the exact current version; it does not run normal-save migrations. Import persists the validated payload before runtime replacement, so a denied/quota-limited write preserves the current in-memory state. Autosave/export storage errors and unavailable/rejected clipboard writes return contextual failures without throwing through the browser loop.
 
-Offline time returned by load is capped at eight hours, but production boot currently ignores the returned elapsed value. In-session scheduler/visibility gaps use the separate production catch-up accumulator.
+Offline credit is capped at eight hours of positive normal-save wall time. Negative clocks are flagged and credited zero; corrupt/future/fresh data receives no catch-up; manual imports re-anchor at import time; playtest loads receive no offline credit. Normal gameplay-time modifiers apply exactly once, while playtest acceleration is excluded. A successful catch-up attempts an immediate normal save before live scheduling so the interval cannot be credited again. If storage is denied, in-memory progress remains usable and the durability limitation is reported contextually.
 
 ## Dependency rules
 

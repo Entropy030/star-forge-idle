@@ -14,6 +14,8 @@ S6 freeze snapshot on 2026-08-15:
 
 The pre-S4 default suite had 43 files and 227 tests and most recently took 158.60 s. `p2c_bot.test.js` alone took 156.42 s. Counts and timings are dated evidence, not quality targets. S6 FAST and FULL were measured as separate sequential commands. The S6 TELEMETRY run completed with the expected three outcomes and second-run checkpoints but exceeded its prior 130–260 s local range; this is accepted performance variance to monitor, not correctness drift. One preceding BROWSER attempt saw a transient Google Fonts CDN 404; its isolated retry and the complete final 15-test run passed without code or test changes.
 
+PRE-P4.2 adds structured elapsed/load, authoritative offline parity/policy, checkpoint/idempotency, ephemeral summary, and 390 px cold-return browser contracts. The final PRE-P4.2 baseline is 50 FAST/FULL files with 295 correctness tests and 6 BROWSER files with 16 tests; the historical S6 table above remains release-freeze evidence.
+
 ## Commands and lanes
 
 ### FAST
@@ -57,6 +59,14 @@ The one-time install command downloads Playwright Chromium; browser binaries are
 
 Browser acceptance complements unit/jsdom contracts; it does not replace their faster domain and DOM feedback. Automated browser semantics and keyboard contracts are covered. Manual screen-reader validation remains a release smoke activity.
 
+### OFFLINE PERFORMANCE
+
+```bash
+npm run test:offline-performance
+```
+
+Profiles 1 minute, 1 hour, and 8 hours across representative Era I–III/second-run states and all eight supported presets at the cap. It reports logical ticks, wall time, batch count, and maximum batch duration. This is profiling evidence rather than a brittle CI assertion; if one-second authoritative chunks meet responsiveness targets, do not add analytical formula shortcuts.
+
 ## Test domains and coverage
 
 Test count is not a quality target. Every durable test must protect an observable gameplay, runtime, UI, persistence, or architectural contract.
@@ -67,7 +77,7 @@ Test count is not a quality target. Every durable test must protect an observabl
 - **Era II:** commands, production/synthesis, cooling, progressive disclosure and Recombination.
 - **Era III:** stellar simulation, temperature/fusion, Supernova eligibility/outcomes/rewards, Galactic Ignition and repeat-run Legacy behavior.
 - **UI:** Cosmos, Forge, resources, navigation, state truth, stable live-value nodes, responsive/mobile, reduced motion and semantic controls.
-- **Persistence:** serialization, migration, import failure safety, playtest isolation and corrupt-save quarantine.
+- **Persistence/offline:** serialization, migration, structured elapsed metadata, import anchors, playtest isolation, corrupt-save quarantine, authoritative tick parity, transition/automation suppression, checkpoint behavior, storage denial and ephemeral briefing.
 - **Bot:** legality and exactly-once tick authority in FAST; bounded reset/Legacy smoke in FAST; long-run strategy and pacing in TELEMETRY.
 
 Known high-value boundaries intentionally have overlapping protection: state replacement, Inflation, Recombination, Supernova reward parity, Galactic Ignition, and stable live-value DOM identity. The tests cover different command, runtime, presentation, or historical-regression contracts and were not merged merely because they touch the same feature.

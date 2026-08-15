@@ -96,3 +96,9 @@ Production-preview browser acceptance covers primary navigation, Core/Forge/More
 ## Feedback
 
 The game uses contextual feedback near the Core, process, Forge card, or terminal. No generic toast notifications. Feedback must avoid excessive floating text/animation, remain understandable with reduced motion, and never be the only place an error or requirement is exposed.
+
+## Offline return briefing
+
+Cold-return facts appear in the Cosmos context as an ephemeral `WHILE YOU WERE AWAY` region. It derives only from stable before/after snapshots, load metadata, and collected domain events; it never mutates or persists gameplay state.
+
+The region shows useful non-zero resource/physical changes, newly available transitions, discoveries/milestones, Observer decisions, paused automation, the eight-hour cap, and checkpoint failure when relevant. A sub-minute resource-only return remains hidden, but its credited simulation is still applied. The briefing is not a toast, does not steal focus, has a semantic heading and dismiss button, supports keyboard operation, uses no required motion, and collapses to one column at 390 px without covering primary actions.

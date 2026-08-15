@@ -132,3 +132,9 @@ It is an Era IV gate, not part of the repeatable Supernova reward loop. P3 docum
 ## Future Eras
 
 Era IV/V modules and selected tests are prototype/future scaffolding. Their semantic ownership is nevertheless settled: Era IV owns Galaxy Stability, and Era V owns Entropy. The existing Era V Bit-production modifier derives directly from inverse Entropy; it does not create a second stored Coherence value. These are not claims that Era IV/V gameplay is complete. P4 must still establish supported mechanics, UI contracts, and regression coverage.
+
+## Offline progression contract
+
+Cold-return offline progression is part of the intended idle loop. A valid normal save receives at most eight hours of wall-clock credit. Passive production and already-enabled deterministic conversion/cooling/fusion advance through the same gameplay tick as live play. Achievements, objectives, missions/rank, narrative milestones, Codex unlocks, and transition readiness may reconcile when caused by that allowed progress.
+
+Offline time never performs purchases, Observation/click actions, Fundamental Law purchases, autobuy, stochastic auto-compress, flares, or random rewards. Cosmic Inflation, Recombination, Supernova, and Galactic Ignition can become ready but are never triggered offline. These events remain explicit Observer decisions.
