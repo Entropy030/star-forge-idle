@@ -2,7 +2,7 @@ import { getQuantumFluctuationRate } from './economy.js';
 import { engine } from '../engine/instance.js';
 import { isDirty, setIsDirty } from './state.js';
 import { Economy, getAmount } from './economy.js';
-import { Timeline } from './timeline.js';
+import { advanceGameTick } from './runtimeTick.js';
 import { Viewport } from '../ui/viewport.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import { format } from '../ui/viewport.js';
@@ -422,8 +422,7 @@ class PlaytestEngine {
     for (let i = 0; i < limit; i++) {
       if (this.runPhase === 'COMPLETE' || this.runPhase === 'FAILED') break;
       
-      engine.tick(tickRate);
-      Timeline.process(tickRate);
+      advanceGameTick(tickRate);
       this.stats.ticksElapsed++;
       this.stats.gameSecondsElapsed += tickRate;
 
@@ -486,8 +485,7 @@ class PlaytestEngine {
         this.failBot('MAX_TICKS_EXCEEDED');
         break;
       }
-      engine.tick(0.10);
-      Timeline.process(0.10);
+      advanceGameTick(0.10);
       this.stats.ticksElapsed++;
       this.stats.gameSecondsElapsed += 0.10;
       this.stepBotDecision();

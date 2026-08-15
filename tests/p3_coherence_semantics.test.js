@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import Decimal from 'break_infinity.js';
 import { getInitialGameState } from '../src/core/state.js';
-import { gameTick } from '../src/core/timeline.js';
+import { advanceGameTick } from '../src/core/runtimeTick.js';
 import { quantumCommandHandlers } from '../src/eras/quantum/commands.js';
 import { getVacuumCoherenceRates, isVacuumCoherenceRelevant } from '../src/eras/quantum/coherence.js';
 import { getInflationEligibility } from '../src/eras/quantum/inflation.js';
@@ -26,7 +26,7 @@ describe('P3.3B5.2 Vacuum Coherence semantics', () => {
     state.unfold.introCompleted = true;
     replaceRuntimeState(state);
     const rate = getVacuumCoherenceRates(gameState).passiveRate;
-    gameTick(2);
+    advanceGameTick(2);
     expect(gameState.coherence.eq(rate.times(2))).toBe(true);
   });
 

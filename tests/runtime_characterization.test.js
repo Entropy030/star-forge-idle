@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Decimal from 'break_infinity.js';
 import { getInitialGameState, gameState, replaceRuntimeState } from '../src/core/state.js';
-import { gameTick, Timeline } from '../src/core/timeline.js';
+import { Timeline } from '../src/core/timeline.js';
+import { advanceGameTick } from '../src/core/runtimeTick.js';
 import { getInflationEligibility } from '../src/eras/quantum/inflation.js';
 import { getQuantumUpgradeEligibility } from '../src/eras/quantum/eligibility.js';
 import { getRecombinationEligibility } from '../src/eras/plasma/eligibility.js';
@@ -30,7 +31,7 @@ describe('production runtime characterization', () => {
 
     expect(getInflationEligibility(gameState).isEligible).toBe(false);
 
-    gameTick(1);
+    advanceGameTick(1);
 
     expect(gameState.resources.quantumFluctuations.amount.gte(100000)).toBe(true);
     expect(getInflationEligibility(gameState).isEligible).toBe(true);
@@ -45,14 +46,14 @@ describe('production runtime characterization', () => {
       state.discoveries = new Set();
     });
 
-    gameTick(1);
+    advanceGameTick(1);
 
     expect(gameState.resources.quantumFluctuations.amount.gte(100)).toBe(true);
     expect(gameState.stats.maxQF.eq('99.5')).toBe(true);
     expect(getQuantumUpgradeEligibility(gameState, 'weakForce').unlocked).toBe(false);
     expect(gameState.discoveries.has('qf_100')).toBe(false);
 
-    gameTick(0.001);
+    advanceGameTick(0.001);
 
     expect(gameState.stats.maxQF.gte(100)).toBe(true);
     expect(getQuantumUpgradeEligibility(gameState, 'weakForce').unlocked).toBe(true);
@@ -69,7 +70,7 @@ describe('production runtime characterization', () => {
 
     expect(getRecombinationEligibility(gameState).isEligible).toBe(false);
 
-    gameTick(1);
+    advanceGameTick(1);
 
     expect(gameState.plasmaTemperature.lte(3000)).toBe(true);
     expect(getRecombinationEligibility(gameState).isEligible).toBe(true);
@@ -92,7 +93,7 @@ describe('production runtime characterization', () => {
 
     expect(getGalacticIgnitionEligibility(gameState).isEligible).toBe(false);
 
-    gameTick(1);
+    advanceGameTick(1);
 
     expect(gameState.resources.iron.amount.gte(1000)).toBe(true);
     expect(getGalacticIgnitionEligibility(gameState).isEligible).toBe(true);

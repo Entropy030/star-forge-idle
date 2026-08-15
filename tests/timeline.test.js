@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Timeline, gameTick } from '../src/core/timeline.js';
+import { Timeline } from '../src/core/timeline.js';
 import { gameState, getInitialGameState } from '../src/core/state.js';
 
 describe('Timeline Logic', () => {

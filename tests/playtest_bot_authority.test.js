@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import Decimal from 'break_infinity.js';
 import { getInitialGameState, gameState, replaceRuntimeState } from '../src/core/state.js';
 import { getInflationEligibility } from '../src/eras/quantum/inflation.js';
+import { getVacuumCoherenceRates } from '../src/eras/quantum/coherence.js';
 import { getQuantumUpgradeEligibility } from '../src/eras/quantum/eligibility.js';
 import { getPlasmaUpgradeEligibility, getRecombinationEligibility } from '../src/eras/plasma/eligibility.js';
 import { playtestHarness } from '../src/core/playtestBot.js';
@@ -96,5 +97,25 @@ describe('playtest bot gameplay authority', () => {
 
     expect(gameState.upgrades.plasma.baryoRadiator.level).toBe(0);
     expect(playtestHarness.stats.totalUpgradesBought).toBe(0);
+  });
+
+  it('advances authoritative simulation exactly once before one strategy action', () => {
+    installState(state => {
+      state.activeEpoch = 1;
+      state.coherence = new Decimal(50);
+      state.upgrades.quantum.gravityForce.level = 1;
+    });
+    const rates = getVacuumCoherenceRates(gameState);
+    const expectedCoherence = gameState.coherence
+      .plus(rates.passiveRate.times(0.1))
+      .plus(rates.observationGain);
+
+    playtestHarness.runGameTicks(0.1, true, 1);
+
+    // 0.1 QF from one authoritative simulation step, then 1 QF from one bot observation.
+    expect(gameState.resources.quantumFluctuations.amount.eq(1.1)).toBe(true);
+    expect(gameState.coherence.eq(expectedCoherence)).toBe(true);
+    expect(playtestHarness.stats.ticksElapsed).toBe(1);
+    expect(playtestHarness.stats.totalClicks).toBe(1);
   });
 });

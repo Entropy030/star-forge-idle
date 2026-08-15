@@ -13,7 +13,7 @@ import { checkPlaytestMode } from './dev/playtestMode.js';
 import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, deduct, getStardustYield, getPulsarShardYield, getSingularityMassYield, getCardMultiplier, getBaryonAsymmetryMultiplier } from './core/economy.js';
 import { ArtifactManager, Viewport, format, ActManager, initAudio, playSupernovaSound, showIntroScreenCinematic, startEraTransition } from './ui/viewport.js';
 import { Templates } from './ui/templates.js';
-import { Timeline, gameTick } from './core/timeline.js';
+import { advanceGameTick } from './core/runtimeTick.js';
 import { startAutoPlaytest, stopAutoPlaytest, runHeadlessSim, playtestHarness, getTelemetryHistory } from './core/playtestBot.js';
 import { CanvasCore } from './ui/canvasCore.js';
 import { engine } from './engine/instance.js';
@@ -581,7 +581,7 @@ function simulationScheduler() {
 
   let simulatedElapsedSec = realElapsedSec * cMod * speedMult;
   if (simulatedElapsedSec > 0) {
-    gameTick(simulatedElapsedSec);
+    advanceGameTick(simulatedElapsedSec);
   }
 }
 
@@ -605,7 +605,7 @@ async function processCatchupAsync() {
     let chunksProcessed = 0;
     while (catchupAccumulator > 0 && chunksProcessed < BATCH_SIZE) {
       let dt = Math.min(catchupAccumulator, CHUNK_SIZE);
-      gameTick(dt);
+      advanceGameTick(dt);
       catchupAccumulator -= dt;
       chunksProcessed++;
     }
