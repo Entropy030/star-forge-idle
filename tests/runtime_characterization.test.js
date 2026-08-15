@@ -3,6 +3,7 @@ import Decimal from 'break_infinity.js';
 import { getInitialGameState, gameState, replaceRuntimeState } from '../src/core/state.js';
 import { Timeline } from '../src/core/timeline.js';
 import { advanceGameTick } from '../src/core/runtimeTick.js';
+import { applyRuntimeEffect } from '../src/ui/runtimeEffects.js';
 import { getInflationEligibility } from '../src/eras/quantum/inflation.js';
 import { getQuantumUpgradeEligibility } from '../src/eras/quantum/eligibility.js';
 import { getRecombinationEligibility } from '../src/eras/plasma/eligibility.js';
@@ -31,7 +32,7 @@ describe('production runtime characterization', () => {
 
     expect(getInflationEligibility(gameState).isEligible).toBe(false);
 
-    advanceGameTick(1);
+    advanceGameTick(1, applyRuntimeEffect);
 
     expect(gameState.resources.quantumFluctuations.amount.gte(100000)).toBe(true);
     expect(getInflationEligibility(gameState).isEligible).toBe(true);
@@ -93,12 +94,48 @@ describe('production runtime characterization', () => {
 
     expect(getGalacticIgnitionEligibility(gameState).isEligible).toBe(false);
 
-    advanceGameTick(1);
+    advanceGameTick(1, applyRuntimeEffect);
 
     expect(gameState.resources.iron.amount.gte(1000)).toBe(true);
     expect(getGalacticIgnitionEligibility(gameState).isEligible).toBe(true);
     expect(gameState.achievements.firstIron.unlocked).toBe(true);
     expect(achievementEvent).toHaveBeenCalledTimes(1);
+  });
+
+  it('unlocks achievements and reports effects without requiring a browser sink', () => {
+    installState(state => {
+      state.activeEpoch = 3;
+      state.resources.iron.amount = new Decimal(1);
+      state.achievements.firstIron.unlocked = false;
+    });
+
+    const result = advanceGameTick(0.1);
+
+    expect(gameState.achievements.firstIron.unlocked).toBe(true);
+    expect(result.effects).toContainEqual(expect.objectContaining({
+      type: 'ACHIEVEMENT_UNLOCKED',
+      achievementId: 'firstIron'
+    }));
+  });
+
+  it('emits each pre-production narrative effect once', () => {
+    const effectSink = vi.fn();
+    installState(state => {
+      state.activeEpoch = 1;
+      state.resources.quantumFluctuations.amount = new Decimal(1);
+      state.discoveries = new Set();
+    });
+
+    advanceGameTick(0.1, effectSink);
+    advanceGameTick(0.1, effectSink);
+
+    expect(effectSink).toHaveBeenCalledTimes(1);
+    expect(effectSink).toHaveBeenCalledWith({
+      type: 'NARRATIVE_MILESTONE',
+      id: 'qf_1',
+      message: '[SYSTEM]: Quantum Foam compiled. Primary metric online.'
+    });
+    expect(gameState.history.filter(entry => entry.id === 'qf_1')).toHaveLength(1);
   });
 
   it('treats accelerated duration as more simulated time, not a different production formula', () => {

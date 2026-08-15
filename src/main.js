@@ -14,6 +14,7 @@ import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, dedu
 import { ArtifactManager, Viewport, format, ActManager, initAudio, playSupernovaSound, showIntroScreenCinematic, startEraTransition } from './ui/viewport.js';
 import { Templates } from './ui/templates.js';
 import { advanceGameTick } from './core/runtimeTick.js';
+import { applyRuntimeEffect } from './ui/runtimeEffects.js';
 import { startAutoPlaytest, stopAutoPlaytest, runHeadlessSim, playtestHarness, getTelemetryHistory } from './core/playtestBot.js';
 import { CanvasCore } from './ui/canvasCore.js';
 import { engine } from './engine/instance.js';
@@ -581,7 +582,7 @@ function simulationScheduler() {
 
   let simulatedElapsedSec = realElapsedSec * cMod * speedMult;
   if (simulatedElapsedSec > 0) {
-    advanceGameTick(simulatedElapsedSec);
+    advanceGameTick(simulatedElapsedSec, applyRuntimeEffect);
   }
 }
 
@@ -605,7 +606,7 @@ async function processCatchupAsync() {
     let chunksProcessed = 0;
     while (catchupAccumulator > 0 && chunksProcessed < BATCH_SIZE) {
       let dt = Math.min(catchupAccumulator, CHUNK_SIZE);
-      advanceGameTick(dt);
+      advanceGameTick(dt, applyRuntimeEffect);
       catchupAccumulator -= dt;
       chunksProcessed++;
     }

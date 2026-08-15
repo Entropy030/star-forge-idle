@@ -24,7 +24,6 @@ import { gameState, subscribeRuntimeState } from '../core/state.js';
 import { saveGame, exportSave, importSave, wipeSave } from '../core/persistence.js';
 import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, getEnergyDensityRate, getStardustYield, getPulsarShardYield, getSingularityMassYield, getBuyMultiplierCount, getCumulativeCost, getFusionSurgeMultiplier, getCompressionHeatYield } from '../core/economy.js';
 import { Templates } from './templates.js';
-import { Timeline } from '../core/timeline.js';
 import {
   FORGE_BUY_MODES,
   getForgeCardState,

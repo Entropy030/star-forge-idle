@@ -54,11 +54,11 @@ The production scheduler wakes approximately every 100 ms. It computes:
 simulated seconds = real elapsed seconds × c modifier × playtest multiplier
 ```
 
-The 1×/5×/25× control changes logical time passed to `gameTick`; it does not promise a proportionally faster DOM render loop or wall-clock timer frequency. Background/catch-up work is chunked and capped.
+The 1×/5×/25× control changes logical time passed to `advanceGameTick`; it does not promise a proportionally faster DOM render loop or wall-clock timer frequency. Background/catch-up work is chunked and capped.
 
 ### Headless bot
 
-`PlaytestBot.runGameTicks(tickRate, headless)` advances explicit logical steps and records logical game seconds/ticks. It currently calls `engine.tick()` and `Timeline.process()` directly, not the complete production `gameTick()`. Because the singleton engine has no registered simulation systems, `engine.tick()` advances its runtime clock while `Timeline.process()` performs Era simulation. Production Coherence, narrative, objectives, achievements, and missions are bypassed. The bot remains useful for bounded progression telemetry, but it is not a full production-runtime equivalence test.
+`PlaytestBot.runGameTicks(tickRate, headless)` advances explicit logical steps through the same `advanceGameTick()` boundary as production, then records telemetry and chooses its next strategy action. It does not call `engine.tick()` or `Timeline.process()` separately. Headless runs omit the browser effect sink, but Coherence, narrative state, objectives, achievements, and missions all advance authoritatively.
 
 ### Auto-playtest bot
 
@@ -70,7 +70,7 @@ The 1×/5×/25× control changes logical time passed to `gameTick`; it does not 
 
 - selects actions from the current state;
 - dispatches gameplay commands/actions;
-- advances engine/Timeline logical ticks;
+- advances authoritative `advanceGameTick()` logical ticks;
 - records clicks, purchases, phase/milestone timing, failures, and Supernova outcome;
 - optionally updates the dev panel and logs reports.
 
@@ -91,7 +91,9 @@ The bot consumes:
 
 It may prefilter by current balance to implement purchase strategy, but the command result is final and only successful purchases count in telemetry. Galactic Ignition is not an action in the current supported bot policy. S2 also removed the bot's unused import of `getAIState()` from `src/main.js`, so headless automation no longer depends on the browser composition root.
 
-The manual `getAIState()` dev export and unused `src/core/botActions.js` compatibility copy still contain simplified display flags. They are not consulted by `PlaytestEngine` decisions; consolidate or remove them only as scoped S3 cleanup.
+S3 aligned headless simulation ownership with production. This intentionally makes telemetry observe passive cross-cutting state that the old bot bypassed; for example, passive Vacuum Coherence can move a telemetry milestone slightly earlier without changing strategy, balance, or transition requirements.
+
+The manual `getAIState()` dev export and unused `src/core/botActions.js` compatibility copy still contain simplified display flags. They are not consulted by `PlaytestEngine` decisions; consolidate or remove them only in a later focused cleanup.
 
 ## Telemetry interpretation
 

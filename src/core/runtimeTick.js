@@ -4,9 +4,15 @@ import { getAmount } from './economy.js';
 import { Timeline } from './timeline.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import { getVacuumCoherenceRates } from '../eras/quantum/coherence.js';
-import { updateObjectiveProgress } from '../ui/objectives.js';
+import { updateObjectiveProgress } from './objectives.js';
 
-export function advanceGameTick(dt) {
+export function advanceGameTick(dt, effectSink) {
+  const effects = [];
+  const emitEffect = effect => {
+    effects.push(effect);
+    if (effectSink) effectSink(effect);
+  };
+
   if (gameState.artifacts && gameState.artifacts.modifiers && gameState.artifacts.modifiers.activeClickBoostSec > 0) {
     gameState.artifacts.modifiers.activeClickBoostSec = Math.max(0, gameState.artifacts.modifiers.activeClickBoostSec - dt);
   }
@@ -32,12 +38,7 @@ export function advanceGameTick(dt) {
         gameState.discoveries.add(id);
         if (!gameState.history) gameState.history = [];
         gameState.history.push({ time: gameState.totalGameTime, msg: message, type: 'milestone', id });
-        if (typeof window !== 'undefined' && window.Viewport && window.Viewport.logChrono) {
-          window.Viewport.logChrono(message);
-        } else if (typeof window !== 'undefined' && window.document) {
-          const logNode = document.getElementById('chrono-neural-log');
-          if (logNode) logNode.textContent = message;
-        }
+        emitEffect({ type: 'NARRATIVE_MILESTONE', id, message });
       }
     };
 
@@ -75,26 +76,26 @@ export function advanceGameTick(dt) {
   Timeline.process(dt);
   updateObjectiveProgress(gameState);
 
-  // Achievement checks (state mutation plus legacy browser effect; separated in S3 commit 3)
+  // Achievement state mutates here; presentation receives an explicit effect.
   if (gameState.resources.iron && gameState.resources.iron.amount.gte(1) && !gameState.achievements.firstIron.unlocked) {
     gameState.achievements.firstIron.unlocked = true;
-    window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: 'Achievement Unlocked: Heavy Metal! (Neon Core Skin active)' }));
+    emitEffect({ type: 'ACHIEVEMENT_UNLOCKED', achievementId: 'firstIron', message: 'Achievement Unlocked: Heavy Metal! (Neon Core Skin active)' });
   }
   if (gameState.stats.supernovas.gte(1) && !gameState.achievements.firstSupernova.unlocked) {
     gameState.achievements.firstSupernova.unlocked = true;
-    window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: 'Achievement Unlocked: Stellar Collapse!' }));
+    emitEffect({ type: 'ACHIEVEMENT_UNLOCKED', achievementId: 'firstSupernova', message: 'Achievement Unlocked: Stellar Collapse!' });
   }
   if (gameState.stats.firstGalaxyTriggered && !gameState.achievements.firstGalaxy.unlocked) {
     gameState.achievements.firstGalaxy.unlocked = true;
-    window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: 'Achievement Unlocked: Galactic Formation!' }));
+    emitEffect({ type: 'ACHIEVEMENT_UNLOCKED', achievementId: 'firstGalaxy', message: 'Achievement Unlocked: Galactic Formation!' });
   }
   if (gameState.stats.firstBlackHoleTriggered && !gameState.achievements.firstBlackHole.unlocked) {
     gameState.achievements.firstBlackHole.unlocked = true;
-    window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: 'Achievement Unlocked: Event Horizon!' }));
+    emitEffect({ type: 'ACHIEVEMENT_UNLOCKED', achievementId: 'firstBlackHole', message: 'Achievement Unlocked: Event Horizon!' });
   }
   if (gameState.stats.firstHawkingRadiationTriggered && !gameState.achievements.firstHawkingRadiation.unlocked) {
     gameState.achievements.firstHawkingRadiation.unlocked = true;
-    window.dispatchEvent(new CustomEvent('achievementUnlocked', { detail: 'Achievement Unlocked: Quantum Evaporation!' }));
+    emitEffect({ type: 'ACHIEVEMENT_UNLOCKED', achievementId: 'firstHawkingRadiation', message: 'Achievement Unlocked: Quantum Evaporation!' });
   }
 
   // Mission progress
@@ -118,4 +119,6 @@ export function advanceGameTick(dt) {
       }
     }
   }
+
+  return { effects };
 }

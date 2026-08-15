@@ -121,3 +121,11 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Why:** Telemetry is only trustworthy when automation and player-facing gameplay use the same prerequisites and transition contracts.
 
 **Consequences:** The active bot consumes the Era eligibility APIs for Inflation, Laws, Recombination, plasma upgrades, and Supernova. Balance checks may guide strategy, but failed commands do not count as purchases or completed transitions. Bot-side copies of gameplay requirements are defects.
+
+## D16 — One authoritative game-tick boundary
+
+**Decision:** `src/core/runtimeTick.js::advanceGameTick()` is the single production/headless simulation and progression boundary. `main.js` owns wall-clock scheduling and injects browser effects; automation calls the same tick once before telemetry and strategy.
+
+**Why:** Production and headless execution must share Coherence, narrative, Timeline, objective, achievement, and mission ordering without coupling domain code to DOM APIs.
+
+**Consequences:** `Timeline` owns chunked Era simulation only. Narrative and achievement facts use an optional effect sink consumed by `src/ui/runtimeEffects.js`. Callers must not combine `advanceGameTick()` with separate `engine.tick()` or `Timeline.process()` advancement.
