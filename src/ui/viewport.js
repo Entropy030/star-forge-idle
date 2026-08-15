@@ -1283,11 +1283,15 @@ export const Viewport = {
       const ironOk = ironRequirement.met;
 
       gatewayTempStatus.className = `cosmos-check cosmos-check--${tempOk ? 'met' : 'missing'}`;
-      gatewayTempStatus.querySelector('.cosmos-check-icon').textContent = tempOk ? '✓' : '○';
+      const temperatureIcon = gatewayTempStatus.querySelector('.cosmos-check-icon');
+      temperatureIcon.textContent = tempOk ? '✓' : '○';
+      temperatureIcon.setAttribute('aria-label', tempOk ? 'Requirement met' : 'Requirement not met');
       updateComparisonValue(gatewayTempStatus.querySelector('.cosmos-check-value'), format(temperatureRequirement.current), format(temperatureRequirement.target), 'K');
 
       gatewayIronStatus.className = `cosmos-check cosmos-check--${ironOk ? 'met' : 'missing'}`;
-      gatewayIronStatus.querySelector('.cosmos-check-icon').textContent = ironOk ? '✓' : '○';
+      const ironIcon = gatewayIronStatus.querySelector('.cosmos-check-icon');
+      ironIcon.textContent = ironOk ? '✓' : '○';
+      ironIcon.setAttribute('aria-label', ironOk ? 'Requirement met' : 'Requirement not met');
       updateComparisonValue(gatewayIronStatus.querySelector('.cosmos-check-value'), format(ironRequirement.current), format(ironRequirement.target));
 
       btnHypernova.disabled = !ignition.isEligible;
@@ -1633,7 +1637,10 @@ export const Viewport = {
       const navBtn = document.getElementById(`nav-${tabId}`);
       if (navBtn) {
         navBtn.style.display = visibleNavigationIds.has(tabId) ? '' : 'none';
-        navBtn.classList.toggle('active', targetTab === tabId);
+        const isActive = targetTab === tabId;
+        navBtn.classList.toggle('active', isActive);
+        if (isActive) navBtn.setAttribute('aria-current', 'page');
+        else navBtn.removeAttribute('aria-current');
       }
     });
 
