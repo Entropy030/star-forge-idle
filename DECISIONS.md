@@ -137,3 +137,19 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Why:** Test count and simulated duration are not quality targets. Fast feedback should retain all correctness coverage without making exploratory pacing evidence a multi-minute merge gate.
 
 **Consequences:** Bot correctness uses bounded authoritative ticks and real commands. Long profiles remain easy to run, use test-only seeded randomness, and surface strategy/balance drift for investigation. Any correctness-critical long assertion must gain bounded FULL coverage before it can leave the telemetry lane.
+
+## D18 — Browser acceptance is a separate required lane
+
+**Decision:** Playwright runs against the built Vite production preview as the BROWSER lane. It complements FAST/FULL jsdom coverage and is required on pull requests, main pushes, and deployment.
+
+**Why:** Web Storage, clipboard permissions, service workers, focus behavior, media preferences, and rendered geometry cannot be established reliably by source guards or jsdom alone.
+
+**Consequences:** Contributors install Chromium with `npm run test:browser:install` and run `npm run test:browser`. CI installs Chromium explicitly. BROWSER does not enter TELEMETRY or slow the local FAST lane. Automated semantics do not replace manual screen-reader release smoke.
+
+## D19 — Persistence failures preserve the active session
+
+**Decision:** Browser storage/clipboard failures are contextual non-throwing results. Playtest save ownership changes only after a recoverable session backup exists; import replaces runtime state only after its active-slot write succeeds. Corrupt saves recover fresh and retain at most three quarantine diagnostics.
+
+**Why:** A denied storage or clipboard API must not crash simulation, expose playtest state to the normal slot, or replace a usable in-memory universe with data that could not be persisted.
+
+**Consequences:** Normal loads keep sequential migration support, while manual imports remain exact-current-version only. Offline elapsed time remains characterized but unconsumed by boot.

@@ -83,11 +83,13 @@ Responsive behavior must be verified in a browser. CSS-token/source tests are gu
 ## Accessibility
 
 - Preserve native semantic buttons and navigation controls.
-- Keep ARIA selected/expanded/disabled states synchronized with visible state.
+- Keep ARIA current/expanded/pressed/disabled states synchronized with visible state.
 - Maintain keyboard reachability, focus visibility, and meaningful labels.
 - Do not encode state using color alone.
 - Both system `prefers-reduced-motion` and in-game reduced-motion settings suppress nonessential motion without removing information.
 - Details/disclosure content remains operable without pointer-only gestures.
+
+Production-preview browser acceptance covers primary navigation, Core/Forge/More/Codex keyboard activation, focus retention and visible focus at desktop and 390 px, readiness/progress semantics, and reduced-motion media emulation. This is automated semantic accessibility coverage, not screen-reader certification. Manual screen-reader validation remains a release smoke activity.
 
 ## Feedback
 

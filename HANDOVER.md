@@ -92,11 +92,12 @@ npm run dev
 npm run lint
 npm run test
 npm run test:fast
+npm run test:browser
 npm run test:telemetry
 npm run build
 ```
 
-`npm run test` maps to `test:full`: repository hygiene plus all 225 correctness tests. `test:fast` runs the same inexpensive Vitest correctness contracts without repeating hygiene. `test:telemetry` separately runs three multi-million-tick bot profiles. `npm run typecheck` is currently a placeholder and provides no type safety.
+`npm run test` maps to `test:full`: repository hygiene plus all 229 correctness tests. `test:fast` runs the same inexpensive Vitest correctness contracts without repeating hygiene. `test:browser` builds and runs 15 production-preview Playwright contracts; install Chromium once with `npm run test:browser:install`. `test:telemetry` separately runs three multi-million-tick bot profiles. `npm run typecheck` is currently a placeholder and provides no type safety.
 
 ## Playtest
 
@@ -134,15 +135,17 @@ The bot owns strategy, not legality. Inflation, Fundamental Law, Recombination, 
 - `Decimal` and `Set` values are tagged by `src/state/serialization.js` and revived on load.
 - Normal loads migrate supported older versions, then replace/normalize runtime state.
 - `loadGame()` reports offline elapsed time capped at eight hours, but current boot does not consume that return value; only in-session scheduler/visibility gaps enter production catch-up.
-- Corrupt active saves are copied to a timestamped quarantine key before the active key is removed.
+- Corrupt/empty/future active saves recover to a known fresh state, are removed from the active slot, and retain at most three timestamped quarantine diagnostics when storage permits.
 - Export copies base64-encoded serialized JSON to the clipboard.
 - Import currently accepts only the exact current save version; unlike normal load, it does not migrate older exports.
+- Autosave/export storage failures and unavailable/rejected clipboard operations remain contextual, non-throwing failures. Import does not replace runtime state unless its storage write succeeds.
+- Playtest changes save ownership only after the serialized session backup succeeds; failed/missing restore keeps playtest mode active.
 
-The historical literal `[object Object]` write failure is prevented by current known write paths and regression tests. Remaining risks include exact-version imports, clipboard/storage browser failures, thinner session-backup recovery, and accumulating quarantine keys.
+The historical literal `[object Object]` write failure and browser storage/clipboard failure paths are covered in real Chromium. Exact-version manual import is intentional policy, not a migration promise.
 
 ## Deployment
 
-`.github/workflows/deploy-pages.yml` validates pull requests to `main` with hygiene, lint, FAST and build, without deployment. Pushes to `main` and manual dispatch run FULL plus build; the dependent Pages job deploys only after success. `.github/workflows/telemetry.yml` runs the long bot profiles weekly or manually and does not block routine PRs or deployment.
+`.github/workflows/deploy-pages.yml` validates pull requests to `main` with hygiene, lint, FAST/build and a parallel required BROWSER job, without deployment. Pushes to `main` and manual dispatch run FULL/build plus BROWSER; Pages deploys only after both required jobs succeed. `.github/workflows/telemetry.yml` runs the long bot profiles weekly or manually and does not block routine PRs or deployment.
 
 ## Known technical debt
 
@@ -154,16 +157,16 @@ P1 pre-P4:
 P2:
 
 - the `Viewport` ↔ `ui/stellar.js` presentation cycle still has scoped suppressions;
-- remaining source/regex structural guards need eventual real-browser counterparts where geometry or interaction matters;
-- large composition modules and incomplete real-browser persistence/accessibility coverage.
+- manual screen-reader validation remains a release smoke activity;
+- large composition modules remain migration debt.
 
 ## Before P4
 
 1. **S2 complete:** production tick ordering and gameplay eligibility are characterized.
 2. **S3 complete:** one authoritative production/headless tick exists; dead runtimes are removed; browser effects are injected outside simulation ownership.
 3. **S4 complete:** durable test naming, bounded bot correctness, long-run telemetry, PR validation and proportionate FAST/FULL/TELEMETRY lanes are established.
-4. **Next — S5:** harden browser persistence/import/offline behavior; boot still does not consume returned offline elapsed time.
-5. Decide how later eras represent stability/temperature/entropy instead of extending overloaded Coherence semantics.
+4. **S5 complete:** production-preview browser persistence, failure handling, keyboard/ARIA, geometry/CLS, PWA/offline shell and required CI coverage are established. Boot still intentionally does not consume returned offline elapsed time.
+5. **Next decision:** decide how later eras represent stability/temperature/entropy instead of extending overloaded Coherence semantics.
 6. Re-run all eight presets, save/load/import/export cases, bot progression, lint, tests, build, and real-device smoke before P4 implementation.
 
 Full evidence and follow-up boundaries are in [docs/P3_STABILIZATION_AUDIT.md](docs/P3_STABILIZATION_AUDIT.md).

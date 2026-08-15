@@ -2,16 +2,17 @@
 
 ## Current inventory
 
-S4 snapshot on 2026-08-15:
+S5 snapshot on 2026-08-15:
 
 | Lane | Files | Tests | Measured local wall time | Purpose |
 |---|---:|---:|---:|---|
-| FAST | 43 | 225 | 4.03 s | Durable correctness and regression feedback |
-| FULL | 43 | 225 | 4.08 s | FAST plus repository hygiene; main/release correctness |
-| TELEMETRY | 1 | 3 | 152.15 s | Long-run strategy viability and balance signals |
-| All unique tests | 44 | 228 | — | Union of correctness and telemetry coverage |
+| FAST | 43 | 229 | 12.97 s | Durable correctness and regression feedback |
+| FULL | 43 | 229 | 7.51 s | FAST plus repository hygiene; main/release correctness |
+| BROWSER | 5 | 15 | 60.65 s | Production-preview persistence, interaction, geometry and PWA acceptance |
+| TELEMETRY | 1 | 3 | 257.12 s | Long-run strategy viability and balance signals |
+| Vitest total | 44 | 232 | — | Union of correctness and telemetry coverage |
 
-The pre-S4 default suite had 43 files and 227 tests and most recently took 158.60 s. `p2c_bot.test.js` alone took 156.42 s. Counts and timings are dated evidence, not quality targets.
+The pre-S4 default suite had 43 files and 227 tests and most recently took 158.60 s. `p2c_bot.test.js` alone took 156.42 s. Counts and timings are dated evidence, not quality targets. S5 FAST and FULL were measured as separate sequential commands; the warm FULL run was faster than the preceding FAST run. The S5 telemetry observation includes PTY overhead; its S4 baseline was 152.15 s.
 
 ## Commands and lanes
 
@@ -45,6 +46,17 @@ Runs the efficient, massive, and compact multi-million-tick profiles in `tests/s
 
 Telemetry failures are visible balance/strategy signals requiring investigation. They do not block routine pull requests or deployment. If a long-run assertion becomes a correctness requirement, first add or move a bounded contract into FULL.
 
+### BROWSER
+
+```bash
+npm run test:browser:install
+npm run test:browser
+```
+
+The one-time install command downloads Playwright Chromium; browser binaries are not committed. `test:browser` builds the Vite production bundle, starts the local preview at `/star-forge-idle/`, and runs Playwright with one worker. It covers real Web Storage and clipboard paths, playtest isolation, corrupt-save recovery, keyboard/focus/ARIA behavior, reduced motion, 1440 × 1000 and 390 × 844 geometry, CLS/overflow, manifest/service-worker scope, same-origin caches, and offline shell boot.
+
+Browser acceptance complements unit/jsdom contracts; it does not replace their faster domain and DOM feedback. Automated browser semantics and keyboard contracts are covered. Manual screen-reader validation remains a release smoke activity.
+
 ## Test domains and coverage
 
 Test count is not a quality target. Every durable test must protect an observable gameplay, runtime, UI, persistence, or architectural contract.
@@ -65,15 +77,17 @@ Milestone/hotfix filenames were renamed to durable domain names during S4. No ex
 
 Some inexpensive tests intentionally inspect source/HTML/CSS structure. They protect bootstrap import order, raw-HTML safe defaults, navigation destination limits, safe-area CSS, reduced-motion rules and scrolling contracts. These remain structural guards where jsdom cannot provide trustworthy browser geometry or where an observable browser test would be disproportionately expensive.
 
-Real-browser storage, clipboard, accessibility interaction, service-worker and geometry/CLS automation remain S5 work.
+Real-browser storage, clipboard, accessibility interaction, service-worker and geometry/CLS contracts are protected by the BROWSER lane. Structural guards remain useful for inexpensive source-level invariants.
 
 ## GitHub Actions
 
 `.github/workflows/deploy-pages.yml` provides:
 
-- pull requests to `main`: install, repository hygiene, lint, FAST, build; never deploy;
-- pushes to `main`: install, lint, FULL, build, Pages artifact, then dependent deployment;
+- pull requests to `main`: validation runs repository hygiene, lint, FAST and build; the parallel browser job explicitly installs Chromium and runs BROWSER; never deploy;
+- pushes to `main`: validation runs lint, FULL, build and Pages artifact while the browser job runs BROWSER;
 - manual dispatch: the same FULL-gated build and deployment path.
+
+Deployment depends on both validation and browser jobs. A browser failure therefore blocks Pages deployment. Chromium installation stays out of the local FAST/FULL and TELEMETRY lanes.
 
 Validation has `contents: read`. Only the deploy job receives `pages: write` and `id-token: write`.
 

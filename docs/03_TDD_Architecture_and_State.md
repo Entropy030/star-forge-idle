@@ -95,7 +95,7 @@ Simulation and rendering are separate clocks:
 3. `advanceGameTick()` mutates the reactive state, which marks it dirty.
 4. An independent RAF renders `Viewport.update()` only when dirty, then clears the flag.
 
-`loadGame()` calculates and returns saved offline elapsed time, but the current `bootApp()` does not consume that return value. The active catch-up path therefore handles scheduler/visibility gaps in the running browser session; persisted close/reopen offline progress is not currently fed into simulation. This remains intentional debt for S5.
+`loadGame()` calculates and returns saved offline elapsed time, but the current `bootApp()` does not consume that return value. The active catch-up path therefore handles scheduler/visibility gaps in the running browser session; persisted close/reopen offline progress is not currently fed into simulation. S5 characterized this behavior and intentionally did not enable offline progression.
 
 Within `advanceGameTick()` the observable ordering remains:
 
@@ -134,7 +134,11 @@ runtime state
   → localStorage string
 ```
 
-Load reverses the process, migrates normal saves, and calls `replaceRuntimeState()`. Corrupt active payloads are quarantined under a timestamped key. Normal and playtest slots are isolated. Export/import wraps serialized JSON in base64; current import accepts only the exact current version.
+Load reverses the process, migrates supported normal saves, and calls `replaceRuntimeState()`. Empty, malformed, structurally invalid, incomplete-migration, and future-version payloads recover to a known fresh state. The bad active payload is removed so it cannot fail every boot; when storage permits, it is retained under a timestamped quarantine key. Quarantine keeps the three newest diagnostic payloads.
+
+Normal and playtest slots are isolated. Entering playtest writes the serialized normal-state backup to `sessionStorage` before save ownership changes. A failed backup aborts entry; a missing/corrupt restore leaves playtest ownership active rather than exposing playtest state to the normal slot.
+
+Export/import wraps serialized JSON in base64. Manual import intentionally accepts only the exact current version; it does not run normal-save migrations. Import persists the validated payload before runtime replacement, so a denied/quota-limited write preserves the current in-memory state. Autosave/export storage errors and unavailable/rejected clipboard writes return contextual failures without throwing through the browser loop.
 
 Offline time returned by load is capped at eight hours, but production boot currently ignores the returned elapsed value. In-session scheduler/visibility gaps use the separate production catch-up accumulator.
 

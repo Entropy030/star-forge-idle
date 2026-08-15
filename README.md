@@ -37,8 +37,9 @@ Focused references:
 npm run lint
 npm run test
 npm run test:fast
+npm run test:browser
 npm run test:telemetry
 npm run build
 ```
 
-`npm test` is the full correctness gate. Use `test:fast` for rapid local feedback and `test:telemetry` only for the long strategy/balance simulations. See [Testing and CI](docs/07_TESTING_AND_CI.md) for lane definitions and CI triggers.
+Install the browser binary once with `npm run test:browser:install`. `npm test` is the full correctness gate. Use `test:fast` for rapid local feedback, `test:browser` for production-preview browser acceptance, and `test:telemetry` only for the long strategy/balance simulations. See [Testing and CI](docs/07_TESTING_AND_CI.md) for lane definitions and CI triggers.
