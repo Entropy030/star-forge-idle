@@ -53,4 +53,4 @@ Galactic Ignition is the separate permanent threshold beyond P3’s supported jo
 
 ## Era IV and beyond
 
-Era IV/V ideas and prototype code are future design material. Their themes—galactic formation, stability, and entropy—are not a completed or currently supported player journey. Later-era design must not assume that Era I Vacuum Coherence is automatically the correct state model for unrelated concepts.
+Era IV/V ideas and prototype code are future design material. Their themes—galactic formation, Galaxy Stability, and Entropy—are not a completed or currently supported player journey. Vacuum Coherence ends as a player concept with Era I; later eras use their native physical state and must not reinterpret it as universal cosmic order.

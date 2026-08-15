@@ -50,4 +50,4 @@ Supernova is a repeatable Era III reset. Galactic Ignition is the distinct perma
 
 ## 6. Galactic and later concepts (future intent)
 
-Era IV/V code contains prototype ideas around galactic formation, stability, and entropy. These are not yet supported design contracts. Before P4, later-era state semantics must be chosen explicitly; Era I Vacuum Coherence should not be reused merely because a field already exists.
+Era IV/V code contains prototype ideas around galactic formation, stability, and entropy. These are not yet supported gameplay contracts. Their state boundary is settled before P4: Galaxy Stability and Entropy remain native concepts, while Era I Vacuum Coherence is not reused merely because its v17 storage key exists.

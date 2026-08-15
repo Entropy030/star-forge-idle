@@ -99,7 +99,7 @@ Simulation and rendering are separate clocks:
 
 Within `advanceGameTick()` the observable ordering remains:
 
-1. active click-boost time and Era-specific Coherence/pre-simulation values;
+1. active click-boost time and Era I passive Vacuum Coherence;
 2. Era I peak-QF and narrative milestone detection from the pre-simulation resource value;
 3. chunked Era simulation through `Timeline.process()`;
 4. objective progression;
@@ -109,7 +109,7 @@ Within `advanceGameTick()` the observable ordering remains:
 
 Eligibility and transition readiness are derived on demand rather than stored. A selector called after simulation sees the new state in the same tick. By contrast, Era I peak-QF law unlocks and passive-production narrative thresholds become visible on the following tick because their checks precede production. Characterization tests intentionally protect both behaviors.
 
-`src/core/runtimeTick.js` is the authoritative production/headless advancement boundary. It owns tick ordering, pre-simulation Coherence/narrative domain mutation, Timeline invocation, objective progression, achievement mutation, and missions. It accepts an optional effect sink and emits narrative/achievement facts at their original ordering points.
+`src/core/runtimeTick.js` is the authoritative production/headless advancement boundary. It owns tick ordering, Era I passive Vacuum Coherence and narrative domain mutation, Timeline invocation, objective progression, achievement mutation, and missions. It accepts an optional effect sink and emits narrative/achievement facts at their original ordering points.
 
 `src/core/timeline.js` now owns chunking and Era simulation only. Objective definitions/progression live in `src/core/objectiveDefinitions.js` and `src/core/objectives.js`; UI compatibility facades re-export their APIs. `src/ui/runtimeEffects.js` owns Chrono/DOM and achievement `CustomEvent` effects. Production injects that sink; headless automation omits it while still applying the exact same domain tick.
 
@@ -122,6 +122,12 @@ Do not call `engine.tick()` or `Timeline.process()` alongside `advanceGameTick()
 Rendering uses dirty-state updates and cached structures in several surfaces. Related live fields—title, instruction, progress, phase, transition status, and requirements—must update from one current snapshot. Static labels and live values have separate ownership; bounded formatting, reserved logical tracks, and persistent/keyed nodes keep changing values from moving semantic anchors. See `docs/06_TDD_UI_UX_Architecture.md` for the permanent layout contract and `docs/P3_STABILIZATION_AUDIT.md#resolved-live-data-layout-contract` for the resolved defect evidence.
 
 Detailed UI ownership lives in `docs/06_TDD_UI_UX_Architecture.md`.
+
+## Cross-era stability semantics
+
+Vacuum Coherence is authoritative only in Era I. Save v17 retains its historical top-level storage key, `state.coherence`, and `src/eras/quantum/coherence.js` provides the semantic access boundary. Era II uses `plasmaTemperature`; Era III uses its temperature, stage, resources, and stellar architecture; Era IV uses `era4.stability`; Era V uses `era5.entropy`. The Era V Bit-production multiplier is derived from Entropy by a selector and is not stored as a second stability value.
+
+Normal serialization continues to preserve the top-level key for save compatibility. The existing normalization path still converts the obsolete `era1.vacuumCoherence` 0–1 field to the v17 0–100 representation and removes the obsolete field. No S5.5 migration or save-version change is required.
 
 ## Persistence boundary
 

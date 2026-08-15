@@ -97,7 +97,7 @@ npm run test:telemetry
 npm run build
 ```
 
-`npm run test` maps to `test:full`: repository hygiene plus all 229 correctness tests. `test:fast` runs the same inexpensive Vitest correctness contracts without repeating hygiene. `test:browser` builds and runs 15 production-preview Playwright contracts; install Chromium once with `npm run test:browser:install`. `test:telemetry` separately runs three multi-million-tick bot profiles. `npm run typecheck` is currently a placeholder and provides no type safety.
+`npm run test` maps to `test:full`: repository hygiene plus all 236 correctness tests. `test:fast` runs the same inexpensive Vitest correctness contracts without repeating hygiene. `test:browser` builds and runs 15 production-preview Playwright contracts; install Chromium once with `npm run test:browser:install`. `test:telemetry` separately runs three multi-million-tick bot profiles. `npm run typecheck` is currently a placeholder and provides no type safety.
 
 ## Playtest
 
@@ -152,7 +152,6 @@ The historical literal `[object Object]` write failure and browser storage/clipb
 P1 pre-P4:
 
 - manual dev `getAIState()` and the unused `core/botActions.js` compatibility copy still expose simplified telemetry flags, but the active playtest bot no longer consumes them;
-- later-era scaffolding overloads `state.coherence` with concepts unrelated to Era I Vacuum Coherence.
 
 P2:
 
@@ -166,7 +165,7 @@ P2:
 2. **S3 complete:** one authoritative production/headless tick exists; dead runtimes are removed; browser effects are injected outside simulation ownership.
 3. **S4 complete:** durable test naming, bounded bot correctness, long-run telemetry, PR validation and proportionate FAST/FULL/TELEMETRY lanes are established.
 4. **S5 complete:** production-preview browser persistence, failure handling, keyboard/ARIA, geometry/CLS, PWA/offline shell and required CI coverage are established. Boot still intentionally does not consume returned offline elapsed time.
-5. **Next decision:** decide how later eras represent stability/temperature/entropy instead of extending overloaded Coherence semantics.
-6. Re-run all eight presets, save/load/import/export cases, bot progression, lint, tests, build, and real-device smoke before P4 implementation.
+5. **S5.5 complete:** Vacuum Coherence is Era-I-only; later eras use Plasma Temperature, stellar state, Galaxy Stability, and Entropy without mirroring them into `state.coherence`.
+6. **Next:** security triage, then S6 final verification. Re-run all eight presets, save/load/import/export cases, bot progression, lint, tests, build, and real-device smoke before P4 implementation.
 
 Full evidence and follow-up boundaries are in [docs/P3_STABILIZATION_AUDIT.md](docs/P3_STABILIZATION_AUDIT.md).

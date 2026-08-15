@@ -88,7 +88,7 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 
 **Why:** This gives the mechanic a concise acquisition/purpose identity.
 
-**Consequences:** It is hidden at fresh start and disclosed contextually. Fundamental Law upgrades do not falsely claim a Coherence requirement. Later-era reuse of the state field is debt, not a settled universal concept.
+**Consequences:** It is hidden at fresh start and disclosed contextually. Fundamental Law upgrades do not falsely claim a Coherence requirement. D20 resolves later-era ownership.
 
 ## D12 — Supernova and Galactic Ignition are distinct
 
@@ -126,7 +126,7 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 
 **Decision:** `src/core/runtimeTick.js::advanceGameTick()` is the single production/headless simulation and progression boundary. `main.js` owns wall-clock scheduling and injects browser effects; automation calls the same tick once before telemetry and strategy.
 
-**Why:** Production and headless execution must share Coherence, narrative, Timeline, objective, achievement, and mission ordering without coupling domain code to DOM APIs.
+**Why:** Production and headless execution must share Era I Vacuum Coherence, narrative, Timeline, objective, achievement, and mission ordering without coupling domain code to DOM APIs.
 
 **Consequences:** `Timeline` owns chunked Era simulation only. Narrative and achievement facts use an optional effect sink consumed by `src/ui/runtimeEffects.js`. Callers must not combine `advanceGameTick()` with separate `engine.tick()` or `Timeline.process()` advancement.
 
@@ -153,3 +153,13 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Why:** A denied storage or clipboard API must not crash simulation, expose playtest state to the normal slot, or replace a usable in-memory universe with data that could not be persisted.
 
 **Consequences:** Normal loads keep sequential migration support, while manual imports remain exact-current-version only. Offline elapsed time remains characterized but unconsumed by boot.
+
+## D20 — Vacuum Coherence ends with Era I
+
+**Decision:** Select model D: Vacuum Coherence is authoritative only in Era I. Era II uses Plasma Temperature, Era III uses native stellar state, Era IV uses Galaxy Stability, and Era V uses Entropy. Later-era derived modifiers read those native sources without storing a second Coherence truth.
+
+**Why:** The former mappings combined vacuum stabilization, thermal stress, stellar architecture, galactic stability, and inverse entropy under one property. These are not one continuous physical or player concept, and the later-era fields already provide clearer single sources of truth.
+
+**Consequences:** Later eras neither mutate nor display generic Coherence. Era V derives its existing Bit multiplier directly from Entropy. The semantic adapters in `eras/quantum/coherence.js` isolate the historical storage name, and P4 extends native Era state rather than reusing it.
+
+**Migration/compatibility impact:** Save version remains 17. `state.coherence` remains the serialized compatibility key for Era I Vacuum Coherence, and the existing legacy 0–1 normalization remains supported. No new migration is required; later-era saves may retain the historical value but do not interpret it.

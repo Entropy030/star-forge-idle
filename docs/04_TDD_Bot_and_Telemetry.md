@@ -58,7 +58,7 @@ The 1×/5×/25× control changes logical time passed to `advanceGameTick`; it do
 
 ### Headless bot
 
-`PlaytestBot.runGameTicks(tickRate, headless)` advances explicit logical steps through the same `advanceGameTick()` boundary as production, then records telemetry and chooses its next strategy action. It does not call `engine.tick()` or `Timeline.process()` separately. Headless runs omit the browser effect sink, but Coherence, narrative state, objectives, achievements, and missions all advance authoritatively.
+`PlaytestBot.runGameTicks(tickRate, headless)` advances explicit logical steps through the same `advanceGameTick()` boundary as production, then records telemetry and chooses its next strategy action. It does not call `engine.tick()` or `Timeline.process()` separately. Headless runs omit the browser effect sink, but Era I Vacuum Coherence, narrative state, objectives, achievements, and missions all advance authoritatively.
 
 ### Auto-playtest bot
 

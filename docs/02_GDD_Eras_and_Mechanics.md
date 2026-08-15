@@ -131,4 +131,4 @@ It is an Era IV gate, not part of the repeatable Supernova reward loop. P3 docum
 
 ## Future Eras
 
-Era IV/V modules and selected tests are prototype/future scaffolding. Any described Galactic Stability or Entropy mechanics are design intent until a P4 plan establishes supported gameplay, state semantics, UI contracts, migration impact, and regression coverage.
+Era IV/V modules and selected tests are prototype/future scaffolding. Their semantic ownership is nevertheless settled: Era IV owns Galaxy Stability, and Era V owns Entropy. The existing Era V Bit-production modifier derives directly from inverse Entropy; it does not create a second stored Coherence value. These are not claims that Era IV/V gameplay is complete. P4 must still establish supported mechanics, UI contracts, and regression coverage.

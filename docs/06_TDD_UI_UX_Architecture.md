@@ -26,6 +26,8 @@ An objective should not duplicate Codex prose. Chrono should not become a blocke
 - Era II foregrounds the active recipe/cooling bottleneck rather than every particle equally.
 - Era III foregrounds Core Temperature, the next physical threshold, and stellar action.
 
+Vacuum Coherence is not a cross-era HUD metric. Era II/III and future Era IV/V presentation must use their native Temperature, Galaxy Stability, or Entropy semantics and must not expose the hidden v17 compatibility key as generic “Coherence.”
+
 Presentation is derived in `src/engine/cosmosPresentation.js`. The renderer should not recreate readiness formulas.
 
 ## Resource hierarchy

@@ -2,17 +2,17 @@
 
 ## Current inventory
 
-S5 snapshot on 2026-08-15:
+S5.5 snapshot on 2026-08-15:
 
 | Lane | Files | Tests | Measured local wall time | Purpose |
 |---|---:|---:|---:|---|
-| FAST | 43 | 229 | 12.97 s | Durable correctness and regression feedback |
-| FULL | 43 | 229 | 7.51 s | FAST plus repository hygiene; main/release correctness |
-| BROWSER | 5 | 15 | 60.65 s | Production-preview persistence, interaction, geometry and PWA acceptance |
-| TELEMETRY | 1 | 3 | 257.12 s | Long-run strategy viability and balance signals |
-| Vitest total | 44 | 232 | — | Union of correctness and telemetry coverage |
+| FAST | 44 | 236 | 5.43 s | Durable correctness and regression feedback |
+| FULL | 44 | 236 | 4.26 s | FAST plus repository hygiene; main/release correctness |
+| BROWSER | 5 | 15 | 54.82 s | Production-preview persistence, interaction, geometry and PWA acceptance |
+| TELEMETRY | 1 | 3 | 129.28 s | Long-run strategy viability and balance signals |
+| Vitest total | 45 | 239 | — | Union of correctness and telemetry coverage |
 
-The pre-S4 default suite had 43 files and 227 tests and most recently took 158.60 s. `p2c_bot.test.js` alone took 156.42 s. Counts and timings are dated evidence, not quality targets. S5 FAST and FULL were measured as separate sequential commands; the warm FULL run was faster than the preceding FAST run. The S5 telemetry observation includes PTY overhead; its S4 baseline was 152.15 s.
+The pre-S4 default suite had 43 files and 227 tests and most recently took 158.60 s. `p2c_bot.test.js` alone took 156.42 s. Counts and timings are dated evidence, not quality targets. S5.5 FAST and FULL were measured as separate sequential commands; the warm FULL run was faster than the later standalone FAST run.
 
 ## Commands and lanes
 
@@ -63,6 +63,7 @@ Test count is not a quality target. Every durable test must protect an observabl
 
 - **Runtime/state:** canonical state replacement, engine identity, authoritative tick ordering, simulated-time semantics, bootstrap and DOM initialization.
 - **Era I:** commands, Fundamental Law eligibility, Vacuum Coherence, Inflation and pre-production narrative timing.
+- **Cross-era semantics:** Vacuum Coherence remains Era-I-only while later-era Temperature, Galaxy Stability and Entropy retain native ownership.
 - **Era II:** commands, production/synthesis, cooling, progressive disclosure and Recombination.
 - **Era III:** stellar simulation, temperature/fusion, Supernova eligibility/outcomes/rewards, Galactic Ignition and repeat-run Legacy behavior.
 - **UI:** Cosmos, Forge, resources, navigation, state truth, stable live-value nodes, responsive/mobile, reduced motion and semantic controls.

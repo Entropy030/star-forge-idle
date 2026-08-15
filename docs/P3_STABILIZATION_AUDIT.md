@@ -6,6 +6,8 @@ Audited revision: `d400a95` (`main`)
 
 Scope: final P3 repository truth after the live-metric layout fix; documentation changes only
 
+Post-audit resolution: S2–S5.5 subsequently closed the runtime, test/CI, browser/persistence, and cross-era Coherence boundaries identified here. The finding rows remain dated evidence; current authority lives in the focused TDDs and `DECISIONS.md`.
+
 ## Executive diagnosis
 
 P3 has a coherent player-facing architecture, strong regression coverage for Eras I–III, and no confirmed release-blocking correctness, persistence, or UI defect. The live-number/text layout jitter was closed by `d400a95`: bounded formatting, reserved logical geometry, stable static anchors, and persistent live-value nodes now form a durable UI contract. The defect remains important as an architectural lesson, not an open release gate.
@@ -41,7 +43,7 @@ None confirmed.
 | Two runtime stories coexist: production boots through `src/main.js`, `gameTick`, and `Timeline`, while `src/app/runtime.js` and `src/app/loop.js` describe an unused engine-system loop. | A future contributor can implement behavior in the wrong runtime; P4 would deepen divergence. | Choose and document one simulation/composition path before P4. |
 | `Timeline`/`gameTick` mix simulation with Coherence, objectives, milestones, achievements, missions, Chrono updates, DOM events, and other visual side effects. | Ordering is hard to reason about and headless simulation is coupled to UI behavior. | Separate pure simulation/progression results from presentation side effects before P4. |
 | `main.js` is more than a composition root and includes compatibility globals, action wrappers, dev helpers, and duplicate telemetry calculations. `getAIState()` does not use the full authoritative Inflation eligibility contract. | Bot/dev telemetry can disagree with command eligibility even though player UI uses authoritative selectors. | Move or replace duplicate calculations; preserve one command/eligibility contract before P4. |
-| `state.coherence` is an Era I player concept but is reused as temperature/stability/entropy input in later-era scaffolding. | Extending Era IV/V could silently cement unrelated meanings into one field. | Decide the later-era state model before P4; do not remove covered behavior casually. |
+| **Resolved S5.5:** `state.coherence` was an Era I player concept reused as temperature/stability/entropy input in later-era scaffolding. | Extending Era IV/V could have cemented unrelated meanings into one field. | Model D now makes Vacuum Coherence Era-I-only; later eras use native state. |
 | Existing GDD/TDD material was materially stale. | New work could follow obsolete mechanics or runtime assumptions. | Remediated by the documentation baseline following this audit. |
 
 ### P2 — cleanup and hardening
@@ -327,7 +329,7 @@ The chunking and tested Era I–III simulation are safe technical debt for P3. T
 | Level | Items |
 | --- | --- |
 | P0 | None confirmed. |
-| P1 | Duplicate runtime story; core/UI side effects; AI eligibility drift; later-era Coherence overload. These are pre-P4 boundaries, not current P3 release defects. |
+| P1 | Historical findings: duplicate runtime story, core/UI side effects, AI eligibility drift, and later-era Coherence overload. The Coherence item was resolved in S5.5; see the post-audit resolution note. |
 | P2 | Broad cycle suppressions; large composition modules; milestone test names; source-regex UI tests; exact-version import; misleading runtime/offline comments; prototype UI paths. |
 | P3 | Compatibility aliases/globals, historical test descriptions, supported migration residue, small duplicated formatting/helpers. |
 
@@ -388,4 +390,4 @@ Current regression protection covers compact formatter boundaries, persistent re
 | S5 — persistence/browser hardening | Decide import migration policy; cover storage, clipboard, session restore, offline, accessibility, and automated layout geometry. | High | Frontier coding model, high reasoning | Versioned fixtures plus real-browser round trips/device matrix | Dedicated persistence commit; separate browser-harness commit |
 | S6 — final pre-P4 verification | Re-run P3 release matrix and confirm all P1 pre-P4 boundaries are closed or explicitly accepted. | Low | Balanced coding model, medium reasoning | Full CI, eight presets, first-run, save/import/export, real-device smoke | Verification/docs-only release commit |
 
-S1 is the scope of this documentation run. Do not begin S2 in the same change. Do not begin P4/Era IV until S2/S3 establish one safe extension boundary and the later-era Coherence model has an explicit decision.
+S1 was the scope of this dated audit. S2/S3 later established the runtime extension boundary, and S5.5 made the later-era Coherence model explicit. Do not treat this historical phase plan as current handover state.

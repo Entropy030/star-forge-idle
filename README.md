@@ -28,7 +28,7 @@ Requires Node.js 22.13 or newer.
 
 Focused references:
 
-- [Coherence semantics audit](docs/05_Coherence_Semantics_Audit.md) — dated technical audit retained as historical evidence.
+- [Coherence semantics audit](docs/05_Coherence_Semantics_Audit.md) — resolved S5.5 evidence and the cross-era usage map.
 - [Physics abstraction guide](docs/PHYSICS_ABSTRACTION_GUIDE.md) — design guidance, not an implementation contract.
 
 ## Validation
