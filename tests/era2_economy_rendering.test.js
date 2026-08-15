@@ -10,7 +10,7 @@ import { getPlasmaUpgradeVisibility, getPlasmaRates } from '../src/eras/plasma/s
 import { Viewport } from '../src/ui/viewport.js';
 import { COSMIC_REGISTRY } from '../src/config/registry.js';
 
-describe('P3 Follow-up 3: Complete Era-II Economy & Real Rendering', () => {
+describe('Era II economy and DOM rendering', () => {
 
   describe('HTML Safe Default State', () => {
     it('should have game-shell and the earned-meta summary hidden by default in the raw HTML', () => {

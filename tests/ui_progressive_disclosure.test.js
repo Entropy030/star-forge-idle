@@ -4,7 +4,7 @@ import { createGameEngine } from '../src/engine/createEngine.js';
 import { quantumCommandHandlers } from '../src/eras/quantum/commands.js';
 import { plasmaCommandHandlers } from '../src/eras/plasma/commands.js';
 
-describe('P3 Follow-up 2 Regression Tests', () => {
+describe('Progressive-disclosure regressions', () => {
   let state;
   let engine;
 

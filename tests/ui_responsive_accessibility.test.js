@@ -7,7 +7,7 @@ const testDir = path.dirname(fileURLToPath(import.meta.url));
 const styleCss = fs.readFileSync(path.resolve(testDir, '../style.css'), 'utf8');
 const indexHtml = fs.readFileSync(path.resolve(testDir, '../index.html'), 'utf8');
 
-describe('P3.3C responsive polish contracts', () => {
+describe('Responsive and accessibility contracts', () => {
   it('keeps all four navigation destinations in the semantic navigation landmark', () => {
     const navMarkup = indexHtml.match(/<nav class="tab-menu">([\s\S]*?)<\/nav>/)[1];
     expect(navMarkup.match(/class="tab-btn/g)).toHaveLength(4);

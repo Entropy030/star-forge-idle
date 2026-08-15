@@ -5,7 +5,7 @@ import { CODEX_ENTRIES } from '../src/content/codex.js';
 import { createInitialState } from '../src/state/createInitialState.js';
 import { MIGRATIONS } from '../src/state/migrations.js';
 
-describe('Codex Content', () => {
+describe('Codex content', () => {
   it('all entries have unique IDs and valid fields', () => {
     const ids = new Set();
     let prevSortOrder = -1;

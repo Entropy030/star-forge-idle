@@ -31,7 +31,7 @@ function installAppMarkup() {
   Viewport.clearElCache();
 }
 
-describe('P3.3B3 Forge decision hierarchy', () => {
+describe('Forge decision hierarchy', () => {
   beforeEach(() => {
     installAppMarkup();
     replaceRuntimeState(getPresetFreshEraI());

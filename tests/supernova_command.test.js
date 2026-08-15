@@ -4,7 +4,7 @@ import { createInitialState } from '../src/state/createInitialState.js';
 import { stellarCommandHandlers } from '../src/eras/stellar/commands.js';
 import { COSMIC_REGISTRY } from '../src/config/registry.js';
 
-describe('TRIGGER_SUPERNOVA Command', () => {
+describe('TRIGGER_SUPERNOVA command', () => {
   let state;
 
   beforeEach(() => {

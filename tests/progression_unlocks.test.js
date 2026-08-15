@@ -4,7 +4,7 @@ import { quantumCommandHandlers } from '../src/eras/quantum/commands.js';
 import { CodexEngine } from '../src/ui/codex.js';
 import { CODEX_ENTRIES } from '../src/content/codex.js';
 
-describe('P3 Follow-up Regression Tests', () => {
+describe('Progression unlock regressions', () => {
   let state;
   beforeEach(() => {
     state = getInitialGameState();

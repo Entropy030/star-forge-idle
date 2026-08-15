@@ -42,7 +42,7 @@ function installState(factory) {
   Viewport.update();
 }
 
-describe('P3.3B5.1 mobile regression hotfix', () => {
+describe('Mobile UI state synchronization', () => {
   beforeEach(installMarkup);
 
   it('synchronizes the body Era contract on every render and activates only the matching Forge', () => {

@@ -78,7 +78,7 @@ function expectNormalizedState(state) {
   }
 }
 
-describe('P3.3B0 UI truth contract', () => {
+describe('UI state truth contract', () => {
   beforeEach(() => {
     installTestDom();
     replaceRuntimeState(createInitialState());

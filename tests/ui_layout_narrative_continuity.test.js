@@ -17,7 +17,7 @@ function installCosmos() {
   `;
 }
 
-describe('P3.3C.1 layout stability and narrative continuity', () => {
+describe('UI layout stability and narrative continuity', () => {
   beforeEach(installCosmos);
 
   it('keeps Cosmos labels and live values as distinct, stable DOM nodes', () => {

@@ -34,7 +34,7 @@ function expectBefore(first, second) {
   expect(first.compareDocumentPosition(second) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0);
 }
 
-describe('P3.3B1 global UI hierarchy', () => {
+describe('Global UI hierarchy', () => {
   beforeEach(() => {
     installAppMarkup();
     replaceRuntimeState(getPresetFreshEraI());

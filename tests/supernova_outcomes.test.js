@@ -3,7 +3,7 @@ import Decimal from 'break_infinity.js';
 import { createInitialState } from '../src/state/createInitialState.js';
 import { getSupernovaOutcome } from '../src/eras/stellar/selectors.js';
 
-describe('P2C Supernova Outcome Model', () => {
+describe('Supernova outcome model', () => {
   let state;
 
   beforeEach(() => {

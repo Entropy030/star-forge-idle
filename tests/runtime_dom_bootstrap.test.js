@@ -13,7 +13,7 @@ const indexHtmlContent = fs.readFileSync(indexHtmlPath, 'utf8');
 const bootstrapPath = path.resolve(__dirname, '../src/bootstrap.js');
 const bootstrapContent = fs.readFileSync(bootstrapPath, 'utf8');
 
-describe('DOM Initialization and Bootstrap Integration', () => {
+describe('Runtime DOM initialization and bootstrap integration', () => {
   test('bootstrap uses top-level await for the dynamic main import', () => {
     // Assert top-level await is present and NOT wrapped in an async IIFE
     expect(bootstrapContent).toMatch(/try\s*\{\s*await import\(['"]\.\/main\.js['"]\);/);

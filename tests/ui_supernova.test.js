@@ -7,7 +7,7 @@ import { COSMIC_REGISTRY } from '../src/config/registry.js';
 import { gameState } from '../src/core/state.js';
 import { engine } from '../src/engine/instance.js';
 
-describe('Supernova UI', () => {
+describe('Supernova UI contract', () => {
   beforeEach(() => {
     // Reset global state
     Object.assign(gameState, createInitialState());

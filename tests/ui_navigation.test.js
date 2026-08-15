@@ -41,7 +41,7 @@ function destinationIds(state) {
   return getPrimaryNavigation(state).map(destination => destination.id);
 }
 
-describe('P3.3B4 navigation and meta architecture', () => {
+describe('Navigation and meta architecture', () => {
   beforeEach(() => {
     installAppMarkup();
     replaceRuntimeState(getPresetFreshEraI());

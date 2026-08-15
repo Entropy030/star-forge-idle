@@ -3,7 +3,7 @@ import { Viewport } from '../src/ui/viewport.js';
 import { gameState } from '../src/core/state.js'; // Assuming mock context where possible
 
 // Since testing actual ResizeObserver in jsdom is tricky, we focus on the logic
-describe('Viewport Feedback', () => {
+describe('Viewport feedback contract', () => {
   let deltaEl;
   beforeEach(() => {
     document.body.innerHTML = '<div id="delta-helium"></div><div class="core-canvas"></div>';

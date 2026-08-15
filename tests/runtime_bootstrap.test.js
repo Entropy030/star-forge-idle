@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import Decimal from 'break_infinity.js';
 
-describe('P0 Runtime Bootstrap Hotfix', () => {
+describe('Runtime bootstrap contract', () => {
   it('break_infinity.js has a usable default Decimal export', () => {
     expect(Decimal).toBeDefined();
     expect(typeof Decimal).toBe('function');

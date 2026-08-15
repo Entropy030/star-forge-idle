@@ -20,7 +20,7 @@ function snapshot(value) {
   return value;
 }
 
-describe('P3.3B5.2 Vacuum Coherence semantics', () => {
+describe('Era I Vacuum Coherence semantics', () => {
   it('uses the same passive stabilization rate in presentation and the Era I tick', () => {
     const state = getInitialGameState();
     state.unfold.introCompleted = true;

@@ -19,7 +19,7 @@ indexHtmlContent = indexHtmlContent.replace(
   `<style>${styleCssContent}</style>`
 );
 
-describe('Era-II Act Progression Integration Test', () => {
+describe('Era II progression integration', () => {
   let dom;
   let window;
   let document;

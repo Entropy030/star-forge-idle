@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const styleCssPath = path.resolve(__dirname, '../style.css');
 const styleCssContent = fs.readFileSync(styleCssPath, 'utf8');
 
-describe('Layout Scrolling Integrity', () => {
+describe('UI scrolling integrity', () => {
   test('body has overflow-y: auto and is not completely hidden', () => {
     // Extract the body block
     const bodyBlockMatch = styleCssContent.match(/body\s*\{([^}]*)\}/);

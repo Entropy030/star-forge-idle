@@ -38,7 +38,7 @@ function installMarkup() {
   Viewport.clearElCache();
 }
 
-describe('P3.3B5 era-specific Cosmos experience', () => {
+describe('Era-specific Cosmos experience', () => {
   beforeEach(installMarkup);
 
   it('keeps Fresh Era I focused on observation and hides future progression', () => {

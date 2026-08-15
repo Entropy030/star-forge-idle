@@ -4,7 +4,7 @@ import { simulateStellarEra } from '../src/eras/stellar/simulation.js';
 import Decimal from 'break_infinity.js';
 import { setGameState } from '../src/core/state.js';
 
-describe('P2B Stellar Simulation & Build Archetypes', () => {
+describe('Era III stellar simulation and build archetypes', () => {
   let state;
 
   beforeEach(() => {

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getPresetFreshEraI, getPresetLateEraI } from '../src/dev/playtestPresets.js';
 import { setPlaytestMode, getPlaytestMode, setPlaytestSpeedMultiplier, getPlaytestSpeedMultiplier, getActiveSaveKey } from '../src/core/persistence.js';
 
-describe('Playtest Save Isolation', () => {
+describe('Playtest save isolation', () => {
   afterEach(() => {
     setPlaytestMode(false);
   });

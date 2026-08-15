@@ -6,7 +6,7 @@ import { getEnergyDensityRate } from '../src/core/economy.js';
 import { COSMIC_REGISTRY } from '../src/config/registry.js';
 import { serializeState, deserializeState } from '../src/state/serialization.js';
 
-describe('Narrative and Progression', () => {
+describe('Progression narrative', () => {
   it('objective progression is monotonic and persists', () => {
     const mockState = {
       activeEpoch: 1,

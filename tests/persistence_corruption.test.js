@@ -5,7 +5,7 @@ import { serializeState } from '../src/state/serialization.js';
 import { enablePlaytestMode, disablePlaytestMode } from '../src/dev/playtestMode.js';
 import Decimal from 'break_infinity.js';
 
-describe('Persistence Corruption Prevention', () => {
+describe('Persistence corruption recovery', () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();

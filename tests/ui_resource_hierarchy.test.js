@@ -48,7 +48,7 @@ function installHud() {
   return document.getElementById('resource-hud');
 }
 
-describe('P3.3B2 era-specific resource hierarchy', () => {
+describe('Era-specific resource hierarchy', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
   });
