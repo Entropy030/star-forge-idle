@@ -6,6 +6,42 @@ let isPlaytestMode = false;
 let playtestSpeedMultiplier = 1;
 const CORRUPT_SAVE_PREFIX = 'starForgeCorruptSave_';
 const MAX_CORRUPT_SAVES = 3;
+export const MAX_OFFLINE_SECONDS = 8 * 60 * 60;
+
+function createLoadMetadata(overrides = {}) {
+  return {
+    loaded: false,
+    source: 'fresh',
+    actualElapsedSeconds: 0,
+    creditedElapsedSeconds: 0,
+    capApplied: false,
+    clockAnomaly: false,
+    recovered: false,
+    ...overrides
+  };
+}
+
+export function getElapsedLoadMetadata(lastSavedTime, now = Date.now(), offlineAllowed = true) {
+  const savedAt = Number(lastSavedTime);
+  const currentTime = Number(now);
+  if (!Number.isFinite(savedAt) || !Number.isFinite(currentTime)) {
+    return createLoadMetadata({ clockAnomaly: true });
+  }
+
+  const actualElapsedSeconds = (currentTime - savedAt) / 1000;
+  const clockAnomaly = actualElapsedSeconds < 0;
+  const positiveElapsed = clockAnomaly ? 0 : actualElapsedSeconds;
+  const creditedElapsedSeconds = offlineAllowed
+    ? Math.min(positiveElapsed, MAX_OFFLINE_SECONDS)
+    : 0;
+
+  return createLoadMetadata({
+    actualElapsedSeconds,
+    creditedElapsedSeconds,
+    capApplied: offlineAllowed && positiveElapsed > MAX_OFFLINE_SECONDS,
+    clockAnomaly
+  });
+}
 
 function setPersistenceStatus(message, type = 'error') {
   if (typeof window !== 'undefined' && window.Viewport?.setSystemStatus) {
@@ -104,7 +140,9 @@ export function isSerializedStatePayload(value) {
   );
 }
 
-export function loadGame() {
+export function loadGame(options = {}) {
+  const now = options.now ?? Date.now();
+  const offlineAllowed = options.offlineAllowed ?? !isPlaytestMode;
   const activeKey = getActiveSaveKey();
   let sourceKey = activeKey;
   let rawData = null;
@@ -126,7 +164,9 @@ export function loadGame() {
     if (rawData === null) {
       ensureStateShape(gameState);
       syncDocumentState();
-      return { offlineSec: 0, offlineTimeStr: null };
+      return createLoadMetadata({
+        source: isPlaytestMode ? 'fresh-playtest' : 'fresh'
+      });
     }
 
     if (rawData.trim() === '') {
@@ -157,29 +197,21 @@ export function loadGame() {
     if (stateVersion !== SAVE_VERSION) throw new Error(`No complete migration path to save version ${SAVE_VERSION}`);
 
     replaceRuntimeState(loadedState);
-
-    const lastSaved = parsed.lastSavedTime || Date.now();
-    const elapsedSec = Math.max(0, (Date.now() - lastSaved) / 1000);
-    if (elapsedSec > 5) {
-      const offlineSec = Math.min(elapsedSec, 28800); // capped at 8 hours max
-      const hrs = Math.floor(offlineSec / 3600);
-      const mins = Math.floor((offlineSec % 3600) / 60);
-      const secs = Math.floor(offlineSec % 60);
-      let timeStr = "";
-      if (hrs > 0) timeStr += `${hrs}h `;
-      if (mins > 0 || hrs > 0) timeStr += `${mins}m `;
-      timeStr += `${secs}s`;
-
-      return { offlineSec, offlineTimeStr: timeStr };
-    }
-    return { offlineSec: 0, offlineTimeStr: null };
+    const elapsed = getElapsedLoadMetadata(parsed.lastSavedTime ?? now, now, offlineAllowed);
+    return {
+      ...elapsed,
+      loaded: true,
+      source: isPlaytestMode
+        ? 'playtest-save'
+        : sourceKey === activeKey ? 'normal-save' : 'legacy-save'
+    };
   } catch (e) {
     console.warn('Failed to load save; initializing a fresh universe:', e);
     const quarantineKey = quarantineActiveSave(rawData, sourceKey);
     const recoveryDetail = quarantineKey ? ` Quarantined as ${quarantineKey}.` : '';
     setPersistenceStatus(`Save recovery activated.${recoveryDetail} Initializing fresh universe.`, 'error');
     installFreshRuntimeState();
-    return { offlineSec: 0, offlineTimeStr: null };
+    return createLoadMetadata({ source: 'recovery', recovered: true });
   }
 }
 
@@ -202,7 +234,7 @@ export function exportSave() {
   }
 }
 
-export function importSave(input) {
+export function importSave(input, options = {}) {
   if (!input) return { success: false, message: "No input provided." };
   try {
     let decoded = atob(input);
@@ -210,9 +242,13 @@ export function importSave(input) {
     if (isSerializedStatePayload(parsed) && parsed.version === SAVE_VERSION && isSerializedStatePayload(parsed.gameState)) {
       try {
         const importedState = deserializeState(parsed.gameState);
-        localStorage.setItem(getActiveSaveKey(), decoded);
+        const anchoredSave = {
+          ...parsed,
+          lastSavedTime: options.now ?? Date.now()
+        };
+        localStorage.setItem(getActiveSaveKey(), JSON.stringify(anchoredSave));
         replaceRuntimeState(importedState);
-        return { success: true };
+        return { success: true, source: 'manual-import', offlineAnchorReset: true };
       } catch (e) {
         return { success: false, message: 'State import failed. Browser storage may be unavailable or the state format is invalid.' };
       }

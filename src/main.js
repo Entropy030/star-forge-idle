@@ -7,7 +7,7 @@ import { expireFlare } from './core/stellar.js';
 let flareSimSuppressed = false;
 import { gameState, isDirty, setIsDirty } from './core/state.js';
 import { saveGame, exportSave, importSave, wipeSave, loadGame, getPlaytestSpeedMultiplier } from './core/persistence.js';
-import { checkPlaytestMode } from './dev/playtestMode.js';
+import { checkPlaytestMode, preparePlaytestBoot } from './dev/playtestMode.js';
 import { ArtifactManager, Viewport, format, ActManager, initAudio, playSupernovaSound, showIntroScreenCinematic, startEraTransition } from './ui/viewport.js';
 import { Templates } from './ui/templates.js';
 import { advanceGameTick } from './core/runtimeTick.js';
@@ -560,6 +560,7 @@ async function bootApp() {
   }
 
   try {
+    preparePlaytestBoot();
     loadGame();
     engine.loadState(gameState);
 

@@ -1,5 +1,5 @@
 /* global sessionStorage */
-import { setPlaytestMode, setPlaytestSpeedMultiplier, getPlaytestSpeedMultiplier, exportSave, importSave } from '../core/persistence.js';
+import { setPlaytestMode, setPlaytestSpeedMultiplier, getPlaytestSpeedMultiplier, exportSave, importSave, loadGame } from '../core/persistence.js';
 import { gameState } from '../core/state.js';
 import { serializeState, deserializeState } from '../state/serialization.js';
 import { replaceRuntimeState } from '../core/state.js';
@@ -8,11 +8,24 @@ import { ArtifactManager } from '../ui/viewport.js'; // or similar, depending on
 import * as presets from './playtestPresets.js';
 
 let isPlaytestActive = false;
+let isDirectPlaytestBoot = false;
+
+export function hasPlaytestBootIntent(search = window.location.search) {
+  return new URLSearchParams(search).get('playtest') === '1';
+}
+
+export function preparePlaytestBoot(search = window.location.search) {
+  if (!hasPlaytestBootIntent(search)) return false;
+  isDirectPlaytestBoot = true;
+  isPlaytestActive = true;
+  setPlaytestMode(true);
+  return true;
+}
 
 export function checkPlaytestMode() {
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('playtest') === '1') {
-    enablePlaytestMode();
+  if (hasPlaytestBootIntent()) {
+    if (isDirectPlaytestBoot) renderPlaytestUI();
+    else enablePlaytestMode();
   }
 
   window.addEventListener('keydown', (e) => {
@@ -52,6 +65,20 @@ export function enablePlaytestMode() {
 
 export function disablePlaytestMode() {
   if (!isPlaytestActive) return true;
+
+  if (isDirectPlaytestBoot) {
+    isDirectPlaytestBoot = false;
+    isPlaytestActive = false;
+    setPlaytestMode(false);
+    setPlaytestSpeedMultiplier(1);
+    loadGame({ offlineAllowed: false });
+    const ui = document.getElementById('playtest-mode-ui');
+    if (ui) ui.remove();
+    Viewport.update();
+    Viewport.syncAnchor(true);
+    Viewport.setSystemStatus("Playtest Mode Disabled. Normal Save Loaded.", "warning");
+    return true;
+  }
 
   try {
     const backup = sessionStorage.getItem('starForgeRealSaveBackup');
