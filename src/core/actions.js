@@ -9,7 +9,13 @@ export function triggerSupernova() {
   if (result.ok) {
     const snEvent = result.events.find(ev => ev.type === 'SUPERNOVA_TRIGGERED');
     if (snEvent) {
-       gameState.history.push({ time: gameState.totalGameTime, msg: `Supernova Yield: ${snEvent.yieldAmt} Stardust`, type: 'milestone' });
+      if (!Array.isArray(gameState.history)) gameState.history = [];
+      const stardustYield = snEvent.rewards?.stardust ?? snEvent.yieldAmt;
+      gameState.history.push({
+        time: gameState.totalGameTime ?? gameState.cosmicAge,
+        msg: `Supernova Yield: ${stardustYield} Stardust`,
+        type: 'milestone'
+      });
     }
   }
   return result;
