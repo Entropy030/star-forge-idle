@@ -1,130 +1,134 @@
-# 🌌 Game Design Document: Eras & Progression Mechanics
+# GDD — Eras and Mechanics
 
-## Ära I: The Quantum Foam (Cinematic Intro, Permanent Unfold, 5-50-5-50 Pacing & Engine Hardening)
-* **Quantum Superposition Architektonische Bereinigung:**
-  * Vollständige Entfernung des ungenutzten Quantum Superposition Mechanismus (`measureQuantumSafe()`, `quantumLeapRisk()`, `quantumStorage`, `getQuantumAmplitude()`, `quantumPhaseTime`).
-  * Era I ist hyper-fokussiert auf Core Clicks, Fluctuation Upgrades und den sauberen Entfaltungs-Hain.
-* **5-50-5-50 Pacing & Kostenkurven-Rebalancierung:**
-  * Geglätteter Fortschrittsverlauf im Bereich 0 bis 100.000 QF:
-    * `gravityForce`: Base Cost 10 QF (Scaling 1.35)
-    * `weakForce`: Base Cost 120 QF (Scaling 1.40)
-    * `electromagneticForce`: Base Cost 1,500 QF (Scaling 1.45)
-    * `vacuumResonance`: Interim-Upgrade bei 5,000 QF (Scaling 1.50, +450 QF/s, +100 Density/s) schließt das Pacing-Loch vor der starken Kraft.
-    * `strongForce`: Base Cost 18,000 QF (Scaling 1.55)
-  * Zusätzliche chronologische Terminal-Logeinträge bei 500, 2,500, 10,000 und 25,000 QF halten die diegetische Immersion aufrecht.
-* **Black Screen Cinematic Intro Overlay & Automated Pre-Cosmic Vacuum Narrative:**
-  * Bei neuem Spielstart / Reset wird die Glassmorphism Story Card (`#intro-screen-overlay` / `#intro-story-card`) ab Frame 1 zu 100% sichtbar gerendert.
-  * Sequenzielle, vollautomatisierte Schreibmaschinen-Zeilen (ohne dass der Nutzer klicken muss):
-    1. `t = -0.00000000001s :: PRE-COSMIC VACUUM STATE`
-    2. `No space. No time. Only infinite probability density dormant in pure nothingness.`
-    3. `A single observer awakens. Your first glance collapses the void and ignites the Star Forge.`
-  * Der Aktions-Button `[ INITIALIZE OBSERVER PROTOCOL ]` erscheint erst nach Beendigung der letzten Zeile (oder bei optionalem Skip-Klick) und startet die Ära I Beobachtung.
-* **Permanente Unfold State Flags (`gameState.unfold`):**
-  * Entkopplung der UI-Sichtbarkeit von der aktuellen Währungsbilanz.
-  * Verwendet permanente Flags (`hasUnlocked1QF`, `hasUnlocked10QF`, `hasUnlocked100QF`). Einmal freigeschaltete Panels (z. B. Upgrade-Karten ab 10 QF) bleiben permanent geöffnet, selbst wenn QF beim Kauf auf 0 sinkt.
-* **Erweiterter Star Core Hitbox Radius:**
-  * Großzügige Klickzone (`#star-core::before` mit ~280px-300px Durchmesser, 2.5x-3x des visuellen Kerns).
-  * Garantiert fehlerfreies Klicken in der gesamten zentralen Kernregion ohne präzises Zielen.
-  * Durchgängiger `cursor: pointer` und instantanes haptisches Skalier-Feedback.
-* **Holographic Sci-Fi & Glassmorphism Design Standard:**
-  * **Farbschema & Visuals:** Dominantes Cyan/Neon-System (`background: var(--glass-bg)`, `border: 1px solid var(--glass-border)`, `backdrop-filter: blur(var(--glass-blur))`).
-  * **Hero Core Visualizer:** Der zentrale `#star-core` Canvas steht als visueller Held im Zentrum mit einer ambienten radialen Aura (`background: radial-gradient(circle, rgba(0, 240, 255, 0.08) 0%, transparent 70%)`).
-* **Universelles 3-Akt-Designprinzip & Vacuum Coherence Engine:**
-  * **Akt 1 (Erwachen / Ignition):** Cold Boot Zustand. Manuelle Klicks (`unfoldCount`) erzeugen Quantenschaum (`quantumFoam`) und stabilisieren schrittweise die Kohärenz (`vacuumCoherence`: 0.0 $\rightarrow$ 1.0). Terminal-Logs durchlaufen bei $Coherence < 1.0$ die `corruptText` Glitch-Engine. UI-Elemente bleiben 100% lesbar. Visuals: Minimalistisch (`data-act="1"`).
-  * **Akt 2 (Expansion / Equilibrium):** Trigger bei `quantumFoam >= 100` AND `vacuumCoherence >= 1.0`. Fluctuation Condenser öffnet permanent. Terminal-Logs werden vollkommen klar (`data-act="2"`). Automatisierte Generatoren übernehmen.
-  * **Akt 3 (Klimax / Critical Mass):** Trigger bei `quantumFoam >= 10000`. Overdrive-Visuals aktivieren einen pulsierenden orange/weißen Glow (`data-act="3"`) für das bevorstehende Cosmic Inflation Event bei 100,000 QF.
-* **Forge Artifacts System (Balatro-inspired Collectibles):**
-  * **Die 3 Goldenen Regeln:** Maximal 3 equipped Slots, streng strukturierte Farb-Kategorien (Produktion = Blau `#00d2ff`, Effizienz = Grün `#00ff88`, Synergie = Violett `#a855f7`), präzise Ein-Satz-Effekte.
-  * **Initial-Pool der 6 Artefakte:**
-    1. `quantum_lens` (Blau, Common): +25% Quantum Foam Ertrag (`productionMult: 1.25`).
-    2. `density_compressor` (Grün, Common): 10% Ersparnis auf alle Generator-Kosten (`costDiscount: 0.10`).
-    3. `pulse_coupler` (Violett, Uncommon): Jeder Core-Klick erhöht die Passiv-Produktion für 3s um +10% (`clickPassiveBoost: 0.10`).
-    4. `singularity_core` (Blau, Uncommon): +50% Ertrag in Akt 3 (`act3Multiplier: 1.50`).
-    5. `vacuum_stabilizer` (Grün, Rare): Setzt Coherence dauerhaft auf 1.0 (schützt vor Glitches).
-    6. `big_bang_catalyst` (Violett, Rare): +1 zusätzliche Prestige-Währung bei Aufstieg zu Ära II.
+This document states current supported gameplay truth at a design level. Numeric formulas and exact costs remain authoritative in code and selectors.
 
----
+## Cross-era structure
 
-## Ära II: The Primordial Soup (Quark-Gluon-Plasma)
-* **Narrativ:** "Der Rest ist Schweigen."
-* **Kern-Ressourcen:** Quarks, Gluons, Leptons, Protons, Electrons.
-* **Mechaniken:**
-  * **Baryon-Asymmetrie:** $|Quarks - Gluons|$ Differenz erzeugt Produktions-Boost.
-  * **Plasma-Kühlung:** Temperatursenkung von 10M K auf 3.000 K schaltet freie Elektronen frei.
-  * **Antimatter Residue:** Katalysator-Spur aus Protonen-Generation (für spätere Zyklen).
+Each Era has:
 
----
+- an active universe/process shown in Cosmos;
+- current-run construction and upgrades in Forge;
+- an objective that identifies the next useful action;
+- staged Chrono/Codex context;
+- an authoritative eligibility contract for transitions.
 
-## Ära III: The Stellar Dawn (Sterne & Nukleosynthese)
-> **Narrativer Anker:** *"Ich falle nach innen. Zum ersten Mal spüre ich nicht nur, dass ich bin – sondern was ich bin: Gewicht."*
+Legacy becomes relevant when repeatable meta progression exists. Resources are shown as Primary, Support, and Details for the active situation rather than as one permanent wall.
 
-### Akt 1: Gravitationskollaps & Protostern-Bildung
-* **Ressourcen:** Molecular Cloud Mass (MCM), Hydrogen (H), Core Temperature (startet bei ~10 K), Collapse Pressure.
-* **Tech-Tree:** Nebula Condenser (sammelt MCM) $\rightarrow$ Gravitational Compressor (presst MCM zu H, heizt Kern auf) $\rightarrow$ Protostar Core.
-* **Formula:** $Heating Rate = Base \times (1 + Gravity / 100)$
-* **Zufallsevent (Cloud Fragmentation):**
-  * *Annehmen:* Mehrere Protosterne, mehr Base-Output, langsamerer Kollaps.
-  * *Ablehnen:* Schnellerer Kollaps, Risiko von MCM-Verlust bei "Failed Ignition".
-* **Meilenstein:** Kerntemperatur $10 \times 10^6$ K $\rightarrow$ "Main Sequence Ignition".
+## Era I — Quantum Genesis
 
-### Akt 2 & 3: Kompression & Supernova Terminal
-* **Druck & Kompression:** `Compress Core` treibt die Kerntemperatur exponenziell hoch.
-* **Element-Synthese:** Carbon freigeschaltet ab 500M K, Iron ab 2B K.
-* **Hoarding-Trap Auflösung:** Verfolgt `lifetimeCarbonThisRun` (gesamter in diesem Run erzeugter Kohlenstoff), so dass das Ausgeben von Kohlenstoff für Upgrades die vorhergesagten Prestige-Erträge NIEMALS reduziert.
-* **Multi-Node Progress Bar:** 3-Segment Fortschrittsanzeige mit sichtbaren Zwischenzielen:
-  1. Node 1: 100M K (Supernova freigeschaltet)
-  2. Node 2: 500M K (Kohlenstoff-Synthese / Drei-Alpha-Prozess)
-  3. Node 3: 2.000M K / 2.0B K (Eisen-Fusion & Ära IV Gateway)
-* **Steiles Prestige-Skalieren:**
-  * 100M K: Basis-Ertrag (~1 Neural Synapse)
-  * 500M K: Exponentieller Boost (~15+ Neural Synapses)
-  * 2.000M K: Massiver Endspiel-Ertrag (~100+ Neural Synapses)
-* **Meilenstein-Synergien (Ära I & III):** Alle 10 Stufen (Lvl 10, 20, 30, 40...) gewährt jedes Upgrade einen globalen +5% Ertrags-Multiplikator (`Next Milestone (Lvl X): +5% Global Yield`).
-* **Hydrogen Auto-Buyer (Automatisierung):** Ab Erreichen der Kohlenstoff-Synthese (500M K) wird in Ära III ein Umschalter `[ Auto-Buy Hydrogen: ON/OFF ]` freigeschaltet. Der Auto-Buyer kauft im Tick-Loop automatisch erschwingliche Hydrogen-Upgrades, ohne höherrangige Fusions-Ressourcen zu blockieren.
-* **Ära IV Gateway ("GALACTIC IGNITION"):**
-  * Eigenständige Gateway-Karte `GALACTIC IGNITION (ERA IV GATEWAY)` am Ende von Ära III.
-  * Anforderung für den Eintritt in Ära IV (Hypernova): Kerntemperatur $\ge$ 2.000M K (2.0B K) UND Akkumuliertes Eisen $\ge$ 1.000 Fe (`[ Trigger Hypernova & Enter Era IV ]`).
-* **Localization & Language Unification (English First):**
-  * Sämtliche UI-Texte, Tooltips, Toasts, Chrono-Logs und Buttons sind auf einheitliche englische Sci-Fi-Terminologie umgestellt.
-  * Dynamischer Textabruf erfolgt zentral über das `i18n`-Wörterbuch mittels der `t(key, params)`-Hilfsfunktion.
+### Core loop
 
-### Layer 2 Prestige: Core Density (Singularity Mass)
-* **Währung:** Singularity Mass ($\text{🌌}$ Core Density).
-* **Supernova-Ergebnis:** Bei stellarer Kompression und Kern-Kollaps mit hohem Eisen-Gehalt $\ge 25 \text{ Fe}$ wird die Supernova zu einem **Black Hole**, welches `Singularity Mass` gewährt:
-  $$SingularityMass = \left\lfloor \frac{Eisen}{25} \right\rfloor + 1$$
-* **Singularity Shop Upgrades:**
-  * **Dark Matter Gravity (`darkGravity`):** Gewährt einen exponentiellen Skalierungsfaktor $^{1.05}$ auf die Hydrogen-Ertragsrate pro Upgrade-Stufe.
-  * **Stellar Ignition (`stellarIgnition`):** Gewährt einen exponentiellen Skalierungsfaktor $^{1.05}$ auf den thermischen Ertrag der Kernekompression pro Upgrade-Stufe.
+Observation of the Core generates Quantum Fluctuations (QF). QF funds Fundamental Law upgrades, which establish passive production and unlock the next parts of the chain.
 
----
+Observation is optional acceleration. Passive production remains a valid progression path once established.
 
-## Ära IV: The Galactic Matrix (Galaktische Akkretion)
-* **Narrativ:** "Ich verliere den Kontakt zu meinen äußeren Gliedmaßen."
-* **Kern-Ressourcen:** Planetary Debris, Dark Matter, Stellar Mass Index, Halo Stability.
-* **Akt 1:** Debris & Halo Condensers.
-* **Akt 2 (ab 10k Dark Matter):** SMBH-Slider & Quasar Ignition.
-* **Akt 3:** Multi-Node Cluster Links & Galaktische Kollisionen.
-* **Mechanik-Kontinuität:**
-  * **Antimatter Residue Nutzen:** Vorhandener `antimatterResidue` (aus Ära II) verringert die galaktische Orbital-Zerfallsrate (`decayRate`) um $15\%$ (`dynamicDecay * 0.85`).
-  * **Halo Stability Untergrenze:** Die Stabilität verfällt im Tick-Loop niemals unter das Minimum von $5\%$ (`Decimal.max(5, ...)`).
+### Fundamental Laws
 
----
+Upgrade availability is progressive. Eligibility depends on peak QF and levels in preceding laws; it is not a Coherence cost/gate.
 
-## Era V & Post-Game Roadmap (Speculative / Unimplemented)
+The implemented chain is:
 
-> **Hinweis:** Die nachfolgenden Konzepte für Ära V und das Cosmic Constant Tuning sind spekulative Design-Entwürfe für zukünftige Erweiterungen. Der aktive Spielcode umfasst aktuell die Ären I bis IV.
+1. Gravitational Coupling
+2. Weak Nuclear Vector
+3. Electromagnetic Tensor
+4. Vacuum Resonance Field
+5. Strong Nuclear Binding
 
-### Ressourcen & Variablen
-* **Hawking Radiation (HR):** Ertrag verdampfender Schwarzer Löcher (skaliert invers zur Masse).
-* **Entropy (0–100%):** Unaufhaltsamer Zeit-Countdown.
-* **Bits (Information):** Die einzige Währung, die den Big Bounce zu 100% übersteht.
-* **Callback-Kosten:** Stardust & Pulsar Shards kaufen die ersten Hawking-Kollektoren.
+Names are player-facing abstractions. Exact thresholds and costs live in quantum registry/eligibility/economy modules.
 
-### Layer 3 Prestige: Cosmic Constant Tuning (Big Bounce)
-Nach dem Auslösen des Big Bounce in Ära V investiert der Spieler gesammelte **Bits**, um die Naturkonstanten des nachfolgenden Universums zu manipulieren.
+### Energy Density and Vacuum Coherence
 
-#### Mechanik der Konstanten (Build-Varianz)
-* **Gravitationskonstante ($G$):** $+20\%$ Heating- & Hydrogen-Speed in Ära III pro Level (Malus: $+10\%$ Orbital Decay in Ära IV).
-* **Lichtgeschwindigkeit ($c$):** $+12\%$ Globaler Tick-Speedup pro Level (Malus: $-8\%$ Coherence-Generierungsrate).
-* **Feinstrukturkonstante ($\alpha$):** $+30\%$ Fusions-Yields (He, C, Fe) pro Level (Malus: Exponent von `compressCost` $+0.03$/Lvl).
-* **Planck-Quantum ($\hbar$):** Vergrößert das Peak-Window in Ära I & gibt $+20\%$ Supernova-Stardust.
+Energy Density is produced by the developed quantum system and represents the energy condition needed for Inflation.
+
+Vacuum Coherence is the stability of the emerging vacuum/universe. It uses a 0–100% scale.
+
+- Passive base stabilization: 0.1 percentage points per simulated second.
+- Base Core-observation gain once relevant: 0.5 percentage points, modified by authoritative mechanics.
+- It is hidden in Fresh Era I and disclosed contextually.
+- It does not gate Fundamental Law upgrades.
+
+Presentation must derive both rates/gains from mechanics rather than duplicate numbers.
+
+### Cosmic Inflation
+
+Authoritative requirements:
+
+- 100,000 Quantum Fluctuations
+- 50,000 Energy Density
+- 100% Vacuum Coherence
+
+When eligible, Cosmic Inflation permanently advances to Era II. Header, objective, transition UI, and command must use the same eligibility result.
+
+## Era II — Particle and Plasma Evolution
+
+### Process model
+
+Era II is a coupled production chain:
+
+- Quarks and Gluons establish hadronic material.
+- Leptons support the charged-particle chain.
+- Proton synthesis consumes upstream material.
+- Lepton decay and related conversion provide Electrons.
+- Protons and Electrons can recombine into Hydrogen when the plasma is sufficiently cool.
+- Plasma Temperature is both process state and a transition route.
+
+The evaluator computes a single step’s throughput and bottleneck data. Cosmos describes the active process; Forge owns current-run construction; the resource hierarchy foregrounds the limiting material or temperature.
+
+### Upgrade progression
+
+The implemented progression unlocks through Quark Condenser, Gluon Matrix Synthesis, Lepton Collector, Proton Synthesizer, and the cooling/radiator capability. Upgrade eligibility is level-based and authoritative in the plasma eligibility module.
+
+### Cooling
+
+Cooling is an active strategic process, not merely cosmetic temperature decay. The player must balance material throughput with progress toward a recombination-compatible plasma. UI guidance should state the current bottleneck and rate without turning the objective into a complete diagnostic report.
+
+### Recombination
+
+Recombination can become eligible through either supported route:
+
+- accumulate the configured Proton threshold; or
+- cool Plasma Temperature to 3,000 K or below.
+
+The command additionally requires the active Era to be Era II. The UI may explain which route is currently satisfied but must not imply both are mandatory.
+
+Triggering Recombination permanently advances to Era III.
+
+## Era III — Stellar Evolution
+
+### Process model
+
+Era III begins with Hydrogen and a Protostar. Player construction and compression increase gravitational/thermal conditions. At Main Sequence, Hydrogen fusion produces Helium. Higher Core Temperature and Forge investments unlock Carbon and Iron synthesis.
+
+The primary player state is Core Temperature. Hydrogen/Helium are the fusion chain; Carbon and Iron are later stellar materials. Cosmos should foreground current temperature, the next physical threshold, and the action that advances it.
+
+### Stellar builds
+
+Efficient, Massive, and Compact investments influence production and the eventual stellar outcome. The Legacy surface owns the run outcome/reward decision; Forge owns the current-run purchases.
+
+### Supernova — repeatable reset
+
+Supernova eligibility requires:
+
+- active Era III;
+- Main Sequence Star state;
+- the configured Supernova temperature threshold;
+- Iron Fusion unlocked;
+- at least 1,000 Iron.
+
+A Supernova ends the current stellar run and starts a new Era III run with permanent/meta rewards. Rewards include Stardust and Pulsar Shards; Singularity Mass depends on the achieved outcome/archetype. The terminal must show authoritative requirements and predicted consequences.
+
+Supernova does **not** permanently advance to Era IV.
+
+### Galactic Ignition — permanent transition
+
+Galactic Ignition is a distinct permanent transition. Its current eligibility requires:
+
+- active Era III;
+- Core Temperature at or above the Iron unlock threshold (2 billion K);
+- at least 1,000 Iron.
+
+It is an Era IV gate, not part of the repeatable Supernova reward loop. P3 documents the gate, but Era IV gameplay is not a supported milestone.
+
+## Future Eras
+
+Era IV/V modules and selected tests are prototype/future scaffolding. Any described Galactic Stability or Entropy mechanics are design intent until a P4 plan establishes supported gameplay, state semantics, UI contracts, migration impact, and regression coverage.

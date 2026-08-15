@@ -1,38 +1,53 @@
-# Star Forge Idle: Physics Abstraction Guide
+# Star Forge Idle — Physics Abstraction Guide
 
-This document outlines how real-world physics concepts are abstracted into game mechanics, ensuring a balance between scientific grounding and engaging gameplay.
+Status: design guidance. This document explains abstraction intent; the GDD and implementation selectors remain authoritative for current mechanics.
 
-## 1. Baryon Asymmetry (Era I)
-*   **Real concept:** The observed imbalance between matter and antimatter in the observable universe.
-*   **Game abstraction:** A strategic trade-off where creating extreme imbalance yields high amounts of Surviving Matter (long-term capacity), while maintaining symmetry yields high Annihilation Energy (short-term boost).
-*   **Reason:** Provides a strategic decision early in the game rather than a simple passive multiplier.
-*   **Known simplification:** Baryogenesis is highly complex; here it is reduced to a slider-like balance.
-*   **Player-facing explanation:** "A subtle imbalance determines whether fluctuations annihilate into pure energy or survive as stable matter."
+Star Forge uses real physical ideas as legible progression metaphors, not as a precision cosmology simulator. An abstraction should create a meaningful player decision, remain explainable in a short Codex entry, and avoid claiming scientific exactness.
 
-## 2. Plasma Recombination (Era II)
-*   **Real concept:** The epoch when the universe cooled enough for electrons and protons to form neutral hydrogen atoms.
-*   **Game abstraction:** A clear recipe flow: Quarks → Protons/Neutrons, Leptons → Electrons, and Protons + Electrons → Hydrogen.
-*   **Reason:** Enforces a strict input/output economy (matter is conserved, not created from nothing) and prepares fuel for the Stellar Forge.
-*   **Known simplification:** Ignores the complex intermediate states and forces all baryons into a simple proton/neutron duality.
-*   **Player-facing explanation:** "As the universe expands and cools, chaotic particles bind into the first stable structures."
+## 1. Vacuum stabilization (Era I)
 
-## 3. Stellar Equilibrium (Era III)
-*   **Real concept:** A star maintains hydrostatic equilibrium when the outward thermal pressure from nuclear fusion balances the inward pull of gravity.
-*   **Game abstraction:** The central mechanic of Era III. Gravity pulls inward (determined by Initial Mass and Core Density), while Fusion creates outward pressure (determined by Fuel and Heat).
-*   **Reason:** Creates the core interactive loop of Era III, where players must manage stability to prevent premature collapse or fusion stall.
-*   **Known simplification:** Simplifies the incredibly complex fluid dynamics and radiation transport into a single "Stability" meter.
-*   **Player-facing explanation:** "Your star is a constant battle between the crushing weight of gravity and the explosive outward force of nuclear fusion."
+- **Real inspiration:** vacuum state, fluctuations, energy density, and rapid early-universe expansion.
+- **Game abstraction:** observation produces Quantum Fluctuations; developed Fundamental Laws create passive structure; Energy Density and 0–100% Vacuum Coherence prepare Cosmic Inflation.
+- **Decision value:** the player balances direct observation with passive construction and sees three distinct transition requirements converge.
+- **Simplification:** Vacuum Coherence is a readable stability percentage, not a literal field-theory calculation.
+- **Player framing:** “Observation accelerates the emerging vacuum’s natural stabilization.”
 
-## 4. Stellar Builds & Supernova Outcomes
-*   **Real concept:** A star's mass and composition determine its lifespan and ultimate fate (White Dwarf, Neutron Star, or Black Hole).
-*   **Game abstraction:** Three distinct archetypes (Efficient, Massive, Compact) that players can deliberately aim for, resulting in different Supernova outcomes and Prestige rewards.
-*   **Reason:** Ensures replayability and diverse strategic paths.
-*   **Known simplification:** Stars don't transition between these archetypes dynamically; in the game, the player actively guides the star's evolution.
-*   **Player-facing explanation:** "The mass and density of your star dictate not only how it burns, but how it will eventually die—leaving behind a cosmic remnant to seed the next run."
+Baryon asymmetry is represented in the current Era II production model, not as an Era I slider.
 
-## 5. Solar Flares
-*   **Real concept:** Sudden flashes of increased brightness on a star, usually observed near its surface and in close proximity to a sunspot group.
-*   **Game abstraction:** RNG-based events driven by the star's rotation and magnetic instability.
-*   **Reason:** Adds an active element and a sense of unpredictability to the otherwise deterministic idle loop.
-*   **Known simplification:** Tied directly to player-controlled instability metrics rather than complex magnetic reconnection models.
-*   **Player-facing explanation:** "Instability breeds chaos. Sudden bursts of energy offer temporary boons, but reveal the turbulent nature of your forge."
+## 2. Particle synthesis and recombination (Era II)
+
+- **Real inspiration:** a hot quark/lepton plasma cooling into hadrons, electrons, and neutral matter.
+- **Game abstraction:** coupled Quark, Gluon, Lepton, Proton, and Electron recipes plus an independently legible Plasma Temperature. Protons and Electrons form Hydrogen under sufficiently cool conditions.
+- **Decision value:** production and cooling expose different bottlenecks and support alternative routes to the transition.
+- **Simplification:** many intermediate particles/interactions are collapsed into a small conserved recipe network.
+- **Player framing:** “As the plasma cools, charged particles can bind into the first neutral Hydrogen.”
+
+## 3. Stellar evolution (Era III)
+
+- **Real inspiration:** gravitational compression, fusion temperature thresholds, nucleosynthesis, and stellar collapse.
+- **Game abstraction:** compression and construction raise Core Temperature; Hydrogen fusion produces Helium; deeper thresholds unlock Carbon and Iron synthesis.
+- **Decision value:** the player chooses current-run investments and guides an Efficient, Massive, Compact, or balanced stellar outcome.
+- **Simplification:** complex hydrostatic equilibrium, radiation transport, and reaction chains are represented by a small number of resources, rates, build levels, and temperature gates.
+- **Player framing:** “Gravity compresses the Core until new fusion pathways become possible.”
+
+## 4. Supernova outcomes
+
+- **Real inspiration:** stellar mass/composition determine a star’s lifetime and remnant.
+- **Game abstraction:** build emphasis shapes the predicted Supernova outcome and its Legacy reward mix.
+- **Decision value:** the reset is repeatable, making alternate stellar paths and permanent reward priorities meaningful.
+- **Simplification:** the player deliberately guides archetypes; the simulation does not model complete stellar lifecycles.
+- **Player framing:** “How the star was built determines what survives its collapse.”
+
+Supernova is a repeatable Era III reset. Galactic Ignition is the distinct permanent transition gate.
+
+## 5. Solar activity
+
+- **Real inspiration:** transient magnetic/solar eruptions.
+- **Game abstraction:** occasional stellar events provide contextual temporary effects or choices.
+- **Decision value:** introduces bounded unpredictability into an otherwise deterministic idle loop.
+- **Simplification:** event chance/effect is tied to game state, not a magnetohydrodynamic model.
+- **Player framing:** “A turbulent star occasionally releases a burst of usable energy.”
+
+## 6. Galactic and later concepts (future intent)
+
+Era IV/V code contains prototype ideas around galactic formation, stability, and entropy. These are not yet supported design contracts. Before P4, later-era state semantics must be chosen explicitly; Era I Vacuum Coherence should not be reused merely because a field already exists.
