@@ -18,6 +18,7 @@ import { renderResourceHud } from './resourceHud.js';
 import { renderCosmosExperience } from './cosmosExperience.js';
 import { formatHudNumber } from './resourceFormatters.js';
 import { getActionFailureMessage, isActionSuccessful } from './actionFeedback.js';
+import { getCosmicTuningEligibility } from '../core/tuning.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
@@ -1901,15 +1902,16 @@ export const Viewport = {
     const tuningReg = COSMIC_REGISTRY.upgrades.tuning;
     for (let key in tuningReg) {
       const def = tuningReg[key];
-      const currentLvl = gameState.cosmicConstants[key] || 0;
-      const cost = typeof def.baseCost === 'function' ? def.baseCost(currentLvl) : new Decimal(def.baseCost).times(Decimal.pow(def.costMult || 2, currentLvl));
-      const isMaxed = currentLvl >= def.maxLevel;
-      const canAfford = !isMaxed && gameState.currencies.bits.amount.gte(cost);
+      const eligibility = getCosmicTuningEligibility(gameState, key);
+      const currentLvl = eligibility.level;
+      const cost = eligibility.cost;
+      const isMaxed = eligibility.isMaxed;
+      const canAfford = eligibility.canAfford;
 
       html += `
         <div class="cosmic-card" style="border-color: #00cec9;">
           <div class="btn-meta">
-            <strong style="color: #00cec9;">${def.name} <span class="lvl-display">(Lvl ${currentLvl}/${def.maxLevel})</span></strong>
+            <strong style="color: #00cec9;">${def.name} <span class="lvl-display">(Lvl ${currentLvl}/${eligibility.maxLevel})</span></strong>
             <small>${def.desc}</small>
           </div>
           <button class="upgrade-btn" data-key="${key}" ${isMaxed ? 'disabled' : (canAfford ? '' : 'disabled')} style="${canAfford ? 'background: rgba(0, 206, 201, 0.2); border-color: #00cec9; color: #fff;' : 'opacity: 0.5;'}">

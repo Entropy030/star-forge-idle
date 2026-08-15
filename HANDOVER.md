@@ -168,7 +168,7 @@ Accepted P3 debt:
 
 P4 prerequisites:
 
-- review or remove the simplified telemetry flags exposed by manual dev `getAIState()` and the unused `core/botActions.js` compatibility copy before extending bot/runtime authority;
+- preserve the PRE-P4.1 command boundary: UI/action adapters dispatch once, while Core-node, Celestial-Card, Stellar, Legacy-shop, and Cosmic-Tuning purchase legality/mutation remain inside registered commands;
 - preserve the single `advanceGameTick()` production/headless boundary and Era-I-only Vacuum Coherence model when adding later-era systems.
 
 Future maintenance:
@@ -188,6 +188,7 @@ Future maintenance:
 5. **S5.5 complete:** Vacuum Coherence is Era-I-only; later eras use Plasma Temperature, stellar state, Galaxy Stability, and Entropy without mirroring them into `state.coherence`.
 6. **Security triage complete:** production dependencies have zero known vulnerabilities; development-tooling remediation is deferred as documented debt.
 7. **S6 complete:** final local gates, all presets, supported Era I–III progression, persistence/PWA acceptance, remote CI, live deployment, and the repeatable Supernova reset are verified.
+8. **PRE-P4.1 complete:** runtime history is canonical, abandoned Era-I baryon-simulation fields are normalized out of v17 state, and legacy UI/dev action paths no longer duplicate gameplay authority.
 8. **Next:** conduct external red-team review, triage its evidence, and only then plan P4 implementation.
 
 Full evidence and follow-up boundaries are in [docs/P3_STABILIZATION_AUDIT.md](docs/P3_STABILIZATION_AUDIT.md).

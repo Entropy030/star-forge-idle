@@ -51,20 +51,22 @@ This is the one production runtime. S3 removed the former `src/app/runtime.js` a
 
 Normalization handles shape/type defaults after deserialization; it is not a serialization mechanism. JSON persistence must still serialize special values and stringify the outer payload.
 
+`history` is part of the canonical initial shape and malformed history is normalized at this boundary. History writers use `cosmicAge` through the shared history helper. Save v17 compatibility normalization also removes the abandoned Era-I-only `asymmetryBias`, `annihilationEnergy`, and `survivingMatter` keys; the independently used `antimatterResidue` field remains intact.
+
 ## Engine and commands
 
-`src/engine/createEngine.js` provides a command dispatcher and optional system tick interface. `src/engine/instance.js` registers quantum, plasma, stellar, and galactic command handlers and exposes the singleton engine.
+`src/engine/createEngine.js` provides a command dispatcher and optional system tick interface. `src/engine/instance.js` registers core, quantum, plasma, stellar, and galactic command handlers and exposes the singleton engine.
 
 `src/engine/dispatch.js` is a narrow dispatcher facade that lets UI/actions send commands without importing engine construction details.
 
-Gameplay mutation belongs in `src/eras/*/commands.js`. A command should:
+Gameplay mutation belongs in `src/core/commands.js` or `src/eras/*/commands.js`. A command should:
 
 1. validate active Era and authoritative eligibility;
 2. apply the mutation once;
 3. return a structured success/failure result and events;
 4. avoid direct DOM work.
 
-Some compatibility action wrappers still exist in `src/core/actions.js` and `src/main.js`. They are migration debt; do not duplicate new mechanics there.
+Compatibility action wrappers in `src/core/actions.js`, `Economy`, and the tuning modal are dispatch-only adapters. Core nodes, Celestial Cards, Stellar architecture, Stardust/Pulsar/Singularity purchases, and Cosmic Tuning calculate legality, affordability, costs, and mutation inside registered commands/selectors. Future Era-IV/V action stubs remain scaffolding and are not current gameplay authority.
 
 ## Eligibility and selectors
 

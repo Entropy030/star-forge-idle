@@ -1,16 +1,13 @@
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, t, i18n } from './config/registry.js';
 import { triggerGalacticIgnition, triggerSupernova } from './core/actions.js';
-import { updateStatsData, recalcTempMultiplier } from './core/economy.js';
+import { Economy, updateStatsData, recalcTempMultiplier } from './core/economy.js';
 import { spawnFlare, collectFlare } from './core/stellar.js';
-import { getInitialEra3State } from './state/createInitialState.js';
-import { getGalacticMergeYield, getCompressionHeatYield, getCompressionsCompleted, getGalacticDebrisRate } from './core/economy.js';
 import { triggerGalacticMerge, stabilizeArmsAction as stabilizeArms, accretePlanetConfigurationAction as accretePlanetConfiguration, triggerBigBounce } from './core/actions.js';
 import { expireFlare } from './core/stellar.js';
 let flareSimSuppressed = false;
-import { gameState, setGameState, isDirty, setIsDirty, ensureStateShape, getInitialGameState, deserializeState, serializeState } from './core/state.js';
+import { gameState, isDirty, setIsDirty } from './core/state.js';
 import { saveGame, exportSave, importSave, wipeSave, loadGame, getPlaytestSpeedMultiplier } from './core/persistence.js';
 import { checkPlaytestMode } from './dev/playtestMode.js';
-import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, deduct, getStardustYield, getPulsarShardYield, getSingularityMassYield, getCardMultiplier } from './core/economy.js';
 import { ArtifactManager, Viewport, format, ActManager, initAudio, playSupernovaSound, showIntroScreenCinematic, startEraTransition } from './ui/viewport.js';
 import { Templates } from './ui/templates.js';
 import { advanceGameTick } from './core/runtimeTick.js';
@@ -19,10 +16,9 @@ import { startAutoPlaytest, stopAutoPlaytest, runHeadlessSim, playtestHarness, g
 import { CanvasCore } from './ui/canvasCore.js';
 import { engine } from './engine/instance.js';
 import { getActionFailureMessage, isActionSuccessful } from './ui/actionFeedback.js';
-import { getVacuumCoherence } from './eras/quantum/coherence.js';
 import { appendHistoryEntry } from './state/history.js';
 import { devSetEpoch } from './dev/epoch.js';
-import { getQuarkGluonImbalanceMultiplier } from './eras/plasma/imbalance.js';
+import { buildAIState } from './dev/aiState.js';
 
 // Re-export or attach globals needed by inline HTML (like onclick)
 const Haptics = {
@@ -252,22 +248,13 @@ function triggerRecombination() {
 
 
 function buyCosmicTuning(key) {
-  const def = COSMIC_REGISTRY.upgrades.tuning[key];
-  if (!def) return;
-  
-  const currentLvl = gameState.cosmicConstants[key] || 0;
-  const maxLevel = def.max || def.maxLevel || 5; // registry uses 'max'
-  if (currentLvl >= maxLevel) return;
-
-  const scalingFactor = def.costScaling || def.costMult || 2;
-  const cost = typeof def.baseCost === 'function' ? def.baseCost(currentLvl) : new Decimal(def.baseCost).times(Decimal.pow(scalingFactor, currentLvl));
-  
-  if (gameState.currencies.bits.amount.gte(cost)) {
-    gameState.currencies.bits.amount = gameState.currencies.bits.amount.minus(cost);
-    gameState.cosmicConstants[key] = currentLvl + 1;
+  const result = engine.dispatch({ type: 'BUY_COSMIC_TUNING', payload: { key } });
+  if (result.ok) {
+    const event = result.events.find(item => item.type === 'COSMIC_TUNING_BOUGHT');
     saveGame();
-    Viewport.log(`Cosmic Constant Adjusted: ${def.name} -> Level ${currentLvl + 1}`);
+    Viewport.log(`Cosmic Constant Adjusted: ${COSMIC_REGISTRY.upgrades.tuning[key].name} -> Level ${event.level}`);
   }
+  return result;
 }
 
 function triggerEraVTransition() {
@@ -432,121 +419,6 @@ function togglePlasmaFuser() {
 // ==========================================================================
 // [SEC-14.5] CARD TRANSACTIONS COMPONENT (NEW VERIFIED INJECTION)
 // ==========================================================================
-function buyCelestialCard(key) {
-  initAudio();
-  let def = COSMIC_REGISTRY.celestialCards[key];
-  let state = gameState.cards[key];
-  if (!def || !state) return;
-  if (getAmount(def.currency).lt(state.cost)) return;
-
-  deduct(def.currency, state.cost);
-  state.level += 1;
-  state.cost = state.cost.times(def.costScaling).round();
-  Viewport.renderSystemTab();
-  saveGame();
-}
-
-// ==========================================================================
-// [SEC-17] SYSTEM INTEGRITY PARITY HARNESS TESTER (TABLE DRIVEN HARNESS)
-// ==========================================================================
-function runParityHarness() {
-  console.log("--- STARTING STAR FORGE PARITY HARNESS DATA-DRIVEN SELF-TEST ---");
-  let backupState = serializeState(gameState);
-  let passedTests = 0;
-  let failedTests = 0;
-
-  try {
-    const testCases = [
-      {
-        name: "Hydrogen Generation Rate",
-        setup: (s) => {
-          s.activeEpoch = 3;
-          s.era3.gravity = new Decimal(5);
-          s.era3.tempMultiplier = new Decimal(2);
-          s.currencies.stardust.amount = new Decimal(0);
-          s.achievements.firstSupernova.unlocked = false;
-        },
-        assert: () => {
-          let actual = getHydrogenGenRate();
-          return actual.eq(250);
-        }
-      },
-      {
-        name: "Compression Heat Yield Scaling",
-        setup: (s) => {
-          s.era3.compressCost = new Decimal(80);
-          s.upgrades.stardust.thermalInsulation.level = 0;
-          s.resources.iron.amount = new Decimal(0);
-          s.upgrades.singularity.stellarIgnition.level = 0;
-        },
-        assert: () => {
-          let actual = getCompressionHeatYield();
-          let baseHeat = new Decimal(COSMIC_REGISTRY.constants.baseCompressionHeat);
-          let expectedGrowth = new Decimal(COSMIC_REGISTRY.constants.compressionScaling).pow(getCompressionsCompleted());
-          let expected = baseHeat.times(expectedGrowth).round();
-          return actual.eq(expected);
-        }
-      },
-      {
-        name: "Quark-Gluon Imbalance Multiplier calculation",
-        setup: (s) => {
-          s.resources.quarks.amount = new Decimal(1000);
-          s.resources.gluons.amount = new Decimal(900);
-        },
-        assert: () => {
-          let actual = getQuarkGluonImbalanceMultiplier(gameState);
-          let logVal = new Decimal(100).log10();
-          let expected = new Decimal(1).plus(new Decimal(logVal).times(0.05));
-          return actual.eq(expected);
-        }
-      },
-      {
-        name: "Stardust Milestone Yield Calculations",
-        setup: (s) => {
-          s.era3.temperature = new Decimal(3000000);
-        },
-        assert: () => {
-          let actual = getStardustYield();
-          return actual.eq(3);
-        }
-      },
-      {
-        name: "Galactic Debris Generation Matrix",
-        setup: (s) => {
-          s.activeEpoch = 4;
-          s.era4.planetaryNodes = new Decimal(5);
-          s.era4.stellarMassPassiveCount = new Decimal(10);
-          s.era4.stability = new Decimal(100);
-          s.upgrades.galaxy.elementalInjection.level = 1;
-        },
-        assert: () => {
-          let actual = getGalacticDebrisRate();
-          return actual.eq(40);
-        }
-      }
-    ];
-
-    testCases.forEach(tc => {
-      setGameState(getInitialGameState());
-      tc.setup(gameState);
-      if (tc.assert()) {
-        console.log(`✅ TEST PASSED: [${tc.name}]`);
-        passedTests++;
-      } else {
-        console.error(`❌ TEST FAILED: [${tc.name}] Calculations variation asymmetry.`);
-        failedTests++;
-      }
-    });
-
-    console.log(`--- HARNESS VERIFICATION MATRIX RESULTS: ${passedTests} PASSED, ${failedTests} FAILED ---`);
-  } catch (err) {
-    console.error("❌ CRITICAL EXCEPTION INSIDE TEST SUITE EXECUTION MODULE", err);
-  } finally {
-    setGameState(deserializeState(backupState));
-  }
-}
-
-// ==========================================================================
 // [SEC-18] WEATHER ARCHITECTURE (SOLAR PROMINENCES EVENTS)
 // ==========================================================================
 
@@ -693,10 +565,6 @@ async function bootApp() {
 
     checkDevMode();
     checkPlaytestMode();
-    if (new URLSearchParams(window.location.search).get('dev') === 'true') {
-      runParityHarness();
-    }
-    
     Viewport.update();
     Viewport.switchTab(gameState.activeTab);
     Viewport.renderPrestigeVisibility();
@@ -828,7 +696,7 @@ export function initializeDomRuntime() {
     if (btn) btn.textContent = `Toggle Reduced Motion: ${isReduced ? 'ON' : 'OFF'}`;
   });
 
-  bindClick('btn-ai-state', window.getAIState);
+  bindClick('btn-ai-state', () => getAIState());
   bindClick('btn-bot-start', () => {
     if (window.playtestHarness && window.playtestHarness.isRunning) {
       window.stopAutoPlaytest();
@@ -964,112 +832,7 @@ if (document.readyState === 'loading') {
 // ==========================================================================
 
 export const getAIState = function (copyToClipboard = true) {
-  const epoch = gameState.activeEpoch;
-
-  const state = {
-    meta: {
-      activeEpoch: epoch,
-      epochName: COSMIC_REGISTRY.universeChronology.epochs[epoch]?.name,
-      activeTab: gameState.activeTab
-    },
-    resources: {},
-    availableUpgrades: [],
-    specialActions: {}
-  };
-
-  if (epoch === 1) state.meta.vacuumCoherence = getVacuumCoherence(gameState).toString();
-
-  if (epoch === 1) {
-    state.resources = {
-      quantumFluctuations: gameState.resources.quantumFluctuations.amount.toString(),
-      energyDensity: gameState.resources.energyDensity.amount.toString()
-    };
-    state.specialActions.canInflation = gameState.resources.quantumFluctuations.amount.gte(COSMIC_REGISTRY.constants.inflationThreshold);
-  } else if (epoch === 2) {
-    state.resources = {
-      quarks: gameState.resources.quarks.amount.toString(),
-      gluons: gameState.resources.gluons.amount.toString(),
-      leptons: gameState.resources.leptons.amount.toString(),
-      protons: gameState.resources.protons.amount.toString(),
-      electrons: gameState.resources.electrons.amount.toString(),
-      plasmaTemperature: gameState.plasmaTemperature.toString() + " K"
-    };
-    state.specialActions.canRecombination = gameState.resources.protons.amount.gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) || gameState.plasmaTemperature.lte(3000);
-  } else if (epoch === 3) {
-    state.resources = {
-      hydrogen: gameState.resources.hydrogen.amount.toString(),
-      helium: gameState.resources.helium.amount.toString(),
-      carbon: gameState.resources.carbon.amount.toString(),
-      iron: gameState.resources.iron.amount.toString(),
-      stardust: gameState.currencies.stardust.amount.toString(),
-      temperature: gameState.era3.temperature.toString() + " K",
-      stage: gameState.era3.stage
-    };
-    state.yieldsActive = {
-      hydrogen: true,
-      helium: true,
-      carbon: gameState.era3.stage === "Main Sequence Star" && gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp),
-      iron: gameState.era3.stage === "Main Sequence Star" && gameState.era3.carbonYield.gt(0)
-    };
-    state.specialActions.canSupernova = gameState.era3.temperature.gte(COSMIC_REGISTRY.constants.supernovaTempThreshold);
-    state.specialActions.hasActiveFlare = !!gameState.flares.active;
-  } else if (epoch === 4 && gameState.era4) {
-    state.resources = {
-      planetaryDebris: gameState.resources.planetaryDebris.amount.toString(),
-      darkMatter: gameState.resources.darkMatter.amount.toString(),
-      darkEnergyResidue: gameState.resources.darkEnergyResidue.amount.toString(),
-      stability: gameState.era4.stability.toString() + "%",
-      planetaryNodes: gameState.era4.planetaryNodes.toString()
-    };
-    state.specialActions.canGalacticMerge = gameState.resources.darkMatter.amount.gte(10000);
-  }
-
-  const categoryMap = { 1: 'quantum', 2: 'plasma', 4: 'galaxy' };
-  const currentCategory = categoryMap[epoch];
-
-  if (currentCategory && COSMIC_REGISTRY.upgrades[currentCategory]) {
-    for (let key in COSMIC_REGISTRY.upgrades[currentCategory]) {
-      const def = COSMIC_REGISTRY.upgrades[currentCategory][key];
-      const upgradeState = gameState.upgrades[currentCategory][key];
-      const currencyKey = Economy.resolveCurrencyKey(currentCategory, key, def);
-      const balance = getAmount(currencyKey);
-
-      state.availableUpgrades.push({
-        category: currentCategory,
-        key: key,
-        name: def.name,
-        level: upgradeState.level,
-        cost: upgradeState.cost.toString(),
-        canAfford: balance.gte(upgradeState.cost) && (def.max === undefined || upgradeState.level < def.max)
-      });
-    }
-  }
-
-  // Include Stardust / Prestige Upgrades if Stardust > 0 or in Era 3+
-  if (COSMIC_REGISTRY.upgrades.stardust) {
-    for (let key in COSMIC_REGISTRY.upgrades.stardust) {
-      const def = COSMIC_REGISTRY.upgrades.stardust[key];
-      const upgradeState = gameState.upgrades.stardust[key];
-      if (def && upgradeState) {
-        const balance = gameState.currencies.stardust.amount;
-        state.availableUpgrades.push({
-          category: 'stardust',
-          key: key,
-          name: def.name,
-          level: upgradeState.level,
-          cost: upgradeState.cost.toString(),
-          canAfford: balance.gte(upgradeState.cost) && (def.max === undefined || upgradeState.level < def.max)
-        });
-      }
-    }
-  }
-
-  if (epoch === 3) {
-    state.availableUpgrades.push(
-      { category: 'core', key: 'gravity', name: 'Gravity', cost: gameState.era3.gravityCost.toString(), canAfford: gameState.resources.hydrogen.amount.gte(gameState.era3.gravityCost) },
-      { category: 'core', key: 'compress', name: 'Compress Core', cost: gameState.era3.compressCost.toString(), canAfford: gameState.resources.helium.amount.gte(gameState.era3.compressCost) }
-    );
-  }
+  const state = buildAIState(gameState);
 
   const output = JSON.stringify(state, null, 2);
   console.log("🤖 AI State:", output);

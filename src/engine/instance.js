@@ -4,9 +4,11 @@ import { quantumCommandHandlers } from '../eras/quantum/commands.js';
 import { plasmaCommandHandlers } from '../eras/plasma/commands.js';
 import { stellarCommandHandlers } from '../eras/stellar/commands.js';
 import { galacticCommandHandlers } from '../eras/galactic/commands.js';
+import { coreCommandHandlers } from '../core/commands.js';
 import { gameState, subscribeRuntimeState } from '../core/state.js';
 
 const commandHandlers = {
+  ...coreCommandHandlers,
   ...quantumCommandHandlers,
   ...plasmaCommandHandlers,
   ...stellarCommandHandlers,

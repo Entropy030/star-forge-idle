@@ -2,6 +2,7 @@
 import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getPulsarShardYield, getSingularityMassYield, getGalacticMergeYield } from '../../core/economy.js';
 import { createInitialState } from '../../state/createInitialState.js';
+import { appendHistoryEntry } from '../../state/history.js';
 
 export const galacticCommandHandlers = {
   CLICK_CORE_ERA4: (state, cmd) => {
@@ -56,6 +57,9 @@ export const galacticCommandHandlers = {
     for (const key in fresh) {
       state[key] = fresh[key];
     }
+    appendHistoryEntry(state, {
+      msg: `Big Bounce! Yield: ${yieldAmt.toString()} Pulsar Shards, ${bitsYield.toString()} Bits`
+    });
     
     return {
       ok: true,
@@ -78,6 +82,7 @@ export const galacticCommandHandlers = {
     const yieldAmt = getGalacticMergeYield(state);
     state.resources.planetaryDebris.amount = state.resources.planetaryDebris.amount.sub(cost);
     state.currencies.singularityMass.amount = state.currencies.singularityMass.amount.plus(yieldAmt);
+    appendHistoryEntry(state, { msg: `Merge complete! Yield: ${yieldAmt.toString()} Singularity Mass` });
     
     return {
       ok: true,

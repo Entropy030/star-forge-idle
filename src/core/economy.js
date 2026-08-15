@@ -9,7 +9,6 @@ import { COSMIC_REGISTRY } from '../config/registry.js';
 import { dispatchEngineCommand } from '../engine/dispatch.js';
 import { getQuantumUpgradeEligibility } from '../eras/quantum/eligibility.js';
 import { getEntropyBitProductionMultiplier } from '../eras/galactic/selectors.js';
-import { appendHistoryEntry } from '../state/history.js';
 export function updateStatsData() {
   if (gameState.era3 && gameState.era3.temperature.gt(gameState.stats.maxTemp)) {
     gameState.stats.maxTemp = gameState.era3.temperature;
@@ -231,8 +230,8 @@ export function getCompressionHeatYield(state = gameState) {
   return finalHeat;
 }
 
-export function getGravityCostMultiplier() {
-  return 1.5 - ((gameState.upgrades.stardust.gravityDiscount?.level ?? 0) * 0.03);
+export function getGravityCostMultiplier(state = gameState) {
+  return 1.5 - ((state.upgrades.stardust.gravityDiscount?.level ?? 0) * 0.03);
 }
 
 export function getCarbonGravityMultiplier() {
@@ -340,6 +339,12 @@ export const Economy = {
       return result;
     }
 
+    if (['stellar', 'stardust', 'pulsar', 'singularity'].includes(category)) {
+      const result = dispatchEngineCommand({ type: 'BUY_UPGRADE_STELLAR', payload: { category, upgradeId: key, loops } });
+      this.refreshUI();
+      return result;
+    }
+
     if (category === 'galaxy') {
       const result = dispatchEngineCommand({ type: 'BUY_UPGRADE_GALAXY', payload: { category, upgradeId: key, loops } });
       this.refreshUI();
@@ -352,38 +357,7 @@ export const Economy = {
       return result;
     }
 
-    const registry = COSMIC_REGISTRY.upgrades[category];
-    const stateGroup = gameState.upgrades[category];
-    if (!registry || !stateGroup) return;
-
-    const def = registry[key];
-    const state = stateGroup[key];
-    if (!def || !state) return;
-
-    const currencyKey = this.resolveCurrencyKey(category, key, def);
-    if (!currencyKey) return;
-
-    const discount = gameState.artifacts?.modifiers?.costDiscount || 0.0;
-    for (let i = 0; i < loops; i++) {
-      if (def.max !== undefined && state.level >= def.max) break;
-      const effectiveCost = discount > 0 ? state.cost.times(1.0 - discount).floor() : state.cost;
-      if (getAmount(currencyKey).lt(effectiveCost)) {
-        if (i === 0) return { success: false, cost: effectiveCost, currency: currencyKey };
-        break;
-      }
-
-      deduct(currencyKey, effectiveCost);
-      state.level += 1;
-
-      if (def.costScaling) {
-        state.cost = state.cost.times(def.costScaling).round();
-      } else {
-        state.cost = state.cost.times(2).round();
-      }
-    }
-
-    this.refreshUI();
-    return { success: true };
+    return { ok: false, changed: false, events: [], error: { code: 'UNKNOWN_UPGRADE_CATEGORY' } };
   },
 
   resolveCurrencyKey(category, key, def) {
@@ -398,79 +372,9 @@ export const Economy = {
   },
 
   buyCoreNodes(key, loops) {
-    const loopBuy = (currencyKey, getCost, onBuy) => {
-      if (getAmount(currencyKey).lt(getCost())) {
-        return { success: false, cost: getCost(), currency: currencyKey };
-      }
-      for (let i = 0; i < loops; i++) {
-        if (getAmount(currencyKey).gte(getCost())) {
-          deduct(currencyKey, getCost());
-          onBuy();
-        } else { break; }
-      }
-      return { success: true };
-    };
-
-    if (key === 'gravity') {
-      return loopBuy('hydrogen', () => gameState.era3.gravityCost, () => {
-        gameState.era3.gravity = gameState.era3.gravity.plus(1);
-        gameState.era3.gravityCost = gameState.era3.gravityCost.times(getGravityCostMultiplier()).floor();
-      });
-    } else if (key === 'fuser') {
-      return loopBuy(gameState.era3.fusionYield.eq(0) ? 'hydrogen' : 'helium',
-        () => gameState.era3.fusionYield.eq(0) ? gameState.era3.fuserCostHydrogen : gameState.era3.fuserCostHelium,
-        () => {
-          if (gameState.era3.fusionYield.eq(0)) {
-            gameState.era3.fusionYield = new Decimal(1);
-          } else {
-            gameState.era3.fusionYield = gameState.era3.fusionYield.plus(1);
-            gameState.era3.fuserCostHelium = gameState.era3.fuserCostHelium.times(2.5).round();
-          }
-        });
-    } else if (key === 'compress') {
-      return loopBuy('helium', () => gameState.era3.compressCost, () => {
-        gameState.era3.temperature = gameState.era3.temperature.plus(getCompressionHeatYield());
-        gameState.era3.compressCost = gameState.era3.compressCost.times(getCompressionScaling()).floor();
-        recalcTempMultiplier();
-        if (gameState.era3.temperature.gte(COSMIC_REGISTRY.constants.mainSequenceTempThreshold) && gameState.era3.stage === "Protostar") {
-          gameState.era3.stage = "Main Sequence Star";
-        }
-        updateStatsData();
-      });
-    } else if (key === 'carbon') {
-      if (gameState.era3.stage !== "Main Sequence Star" || gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
-        return { success: false, cost: COSMIC_REGISTRY.resources.carbon.unlockTemp, currency: 'K (Main Sequence)' };
-      }
-      return loopBuy(gameState.era3.carbonYield.eq(0) ? 'helium' : 'carbon',
-        () => gameState.era3.carbonYield.eq(0) ? gameState.era3.carbonCostHelium : gameState.era3.carbonCostCarbon,
-        () => {
-          if (!gameState.flags.carbonUnlocked) {
-            gameState.flags.carbonUnlocked = true;
-            gameState.era3.carbonYield = new Decimal(1);
-            appendHistoryEntry(gameState, { msg: "Nucleosynthesis Unlocked: Generating Carbon!" });
-          } else {
-            gameState.era3.carbonYield = gameState.era3.carbonYield.plus(1);
-            gameState.era3.carbonCostCarbon = gameState.era3.carbonCostCarbon.times(2.5).round();
-          }
-        });
-    } else if (key === 'iron') {
-      if (gameState.era3.stage !== "Main Sequence Star" || gameState.era3.temperature.lt(COSMIC_REGISTRY.resources.iron.unlockTemp)) {
-        return { success: false, cost: COSMIC_REGISTRY.resources.iron.unlockTemp, currency: 'K (Main Sequence)' };
-      }
-      return loopBuy(gameState.era3.ironYield.eq(0) ? 'carbon' : 'iron',
-        () => gameState.era3.ironYield.eq(0) ? gameState.era3.ironCostCarbon : gameState.era3.ironCostIron,
-        () => {
-          if (!gameState.flags.ironUnlocked) {
-            gameState.flags.ironUnlocked = true;
-            gameState.era3.ironYield = new Decimal(1);
-            appendHistoryEntry(gameState, { msg: "Heavy Nucleosynthesis: Synthesizing Iron!" });
-          } else {
-            gameState.era3.ironYield = gameState.era3.ironYield.plus(1);
-            gameState.era3.ironCostIron = gameState.era3.ironCostIron.times(2.5).round();
-          }
-        });
-    }
-    return { success: false, message: "Unknown upgrade" };
+    const result = dispatchEngineCommand({ type: 'BUY_CORE_NODE', payload: { key, loops } });
+    this.refreshUI();
+    return result;
   },
 
   refreshUI() {

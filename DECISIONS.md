@@ -163,3 +163,11 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Consequences:** Later eras neither mutate nor display generic Coherence. Era V derives its existing Bit multiplier directly from Entropy. The semantic adapters in `eras/quantum/coherence.js` isolate the historical storage name, and P4 extends native Era state rather than reusing it.
 
 **Migration/compatibility impact:** Save version remains 17. `state.coherence` remains the serialized compatibility key for Era I Vacuum Coherence, and the existing legacy 0–1 normalization remains supported. No new migration is required; later-era saves may retain the historical value but do not interpret it.
+
+## D21 — UI actions dispatch; commands mutate
+
+**Decision:** Player-facing and dev action adapters may translate input and command results, but gameplay legality, affordability, costs, rewards, resets, and purchase mutation belong to registered commands. Runtime history is canonical state and uses `cosmicAge` as its timestamp source.
+
+**Why:** Direct Core-node, Celestial-Card, Legacy-purchase, transition-history, and dev-eligibility copies created multiple places where one interaction could disagree with or bypass the engine.
+
+**Consequences:** `Economy`, `src/core/actions.js`, and Cosmic-Tuning UI wiring are dispatch-only for migrated actions. Buy 1/10/Max is one command with one mutation sequence. The unused `core/botActions.js` copy is removed, while the remaining manual AI snapshot consumes authoritative eligibility selectors. Save version stays 17; normalization removes the abandoned Era-I `asymmetryBias`, `annihilationEnergy`, and `survivingMatter` keys while preserving `antimatterResidue` and other future compatibility state.

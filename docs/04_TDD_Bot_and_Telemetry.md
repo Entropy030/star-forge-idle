@@ -93,7 +93,7 @@ It may prefilter by current balance to implement purchase strategy, but the comm
 
 S3 aligned headless simulation ownership with production. This intentionally makes telemetry observe passive cross-cutting state that the old bot bypassed; for example, passive Vacuum Coherence can move a telemetry milestone slightly earlier without changing strategy, balance, or transition requirements.
 
-The manual `getAIState()` dev export and unused `src/core/botActions.js` compatibility copy still contain simplified display flags. They are not consulted by `PlaytestEngine` decisions; consolidate or remove them only in a later focused cleanup.
+PRE-P4.1 removed the unused `src/core/botActions.js` compatibility copy. The manual `getAIState()` dev export now builds its transition flags from the same Inflation, Recombination, Supernova, and Galactic Ignition selectors used by gameplay; its upgrade snapshot reports facts and unlock state, not a second affordability decision. It remains a manual inspection helper and is not consulted by `PlaytestEngine` strategy.
 
 ## Telemetry interpretation
 

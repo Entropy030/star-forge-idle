@@ -3,6 +3,7 @@ import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getCompressionHeatYield, getCompressionScaling, getGravityCostMultiplier } from '../../core/economy.js';
 import { createInitialState } from '../../state/createInitialState.js';
 import { getGalacticIgnitionEligibility, getSupernovaEligibility, getSupernovaOutcome } from './selectors.js';
+import { appendHistoryEntry } from '../../state/history.js';
 
 export const stellarCommandHandlers = {
   CLICK_CORE_ERA3: (state, cmd) => {
@@ -27,7 +28,7 @@ export const stellarCommandHandlers = {
 
   BUY_UPGRADE_STELLAR: (state, cmd) => {
     const { category, upgradeId, loops = 1 } = cmd.payload;
-    if (category !== 'stellar' && category !== 'stardust') {
+    if (!['stellar', 'stardust', 'pulsar', 'singularity'].includes(category)) {
       return { ok: false, changed: false, events: [], error: { code: 'WRONG_CATEGORY' } };
     }
     
@@ -39,18 +40,20 @@ export const stellarCommandHandlers = {
       return { ok: false, changed: false, events: [], error: { code: 'UNKNOWN_UPGRADE' } };
     }
     
-    // Currency is resolved differently for stellar/stardust
-    // Stellar architecture uses Helium (or specific resources), but in registry stellar.currency = 'helium' usually.
-    let currencyKey = def.currency || 'helium';
-    if (category === 'stardust') currencyKey = 'stardust'; // explicit fallback
-    
-    let currencyAmount = state.resources[currencyKey]?.amount || new Decimal(0);
+    const currencyKey = def.currency || 'helium';
+    const currency = state.resources[currencyKey] || state.currencies[currencyKey];
+    if (!currency) {
+      return { ok: false, changed: false, events: [], error: { code: 'UNKNOWN_CURRENCY' } };
+    }
+
+    let currencyAmount = currency.amount;
     const discount = state.artifacts?.modifiers?.costDiscount || 0.0;
     
     let bought = 0;
+    let effectiveCost = upgradeState.cost;
     for (let i = 0; i < loops; i++) {
       if (def.max !== undefined && upgradeState.level >= def.max) break;
-      const effectiveCost = discount > 0 ? upgradeState.cost.times(1.0 - discount).floor() : upgradeState.cost;
+      effectiveCost = discount > 0 ? upgradeState.cost.times(1.0 - discount).floor() : upgradeState.cost;
       
       if (currencyAmount.lt(effectiveCost)) break;
       
@@ -66,10 +69,18 @@ export const stellarCommandHandlers = {
     }
     
     if (bought === 0) {
-      return { ok: false, changed: false, events: [], error: { code: 'INSUFFICIENT_FUNDS' } };
+      const maxed = def.max !== undefined && upgradeState.level >= def.max;
+      return {
+        ok: false,
+        changed: false,
+        events: [],
+        cost: effectiveCost,
+        currency: currencyKey,
+        error: { code: maxed ? 'MAX_LEVEL_REACHED' : 'INSUFFICIENT_FUNDS' }
+      };
     }
     
-    state.resources[currencyKey].amount = currencyAmount;
+    currency.amount = currencyAmount;
     
     return {
       ok: true,
@@ -85,36 +96,38 @@ export const stellarCommandHandlers = {
     let bought = 0;
     const resources = state.resources;
     const era3 = state.era3;
+    let attemptedCost = new Decimal(0);
+    let attemptedCurrency = '';
+    const knownKeys = ['gravity', 'fuser', 'compress', 'carbon', 'iron'];
+    if (!knownKeys.includes(key)) {
+      return { ok: false, changed: false, events: [], error: { code: 'UNKNOWN_CORE_NODE' } };
+    }
 
-    const tryBuy = (currencyKey, costKey, onBuy) => {
-      for (let i = 0; i < loops; i++) {
-        if (resources[currencyKey].amount.gte(era3[costKey])) {
-          resources[currencyKey].amount = resources[currencyKey].amount.minus(era3[costKey]);
-          onBuy();
-          bought++;
-        } else {
-          break;
-        }
-      }
-    };
-
-    if (key === 'gravity') {
-      tryBuy('hydrogen', 'gravityCost', () => {
+    const purchaseOnce = () => {
+      if (key === 'gravity') {
+        attemptedCurrency = 'hydrogen';
+        attemptedCost = era3.gravityCost;
+        if (resources.hydrogen.amount.lt(attemptedCost)) return false;
+        resources.hydrogen.amount = resources.hydrogen.amount.minus(attemptedCost);
         era3.gravity = era3.gravity.plus(1);
-        era3.gravityCost = era3.gravityCost.times(getGravityCostMultiplier()).floor();
-      });
-    } else if (key === 'fuser') {
-      const isHydrogen = era3.fusionYield.eq(0);
-      tryBuy(isHydrogen ? 'hydrogen' : 'helium', isHydrogen ? 'fuserCostHydrogen' : 'fuserCostHelium', () => {
+        era3.gravityCost = era3.gravityCost.times(getGravityCostMultiplier(state)).floor();
+      } else if (key === 'fuser') {
+        const isHydrogen = era3.fusionYield.eq(0);
+        attemptedCurrency = isHydrogen ? 'hydrogen' : 'helium';
+        attemptedCost = isHydrogen ? era3.fuserCostHydrogen : era3.fuserCostHelium;
+        if (resources[attemptedCurrency].amount.lt(attemptedCost)) return false;
+        resources[attemptedCurrency].amount = resources[attemptedCurrency].amount.minus(attemptedCost);
         if (era3.fusionYield.eq(0)) {
           era3.fusionYield = new Decimal(1);
         } else {
           era3.fusionYield = era3.fusionYield.plus(1);
           era3.fuserCostHelium = era3.fuserCostHelium.times(2.5).round();
         }
-      });
-    } else if (key === 'compress') {
-      tryBuy('helium', 'compressCost', () => {
+      } else if (key === 'compress') {
+        attemptedCurrency = 'helium';
+        attemptedCost = era3.compressCost;
+        if (resources.helium.amount.lt(attemptedCost)) return false;
+        resources.helium.amount = resources.helium.amount.minus(attemptedCost);
         era3.temperature = era3.temperature.plus(getCompressionHeatYield(state));
         era3.compressCost = era3.compressCost.times(getCompressionScaling(state)).floor();
         let baseDiv = era3.temperature.div(1000000).plus(1);
@@ -126,36 +139,66 @@ export const stellarCommandHandlers = {
         if (era3.temperature.gt(state.stats.maxTemp)) {
           state.stats.maxTemp = era3.temperature;
         }
-      });
-    } else if (key === 'carbon') {
-      if (era3.stage !== "Main Sequence Star" || era3.temperature.lt(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
-        return { ok: false, changed: false, events: [], error: { code: 'PREREQUISITES_NOT_MET' } };
-      }
-      const isHelium = era3.carbonYield.eq(0);
-      tryBuy(isHelium ? 'helium' : 'carbon', isHelium ? 'carbonCostHelium' : 'carbonCostCarbon', () => {
+      } else if (key === 'carbon') {
+        const isHelium = era3.carbonYield.eq(0);
+        attemptedCurrency = isHelium ? 'helium' : 'carbon';
+        attemptedCost = isHelium ? era3.carbonCostHelium : era3.carbonCostCarbon;
+        if (resources[attemptedCurrency].amount.lt(attemptedCost)) return false;
+        resources[attemptedCurrency].amount = resources[attemptedCurrency].amount.minus(attemptedCost);
         if (era3.carbonYield.eq(0)) {
           era3.carbonYield = new Decimal(1);
+          appendHistoryEntry(state, { msg: 'Nucleosynthesis Unlocked: Generating Carbon!' });
         } else {
           era3.carbonYield = era3.carbonYield.plus(1);
           era3.carbonCostCarbon = era3.carbonCostCarbon.times(2.5).round();
         }
-      });
-    } else if (key === 'iron') {
-      if (era3.stage !== "Main Sequence Star" || era3.temperature.lt(COSMIC_REGISTRY.resources.iron.unlockTemp)) {
-        return { ok: false, changed: false, events: [], error: { code: 'PREREQUISITES_NOT_MET' } };
-      }
-      const isCarbon = era3.ironYield.eq(0);
-      tryBuy(isCarbon ? 'carbon' : 'iron', isCarbon ? 'ironCostCarbon' : 'ironCostIron', () => {
+      } else if (key === 'iron') {
+        const isCarbon = era3.ironYield.eq(0);
+        attemptedCurrency = isCarbon ? 'carbon' : 'iron';
+        attemptedCost = isCarbon ? era3.ironCostCarbon : era3.ironCostIron;
+        if (resources[attemptedCurrency].amount.lt(attemptedCost)) return false;
+        resources[attemptedCurrency].amount = resources[attemptedCurrency].amount.minus(attemptedCost);
         if (era3.ironYield.eq(0)) {
           era3.ironYield = new Decimal(1);
+          appendHistoryEntry(state, { msg: 'Heavy Nucleosynthesis: Synthesizing Iron!' });
         } else {
           era3.ironYield = era3.ironYield.plus(1);
           era3.ironCostIron = era3.ironCostIron.times(2.5).round();
         }
-      });
+      } else {
+        return false;
+      }
+      bought += 1;
+      return true;
+    };
+
+    if ((key === 'carbon' && (era3.stage !== 'Main Sequence Star' || era3.temperature.lt(COSMIC_REGISTRY.resources.carbon.unlockTemp))) ||
+        (key === 'iron' && (era3.stage !== 'Main Sequence Star' || era3.temperature.lt(COSMIC_REGISTRY.resources.iron.unlockTemp)))) {
+      const resource = COSMIC_REGISTRY.resources[key];
+      return {
+        ok: false,
+        changed: false,
+        events: [],
+        cost: resource.unlockTemp,
+        currency: 'K (Main Sequence)',
+        error: { code: 'PREREQUISITES_NOT_MET' }
+      };
     }
 
-    if (bought === 0) return { ok: false, changed: false, events: [], error: { code: 'CANNOT_AFFORD' } };
+    for (let i = 0; i < loops; i += 1) {
+      if (!purchaseOnce()) break;
+    }
+
+    if (bought === 0) {
+      return {
+        ok: false,
+        changed: false,
+        events: [],
+        cost: attemptedCost,
+        currency: attemptedCurrency,
+        error: { code: 'CANNOT_AFFORD' }
+      };
+    }
 
     return {
       ok: true,
@@ -237,6 +280,9 @@ export const stellarCommandHandlers = {
     
     Object.assign(state, fresh);
     console.log(`[DEBUG] After Object.assign, state.currencies.stardust.amount = ${state.currencies.stardust.amount.toString()}`);
+    appendHistoryEntry(state, {
+      msg: `Supernova Yield: ${rewards.stardust.toString()} Stardust`
+    });
 
     return { 
       ok: true,
