@@ -6,8 +6,10 @@ import { COSMIC_REGISTRY } from '../config/registry.js';
 import { getVacuumCoherence, getVacuumCoherenceRates, setVacuumCoherence } from '../eras/quantum/coherence.js';
 import { updateObjectiveProgress } from './objectives.js';
 import { appendHistoryEntry } from '../state/history.js';
+import { getTickContext } from './tickContext.js';
 
-export function advanceGameTick(dt, effectSink) {
+export function advanceGameTick(dt, effectSink, context) {
+  const tickContext = getTickContext(context);
   const effects = [];
   const emitEffect = effect => {
     effects.push(effect);
@@ -51,7 +53,7 @@ export function advanceGameTick(dt, effectSink) {
     if (currentQF.gte(10000)) recordNarrativeMilestone('qf_10000', '[SYSTEM]: Strong Color Force bound. Baryogenesis imminent.');
   }
 
-  Timeline.process(dt);
+  Timeline.process(dt, tickContext);
   updateObjectiveProgress(gameState);
 
   // Achievement state mutates here; presentation receives an explicit effect.

@@ -19,6 +19,11 @@ import { getActionFailureMessage, isActionSuccessful } from './ui/actionFeedback
 import { appendHistoryEntry } from './state/history.js';
 import { devSetEpoch } from './dev/epoch.js';
 import { buildAIState } from './dev/aiState.js';
+import { OFFLINE_TICK_CONTEXT } from './core/tickContext.js';
+import { getLiveSimulationMultiplier } from './core/time.js';
+import { reconcileCodexUnlocks } from './core/codexProgression.js';
+import { runOfflineCatchUp } from './core/offline.js';
+import { consumeLiveElapsedSeconds, resetLiveSimulationClock } from './core/liveClock.js';
 
 // Re-export or attach globals needed by inline HTML (like onclick)
 const Haptics = {
@@ -426,7 +431,6 @@ function togglePlasmaFuser() {
 // ==========================================================================
 // [SEC-19] RUNTIME TIMERS & CORE BOOTSTRAP INITIALIZATION
 // ==========================================================================
-let lastSimTick = Date.now();
 let catchupAccumulator = 0;
 let isCatchingUp = false;
 
@@ -434,20 +438,18 @@ function simulationScheduler() {
   if (isCatchingUp) return; // Prevent double-ticking during async catchup
 
   let now = Date.now();
-  let realElapsedSec = Math.max(0, (now - lastSimTick) / 1000);
-  lastSimTick = now;
+  const realElapsedSec = consumeLiveElapsedSeconds(now);
 
-  let cMod = 1.0 + (0.12 * (gameState.cosmicConstants?.c || 0));
-  let speedMult = getPlaytestSpeedMultiplier();
+  const simulationMultiplier = getLiveSimulationMultiplier(gameState, getPlaytestSpeedMultiplier());
   
   if (realElapsedSec > 1.5) {
     // If the tick is too large (tab was frozen in background), push it to the catch-up loop
-    catchupAccumulator += (realElapsedSec * cMod * speedMult);
+    catchupAccumulator += (realElapsedSec * simulationMultiplier);
     processCatchupAsync();
     return;
   }
 
-  let simulatedElapsedSec = realElapsedSec * cMod * speedMult;
+  let simulatedElapsedSec = realElapsedSec * simulationMultiplier;
   if (simulatedElapsedSec > 0) {
     advanceGameTick(simulatedElapsedSec, applyRuntimeEffect);
   }
@@ -473,7 +475,7 @@ async function processCatchupAsync() {
     let chunksProcessed = 0;
     while (catchupAccumulator > 0 && chunksProcessed < BATCH_SIZE) {
       let dt = Math.min(catchupAccumulator, CHUNK_SIZE);
-      advanceGameTick(dt, applyRuntimeEffect);
+      advanceGameTick(dt, undefined, OFFLINE_TICK_CONTEXT);
       catchupAccumulator -= dt;
       chunksProcessed++;
     }
@@ -484,7 +486,8 @@ async function processCatchupAsync() {
   
   catchupAccumulator = 0;
   isCatchingUp = false;
-  lastSimTick = Date.now(); // reset timer so we don't catchup again immediately
+  reconcileCodexUnlocks(gameState);
+  resetLiveSimulationClock();
   Viewport.setSystemStatus(`Catchup complete.`);
 }
 
@@ -494,14 +497,12 @@ document.addEventListener('visibilitychange', () => {
   } else {
     // Tab became visible
     let now = Date.now();
-    let realElapsedSec = Math.max(0, (now - lastSimTick) / 1000);
-    lastSimTick = now;
+    const realElapsedSec = consumeLiveElapsedSeconds(now);
     
-    let cMod = 1.0 + (0.12 * (gameState.cosmicConstants?.c || 0));
-    let speedMult = getPlaytestSpeedMultiplier();
+    const simulationMultiplier = getLiveSimulationMultiplier(gameState, getPlaytestSpeedMultiplier());
     
     if (realElapsedSec > 1.5) {
-      catchupAccumulator += (realElapsedSec * cMod * speedMult);
+      catchupAccumulator += (realElapsedSec * simulationMultiplier);
       processCatchupAsync();
     }
   }
@@ -524,7 +525,9 @@ function renderLoop() {
 }
 // Save interval moved to boot
 
-async function bootApp() {
+let bootPromise = null;
+
+async function performBoot() {
   const isViteDev = import.meta.env?.DEV === true;
   if (isViteDev && 'serviceWorker' in navigator) {
     try {
@@ -561,14 +564,22 @@ async function bootApp() {
 
   try {
     preparePlaytestBoot();
-    loadGame();
+    const loadMetadata = loadGame();
     engine.loadState(gameState);
+
+    const offlineResult = await runOfflineCatchUp(loadMetadata, { checkpoint: saveGame });
+    resetLiveSimulationClock();
+    catchupAccumulator = 0;
 
     checkDevMode();
     checkPlaytestMode();
     Viewport.update();
     Viewport.switchTab(gameState.activeTab);
     Viewport.renderPrestigeVisibility();
+
+    if (offlineResult.applied && offlineResult.checkpoint && !offlineResult.checkpoint.success) {
+      Viewport.setSystemStatus(offlineResult.checkpoint.message, 'error');
+    }
 
     // Ensure DOM runtime is initialized before revealing shell
     initializeDomRuntime();
@@ -611,6 +622,11 @@ async function bootApp() {
       document.documentElement.classList.add('app-ready');
     });
   }
+}
+
+export function bootApp() {
+  if (!bootPromise) bootPromise = performBoot();
+  return bootPromise;
 }
 
 // Resize handled by CanvasCore ResizeObserver

@@ -15,25 +15,25 @@ const simulationHandlers = {
 };
 
 export const Timeline = {
-  process(dt) {
+  process(dt, context) {
     if (dt <= 0) return;
     const MAX_STEPS = 120;
     const stepCount = Math.min(MAX_STEPS, Math.ceil(dt / 1.0));
     const chunkDt = dt / stepCount;
 
     for (let i = 0; i < stepCount; i++) {
-      this.simulate(chunkDt);
+      this.simulate(chunkDt, context);
     }
   },
 
-  simulate(dt) {
+  simulate(dt, context) {
     if (gameState.era5?.isHeatDeath) {
       return; // Stop all other physics
     }
 
     const handler = simulationHandlers[gameState.activeEpoch];
     if (handler) {
-      handler(gameState, dt);
+      handler(gameState, dt, context);
     } else {
       // Fallback for not yet implemented eras
       if (gameState.activeEpoch === 4) {

@@ -2,7 +2,7 @@
 import { getMilestoneMultiplier } from '../../core/economy.js';
 import { COSMIC_REGISTRY } from '../../config/registry.js';
 
-export function simulateStellarEra(state, dt) {
+export function simulateStellarEra(state, dt, context = {}) {
   let anyChanged = false;
   state.cosmicAge = (state.cosmicAge || new Decimal(0)).plus(dt);
 
@@ -70,7 +70,7 @@ export function simulateStellarEra(state, dt) {
   }
 
   // 3. Compact Rewards
-  if (compactLvl > 0) {
+  if (context.allowRandomEvents !== false && compactLvl > 0) {
     let shardChance = new Decimal(compactLvl).times(0.01).times(dt);
     if (shardChance.gt(Math.random())) {
       state.currencies.pulsarShards.amount = state.currencies.pulsarShards.amount.plus(1);
@@ -79,7 +79,7 @@ export function simulateStellarEra(state, dt) {
   }
 
   // 4. AutoBuyer (Gravity)
-  if (state.autoBuyer && state.autoBuyer.hydrogen && state.autoBuyer.hydrogen.active) {
+  if (context.allowAutomation !== false && state.autoBuyer && state.autoBuyer.hydrogen && state.autoBuyer.hydrogen.active) {
     if (state.era3.temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
       if (state.resources.hydrogen.amount.gte(state.era3.gravityCost)) {
         // Just directly buy one level instead of calling the action layer for simulation logic
@@ -95,7 +95,7 @@ export function simulateStellarEra(state, dt) {
 
   // 5. AutoCompress
   let autoCompressLvl = state.upgrades.pulsar?.autoCompress?.level || 0;
-  if (autoCompressLvl > 0) {
+  if (context.allowAutomation !== false && context.allowRandomEvents !== false && autoCompressLvl > 0) {
     // Actually we can just do one compression per tick if affordable, proportional to level
     let affordable = state.resources.helium.amount.gte(state.era3.compressCost);
     if (affordable && Math.random() < autoCompressLvl * dt) {
@@ -112,13 +112,13 @@ export function simulateStellarEra(state, dt) {
   }
 
   // 6. Flares
-  if (state.flares && state.flares.active) {
+  if (context.allowRandomEvents !== false && state.flares && state.flares.active) {
     state.flares.active.expiresInSec = state.flares.active.expiresInSec.minus(dt);
     if (state.flares.active.expiresInSec.lte(0)) {
       // expireFlare logic
       state.flares.active = null;
     }
-  } else if (state.flares) {
+  } else if (context.allowRandomEvents !== false && state.flares) {
     state.flares.nextSpawnInSec = state.flares.nextSpawnInSec.minus(dt);
     if (state.flares.nextSpawnInSec.lte(0)) {
       // spawnFlare logic

@@ -1,6 +1,7 @@
 /* global Decimal */
 import { CODEX_ENTRIES } from '../content/codex.js';
 import { getVacuumCoherence } from '../eras/quantum/coherence.js';
+import { reconcileCodexUnlocks } from '../core/codexProgression.js';
 
 let typewriterInterval = null;
 let activeNarrativeId = null;
@@ -108,43 +109,9 @@ export const CodexEngine = {
   },
 
   unlockAvailableEntries(gameState) {
-    if (!gameState.codex) return; // safeguard
-
-    let changed = false;
-    const currentUnlocks = new Set(gameState.codex.unlockedEntryIds || []);
-
-    for (const entry of CODEX_ENTRIES) {
-      if (currentUnlocks.has(entry.id)) continue;
-
-      if (this._evaluateCondition(entry.unlockCondition, gameState)) {
-        currentUnlocks.add(entry.id);
-        changed = true;
-      }
-    }
-
-    if (changed) {
-      gameState.codex.unlockedEntryIds = Array.from(currentUnlocks);
+    const unlockedEntryIds = reconcileCodexUnlocks(gameState);
+    if (unlockedEntryIds.length > 0) {
       this._renderedList = []; // force re-render
-    }
-  },
-
-  _evaluateCondition(cond, gameState) {
-    if (!cond) return false;
-    switch (cond.type) {
-      case 'epoch_reached':
-        return gameState.activeEpoch >= cond.epoch;
-      case 'quantum_fluctuations':
-        return gameState.resources.quantumFluctuations && gameState.resources.quantumFluctuations.amount.gte(cond.amount);
-      case 'protons':
-        return gameState.resources.protons && gameState.resources.protons.amount.gte(cond.amount);
-      case 'upgrade_unlocked':
-        return gameState.upgrades[cond.category] && gameState.upgrades[cond.category][cond.id] && gameState.upgrades[cond.category][cond.id].level > 0;
-      case 'supernova_completed':
-        return gameState.stats && gameState.stats.supernovas && gameState.stats.supernovas.gte(cond.amount);
-      case 'has_remnant':
-        return gameState.meta && gameState.meta.lastSupernovaOutcome;
-      default:
-        return false;
     }
   },
 

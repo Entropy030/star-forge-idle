@@ -18,6 +18,7 @@
     "test:full": "npm run check:repo && npm run test:fast",
     "test:telemetry": "vitest run tests/simulation/bot_longrun.test.js",
     "test:browser": "npm run build && playwright test",
+    "test:offline-performance": "node scripts/offline-performance.mjs",
     "test:browser:install": "playwright install chromium",
     "preview": "vite preview"
   },
