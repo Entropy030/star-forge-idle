@@ -2,13 +2,13 @@
 
 Audit date: 2026-08-15
 
-Audited revision: `332db8a` (`main`)
+Audited revision: `d400a95` (`main`)
 
-Scope: repository truth after P3.3C.1; documentation changes only
+Scope: final P3 repository truth after the live-metric layout fix; documentation changes only
 
 ## Executive diagnosis
 
-P3 has a coherent player-facing architecture and strong regression coverage for Eras I–III, but it is **not yet stable**. Real-device playtesting still shows live-number/text layout jitter. That is a meaningful, player-facing P1 defect and remains the release gate for P3.
+P3 has a coherent player-facing architecture, strong regression coverage for Eras I–III, and no confirmed release-blocking correctness, persistence, or UI defect. The live-number/text layout jitter was closed by `d400a95`: bounded formatting, reserved logical geometry, stable static anchors, and persistent live-value nodes now form a durable UI contract. The defect remains important as an architectural lesson, not an open release gate.
 
 No P0 correctness or data-loss defect was confirmed. The historical `[object Object]` persistence failure class is prevented in current write paths and covered by regression tests. The most important architecture debt is the coexistence of the real `main.js`/`gameTick` runtime with an unused engine-loop/runtime abstraction, plus mixed simulation, progression, narrative, and DOM ownership in `Timeline` and `gameTick`. Resolve those boundaries before extending the game into Era IV.
 
@@ -16,15 +16,17 @@ The test suite protects substantial durable behavior, but P3 milestone names hav
 
 ## Release gate
 
-Status: **P3 NOT YET STABLE**
+Status: **P3 STABLE WITH DOCUMENTED DEBT**
 
-The gate closes only when:
+The repository-specific P3 gate is satisfied when:
 
-1. The remaining real-device live-value/layout jitter is reproduced, fixed, and regression-tested at desktop and 390 px mobile widths.
-2. Lint, the complete test suite, and the production build pass.
-3. A focused first-run playtest confirms narrative continuity, stable layout, and save/load behavior.
+1. `npm run lint`, the complete `npm run test`, and `npm run build` pass.
+2. The documentation baseline and handover describe the current implementation rather than milestone history.
+3. No P0/P1 release defect remains in supported Era I–III gameplay or persistence.
+4. All eight presets, first-run narrative, save boundaries, desktop/mobile layout, and real-device Core/Forge/navigation behavior have a completed smoke record.
+5. The working tree is clean at the release boundary.
 
-The runtime-boundary work below is required before P4, but is not itself a claim that current Era I–III gameplay is broken.
+The final layout pass measured stable anchors at desktop and 390 px mobile widths and added regressions for formatting boundaries and persistent live nodes. Runtime-boundary work below remains required before P4, but it does not make current Era I–III gameplay unstable.
 
 ## Findings by severity
 
@@ -36,7 +38,6 @@ None confirmed.
 
 | Finding | Impact | Required boundary |
 | --- | --- | --- |
-| Live numeric values still move surrounding text/layout on real devices. | Player-facing visual instability; blocks calling P3 stable. | Fix and visually verify before closing P3. |
 | Two runtime stories coexist: production boots through `src/main.js`, `gameTick`, and `Timeline`, while `src/app/runtime.js` and `src/app/loop.js` describe an unused engine-system loop. | A future contributor can implement behavior in the wrong runtime; P4 would deepen divergence. | Choose and document one simulation/composition path before P4. |
 | `Timeline`/`gameTick` mix simulation with Coherence, objectives, milestones, achievements, missions, Chrono updates, DOM events, and other visual side effects. | Ordering is hard to reason about and headless simulation is coupled to UI behavior. | Separate pure simulation/progression results from presentation side effects before P4. |
 | `main.js` is more than a composition root and includes compatibility globals, action wrappers, dev helpers, and duplicate telemetry calculations. `getAIState()` does not use the full authoritative Inflation eligibility contract. | Bot/dev telemetry can disagree with command eligibility even though player UI uses authoritative selectors. | Move or replace duplicate calculations; preserve one command/eligibility contract before P4. |
@@ -61,21 +62,25 @@ None confirmed.
 - Old migration branches that are still intentionally required for supported saves.
 - Small direct-DOM helpers that are isolated and covered but should not become patterns for new work.
 
-## Documentation inventory at audit start
+## Documentation inventory
 
-| Document | Classification | Drift or purpose |
+| Document | Classification | Purpose and recommended action |
 | --- | --- | --- |
-| `README.md` | MISSING | No repository entry point or documentation index. |
-| `HANDOVER.md` | MISSING | Current status, operating instructions, and known debt lived only in implementation history. |
-| `DECISIONS.md` | MISSING | Product and architecture contracts were distributed across milestone prompts and tests. |
-| `docs/01_GDD_Narrative_and_Philosophy.md` | PARTIALLY STALE | Treated Coherence as one universal cross-era mechanic and named obsolete Supernova currency. |
-| `docs/02_GDD_Eras_and_Mechanics.md` | STALE | Mixed old implementation diary with mechanics; Era I units/requirements, Era II process, and Era III reset/transition semantics contradicted code. |
-| `docs/03_TDD_Architecture_and_State.md` | STALE | Described an engine/runtime boundary not used by production, stale offline limits, and obsolete toast/UI assumptions. |
-| `docs/04_TDD_Bot_and_Telemetry.md` | PARTIALLY STALE | Bot APIs remained real, but timing, playtest isolation, presets, and the distinction between regression and balance telemetry were incomplete. |
-| `docs/05_Coherence_Semantics_Audit.md` | CURRENT / HISTORICAL | Accurate focused audit of current reads/writes and intentional uncertainty. Keep as a dated technical record. |
-| `docs/PHYSICS_ABSTRACTION_GUIDE.md` | PARTIALLY STALE | Useful design framing, but some Era I/II examples and later-era language overstate current mechanics. Retain as design guidance, label accordingly. |
+| `README.md` | PARTIALLY STALE | Correct entry point and reading order, but still names jitter as open. Update status and keep as the concise index. |
+| `HANDOVER.md` | PARTIALLY STALE | Correct operating map, gameplay, persistence, CI, and debt; update revision, release status, layout contract, and pre-P4 order. |
+| `DECISIONS.md` | PARTIALLY STALE | Durable decisions are sound; D10 must record the completed geometry contract rather than an unsatisfied aspiration. |
+| `docs/01_GDD_Narrative_and_Philosophy.md` | CURRENT | Current narrative ownership and Era I–III intent. Keep implementation detail out. |
+| `docs/02_GDD_Eras_and_Mechanics.md` | CURRENT | Current Era I–III mechanics and future boundary. Verify links/formulas when gameplay changes. |
+| `docs/03_TDD_Architecture_and_State.md` | CURRENT | Accurate state/runtime/command/persistence map with explicit runtime debt. |
+| `docs/04_TDD_Bot_and_Telemetry.md` | CURRENT | Accurate playtest, bot, timing, and telemetry boundaries. |
+| `docs/05_Coherence_Semantics_Audit.md` | CURRENT / HISTORICAL | Accurate focused evidence. Retain as dated semantics audit rather than general architecture authority. |
+| `docs/06_TDD_UI_UX_Architecture.md` | PARTIALLY STALE | Surface contracts are current; update the live-data section to the closed invariant and remove the open-defect note. |
+| `docs/07_TESTING_AND_CI.md` | PARTIALLY STALE | Structure and recommendations are current; update the snapshot from 208 to 209 tests and close the jitter gate. |
+| `docs/DOCUMENTATION_POLICY.md` | CURRENT | Clear source-of-truth and impact-check policy. Keep lightweight. |
+| `docs/P3_STABILIZATION_AUDIT.md` | PARTIALLY STALE | Historical evidence is useful, but the audited revision, counts, layout status, release status, and plan require this update. |
+| `docs/PHYSICS_ABSTRACTION_GUIDE.md` | CURRENT / DESIGN GUIDANCE | Correctly labeled non-authoritative design framing. Retain unchanged. |
 
-No additional planning/TODO/audit Markdown files were present. There was no durable UI/UX TDD or Testing/CI guide.
+No redundant documentation requires deletion. The focused Coherence audit and physics guide serve distinct historical/design purposes. No additional Markdown plan is missing after the handover baseline is refreshed.
 
 ## Gameplay documentation drift
 
@@ -159,16 +164,17 @@ Era IV and V modules exist as prototype/future scaffolding and have tests for se
 
 Navigation is progressively disclosed and limited to the currently relevant destinations. Resource presentation uses Primary/Support/Details rather than a flat wall. Era-specific Cosmos presentation emphasizes the active process; Era II is bottleneck-oriented and Era III is temperature-centered. Mobile navigation is fixed and safe-area-aware. Semantic buttons, ARIA state, 44 px actionable controls, narrow-header behavior, and both system and in-game reduced-motion preferences are covered by contracts.
 
-Remaining violations/debt:
+Remaining UI debt:
 
 - `Viewport` still owns broad cross-domain rendering and direct DOM decisions.
-- Some static copy and live data remain joined in one node or dynamically reconstructed.
 - Source-level CSS tests cannot prove real-device reflow, focus order, or readable wrapping.
 - Some later-era/prototype UI can be reached in code without being a supported P3 experience.
 
+The formerly affected live surfaces now separate semantic labels from values, reserve width through logical `ch`-based tracks, use compact formatting and tabular numerals, and retain keyed DOM nodes. This is a permanent invariant, not a one-off styling choice.
+
 ## Test inventory
 
-The suite contains **41 files and 208 executed tests**. Counts below are source-level declarations; parameterized cases make the executed total higher. Cost is relative and based on suite structure and a full local run, not a stable benchmark.
+The suite contains **41 files and 209 executed tests**. Counts below are source-level declarations; parameterized cases make the executed total higher. Cost is relative and based on suite structure and a full local run, not a stable benchmark.
 
 | File | Decl. | Domain / type | Durable protection | Cost | Disposition |
 | --- | ---: | --- | --- | --- | --- |
@@ -202,7 +208,7 @@ The suite contains **41 files and 208 executed tests**. Counts below are source-
 | `p3_navigation_architecture.test.js` | 11 | UI contract | Progressive navigation/meta ownership | Medium | KEEP, rename by surface |
 | `p3_persistence_corruption.test.js` | 6 | Integration/regression | String serialization and corrupt-save recovery | Low | KEEP, merge into persistence |
 | `p3_playtest.test.js` | 3 | Integration | Save isolation and timing controls | Medium | KEEP, rename by domain |
-| `p3_resource_hierarchy.test.js` | 12 | UI contract | Era-specific resource hierarchy | Medium | KEEP, rename by surface |
+| `p3_resource_hierarchy.test.js` | 13 | UI contract | Era-specific resource hierarchy, compact formatting boundaries, and persistent live-value nodes | Medium | KEEP, rename by surface |
 | `p3_runtime_dom.test.js` | 3 | DOM integration | Initialization and boot DOM safety | Medium | KEEP/REWRITE with browser harness |
 | `p3_scrolling.test.js` | 3 | Source/UI regression | Scrolling structure | Low | REWRITE as layout/browser test |
 | `p3_ui_hierarchy.test.js` | 6 | UI contract | Global hierarchy/Core focus | Medium | MERGE into surface suites |
@@ -226,7 +232,7 @@ No test is an immediate delete candidate without first moving its durable assert
 
 Under-tested durable behavior:
 
-- Real-browser reflow and the known jitter on actual viewport/font/device conditions.
+- Automated real-browser geometry/CLS across viewport, font, and device matrices; the final fix was manually measured, while repository tests protect its DOM/formatting prerequisites.
 - End-to-end localStorage/sessionStorage, clipboard import/export, corrupt-data UX, and offline catch-up.
 - Keyboard traversal, focus visibility/restoration, and screen-reader announcements across dynamic surfaces.
 - Service-worker update/reload behavior.
@@ -240,7 +246,7 @@ A full local run completed in roughly 114 seconds on the audit machine. UI contr
 Recommended lanes:
 
 - **FAST CI — every PR/push:** lint; build; engine, state, economy, era commands, eligibility, migration, presentation selectors, focused DOM contracts, and short smoke/integration tests.
-- **FULL CI — main/release:** all fast checks plus the complete current 208-test suite and broader DOM/playtest integration.
+- **FULL CI — main/release:** all fast checks plus the complete current 209-test suite and broader DOM/playtest integration.
 - **PERIODIC/MANUAL — scheduled or balance work:** large bot playthroughs, multi-build balance comparisons, telemetry sweeps, and device/browser matrices.
 
 This is a recommendation only; the repository currently has one validation/deploy workflow.
@@ -321,34 +327,65 @@ The chunking and tested Era I–III simulation are safe technical debt for P3. T
 | Level | Items |
 | --- | --- |
 | P0 | None confirmed. |
-| P1 | Duplicate runtime story; core/UI side effects; AI eligibility drift; unresolved live UI jitter; later-era Coherence overload. |
+| P1 | Duplicate runtime story; core/UI side effects; AI eligibility drift; later-era Coherence overload. These are pre-P4 boundaries, not current P3 release defects. |
 | P2 | Broad cycle suppressions; large composition modules; milestone test names; source-regex UI tests; exact-version import; misleading runtime/offline comments; prototype UI paths. |
 | P3 | Compatibility aliases/globals, historical test descriptions, supported migration residue, small duplicated formatting/helpers. |
 
 No abandoned telemetry scripts or untracked artifacts were present. No files should be deleted based on this audit alone.
 
-## Unresolved live-value/text jitter
+## Resolved live-data layout contract
 
-Severity: **P1, P3 release-blocking UX defect**. It is not currently shown to be a gameplay correctness or persistence defect.
+`d400a95` closed the live-value/text jitter. The repository evidence is distributed across `style.css`, `index.html`, `src/ui/resourceHud.js`, `src/ui/cosmosExperience.js`, `src/ui/viewport.js`, and the related P3 UI tests.
 
-Likely surfaces to instrument in a separate debugging pass:
+Permanent rule:
 
-- `src/ui/viewport.js` Forge row updates: contribution/cost/button strings update frequently, requirement lists use `replaceChildren()`, and live prose can change wrapping.
-- `src/ui/viewport.js` Era III process/action/rate sections: milestone text, action summaries, flare countdown, and rate strings interpolate live values into whole text/HTML fragments.
-- `src/ui/stellar.js` Supernova status, blocked requirements, yield summaries, and action copy rewrite combined strings.
-- `src/ui/resourceHud.js` meta-resource rows combine label and value in one text node; regions reorder/reinsert nodes with `replaceChildren()`; auto-sized card/grid content can still alter measured widths.
-- `src/ui/cosmosExperience.js` progress labels combine current and target values, structure keys can rebuild the primary presentation when state changes, and reused requirement rows are reinserted.
-- Objective/header status and progress nodes: centered or auto-sized parents can move adjacent copy even when label/value nodes are separate.
-- `src/style.css`: centered flex/grid layouts, intrinsic/auto columns, insufficient `min-width`/reserved digit width, and wrap-sensitive live copy are candidate amplifiers.
+```text
+STATIC SEMANTIC CONTENT
+  → stable layout anchor
 
-This list is investigative context, not a root-cause claim. A follow-up should record device, font readiness, viewport, element bounding boxes, node replacement frequency, and layout-shift entries before changing CSS or markup.
+LIVE NUMERIC CONTENT
+  → bounded compact formatting
+  → reserved logical geometry
+  → persistent/keyed DOM node
+  → independent update
+```
+
+Required invariants:
+
+1. Labels and live values have separate DOM ownership.
+2. Player-facing formatting is bounded around digit/suffix thresholds.
+3. Frequently changing values occupy reserved logical geometry; surrounding labels do not depend on intrinsic live width.
+4. `99 → 100`, `999 → 1,000`, `999,999 → 1.00M`, `99.9% → 100%`, `Locked → Ready`, and `○ → ✓` must not move static anchors.
+5. Stable rows/cards/labels persist; renderers update live descendants and only replace children when identity/order actually changes.
+6. `font-variant-numeric: tabular-nums` supplements the contract but cannot replace reserved geometry.
+7. Flex distribution, centered composite strings, `auto` tracks, status widths, and icon widths must be reviewed whenever new live metrics are introduced.
+
+Current regression protection covers compact formatter boundaries, persistent resource/check/requirement nodes, fixed logical tracks, and objective comparison ownership. A future browser harness should convert the manual `getBoundingClientRect()`/device checks into automated geometry assertions.
+
+## Behavioral coverage matrix
+
+| Area | Assessment | Evidence and gap |
+| --- | --- | --- |
+| State identity/replacement/normalization | ADEQUATELY TESTED | Engine, UI truth, migration, and preset tests agree on one runtime proxy; more real-browser load/import coverage is still useful. |
+| Serialization, Decimal/Set revival, migrations, corrupt saves | ADEQUATELY TESTED | Unit/integration coverage includes literal `[object Object]` quarantine; storage quota and clipboard/session failures remain thin. |
+| Era I eligibility, production, Coherence, Inflation | ADEQUATELY TESTED | Domain, coherence, narrative, transition, and bot suites cover current path. |
+| Era II production, recipes, decay, cooling, Recombination | ADEQUATELY TESTED | Shared evaluator and progression tests cover the chain and alternative transition route; files overlap. |
+| Era III temperature, fusion, Supernova, Galactic Ignition | ADEQUATELY TESTED | Stellar simulation, commands, Legacy UI, transition truth, and bot coverage are broad; organization is fragmented. |
+| Navigation, Cosmos, Forge, resources, objectives | OVER-TESTED BY FILE COUNT / ADEQUATE BY BEHAVIOR | Many durable contracts exist, but milestone/hotfix suites and source assertions duplicate setup and obscure ownership. |
+| Live metric geometry | ADEQUATE PREREQUISITE COVERAGE / UNDER-TESTED IN BROWSER | Formatting and stable-node contracts are durable; automated layout-shift/device measurement is missing. |
+| Accessibility and responsive behavior | UNDER-TESTED | Semantic/source contracts exist; keyboard, screen-reader, focus restoration, and real-device wrapping need browser coverage. |
+| Deterministic/long-run simulation | OVER-TESTED IN DEFAULT LANE | Valuable bot coverage dominates runtime; move heavy telemetry without deleting the bounded progression signal. |
+| Service worker/deployment artifact | UNDER-TESTED | Build succeeds, but update/reload behavior lacks an end-to-end test. |
 
 ## Recommended stabilization phases
 
-1. **P3-S1 — live layout stability.** Reproduce and instrument jitter; isolate text-node, intrinsic-width, and node-replacement causes; add browser/device regression coverage. Risk: medium UI regression. Verification: desktop and 390 px real-device/browser matrix plus full validation. One focused fix commit.
-2. **P3-S2 — runtime characterization.** Add characterization tests around current tick ordering and state/UI events; correct bot eligibility consumption without changing balance. Risk: medium. Verification: deterministic Era I–III traces and existing bot suite. Separate test and correction commits if needed.
-3. **P3-S3 — runtime ownership consolidation.** Choose the production loop, separate pure simulation/progression outputs from UI effects, and remove misleading unused paths only after equivalence is proven. Risk: high. Verification: save fixtures, all presets, offline progress, deterministic simulations, full playthrough bot. Small commits by boundary.
-4. **P3-S4 — test and CI lanes.** Rename/merge milestone suites, replace source assertions, introduce fast/full/periodic lanes and PR validation. Risk: medium CI/test-only. Verification: compare discovered tests and run each lane. Separate suite-organization and workflow commits.
-5. **P3-S5 — persistence hardening.** Align import with supported migration policy and exercise browser storage/clipboard/session recovery. Risk: high due save data. Verification: versioned fixtures, corrupt payloads, real-browser round trips. Dedicated persistence commit.
+| Phase | Goal and exact scope | Risk | Recommended Codex model / reasoning | Verification | Commit boundary |
+| --- | --- | --- | --- | --- | --- |
+| S1 — documentation baseline | Refresh audit, handover, decisions, GDD/TDD index, and release status only. | Low | Frontier coding model, high reasoning | Link/path audit, diff scope, lint/test/build | Audit commit; separate handover-baseline commit |
+| S2 — runtime characterization | Add behavior-preserving traces for `gameTick`/`Timeline` ordering and make bot telemetry consume authoritative eligibility. No balance change. | Medium | Frontier coding model, high reasoning | Deterministic Era I–III traces, presets, full bot | Characterization tests first; eligibility correction second if needed |
+| S3 — runtime ownership consolidation | Select the production loop, separate simulation/progression results from DOM effects, and retire unused runtime paths only after equivalence. | High | Frontier coding model, extra-high reasoning | Save/offline fixtures, all presets, deterministic simulation, complete bot and browser smoke | Small commits by state, tick, event, and composition boundary |
+| S4 — test consolidation and CI lanes | Move milestone suites into durable domains, replace source assertions, add PR validation, and split fast/full/periodic execution. | Medium | Balanced coding model, high reasoning | Before/after discovery and assertion inventory; run every lane | Test organization separate from workflow changes |
+| S5 — persistence/browser hardening | Decide import migration policy; cover storage, clipboard, session restore, offline, accessibility, and automated layout geometry. | High | Frontier coding model, high reasoning | Versioned fixtures plus real-browser round trips/device matrix | Dedicated persistence commit; separate browser-harness commit |
+| S6 — final pre-P4 verification | Re-run P3 release matrix and confirm all P1 pre-P4 boundaries are closed or explicitly accepted. | Low | Balanced coding model, medium reasoning | Full CI, eight presets, first-run, save/import/export, real-device smoke | Verification/docs-only release commit |
 
-Do not begin P4/Era IV until S1 closes the P3 release gate and S2/S3 establish a single safe extension boundary.
+S1 is the scope of this documentation run. Do not begin S2 in the same change. Do not begin P4/Era IV until S2/S3 establish one safe extension boundary and the later-era Coherence model has an explicit decision.
