@@ -12,8 +12,11 @@
     "lint": "eslint src/",
     "check:repo": "node scripts/check-repo-hygiene.mjs",
     "typecheck": "echo 'No typecheck yet'",
-    "test": "npm run check:repo && vitest run",
-    "test:run": "npm run check:repo && vitest run"
+    "test": "npm run test:full",
+    "test:run": "npm run test:full",
+    "test:fast": "vitest run --exclude tests/simulation/bot_longrun.test.js",
+    "test:full": "npm run check:repo && npm run test:fast",
+    "test:telemetry": "vitest run tests/simulation/bot_longrun.test.js"
   },
   "keywords": [],
   "author": "",

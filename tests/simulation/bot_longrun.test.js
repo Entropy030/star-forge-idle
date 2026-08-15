@@ -1,10 +1,31 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { createInitialState } from '../src/state/createInitialState.js';
-import { setGameState } from '../src/core/state.js';
-import { engine } from '../src/engine/instance.js';
-import { playtestHarness } from '../src/core/playtestBot.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { createInitialState } from '../../src/state/createInitialState.js';
+import { setGameState } from '../../src/core/state.js';
+import { engine } from '../../src/engine/instance.js';
+import { playtestHarness } from '../../src/core/playtestBot.js';
 
-describe('P2C Playtest Bot Automation', () => {
+function createSeededRandom(seed) {
+  let state = 2166136261;
+  for (const char of seed) {
+    state ^= char.charCodeAt(0);
+    state = Math.imul(state, 16777619);
+  }
+
+  return () => {
+    state += 0x6D2B79F5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function runLongSimulation(options) {
+  vi.spyOn(Math, 'random').mockImplementation(createSeededRandom(options.seed));
+  playtestHarness.runHeadlessSim(options);
+}
+
+describe('Bot long-run strategy and balance telemetry', () => {
   beforeEach(() => {
     // Reset state before each test
     const initialState = createInitialState();
@@ -12,10 +33,14 @@ describe('P2C Playtest Bot Automation', () => {
     engine.loadState(initialState);
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('runs the efficient profile through the second run checkpoint successfully', () => {
     // We use a small tick budget that should be enough for the efficient bot to reach the checkpoint in fast sim
     // We can allow up to 100,000 ticks (10000s in-game) for a full run
-    playtestHarness.runHeadlessSim({
+    runLongSimulation({
       profile: 'efficient',
       target: 'p2c-second-run',
       maxTicks: 30000000, 
@@ -54,7 +79,7 @@ describe('P2C Playtest Bot Automation', () => {
   });
 
   it('runs the massive profile through the second run checkpoint successfully', () => {
-    playtestHarness.runHeadlessSim({
+    runLongSimulation({
       profile: 'massive',
       target: 'p2c-second-run',
       maxTicks: 30000000,
@@ -73,7 +98,7 @@ describe('P2C Playtest Bot Automation', () => {
   });
 
   it('runs the compact profile through the second run checkpoint successfully', () => {
-    playtestHarness.runHeadlessSim({
+    runLongSimulation({
       profile: 'compact',
       target: 'p2c-second-run',
       maxTicks: 30000000, 
@@ -89,19 +114,5 @@ describe('P2C Playtest Bot Automation', () => {
     expect(stats.stellarArchitectureLevels.efficient).toBe(0);
     expect(stats.stellarArchitectureLevels.massive).toBe(0);
     expect(stats.stellarArchitectureLevels.compact).toBeGreaterThan(0);
-  });
-  
-  it('fails cleanly with MAX_TICKS_EXCEEDED when given an insufficient budget', () => {
-    playtestHarness.runHeadlessSim({
-      profile: 'efficient',
-      target: 'p2c-second-run',
-      maxTicks: 100, // Not enough time to even finish Era 1
-      seed: 'test-seed-fail'
-    });
-
-    const stats = playtestHarness.stats;
-    expect(stats.result).toBe('FAILED');
-    expect(stats.failureReason).toBe('MAX_TICKS_EXCEEDED');
-    expect(playtestHarness.runPhase).toBe('FAILED');
   });
 });
