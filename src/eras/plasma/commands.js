@@ -1,15 +1,15 @@
 /* global Decimal */
 import { COSMIC_REGISTRY } from '../../config/registry.js';
-import { getBaryonAsymmetryMultiplier } from '../../core/economy.js'; // Will be extracted to selectors
+import { getQuarkGluonImbalanceMultiplier } from './imbalance.js';
 import { getPlasmaUpgradeEligibility, getRecombinationEligibility } from './eligibility.js';
 
 export const plasmaCommandHandlers = {
   CLICK_CORE_ERA2: (state, cmd) => {
     if (state.activeEpoch !== 2) return { ok: false, changed: false, events: [], error: { code: 'UNHANDLED_EPOCH' } };
 
-    let asymmetry = getBaryonAsymmetryMultiplier(); // Need to adapt to use state
-    let quarkGain = new Decimal(3).times(asymmetry);
-    let gluonGain = new Decimal(2).times(asymmetry);
+    const imbalanceMultiplier = getQuarkGluonImbalanceMultiplier(state);
+    let quarkGain = new Decimal(3).times(imbalanceMultiplier);
+    let gluonGain = new Decimal(2).times(imbalanceMultiplier);
 
     state.resources.quarks.amount = state.resources.quarks.amount.plus(quarkGain);
     state.resources.gluons.amount = state.resources.gluons.amount.plus(gluonGain);

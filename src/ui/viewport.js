@@ -1737,13 +1737,7 @@ export const Viewport = {
 
       this.hideElement('resource-iron');
 
-      // Add survivingMatter info if we have unlocked it
-      if (gameState.resources.survivingMatter && gameState.resources.survivingMatter.amount.gt(0)) {
-        this.setTextContent('prio2-text', `Surviving Matter: ${format(gameState.resources.survivingMatter.amount)}`);
-        this.showElement('priority2');
-      } else {
-        this.hideElement('priority2');
-      }
+      this.hideElement('priority2');
 
       this.setTextContent('plasma-temp-count', `${format(gameState.plasmaTemperature)} K`);
       this.updateResourceDelta('temperature', pRates.coolingRate.times(-1));

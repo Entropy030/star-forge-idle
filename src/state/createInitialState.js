@@ -73,8 +73,6 @@ export function createInitialState() {
     resources: {
       quantumFluctuations: { amount: new Decimal(0) },
       energyDensity: { amount: new Decimal(0) },
-      annihilationEnergy: { amount: new Decimal(0) },
-      survivingMatter: { amount: new Decimal(0) },
       quarks: { amount: new Decimal(0) },
       gluons: { amount: new Decimal(0) },
       protons: { amount: new Decimal(0) },
@@ -106,7 +104,6 @@ export function createInitialState() {
     era1: {
       currentAct: 1,
       quantumFoam: 0,
-      asymmetryBias: 0.5,
       unfoldCount: 0
     },
     era1Collapses: 0,

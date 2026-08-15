@@ -44,6 +44,7 @@ export const ensureStateShape = function(gameState) {
   if (typeof gameState.era1.currentAct !== 'number') gameState.era1.currentAct = 1;
   if (typeof gameState.era1.quantumFoam !== 'number') gameState.era1.quantumFoam = 0;
   if (typeof gameState.era1.unfoldCount !== 'number') gameState.era1.unfoldCount = 0;
+  delete gameState.era1.asymmetryBias;
 
   if (!gameState.era2 || typeof gameState.era2 !== 'object') {
     gameState.era2 = getInitialEra2State();
@@ -102,6 +103,8 @@ export const ensureStateShape = function(gameState) {
       gameState.resources[resKey].amount = new Decimal(gameState.resources[resKey].amount || 0);
     }
   }
+  delete gameState.resources.annihilationEnergy;
+  delete gameState.resources.survivingMatter;
 
   for (let curKey in initialState.currencies) {
     if (!gameState.currencies[curKey]) {

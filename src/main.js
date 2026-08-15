@@ -10,7 +10,7 @@ let flareSimSuppressed = false;
 import { gameState, setGameState, isDirty, setIsDirty, ensureStateShape, getInitialGameState, deserializeState, serializeState } from './core/state.js';
 import { saveGame, exportSave, importSave, wipeSave, loadGame, getPlaytestSpeedMultiplier } from './core/persistence.js';
 import { checkPlaytestMode } from './dev/playtestMode.js';
-import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, deduct, getStardustYield, getPulsarShardYield, getSingularityMassYield, getCardMultiplier, getBaryonAsymmetryMultiplier } from './core/economy.js';
+import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, deduct, getStardustYield, getPulsarShardYield, getSingularityMassYield, getCardMultiplier } from './core/economy.js';
 import { ArtifactManager, Viewport, format, ActManager, initAudio, playSupernovaSound, showIntroScreenCinematic, startEraTransition } from './ui/viewport.js';
 import { Templates } from './ui/templates.js';
 import { advanceGameTick } from './core/runtimeTick.js';
@@ -22,6 +22,7 @@ import { getActionFailureMessage, isActionSuccessful } from './ui/actionFeedback
 import { getVacuumCoherence } from './eras/quantum/coherence.js';
 import { appendHistoryEntry } from './state/history.js';
 import { devSetEpoch } from './dev/epoch.js';
+import { getQuarkGluonImbalanceMultiplier } from './eras/plasma/imbalance.js';
 
 // Re-export or attach globals needed by inline HTML (like onclick)
 const Haptics = {
@@ -487,13 +488,13 @@ function runParityHarness() {
         }
       },
       {
-        name: "Baryon Asymmetry Multiplier calculation",
+        name: "Quark-Gluon Imbalance Multiplier calculation",
         setup: (s) => {
           s.resources.quarks.amount = new Decimal(1000);
           s.resources.gluons.amount = new Decimal(900);
         },
         assert: () => {
-          let actual = getBaryonAsymmetryMultiplier();
+          let actual = getQuarkGluonImbalanceMultiplier(gameState);
           let logVal = new Decimal(100).log10();
           let expected = new Decimal(1).plus(new Decimal(logVal).times(0.05));
           return actual.eq(expected);

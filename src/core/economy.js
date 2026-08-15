@@ -125,15 +125,6 @@ export function getProtonFusionCap() {
   return cap;
 }
 
-export function getBaryonAsymmetryMultiplier() {
-  let q = gameState.resources.quarks.amount;
-  let g = gameState.resources.gluons.amount;
-  if (q.eq(0) || g.eq(0)) return new Decimal(1);
-  let diff = q.minus(g).abs().max(1);
-  let logPrimitiveResult = diff.log10();
-  return new Decimal(1).plus(new Decimal(logPrimitiveResult).times(0.05));
-}
-
 export function getCardMultiplier(target, state = gameState) {
   let mult = new Decimal(1);
   for (let key in state.cards) {

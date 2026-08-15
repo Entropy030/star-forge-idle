@@ -1,6 +1,7 @@
 import { computePlasmaStep } from './evaluator.js';
 import { getPlasmaUpgradeEligibility } from './eligibility.js';
 export { getPlasmaUpgradeEligibility, getRecombinationEligibility } from './eligibility.js';
+export { getQuarkGluonImbalanceMultiplier } from './imbalance.js';
 
 export function getPlasmaRates(state) {
   // Use the shared evaluator with dt = 1 to get the exact real rates per second

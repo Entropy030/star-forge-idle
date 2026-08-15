@@ -9,8 +9,6 @@ export const i18n = {
     log_era1_to_era2: "Era II: The Primordial Soup begins. Energy cools. Quarks form building blocks, glued together by Gluons.",
     log_plasma_cooling: "Plasma Cooling Successful (3,000 K)! Recombination releases free electrons to form primordial atoms.",
     log_carbon_synthesis: "Carbon Synthesis Initiated (500M K)! The Triple-Alpha Process ignites. The path to the 2B K Iron Core is open!",
-    baryon_asymmetry_label: "Baryon Asymmetry (+{val}%)",
-    baryon_asymmetry_tooltip: "A subtle imbalance—the dominance of matter over antimatter—serves as a catalyst for your yield.",
     milestone_tooltip: "Next Milestone (Lvl {lvl}): +5% Global Yield",
     autobuy_hydrogen: "[ Auto-Buy Hydrogen: {state} ]",
     gateway_title: "GALACTIC IGNITION (ERA IV GATEWAY)",
