@@ -58,7 +58,7 @@ The 1×/5×/25× control changes logical time passed to `gameTick`; it does not 
 
 ### Headless bot
 
-`PlaytestBot.runGameTicks(tickRate, headless)` advances explicit logical steps and records logical game seconds/ticks. This is suitable for repeatable progression assertions when the initial state, bot policy, and tick rate are fixed.
+`PlaytestBot.runGameTicks(tickRate, headless)` advances explicit logical steps and records logical game seconds/ticks. It currently calls `engine.tick()` and `Timeline.process()` directly, not the complete production `gameTick()`. Because the singleton engine has no registered simulation systems, `engine.tick()` advances its runtime clock while `Timeline.process()` performs Era simulation. Production Coherence, narrative, objectives, achievements, and missions are bypassed. The bot remains useful for bounded progression telemetry, but it is not a full production-runtime equivalence test.
 
 ### Auto-playtest bot
 
@@ -74,7 +74,24 @@ The 1×/5×/25× control changes logical time passed to `gameTick`; it does not 
 - records clicks, purchases, phase/milestone timing, failures, and Supernova outcome;
 - optionally updates the dev panel and logs reports.
 
-Known debt: it imports `getAIState()` from `src/main.js`, and some AI action helpers contain simplified readiness formulas. This can disagree with authoritative eligibility even though player command/UI contracts are correct. Before using telemetry as P4 evidence, make the bot consume domain eligibility/selectors directly and remove its dependency on the browser composition root.
+### Authority contract
+
+The playtest bot owns strategy, not gameplay legality.
+
+- The bot owns profile, priority, purchase preference, action timing, and telemetry.
+- Gameplay owns prerequisites, authoritative affordability, transition readiness, command validity, mutations, and emitted results.
+
+The bot consumes:
+
+- `getInflationEligibility()` for Cosmic Inflation;
+- `getQuantumUpgradeEligibility()` for Fundamental Laws;
+- `getRecombinationEligibility()` for Recombination;
+- `getPlasmaUpgradeEligibility()` for plasma upgrades;
+- `getSupernovaEligibility()` and the Supernova command/outcome APIs for collapse.
+
+It may prefilter by current balance to implement purchase strategy, but the command result is final and only successful purchases count in telemetry. Galactic Ignition is not an action in the current supported bot policy. S2 also removed the bot's unused import of `getAIState()` from `src/main.js`, so headless automation no longer depends on the browser composition root.
+
+The manual `getAIState()` dev export and unused `src/core/botActions.js` compatibility copy still contain simplified display flags. They are not consulted by `PlaytestEngine` decisions; consolidate or remove them only as scoped S3 cleanup.
 
 ## Telemetry interpretation
 
@@ -96,6 +113,8 @@ Always record the preset/initial state, bot profile, tick rate, logical time, wa
 - Multi-million-tick playthroughs, build matrices, and balance sweeps belong in periodic/manual telemetry.
 
 The current repository still runs all bot tests in the one full suite. See `docs/07_TESTING_AND_CI.md` for current and recommended lanes.
+
+The large `p2c_bot.test.js` suite verifies that three stellar architecture strategies complete a full first Supernova, grant the predicted rewards, enter a second stellar run with legacy modifiers, and fail cleanly under an insufficient tick budget. This overlaps focused command/outcome tests but uniquely protects long-run strategy viability. It is deterministic enough for a correctness gate at a fixed state/policy, although random stellar flare/auto behavior and balance-policy changes can affect runtime. S4 should retain a small bounded transition/reward smoke in normal CI and move the three expensive balance profiles to periodic/manual telemetry.
 
 ## Failure handling
 

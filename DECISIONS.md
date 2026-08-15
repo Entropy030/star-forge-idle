@@ -113,3 +113,11 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Why:** Fast testing must not corrupt player progress or create split-state UI.
 
 **Consequences:** Disabling playtest restores the backup and speed 1×. Preset/UI consumers may not manually patch state after replacement.
+
+## D15 — The playtest bot owns strategy, not legality
+
+**Decision:** Automated playtesting may choose priorities, timing, and profiles, but domain eligibility and command results decide whether an action is legal and successful.
+
+**Why:** Telemetry is only trustworthy when automation and player-facing gameplay use the same prerequisites and transition contracts.
+
+**Consequences:** The active bot consumes the Era eligibility APIs for Inflation, Laws, Recombination, plasma upgrades, and Supernova. Balance checks may guide strategy, but failed commands do not count as purchases or completed transitions. Bot-side copies of gameplay requirements are defects.

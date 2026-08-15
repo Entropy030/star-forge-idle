@@ -3,14 +3,15 @@
 ## Current production path
 
 ```text
-src/main.js
+index.html → src/bootstrap.js → src/main.js → bootApp()
+  ├─ loadGame() → replaceRuntimeState() → engine replacement subscription
   ├─ load/save + playtest bootstrap
   ├─ 100 ms scheduler → gameTick(dt) → Timeline.process(dt)
   ├─ requestAnimationFrame → Viewport.update() when dirty
   └─ command/UI/dev compatibility wiring
 ```
 
-This is the current runtime. `src/app/runtime.js` and `src/app/loop.js` are incomplete alternative abstractions and are not booted by production. `engine` currently has no registered tick systems. Treat this divergence as pre-P4 debt, not as two supported runtimes.
+This is the **CURRENT PRODUCTION RUNTIME**. `src/app/runtime.js` and `src/app/loop.js` are a **NON-PRODUCTION / ALTERNATIVE RUNTIME**: neither production nor tests import them, their RAF loop calls an engine with no registered simulation systems, and they do not reproduce production rendering, playtest speed, catch-up, or progression. Do not implement gameplay in that path. S3 should keep the characterized production runtime and remove the alternative path after one final reference check.
 
 ## Authoritative runtime state
 
@@ -86,9 +87,30 @@ Presentation selectors must not mutate, normalize, or dispatch.
 
 The production scheduler in `src/main.js` measures real elapsed time and scales it by the speed-of-light modifier and playtest multiplier. Normal ticks call `gameTick(simulatedSeconds)`. Large/background intervals are processed asynchronously in one-second chunks, capped at eight hours.
 
+Simulation and rendering are separate clocks:
+
+1. A 100 ms `setInterval` measures wall time and calls `gameTick()` with scaled simulated time.
+2. A gap over 1.5 wall-clock seconds enters asynchronous catch-up instead of a normal tick.
+3. `gameTick()` mutates the reactive state, which marks it dirty.
+4. An independent RAF renders `Viewport.update()` only when dirty, then clears the flag.
+
+`loadGame()` calculates and returns saved offline elapsed time, but the current `bootApp()` does not consume that return value. The active catch-up path therefore handles scheduler/visibility gaps in the running browser session; persisted close/reopen offline progress is not currently fed into simulation. Preserve this observed behavior during S3 unless offline semantics are changed explicitly and separately.
+
+Within a production `gameTick()` the current observable ordering is:
+
+1. active click-boost time and Era-specific Coherence/pre-simulation values;
+2. Era I peak-QF and narrative milestone detection from the pre-simulation resource value;
+3. chunked Era simulation through `Timeline.process()`;
+4. objective progression;
+5. achievement mutation and browser `CustomEvent` emission;
+6. mission completion/rank mutation;
+7. a later RAF observes dirty state and updates the UI.
+
+Eligibility and transition readiness are derived on demand rather than stored. A selector called after simulation sees the new state in the same tick. By contrast, Era I peak-QF law unlocks and passive-production narrative thresholds become visible on the following tick because their checks precede production. Characterization tests intentionally protect both behaviors.
+
 `src/core/timeline.js` chunks simulation and routes it to Era-specific simulation. Its current `gameTick()` wrapper also applies cross-cutting effects and progression.
 
-Known ownership debt: Timeline/game tick currently touch Coherence, artifacts, objectives, narrative milestones/Chrono, achievements/window events, and missions. This couples headless simulation to UI and makes ordering implicit. Before P4, characterize the existing order, establish a pure authoritative tick/progression result, then let presentation consume emitted results.
+Known ownership debt: Timeline/game tick currently touch Coherence, artifacts, objectives, narrative milestones/Chrono, achievements/window events, and missions. This couples the full production tick to UI/browser behavior. The headless playtest bot currently calls `engine.tick()` plus `Timeline.process()` rather than `gameTick()`, so it advances Era simulation but bypasses production Coherence, narrative, objective, achievement, and mission processing. S3 must make this boundary explicit without silently changing progression timing.
 
 Do not move one mechanic at a time to the unused engine loop without proving equivalence.
 
@@ -113,7 +135,7 @@ runtime state
 
 Load reverses the process, migrates normal saves, and calls `replaceRuntimeState()`. Corrupt active payloads are quarantined under a timestamped key. Normal and playtest slots are isolated. Export/import wraps serialized JSON in base64; current import accepts only the exact current version.
 
-Offline time returned by load is processed through the production catch-up path and capped at eight hours.
+Offline time returned by load is capped at eight hours, but production boot currently ignores the returned elapsed value. In-session scheduler/visibility gaps use the separate production catch-up accumulator.
 
 ## Dependency rules
 
@@ -123,7 +145,7 @@ Offline time returned by load is processed through the production catch-up path 
 - The composition root may wire modules, but domain automation should not import calculations from `main.js`.
 - A cycle suppression is a temporary marker, not permission to expand the cycle.
 
-Current exceptions are documented in the stabilization audit: Timeline → UI, playtestBot ↔ main composition, and broad Viewport/stellar UI suppressions.
+Current exceptions are documented in the stabilization audit: Timeline → UI and broad Viewport/stellar UI suppressions. S2 removed the playtestBot → main composition dependency.
 
 ## Common failure modes
 

@@ -1,4 +1,3 @@
-/* eslint-disable import/no-cycle */
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, t, i18n } from './config/registry.js';
 import { triggerGalacticIgnition, triggerSupernova } from './core/actions.js';
 import { updateStatsData, recalcTempMultiplier } from './core/economy.js';

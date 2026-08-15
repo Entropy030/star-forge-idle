@@ -2,7 +2,7 @@
 
 ## Current behavior
 
-Snapshot at `d400a95`: 41 Vitest files and 209 executed tests. The complete inventory and dispositions are in `P3_STABILIZATION_AUDIT.md`; treat this count as dated evidence rather than a permanent target.
+S2 snapshot on 2026-08-15: 43 Vitest files and 224 executed tests. The measured full command took 116.95 seconds wall time; the independently measured four-test `p2c_bot.test.js` suite took 108.46 seconds. The complete pre-S2 inventory and dispositions are in `P3_STABILIZATION_AUDIT.md`; treat counts and timings as dated evidence rather than permanent targets.
 
 Commands:
 
@@ -18,6 +18,8 @@ npm run build
 - `npm run typecheck` is a placeholder and is not a validation gate.
 
 Tests cover engine/commands, Era mechanics, simulation, transitions, state replacement, migrations/persistence, Codex/narrative, presentation/UI contracts, responsive source contracts, playtest isolation, long bot progression, compact live-value formatting boundaries, and stable live-node identity.
+
+`runtime_characterization.test.js` protects representative production-tick boundaries in Eras I–III plus simulated-duration scaling. `playtest_bot_authority.test.js` protects bot/domain parity at transition and upgrade-prerequisite boundaries. These fast tests are the S3 safety net; the long bot suite remains the end-to-end progression/strategy gate.
 
 ## Current GitHub Actions
 

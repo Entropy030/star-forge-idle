@@ -1,6 +1,6 @@
 # Star Forge Idle — Handover
 
-Last verified against `main` at `d400a95` plus the final P3 stabilization documentation pass (2026-08-15).
+Last verified against `main` during P3 Stabilization S2 (2026-08-15).
 
 ## Project and status
 
@@ -43,6 +43,8 @@ Important locations:
 - `src/core/persistence.js` — normal/playtest saves, load, import/export, corrupt-save quarantine.
 
 `src/app/runtime.js` and `src/app/loop.js` are not the production runtime. Engine systems are currently empty. Do not add gameplay there unless the runtime-consolidation work explicitly adopts that path.
+
+S2 characterized the current production boundary: `index.html` → `bootstrap.js` → `main.js`; a 100 ms scheduler calls `gameTick()` while an independent dirty-checked RAF renders. Era I pre-simulation peak/narrative timing and post-simulation transition/objective/achievement timing are protected by `tests/runtime_characterization.test.js`. The alternative app runtime has no production/test imports and is not behaviorally equivalent.
 
 ## State contract
 
@@ -117,6 +119,8 @@ The UI speed buttons are 1×, 5×, and 25×. In the real scheduler, the multipli
 
 Large bot runs are balance/progression telemetry and should eventually move to a periodic/manual lane. They are not substitutes for focused regression tests or real-device playtesting.
 
+The bot owns strategy, not legality. Inflation, Fundamental Law, Recombination, plasma-upgrade, and Supernova decisions now consume domain eligibility APIs and successful command results. Its fixed-tick simulation still bypasses the cross-cutting parts of production `gameTick()`; do not treat bot telemetry as proof of narrative/objective/achievement equivalence.
+
 ## Persistence
 
 - Normal active key: `starForgeSave_v17` with fallbacks for older normal versions.
@@ -124,7 +128,7 @@ Large bot runs are balance/progression telemetry and should eventually move to a
 - Saves are `{ version, gameState, lastSavedTime }`, recursively serialized, JSON-stringified, then written.
 - `Decimal` and `Set` values are tagged by `src/state/serialization.js` and revived on load.
 - Normal loads migrate supported older versions, then replace/normalize runtime state.
-- Offline elapsed time is capped at eight hours and processed by the production catch-up path.
+- `loadGame()` reports offline elapsed time capped at eight hours, but current boot does not consume that return value; only in-session scheduler/visibility gaps enter production catch-up.
 - Corrupt active saves are copied to a timestamped quarantine key before the active key is removed.
 - Export copies base64-encoded serialized JSON to the clipboard.
 - Import currently accepts only the exact current save version; unlike normal load, it does not migrate older exports.
@@ -143,7 +147,7 @@ P1 pre-P4:
 
 - production `main.js`/`gameTick` runtime diverges from unused `app/runtime.js`/engine loop;
 - `Timeline`/`gameTick` mix simulation, progression, narrative, missions/achievements, and UI side effects;
-- bot/dev `getAIState()` duplicates eligibility and can disagree on Inflation readiness;
+- manual dev `getAIState()` and the unused `core/botActions.js` compatibility copy still expose simplified telemetry flags, but the active playtest bot no longer consumes them;
 - later-era scaffolding overloads `state.coherence` with concepts unrelated to Era I Vacuum Coherence.
 
 P2:
@@ -155,11 +159,20 @@ P2:
 
 ## Before P4
 
-1. Characterize current tick ordering and make bot/telemetry consume authoritative eligibility.
-2. Consolidate one runtime and separate pure simulation/progression from presentation side effects without changing balance.
+1. **S2 complete:** production tick ordering is characterized and the active playtest bot consumes authoritative eligibility.
+2. **Next — S3:** keep the production `main.js`/`gameTick` path, remove the unreferenced alternative `app/runtime.js`/`app/loop.js` path after final reference verification, then separate the smallest browser-side boundaries from simulation/progression without changing order or balance.
 3. Decide how later eras represent stability/temperature/entropy instead of extending overloaded Coherence semantics.
 4. Consolidate milestone/hotfix tests into durable domains and introduce proportionate fast/full/periodic CI lanes.
 5. Harden browser persistence/import coverage and automate the current manual geometry/accessibility matrix.
 6. Re-run all eight presets, save/load/import/export cases, bot progression, lint, tests, build, and real-device smoke before P4 implementation.
 
 Full evidence and follow-up boundaries are in [docs/P3_STABILIZATION_AUDIT.md](docs/P3_STABILIZATION_AUDIT.md).
+
+### Smallest safe S3 decomposition
+
+1. Preserve the S2 Era I–III characterization and bot parity tests as the equivalence gate.
+2. Confirm no build, test, or dynamic import reaches `src/app/runtime.js` or `src/app/loop.js`; delete only those unused alternatives.
+3. Extract narrative/Chrono browser writes behind emitted results while preserving their pre-simulation Era I timing.
+4. Extract achievement browser events after simulation while leaving state mutation and mission ordering unchanged.
+5. Decide one explicit headless/production tick entry point; do not register engine systems while `main.js` still owns simulation.
+6. Re-run save/offline fixtures, all presets, deterministic Era traces, the full bot suite, and browser smoke after each boundary.

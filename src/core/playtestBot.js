@@ -1,14 +1,15 @@
-/* eslint-disable import/no-cycle */
 import { getQuantumFluctuationRate } from './economy.js';
 import { engine } from '../engine/instance.js';
 import { isDirty, setIsDirty } from './state.js';
 import { Economy, getAmount } from './economy.js';
 import { Timeline } from './timeline.js';
 import { Viewport } from '../ui/viewport.js';
-import { getAIState } from '../main.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import { format } from '../ui/viewport.js';
 /* global Decimal */
+import { getInflationEligibility } from '../eras/quantum/inflation.js';
+import { getQuantumUpgradeEligibility } from '../eras/quantum/eligibility.js';
+import { getPlasmaUpgradeEligibility, getRecombinationEligibility } from '../eras/plasma/eligibility.js';
 import { getSupernovaEligibility, getSupernovaOutcome, getStellarRates } from '../eras/stellar/selectors.js';
 
 class PlaytestEngine {
@@ -127,16 +128,16 @@ class PlaytestEngine {
     }
 
     if (epoch === 1) {
-      if (this.getResAmount('quantumFluctuations', state).gte(COSMIC_REGISTRY.constants.inflationThreshold)) {
-        this.logMilestone("Era I Complete (Cosmic Inflation Ready)");
-        engine.dispatch({ type: 'TRIGGER_INFLATION' });
+      if (getInflationEligibility(state).isEligible) {
+        const result = engine.dispatch({ type: 'TRIGGER_INFLATION' });
+        if (result?.ok) this.logMilestone("Era I Complete (Cosmic Inflation Ready)");
         return;
       }
       this.handleEra1Upgrades(state);
     } else if (epoch === 2) {
-      if (this.getResAmount('protons', state).gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold) || (state.plasmaTemperature && state.plasmaTemperature.lte(3000))) {
-        this.logMilestone("Era II Complete (Recombination Ready)");
-        engine.dispatch({ type: 'TRIGGER_RECOMBINATION' });
+      if (getRecombinationEligibility(state).isEligible) {
+        const result = engine.dispatch({ type: 'TRIGGER_RECOMBINATION' });
+        if (result?.ok) this.logMilestone("Era II Complete (Recombination Ready)");
         return;
       }
       this.handleEra2Upgrades(state);
@@ -173,20 +174,18 @@ class PlaytestEngine {
     for (let key of priorityKeys) {
       const upState = state.upgrades?.quantum?.[key];
       const def = COSMIC_REGISTRY.upgrades.quantum[key];
-      
-      // Assume getQuantumUpgradeEligibility can be verified if it exists
-      if (typeof window !== 'undefined' && window.getQuantumUpgradeEligibility) {
-        if (!window.getQuantumUpgradeEligibility(state, key).unlocked) continue;
-      }
+      if (!getQuantumUpgradeEligibility(state, key).unlocked) continue;
 
       if (upState && def) {
         const currencyKey = Economy.resolveCurrencyKey('quantum', key, def);
         const balance = this.getResAmount(currencyKey, state);
         if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
-          engine.dispatch({ type: this.getCommandType('quantum'), payload: { category: 'quantum', upgradeId: key } });
-          this.stats.totalUpgradesBought++;
+          const previousLevel = upState.level;
+          const result = engine.dispatch({ type: this.getCommandType('quantum'), payload: { category: 'quantum', upgradeId: key } });
+          if (!result?.ok) continue;
+          this.stats.totalUpgradesBought += result.events?.[0]?.boughtCount || 1;
           
-          if (upState.level === 0) {
+          if (previousLevel === 0) {
             this.logMilestone(`Unlocked ${def.name}`);
           }
           break;
@@ -204,22 +203,24 @@ class PlaytestEngine {
       const def = COSMIC_REGISTRY.upgrades.plasma.quarkCondenser;
       const balance = upState && def ? this.getResAmount(Economy.resolveCurrencyKey('plasma', 'quarkCondenser', def), state) : new Decimal(0);
       
-      if (upState && balance.gte(upState.cost)) {
-        engine.dispatch({ type: this.getCommandType('plasma'), payload: { category: 'plasma', upgradeId: 'quarkCondenser' } });
-        this.stats.totalUpgradesBought++;
+      if (upState && getPlasmaUpgradeEligibility(state, 'quarkCondenser').unlocked && balance.gte(upState.cost)) {
+        const result = engine.dispatch({ type: this.getCommandType('plasma'), payload: { category: 'plasma', upgradeId: 'quarkCondenser' } });
+        if (result?.ok) this.stats.totalUpgradesBought += result.events?.[0]?.boughtCount || 1;
       }
     } else {
       const priorityKeys = ['quarkCondenser', 'baryoRadiator', 'gluonBinding', 'leptonHarvest', 'plasmaAutomation'];
       for (let key of priorityKeys) {
         const upState = state.upgrades?.plasma?.[key];
         const def = COSMIC_REGISTRY.upgrades.plasma[key];
-        if (upState && def) {
+        if (upState && def && getPlasmaUpgradeEligibility(state, key).unlocked) {
           const currencyKey = Economy.resolveCurrencyKey('plasma', key, def);
           const balance = this.getResAmount(currencyKey, state);
           if (balance.gte(upState.cost) && (def.max === undefined || upState.level < def.max)) {
-            engine.dispatch({ type: this.getCommandType('plasma'), payload: { category: 'plasma', upgradeId: key } });
-            this.stats.totalUpgradesBought++;
-            break;
+            const result = engine.dispatch({ type: this.getCommandType('plasma'), payload: { category: 'plasma', upgradeId: key } });
+            if (result?.ok) {
+              this.stats.totalUpgradesBought += result.events?.[0]?.boughtCount || 1;
+              break;
+            }
           }
         }
       }
