@@ -23,7 +23,7 @@ Requires Node.js 22.13 or newer.
 6. [Architecture and state TDD](docs/03_TDD_Architecture_and_State.md) — runtime, state, mutation, simulation, and persistence boundaries.
 7. [Bot and telemetry TDD](docs/04_TDD_Bot_and_Telemetry.md) — presets, automation, timing, regression, and balance evidence.
 8. [UI/UX architecture TDD](docs/06_TDD_UI_UX_Architecture.md) — surface ownership and rendering contracts.
-9. [Testing and CI](docs/07_TESTING_AND_CI.md) — current validation and recommended lanes.
+9. [Testing and CI](docs/07_TESTING_AND_CI.md) — current validation commands, lanes, coverage, and CI triggers.
 10. [Documentation policy](docs/DOCUMENTATION_POLICY.md) — lightweight source-of-truth rules.
 
 Focused references:
@@ -36,5 +36,9 @@ Focused references:
 ```bash
 npm run lint
 npm run test
+npm run test:fast
+npm run test:telemetry
 npm run build
 ```
+
+`npm test` is the full correctness gate. Use `test:fast` for rapid local feedback and `test:telemetry` only for the long strategy/balance simulations. See [Testing and CI](docs/07_TESTING_AND_CI.md) for lane definitions and CI triggers.

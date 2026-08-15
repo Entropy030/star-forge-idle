@@ -129,3 +129,11 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Why:** Production and headless execution must share Coherence, narrative, Timeline, objective, achievement, and mission ordering without coupling domain code to DOM APIs.
 
 **Consequences:** `Timeline` owns chunked Era simulation only. Narrative and achievement facts use an optional effect sink consumed by `src/ui/runtimeEffects.js`. Callers must not combine `advanceGameTick()` with separate `engine.tick()` or `Timeline.process()` advancement.
+
+## D17 — Correctness and telemetry use separate validation lanes
+
+**Decision:** FAST and FULL protect durable correctness contracts; TELEMETRY owns multi-million-tick strategy and balance simulations. `npm test` maps to FULL, while long simulations run weekly or manually and do not gate routine PRs or deployment.
+
+**Why:** Test count and simulated duration are not quality targets. Fast feedback should retain all correctness coverage without making exploratory pacing evidence a multi-minute merge gate.
+
+**Consequences:** Bot correctness uses bounded authoritative ticks and real commands. Long profiles remain easy to run, use test-only seeded randomness, and surface strategy/balance drift for investigation. Any correctness-critical long assertion must gain bounded FULL coverage before it can leave the telemetry lane.

@@ -1,85 +1,83 @@
 # Testing and CI
 
-## Current behavior
+## Current inventory
 
-S3 snapshot on 2026-08-15: 43 Vitest files and 227 executed tests. Shared-tick processing makes the long bot suite more expensive because it now includes production Coherence/objective/achievement/mission work. The complete pre-S2 inventory and dispositions are in `P3_STABILIZATION_AUDIT.md`; treat counts and timings as dated evidence rather than permanent targets.
+S4 snapshot on 2026-08-15:
 
-Commands:
+| Lane | Files | Tests | Measured local wall time | Purpose |
+|---|---:|---:|---:|---|
+| FAST | 43 | 225 | 4.03 s | Durable correctness and regression feedback |
+| FULL | 43 | 225 | 4.08 s | FAST plus repository hygiene; main/release correctness |
+| TELEMETRY | 1 | 3 | 152.15 s | Long-run strategy viability and balance signals |
+| All unique tests | 44 | 228 | — | Union of correctness and telemetry coverage |
+
+The pre-S4 default suite had 43 files and 227 tests and most recently took 158.60 s. `p2c_bot.test.js` alone took 156.42 s. Counts and timings are dated evidence, not quality targets.
+
+## Commands and lanes
+
+### FAST
 
 ```bash
-npm run lint
-npm run test
-npm run build
+npm run test:fast
 ```
 
-- Lint runs ESLint over `src/`.
-- Test runs repository hygiene first, then the complete Vitest suite.
-- Build creates the Vite production bundle/PWA output in `dist/`.
-- `npm run typecheck` is a placeholder and is not a validation gate.
+Runs unit, state/runtime, Era mechanics, commands, UI/DOM contracts, persistence, runtime characterization, bot authority, and the bounded bot smoke. It excludes only `tests/simulation/bot_longrun.test.js`.
 
-Tests cover engine/commands, Era mechanics, simulation, transitions, state replacement, migrations/persistence, Codex/narrative, presentation/UI contracts, responsive source contracts, playtest isolation, long bot progression, compact live-value formatting boundaries, and stable live-node identity.
+Use FAST while developing and on pull requests. It intentionally does not repeat repository hygiene, because CI runs that check as its own PR step.
 
-`runtime_characterization.test.js` protects representative production-tick boundaries in Eras I–III, simulated-duration scaling, headless-safe achievement mutation/effects, and once-only pre-production narrative effects. `playtest_bot_authority.test.js` protects bot/domain parity, including exactly one authoritative simulation advancement before each strategy action. The long bot suite remains the end-to-end progression/strategy gate.
+### FULL
 
-## Current GitHub Actions
+```bash
+npm run test:full
+```
 
-`.github/workflows/deploy-pages.yml` triggers on:
+Runs repository hygiene and the complete correctness suite. FULL currently discovers the same Vitest files as FAST because every non-telemetry contract is already inexpensive. The separate name communicates release intent without inventing an artificial slow correctness group.
 
-- push to `main`;
-- manual workflow dispatch.
+`npm test` and `npm run test:run` both map to FULL. This preserves the unsurprising convention that the default test command is the required local correctness gate.
 
-It uses checkout, Node 22 with npm caching, `npm ci`, lint, the full test suite, and build. The Pages artifact is uploaded only after validation. A separate deploy job depends on that job, so failed validation prevents deployment.
+### TELEMETRY
 
-There is no pull-request workflow and no fast/full/periodic split. Every successful `main` push deploys.
+```bash
+npm run test:telemetry
+```
 
-## Test quality contract
+Runs the efficient, massive, and compact multi-million-tick profiles in `tests/simulation/bot_longrun.test.js`. These protect long-run strategy viability, Supernova outcome/reward parity, and second-run Legacy behavior. A test-only seeded `Math.random` implementation makes gameplay telemetry reproducible without changing production randomness.
 
-Every durable test should answer: **What permanent behavior does this protect?**
+Telemetry failures are visible balance/strategy signals requiring investigation. They do not block routine pull requests or deployment. If a long-run assertion becomes a correctness requirement, first add or move a bounded contract into FULL.
 
-Prefer:
+## Test domains and coverage
 
-- domain names over milestone/hotfix names;
-- public command/selector/presentation behavior over implementation text;
-- one shared fixture/builder per domain over copied setup;
-- bounded deterministic ticks over large arbitrary limits;
-- browser assertions for actual layout/storage/accessibility behavior.
+Test count is not a quality target. Every durable test must protect an observable gameplay, runtime, UI, persistence, or architectural contract.
 
-Do not delete a historical regression until its durable behavior is covered elsewhere.
+- **Runtime/state:** canonical state replacement, engine identity, authoritative tick ordering, simulated-time semantics, bootstrap and DOM initialization.
+- **Era I:** commands, Fundamental Law eligibility, Vacuum Coherence, Inflation and pre-production narrative timing.
+- **Era II:** commands, production/synthesis, cooling, progressive disclosure and Recombination.
+- **Era III:** stellar simulation, temperature/fusion, Supernova eligibility/outcomes/rewards, Galactic Ignition and repeat-run Legacy behavior.
+- **UI:** Cosmos, Forge, resources, navigation, state truth, stable live-value nodes, responsive/mobile, reduced motion and semantic controls.
+- **Persistence:** serialization, migration, import failure safety, playtest isolation and corrupt-save quarantine.
+- **Bot:** legality and exactly-once tick authority in FAST; bounded reset/Legacy smoke in FAST; long-run strategy and pacing in TELEMETRY.
 
-## Recommended future lanes (not implemented)
+Known high-value boundaries intentionally have overlapping protection: state replacement, Inflation, Recombination, Supernova reward parity, Galactic Ignition, and stable live-value DOM identity. The tests cover different command, runtime, presentation, or historical-regression contracts and were not merged merely because they touch the same feature.
 
-### Fast CI — every PR/push
+Milestone/hotfix filenames were renamed to durable domain names during S4. No existing behavior test was deleted.
 
-- lint and repository hygiene;
-- production build;
-- engine/state/economy/era command and selector tests;
-- migrations and focused persistence tests;
-- mutation-free presentation contracts;
-- bounded DOM/smoke integration.
+## Structural source guards
 
-Target: quick feedback with no multi-million-tick simulation.
+Some inexpensive tests intentionally inspect source/HTML/CSS structure. They protect bootstrap import order, raw-HTML safe defaults, navigation destination limits, safe-area CSS, reduced-motion rules and scrolling contracts. These remain structural guards where jsdom cannot provide trustworthy browser geometry or where an observable browser test would be disproportionately expensive.
 
-### Full CI — main/release
+Real-browser storage, clipboard, accessibility interaction, service-worker and geometry/CLS automation remain S5 work.
 
-- all fast checks;
-- complete domain/UI integration suite;
-- bounded end-to-end playtest path;
-- build artifact verification.
+## GitHub Actions
 
-### Periodic/manual
+`.github/workflows/deploy-pages.yml` provides:
 
-- large playtest-bot runs;
-- balance/build matrices and telemetry sweeps;
-- multi-browser/device/responsive checks;
-- extended save-fixture/offline scenarios.
+- pull requests to `main`: install, repository hygiene, lint, FAST, build; never deploy;
+- pushes to `main`: install, lint, FULL, build, Pages artifact, then dependent deployment;
+- manual dispatch: the same FULL-gated build and deployment path.
 
-## Planned test cleanup
+Validation has `contents: read`. Only the deploy job receives `pages: write` and `id-token: write`.
 
-1. Inventory durable assertions before moving files.
-2. Merge `followup`/`hotfix`/milestone files into Era, persistence, navigation, Cosmos, Forge, and responsive-accessibility suites.
-3. Replace source/CSS regex tests with observable DOM or browser behavior where practical.
-4. Move the large bot suite out of the fast lane while retaining a bounded progression smoke test.
-5. Compare test discovery/counts before and after reorganization.
+`.github/workflows/telemetry.yml` runs TELEMETRY weekly on Sunday and through manual dispatch. Its failure does not gate the PR/Main deployment workflow.
 
 ## Required manual checks for P3 closure
 

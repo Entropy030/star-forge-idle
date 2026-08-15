@@ -1,6 +1,6 @@
 # Star Forge Idle — Handover
 
-Last verified against `main` during P3 Stabilization S3 (2026-08-15).
+Last verified against `main` during P3 Stabilization S4 (2026-08-15).
 
 ## Project and status
 
@@ -91,10 +91,12 @@ npm install
 npm run dev
 npm run lint
 npm run test
+npm run test:fast
+npm run test:telemetry
 npm run build
 ```
 
-`npm run test` first runs `scripts/check-repo-hygiene.mjs`, then the Vitest suite. `npm run typecheck` is currently a placeholder and provides no type safety.
+`npm run test` maps to `test:full`: repository hygiene plus all 225 correctness tests. `test:fast` runs the same inexpensive Vitest correctness contracts without repeating hygiene. `test:telemetry` separately runs three multi-million-tick bot profiles. `npm run typecheck` is currently a placeholder and provides no type safety.
 
 ## Playtest
 
@@ -120,7 +122,7 @@ The UI speed buttons are 1×, 5×, and 25×. In the real scheduler, the multipli
 - headless/fixed-tick runs advance explicit logical time for deterministic regression/progression checks;
 - auto-playtest uses wall-clock timers and batches more logical ticks at higher requested speed, so it is not a timing benchmark.
 
-Large bot runs are balance/progression telemetry and should eventually move to a periodic/manual lane. They are not substitutes for focused regression tests or real-device playtesting.
+Large bot runs are balance/progression telemetry in the periodic/manual lane. They are not substitutes for the bounded bot correctness smoke or real-device playtesting.
 
 The bot owns strategy, not legality. Inflation, Fundamental Law, Recombination, plasma-upgrade, and Supernova decisions consume domain eligibility APIs and successful command results. Its fixed ticks now use `advanceGameTick()` exactly once, so domain simulation/progression matches production; browser effects remain intentionally absent in headless runs.
 
@@ -140,9 +142,7 @@ The historical literal `[object Object]` write failure is prevented by current k
 
 ## Deployment
 
-`.github/workflows/deploy-pages.yml` runs on pushes to `main` and manual dispatch. It uses Node 22, `npm ci`, lint, all tests, and the production build. Only the dependent deploy job uploads to GitHub Pages, so validation gates deployment correctly.
-
-There is currently no pull-request workflow or fast/full/periodic split. Every successful `main` push is a deployment.
+`.github/workflows/deploy-pages.yml` validates pull requests to `main` with hygiene, lint, FAST and build, without deployment. Pushes to `main` and manual dispatch run FULL plus build; the dependent Pages job deploys only after success. `.github/workflows/telemetry.yml` runs the long bot profiles weekly or manually and does not block routine PRs or deployment.
 
 ## Known technical debt
 
@@ -154,16 +154,15 @@ P1 pre-P4:
 P2:
 
 - the `Viewport` ↔ `ui/stellar.js` presentation cycle still has scoped suppressions;
-- milestone-named and source-regex tests need durable organization/behavioral replacement;
-- no PR validation or test lanes;
+- remaining source/regex structural guards need eventual real-browser counterparts where geometry or interaction matters;
 - large composition modules and incomplete real-browser persistence/accessibility coverage.
 
 ## Before P4
 
 1. **S2 complete:** production tick ordering and gameplay eligibility are characterized.
 2. **S3 complete:** one authoritative production/headless tick exists; dead runtimes are removed; browser effects are injected outside simulation ownership.
-3. **Next — S4:** consolidate durable tests and introduce proportionate fast/full/periodic CI lanes without losing coverage.
-4. **S5:** harden browser persistence/import/offline behavior; boot still does not consume returned offline elapsed time.
+3. **S4 complete:** durable test naming, bounded bot correctness, long-run telemetry, PR validation and proportionate FAST/FULL/TELEMETRY lanes are established.
+4. **Next — S5:** harden browser persistence/import/offline behavior; boot still does not consume returned offline elapsed time.
 5. Decide how later eras represent stability/temperature/entropy instead of extending overloaded Coherence semantics.
 6. Re-run all eight presets, save/load/import/export cases, bot progression, lint, tests, build, and real-device smoke before P4 implementation.
 

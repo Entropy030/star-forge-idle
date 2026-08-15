@@ -110,13 +110,11 @@ Always record the preset/initial state, bot profile, tick rate, logical time, wa
 
 ## Test placement
 
-- Focused command, selector, transition, and preset agreement tests belong in fast/full regression suites.
-- One bounded end-to-end bot path may remain in full CI.
-- Multi-million-tick playthroughs, build matrices, and balance sweeps belong in periodic/manual telemetry.
+- Focused command, selector, transition, preset agreement, bot-authority and bounded bot-smoke tests belong in FAST/FULL.
+- `tests/bot_smoke.test.js` starts near Supernova readiness and uses real authoritative ticks, bot decisions and commands through reward grant, reset and the second-run Legacy checkpoint. It also protects bounded `MAX_TICKS_EXCEEDED` failure.
+- `tests/simulation/bot_longrun.test.js` retains the efficient, massive and compact multi-million-tick profiles for periodic/manual TELEMETRY.
 
-The current repository still runs all bot tests in the one full suite. See `docs/07_TESTING_AND_CI.md` for current and recommended lanes.
-
-The large `p2c_bot.test.js` suite verifies that three stellar architecture strategies complete a full first Supernova, grant the predicted rewards, enter a second stellar run with legacy modifiers, and fail cleanly under an insufficient tick budget. This overlaps focused command/outcome tests but uniquely protects long-run strategy viability. It is deterministic enough for a correctness gate at a fixed state/policy, although random stellar flare/auto behavior and balance-policy changes can affect runtime. S4 should retain a small bounded transition/reward smoke in normal CI and move the three expensive balance profiles to periodic/manual telemetry.
+The long profiles use a seeded test-only `Math.random` replacement so a given test seed produces repeatable gameplay telemetry. Production stellar randomness is unchanged. See `docs/07_TESTING_AND_CI.md` for commands, triggers and measured runtimes.
 
 ## Failure handling
 
