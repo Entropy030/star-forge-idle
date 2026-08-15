@@ -9,6 +9,7 @@ import { COSMIC_REGISTRY } from '../config/registry.js';
 import { dispatchEngineCommand } from '../engine/dispatch.js';
 import { getQuantumUpgradeEligibility } from '../eras/quantum/eligibility.js';
 import { getEntropyBitProductionMultiplier } from '../eras/galactic/selectors.js';
+import { appendHistoryEntry } from '../state/history.js';
 export function updateStatsData() {
   if (gameState.era3 && gameState.era3.temperature.gt(gameState.stats.maxTemp)) {
     gameState.stats.maxTemp = gameState.era3.temperature;
@@ -455,7 +456,7 @@ export const Economy = {
           if (!gameState.flags.carbonUnlocked) {
             gameState.flags.carbonUnlocked = true;
             gameState.era3.carbonYield = new Decimal(1);
-            gameState.history.push({ time: gameState.totalGameTime, msg: "Nucleosynthesis Unlocked: Generating Carbon!", type: 'milestone' });
+            appendHistoryEntry(gameState, { msg: "Nucleosynthesis Unlocked: Generating Carbon!" });
           } else {
             gameState.era3.carbonYield = gameState.era3.carbonYield.plus(1);
             gameState.era3.carbonCostCarbon = gameState.era3.carbonCostCarbon.times(2.5).round();
@@ -471,7 +472,7 @@ export const Economy = {
           if (!gameState.flags.ironUnlocked) {
             gameState.flags.ironUnlocked = true;
             gameState.era3.ironYield = new Decimal(1);
-            gameState.history.push({ time: gameState.totalGameTime, msg: "Heavy Nucleosynthesis: Synthesizing Iron!", type: 'milestone' });
+            appendHistoryEntry(gameState, { msg: "Heavy Nucleosynthesis: Synthesizing Iron!" });
           } else {
             gameState.era3.ironYield = gameState.era3.ironYield.plus(1);
             gameState.era3.ironCostIron = gameState.era3.ironCostIron.times(2.5).round();

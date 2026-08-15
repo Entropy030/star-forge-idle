@@ -67,6 +67,7 @@ export function createInitialState() {
     activeEpoch: 1,
     inflatonMultiplier: new Decimal(1),
     cosmicAge: new Decimal(0),
+    history: [],
     plasmaTemperature: new Decimal(10000000),
     eraITemperature: new Decimal(COSMIC_REGISTRY.constants.eraIStartingTemp),
     resources: {

@@ -13,6 +13,9 @@ export const ensureStateShape = function(gameState) {
     system: 'settings'
   };
   gameState.activeTab = legacyViewAliases[gameState.activeTab] || gameState.activeTab || 'core';
+  if (!Array.isArray(gameState.history)) {
+    gameState.history = [];
+  }
   if (!Array.isArray(gameState.completedObjectives)) {
     gameState.completedObjectives = [];
   }

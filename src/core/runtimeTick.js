@@ -5,6 +5,7 @@ import { Timeline } from './timeline.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import { getVacuumCoherence, getVacuumCoherenceRates, setVacuumCoherence } from '../eras/quantum/coherence.js';
 import { updateObjectiveProgress } from './objectives.js';
+import { appendHistoryEntry } from '../state/history.js';
 
 export function advanceGameTick(dt, effectSink) {
   const effects = [];
@@ -37,8 +38,7 @@ export function advanceGameTick(dt, effectSink) {
     const recordNarrativeMilestone = (id, message) => {
       if (!gameState.discoveries.has(id)) {
         gameState.discoveries.add(id);
-        if (!gameState.history) gameState.history = [];
-        gameState.history.push({ time: gameState.totalGameTime, msg: message, type: 'milestone', id });
+        appendHistoryEntry(gameState, { msg: message, id });
         emitEffect({ type: 'NARRATIVE_MILESTONE', id, message });
       }
     };

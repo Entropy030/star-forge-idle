@@ -3,19 +3,15 @@ import { engine } from '../engine/instance.js';
 import { getStardustYield, getPulsarShardYield, getSingularityMassYield, getGalacticMergeYield } from './economy.js';
 
 import { COSMIC_REGISTRY } from '../config/registry.js';
+import { appendHistoryEntry } from '../state/history.js';
 
 export function triggerSupernova() {
   const result = engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
   if (result.ok) {
     const snEvent = result.events.find(ev => ev.type === 'SUPERNOVA_TRIGGERED');
     if (snEvent) {
-      if (!Array.isArray(gameState.history)) gameState.history = [];
       const stardustYield = snEvent.rewards?.stardust ?? snEvent.yieldAmt;
-      gameState.history.push({
-        time: gameState.totalGameTime ?? gameState.cosmicAge,
-        msg: `Supernova Yield: ${stardustYield} Stardust`,
-        type: 'milestone'
-      });
+      appendHistoryEntry(gameState, { msg: `Supernova Yield: ${stardustYield} Stardust` });
     }
   }
   return result;
@@ -30,7 +26,7 @@ export function triggerBigBounce() {
   if (result.ok) {
     const snEvent = result.events.find(ev => ev.type === 'BIG_BOUNCE_TRIGGERED');
     if (snEvent) {
-       gameState.history.push({ time: gameState.totalGameTime, msg: `Big Bounce! Yield: ${snEvent.pulsarYield} Pulsar Shards, ${snEvent.bitsYield} Bits`, type: 'milestone' });
+       appendHistoryEntry(gameState, { msg: `Big Bounce! Yield: ${snEvent.pulsarYield} Pulsar Shards, ${snEvent.bitsYield} Bits` });
     }
   }
   return result;
@@ -41,7 +37,7 @@ export function triggerGalacticMerge() {
   if (result.ok) {
     const snEvent = result.events.find(ev => ev.type === 'GALACTIC_MERGE_TRIGGERED');
     if (snEvent) {
-       gameState.history.push({ time: gameState.totalGameTime, msg: `Merge complete! Yield: ${snEvent.yieldAmt} Singularity Mass`, type: 'milestone' });
+       appendHistoryEntry(gameState, { msg: `Merge complete! Yield: ${snEvent.yieldAmt} Singularity Mass` });
     }
   }
   return result;

@@ -20,6 +20,8 @@ import { CanvasCore } from './ui/canvasCore.js';
 import { engine } from './engine/instance.js';
 import { getActionFailureMessage, isActionSuccessful } from './ui/actionFeedback.js';
 import { getVacuumCoherence } from './eras/quantum/coherence.js';
+import { appendHistoryEntry } from './state/history.js';
+import { devSetEpoch } from './dev/epoch.js';
 
 // Re-export or attach globals needed by inline HTML (like onclick)
 const Haptics = {
@@ -83,11 +85,11 @@ if (typeof Decimal !== 'undefined') {
 function checkAchievements() {
   if (gameState.resources.iron.amount.gte(1) && !gameState.achievements.firstIron.unlocked) {
     gameState.achievements.firstIron.unlocked = true;
-    gameState.history.push({ time: gameState.totalGameTime, msg: "Achievement Unlocked: Heavy Metal! (Neon Core Skin active)", type: 'milestone' });
+    appendHistoryEntry(gameState, { msg: "Achievement Unlocked: Heavy Metal! (Neon Core Skin active)" });
   }
   if (!gameState.achievements.firstBlackHole.unlocked && gameState.stats.firstBlackHoleTriggered) {
     gameState.achievements.firstBlackHole.unlocked = true;
-    gameState.history.push({ time: gameState.totalGameTime, msg: "Achievement Unlocked: Stellar Collapse!", type: 'milestone' });
+    appendHistoryEntry(gameState, { msg: "Achievement Unlocked: Stellar Collapse!" });
   }
 }
 
@@ -189,15 +191,6 @@ function devHeatCore() {
     gameState.era3.stage = "Main Sequence Star";
   }
   updateStatsData();
-}
-
-function devSetEpoch(epochNum, callback) {
-  if (COSMIC_REGISTRY.universeChronology.epochs[epochNum]) {
-    gameState.activeEpoch = epochNum;
-    document.body.setAttribute('data-epoch', epochNum);
-    if (callback) callback();
-    gameState.history.push({ time: gameState.totalGameTime, msg: `Timeline Shifted to ${COSMIC_REGISTRY.universeChronology.epochs[epochNum].name}`, type: 'milestone' });
-  }
 }
 
 // ==========================================================================
