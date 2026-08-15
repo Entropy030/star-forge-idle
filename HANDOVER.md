@@ -1,12 +1,12 @@
 # Star Forge Idle — Handover
 
-Last verified against `main` after P3.3C.1 and the P3 stabilization audit (2026-08-15).
+Last verified against `main` at `d400a95` plus the final P3 stabilization documentation pass (2026-08-15).
 
 ## Project and status
 
 Star Forge Idle is a browser incremental game in which the player observes and shapes a universe from quantum fluctuations through plasma, recombination, and stellar evolution.
 
-Current milestone: **P3 implementation complete; P3 NOT YET STABLE**.
+Current milestone: **P3 STABLE WITH DOCUMENTED DEBT**.
 
 Supported player journey:
 
@@ -16,7 +16,7 @@ Supported player journey:
 
 Era IV/V source and selected command tests exist as prototype/future scaffolding. They are not a supported P3 experience and are not permission to begin P4.
 
-Open release gate: real-device playtesting still shows live numeric values moving surrounding text/layout. See [the audit](docs/P3_STABILIZATION_AUDIT.md#unresolved-live-valuetext-jitter). This is P1 and blocks declaring P3 stable.
+The final live-metric jitter defect is closed. Its permanent engineering contract is documented below and in [the audit](docs/P3_STABILIZATION_AUDIT.md#resolved-live-data-layout-contract). The remaining P1 findings are extension-boundary work required before P4, not confirmed defects in the supported P3 journey.
 
 ## Architecture map
 
@@ -65,7 +65,17 @@ Information roles:
 - **Chrono:** short event context and meaning.
 - **Codex:** deeper explanation and reference.
 
-Navigation is progressively disclosed. Resources use Primary/Support/Details. Static copy and live numeric values should be separate DOM nodes, and stable copy should not be rewritten every tick. No toast notifications; feedback stays contextual.
+Navigation is progressively disclosed. Resources use Primary/Support/Details. No toast notifications; feedback stays contextual.
+
+Live-data layout is a permanent invariant:
+
+```text
+static semantic content → stable layout anchor
+live numeric content → bounded formatting → reserved geometry
+                     → persistent/keyed node → independent update
+```
+
+Static labels must not move across digit, suffix, percentage, readiness, or icon transitions. Separate spans and tabular numerals help, but reserved logical tracks and stable DOM identity provide the guarantee. New live metrics must preserve this contract at desktop and narrow mobile widths.
 
 ## Development
 
@@ -129,9 +139,8 @@ There is currently no pull-request workflow or fast/full/periodic split. Every s
 
 ## Known technical debt
 
-P1/release or pre-P4:
+P1 pre-P4:
 
-- unresolved live-value/text layout jitter;
 - production `main.js`/`gameTick` runtime diverges from unused `app/runtime.js`/engine loop;
 - `Timeline`/`gameTick` mix simulation, progression, narrative, missions/achievements, and UI side effects;
 - bot/dev `getAIState()` duplicates eligibility and can disagree on Inflation readiness;
@@ -146,10 +155,11 @@ P2:
 
 ## Before P4
 
-1. Close the P3 layout-jitter gate with instrumentation, a focused fix, browser/device coverage, and first-run playtesting.
-2. Characterize current tick ordering and make bot/telemetry consume authoritative eligibility.
-3. Consolidate one runtime and separate pure simulation/progression from presentation side effects without changing balance.
-4. Decide how later eras represent stability/temperature/entropy instead of extending overloaded Coherence semantics.
-5. Re-run all eight presets, save/load/import/export cases, bot progression, lint, tests, and build.
+1. Characterize current tick ordering and make bot/telemetry consume authoritative eligibility.
+2. Consolidate one runtime and separate pure simulation/progression from presentation side effects without changing balance.
+3. Decide how later eras represent stability/temperature/entropy instead of extending overloaded Coherence semantics.
+4. Consolidate milestone/hotfix tests into durable domains and introduce proportionate fast/full/periodic CI lanes.
+5. Harden browser persistence/import coverage and automate the current manual geometry/accessibility matrix.
+6. Re-run all eight presets, save/load/import/export cases, bot progression, lint, tests, build, and real-device smoke before P4 implementation.
 
 Full evidence and follow-up boundaries are in [docs/P3_STABILIZATION_AUDIT.md](docs/P3_STABILIZATION_AUDIT.md).

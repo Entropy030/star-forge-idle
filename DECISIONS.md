@@ -74,13 +74,13 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 
 **Consequences:** Meta currencies stay in Legacy; details remain available without dominating Cosmos.
 
-## D10 — Static copy and live data are separate
+## D10 — Live data cannot own static geometry
 
-**Decision:** Stable labels/instructions and changing values use separate DOM nodes and stable geometry where possible.
+**Decision:** Static semantic labels are stable layout anchors. Live values use separate persistent/keyed nodes, bounded compact formatting, and reserved logical geometry.
 
-**Why:** Rewriting combined strings creates stale-copy risk and contributes to layout jitter.
+**Why:** Tabular numerals or split spans alone do not stop intrinsic tracks, flex redistribution, centered composite strings, status widths, or icon changes from moving surrounding content.
 
-**Consequences:** Live updates must update all related fields together without rebuilding stable copy. This decision is not fully satisfied while the known jitter remains.
+**Consequences:** Live updates change their owned descendants without rebuilding stable rows/cards. Static anchors must remain fixed across `99 → 100`, `999 → 1,000`, `999,999 → 1.00M`, `99.9% → 100%`, `Locked → Ready`, and `○ → ✓`. New live surfaces require desktop and narrow-mobile geometry verification.
 
 ## D11 — Vacuum Coherence is an Era I concept
 

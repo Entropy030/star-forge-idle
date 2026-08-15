@@ -96,7 +96,7 @@ Do not move one mechanic at a time to the unused engine loop without proving equ
 
 `src/ui/viewport.js` orchestrates the current DOM and delegates to focused modules. It reads the authoritative state and mutation-free presentation models, then dispatches commands for actions.
 
-Rendering uses dirty-state updates and cached structures in several surfaces. Related live fields—title, instruction, progress, phase, transition status, and requirements—must update from one current snapshot. Stable copy and live values should remain distinct nodes. The known live-value jitter means this contract is not fully satisfied; see `docs/P3_STABILIZATION_AUDIT.md`.
+Rendering uses dirty-state updates and cached structures in several surfaces. Related live fields—title, instruction, progress, phase, transition status, and requirements—must update from one current snapshot. Static labels and live values have separate ownership; bounded formatting, reserved logical tracks, and persistent/keyed nodes keep changing values from moving semantic anchors. See `docs/06_TDD_UI_UX_Architecture.md` for the permanent layout contract and `docs/P3_STABILIZATION_AUDIT.md#resolved-live-data-layout-contract` for the resolved defect evidence.
 
 Detailed UI ownership lives in `docs/06_TDD_UI_UX_Architecture.md`.
 

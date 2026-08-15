@@ -26,4 +26,20 @@ Code, schemas, registries, eligibility selectors, and tests remain authoritative
 - Keep commands and file paths verifiable from the repository.
 - Avoid copying exact formulas across multiple documents; link to the owning code/module when precision matters.
 
+## Documentation impact check
+
+Before finishing meaningful development work, determine whether it changes:
+
+| Change | Update |
+| --- | --- |
+| Gameplay or progression | GDD |
+| Architecture, state, mutation, simulation, or persistence | Architecture/State TDD |
+| UI/UX ownership or rendering contracts | UI/UX TDD |
+| Playtest, bot, or telemetry behavior | Bot/Telemetry TDD |
+| Tests or CI | Testing and CI |
+| Settled product/architecture rationale | `DECISIONS.md` |
+| Current milestone, debt, or handover-critical operation | `HANDOVER.md` |
+
+A task is not complete if it materially changes a documented contract and leaves its authoritative documentation stale. If a change has no durable documentation impact, record `Documentation impact: none.` in the handoff rather than creating meaningless churn.
+
 The documentation index in `README.md` is the entry point and should remain valid.

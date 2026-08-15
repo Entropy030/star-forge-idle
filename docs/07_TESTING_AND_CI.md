@@ -2,7 +2,7 @@
 
 ## Current behavior
 
-The repository currently has 41 Vitest files and 208 executed tests. The complete inventory and dispositions are in `P3_STABILIZATION_AUDIT.md`.
+Snapshot at `d400a95`: 41 Vitest files and 209 executed tests. The complete inventory and dispositions are in `P3_STABILIZATION_AUDIT.md`; treat this count as dated evidence rather than a permanent target.
 
 Commands:
 
@@ -17,7 +17,7 @@ npm run build
 - Build creates the Vite production bundle/PWA output in `dist/`.
 - `npm run typecheck` is a placeholder and is not a validation gate.
 
-Tests cover engine/commands, Era mechanics, simulation, transitions, state replacement, migrations/persistence, Codex/narrative, presentation/UI contracts, responsive source contracts, playtest isolation, and long bot progression.
+Tests cover engine/commands, Era mechanics, simulation, transitions, state replacement, migrations/persistence, Codex/narrative, presentation/UI contracts, responsive source contracts, playtest isolation, long bot progression, compact live-value formatting boundaries, and stable live-node identity.
 
 ## Current GitHub Actions
 
@@ -88,4 +88,4 @@ Target: quick feedback with no multi-million-tick simulation.
 - Core interaction, Forge Buy 1/10/Max, Details, and all disclosed navigation.
 - Save/load/export/import and playtest restore.
 - Reduced motion, keyboard focus, no horizontal overflow, no console errors.
-- Real-device live-value stability; the known jitter must be absent.
+- Real-device live-value stability; static anchors must remain fixed across formatting/readiness/icon boundaries.

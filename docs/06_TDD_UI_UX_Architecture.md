@@ -42,21 +42,34 @@ Meta currencies belong in Legacy, not the always-visible current-run HUD. Resour
 
 Forge prioritizes the currently meaningful construction decision. Cards show name, level/state, cost, contribution/effect, and Buy 1/10/Max controls when supported. Locked cards remain compact but expose authoritative requirements. Actions dispatch commands; `forgePresentation` derives display data without mutation.
 
-## Live-data DOM contract
+## Live-data layout contract
 
-Stable copy and frequently changing values should be separate nodes. On an authoritative state change, related title, instruction, progress, phase, transition status, and requirements update from the same current snapshot.
+The final P3 invariant is:
 
-Avoid:
+```text
+STATIC SEMANTIC CONTENT
+  → stable layout anchor
 
-- interpolating live numbers into long static sentences;
-- rewriting whole `innerHTML`/`textContent` blocks every tick;
-- `replaceChildren()` when stable structure can be retained;
-- intrinsic/auto sizing that lets digit width move neighboring labels;
-- live copy that changes card height through wrapping.
+LIVE NUMERIC CONTENT
+  → bounded compact formatting
+  → reserved logical geometry
+  → persistent/keyed DOM node
+  → independent update
+```
 
-Use tabular numerals for changing metrics, but do not assume tabular digits alone prevent layout shift. Reserve geometry where values have predictable maximum width and measure actual layout shifts on target devices.
+On an authoritative state change, related title, instruction, progress, phase, transition status, and requirements update from the same snapshot, while unchanged semantic nodes retain identity.
 
-Known defect: P3 still has real-device live-value/text jitter. Candidate surfaces and investigation evidence are in `P3_STABILIZATION_AUDIT.md`. This contract is therefore not fully satisfied.
+Rules:
+
+1. Stable labels and frequently changing values have separate DOM ownership.
+2. Player-facing formatters bound values around suffix and digit thresholds.
+3. Header, status, rate, requirement, and comparison values occupy explicit logical tracks instead of intrinsic `auto` width.
+4. Renderers retain keyed cards/rows/labels and update live descendants. `replaceChildren()` is reserved for real identity/order changes.
+5. Icons/statuses reserve width so `○ → ✓` and `Locked → Ready` cannot move adjacent labels.
+6. Centered composite strings and `justify-content: flex-end`/`space-between` require special scrutiny because they can redistribute static content.
+7. Tabular numerals are supplementary; they are not the layout guarantee.
+
+The contract must hold across `99 → 100`, `999 → 1,000`, `999,999 → 1.00M`, `99.9% → 100%`, readiness changes, and supported unit suffixes. Tests protect formatting and DOM identity; browser/device checks protect actual geometry. Historical diagnosis and implementation evidence are in `P3_STABILIZATION_AUDIT.md#resolved-live-data-layout-contract`.
 
 ## Responsive and mobile
 
@@ -65,7 +78,7 @@ Known defect: P3 still has real-device live-value/text jitter. Candidate surface
 - Interactive controls target a minimum 44 px height/area where specified by current contracts.
 - All supported presets must avoid horizontal overflow at 390 × 844 and remain usable at desktop reference widths.
 
-Responsive behavior must be verified in a browser. CSS-token/source tests are guardrails, not proof of layout stability.
+Responsive behavior must be verified in a browser. CSS-token/source tests are guardrails, not proof of layout stability. New live metrics must be checked for stable anchors as well as overflow and clipping.
 
 ## Accessibility
 

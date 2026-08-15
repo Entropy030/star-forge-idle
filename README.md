@@ -2,7 +2,7 @@
 
 Star Forge Idle is a browser-based incremental game about guiding a universe from quantum emergence through stellar evolution. The supported P3 journey currently covers Eras I–III.
 
-P3 is feature-complete but **not yet stable**: real-device live-value/text layout jitter remains an open release-blocking UX defect. Do not begin Era IV work until the gates in [HANDOVER.md](HANDOVER.md) are closed.
+P3 is **stable with documented debt**. Eras I–III, their current UI architecture, persistence boundaries, and the live-data layout contract are the supported baseline. Do not begin Era IV work until the pre-P4 architecture boundaries in [HANDOVER.md](HANDOVER.md) are closed.
 
 ## Start here
 
