@@ -144,6 +144,57 @@ describe('P3.3B2 era-specific resource hierarchy', () => {
   });
 
   it('uses one compact formatting language with signed net rates', () => {
+    expect([
+      98,
+      99,
+      100,
+      101,
+      998,
+      999,
+      1000,
+      1001,
+      9998,
+      9999,
+      10000,
+      10001,
+      99998,
+      99999,
+      100000,
+      100001,
+      999998,
+      999999,
+      1000000,
+      1010000,
+      1000000000
+    ].map(value => formatHudNumber(new Decimal(value)))).toEqual([
+      '98',
+      '99',
+      '100',
+      '101',
+      '998',
+      '999',
+      '1,000',
+      '1,001',
+      '9,998',
+      '9,999',
+      '10,000',
+      '10,001',
+      '99,998',
+      '99,999',
+      '100,000',
+      '100,001',
+      '999,998',
+      '999,999',
+      '1.00M',
+      '1.01M',
+      '1.00B'
+    ]);
+    expect(formatHudValue(new Decimal(9.9), '%')).toBe('9.9%');
+    expect(formatHudValue(new Decimal(10), '%')).toBe('10%');
+    expect(formatHudValue(new Decimal(99.9), '%')).toBe('99.9%');
+    expect(formatHudValue(new Decimal(100), '%')).toBe('100%');
+    expect(formatHudValue(new Decimal(9999990), 'K')).toBe('10.00M K');
+    expect(formatHudValue(new Decimal(10000010), 'K')).toBe('10.00M K');
     expect(formatHudNumber(new Decimal(100000))).toBe('100,000');
     expect(formatHudNumber(new Decimal(1250000))).toBe('1.25M');
     expect(formatHudValue(new Decimal(50000000), 'K')).toBe('50.00M K');
@@ -167,5 +218,26 @@ describe('P3.3B2 era-specific resource hierarchy', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(document.querySelector('[data-resource-id="protons"] .resource-card-rate').textContent).toBe('+1/s');
     expect(document.querySelector('[data-resource-id="quarks"] .resource-card-rate').textContent).toBe('−3/s');
+  });
+
+  it('updates bounded live values without replacing static resource nodes', () => {
+    const container = installHud();
+    const presentation = getEraResourcePresentation(getPresetEraIIUpgradeChain());
+    renderResourceHud(container, presentation, { protons: new Decimal(998) });
+
+    const card = document.querySelector('[data-resource-id="protons"]');
+    const label = card.querySelector('.resource-card-label');
+    const value = card.querySelector('.resource-card-value');
+    const rate = card.querySelector('.resource-card-rate');
+
+    presentation.primary[0].value = new Decimal(1000000);
+    renderResourceHud(container, presentation, { protons: new Decimal(1000000) });
+
+    expect(document.querySelector('[data-resource-id="protons"]')).toBe(card);
+    expect(card.querySelector('.resource-card-label')).toBe(label);
+    expect(card.querySelector('.resource-card-value')).toBe(value);
+    expect(card.querySelector('.resource-card-rate')).toBe(rate);
+    expect(value.textContent).toBe('1.00M');
+    expect(rate.textContent).toBe('+1.00M/s');
   });
 });

@@ -25,6 +25,9 @@ describe('P3.3C.1 layout stability and narrative continuity', () => {
     renderCosmosExperience(document, getCosmosPresentation(state));
     const label = document.querySelector('.cosmos-check-label');
     const value = document.querySelector('.cosmos-check-value');
+    const current = value.querySelector('.metric-comparison-current');
+    const separator = value.querySelector('.metric-comparison-separator');
+    const target = value.querySelector('.metric-comparison-target');
     const originalValue = value.textContent;
 
     state.resources.quantumFluctuations.amount = state.resources.quantumFluctuations.amount.plus(1000);
@@ -32,6 +35,9 @@ describe('P3.3C.1 layout stability and narrative continuity', () => {
 
     expect(document.querySelector('.cosmos-check-label')).toBe(label);
     expect(document.querySelector('.cosmos-check-value')).toBe(value);
+    expect(value.querySelector('.metric-comparison-current')).toBe(current);
+    expect(value.querySelector('.metric-comparison-separator')).toBe(separator);
+    expect(value.querySelector('.metric-comparison-target')).toBe(target);
     expect(value.textContent).not.toBe(originalValue);
   });
 

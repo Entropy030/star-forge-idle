@@ -1,5 +1,16 @@
 import { formatHudRate, formatHudValue, getRateDirection } from './resourceFormatters.js';
 
+function setText(node, value) {
+  const text = String(value ?? '');
+  if (node.textContent !== text) node.textContent = text;
+}
+
+function syncChildren(container, children) {
+  const current = [...container.children];
+  if (current.length === children.length && current.every((child, index) => child === children[index])) return;
+  container.replaceChildren(...children);
+}
+
 function createResourceCard(documentRef, id) {
   const card = documentRef.createElement('article');
   card.className = 'resource-card';
@@ -24,19 +35,19 @@ function updateResourceCard(card, item, hierarchy, rates) {
   card.className = `resource-card resource-card--${hierarchy}`;
   const levelNode = card.querySelector('.resource-card-level');
   const levelText = hierarchy === 'primary' ? 'PRIMARY' : hierarchy === 'support' ? 'SUPPORT' : '';
-  if (levelNode.textContent !== levelText) levelNode.textContent = levelText;
+  setText(levelNode, levelText);
   const labelNode = card.querySelector('.resource-card-label');
-  if (labelNode.textContent !== item.label) labelNode.textContent = item.label;
-  card.querySelector('.resource-card-value').textContent = item.displayValue || formatHudValue(item.value, item.unit);
+  setText(labelNode, item.label);
+  setText(card.querySelector('.resource-card-value'), item.displayValue || formatHudValue(item.value, item.unit));
 
   const rateValue = rates[item.id];
   const rateNode = card.querySelector('.resource-card-rate');
-  rateNode.textContent = rateValue === undefined ? '' : formatHudRate(rateValue, item.unit);
+  setText(rateNode, rateValue === undefined ? '' : formatHudRate(rateValue, item.unit));
   rateNode.dataset.direction = rateValue === undefined ? 'idle' : getRateDirection(rateValue);
   rateNode.hidden = !rateNode.textContent;
 
   const hintNode = card.querySelector('.resource-card-hint');
-  hintNode.textContent = item.roleHint || item.status || '';
+  setText(hintNode, item.roleHint || item.status || '');
   hintNode.hidden = !hintNode.textContent;
 }
 
@@ -62,18 +73,30 @@ function renderMetaSummary(container, items) {
   summary.hidden = items.length === 0;
   if (items.length === 0) {
     summary.open = false;
-    list.replaceChildren();
+    syncChildren(list, []);
     return;
   }
 
-  label.textContent = `Legacy resources · ${items.length}`;
+  setText(label, `Legacy resources · ${items.length}`);
+  const existing = new Map([...list.children].map((row) => [row.dataset.resourceId, row]));
   const rows = items.map((item) => {
-    const row = container.ownerDocument.createElement('span');
+    const row = existing.get(item.id) || container.ownerDocument.createElement('span');
     row.className = 'meta-resource-row';
-    row.textContent = `${item.label} ${formatHudValue(item.value)}`;
+    row.dataset.resourceId = item.id;
+    let name = row.querySelector('.meta-resource-name');
+    let value = row.querySelector('.meta-resource-value');
+    if (!name || !value) {
+      name = container.ownerDocument.createElement('span');
+      name.className = 'meta-resource-name';
+      value = container.ownerDocument.createElement('span');
+      value.className = 'meta-resource-value';
+      row.replaceChildren(name, value);
+    }
+    setText(name, item.label);
+    setText(value, formatHudValue(item.value));
     return row;
   });
-  list.replaceChildren(...rows);
+  syncChildren(list, rows);
 }
 
 export function renderResourceHud(container, presentation, rates = {}) {
@@ -96,9 +119,9 @@ export function renderResourceHud(container, presentation, rates = {}) {
     return card;
   });
 
-  primaryRegion.replaceChildren(...cardsFor(presentation.primary, 'primary'));
-  supportRegion.replaceChildren(...cardsFor(presentation.support, 'support'));
-  detailsList.replaceChildren(...cardsFor(presentation.details, 'detail'));
+  syncChildren(primaryRegion, cardsFor(presentation.primary, 'primary'));
+  syncChildren(supportRegion, cardsFor(presentation.support, 'support'));
+  syncChildren(detailsList, cardsFor(presentation.details, 'detail'));
   supportRegion.hidden = presentation.support.length === 0;
 
   const hasDetails = presentation.details.length > 0;
@@ -107,7 +130,7 @@ export function renderResourceHud(container, presentation, rates = {}) {
     detailsButton.setAttribute('aria-expanded', 'false');
     detailsList.hidden = true;
   }
-  detailsButton.querySelector('span').textContent = `Details · ${presentation.details.length}`;
+  setText(detailsButton.querySelector('span'), `Details · ${presentation.details.length}`);
 
   renderMetaSummary(container, presentation.meta);
 }

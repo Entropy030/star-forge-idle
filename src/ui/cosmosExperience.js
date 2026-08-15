@@ -12,6 +12,27 @@ function setText(node, value) {
   if (node && node.textContent !== text) node.textContent = text;
 }
 
+function syncChildren(container, children) {
+  const current = [...container.children];
+  if (current.length === children.length && current.every((child, index) => child === children[index])) return;
+  container.replaceChildren(...children);
+}
+
+function updateComparisonValue(documentRef, value, current, comparison, target) {
+  let currentNode = value.querySelector('.metric-comparison-current');
+  let separatorNode = value.querySelector('.metric-comparison-separator');
+  let targetNode = value.querySelector('.metric-comparison-target');
+  if (!currentNode || !separatorNode || !targetNode) {
+    currentNode = textNode(documentRef, 'span', 'metric-comparison-current', '');
+    separatorNode = textNode(documentRef, 'span', 'metric-comparison-separator', '');
+    targetNode = textNode(documentRef, 'span', 'metric-comparison-target', '');
+    value.replaceChildren(currentNode, separatorNode, targetNode);
+  }
+  setText(currentNode, current);
+  setText(separatorNode, ` ${comparison} `);
+  setText(targetNode, target);
+}
+
 function renderChecks(documentRef, checks, mode, list = null) {
   if (!list) {
     list = documentRef.createElement('ul');
@@ -30,11 +51,17 @@ function renderChecks(documentRef, checks, mode, list = null) {
     setText(icon, check.met ? '✓' : '○');
     const label = row.querySelector('.cosmos-check-label') || textNode(documentRef, 'span', 'cosmos-check-label', check.label);
     const value = row.querySelector('.cosmos-check-value') || textNode(documentRef, 'span', 'cosmos-check-value', '');
-    setText(value, `${formatHudNumber(check.current)} ${comparison} ${formatHudValue(check.target, check.unit || '')}`);
+    updateComparisonValue(
+      documentRef,
+      value,
+      formatHudNumber(check.current),
+      comparison,
+      formatHudValue(check.target, check.unit || '')
+    );
     if (!row.hasChildNodes()) row.append(icon, label, value);
     rows.push(row);
   }
-  list.replaceChildren(...rows);
+  syncChildren(list, rows);
   return list;
 }
 
@@ -54,7 +81,7 @@ function renderProgress(documentRef, progress, wrapper = null) {
   fill.style.width = `${percent}%`;
   const label = wrapper.querySelector('.cosmos-progress-label') || textNode(documentRef, 'span', 'cosmos-progress-label', '');
   setText(label, progress.label);
-  wrapper.replaceChildren(fill, label);
+  syncChildren(wrapper, [fill, label]);
   return wrapper;
 }
 

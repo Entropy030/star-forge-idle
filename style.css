@@ -11,6 +11,12 @@
   --header-height: 140px;
   --nav-height: 70px;
   --bottom-nav-clearance: calc(var(--nav-height) + 34px + env(safe-area-inset-bottom, 0px));
+  --value-width-short: 8ch;
+  --value-width-medium: 13ch;
+  --value-width-rate: 14ch;
+  --value-width-progress: 20ch;
+  --value-width-status: 25ch;
+  --status-icon-width: 1.25em;
   
   --hydrogen-glow: #00d2ff;
   --helium-glow: #70a1ff;
@@ -772,8 +778,23 @@ pointer-events: none;
 }
 @keyframes deepRotation { to { transform: rotate(360deg); } }
 
-.temp-display { font-size: 1.35rem; color: var(--stardust-gold); font-weight: 700; letter-spacing: 0.5px; margin-top: 10px; font-family: monospace; }
-.mult-display { color: var(--neon-teal); font-size: 0.78rem; margin-top: 2px; font-weight: 700; font-family: monospace; }
+.temp-display,
+.mult-display {
+  width: min(100%, 360px);
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--value-width-medium);
+  align-items: baseline;
+  margin-right: auto;
+  margin-left: auto;
+  gap: 12px;
+  font-family: monospace;
+  font-weight: 700;
+  text-align: left;
+}
+.temp-display { margin-top: 10px; color: var(--stardust-gold); font-size: 1.35rem; letter-spacing: 0.5px; }
+.mult-display { margin-top: 2px; color: var(--neon-teal); font-size: 0.78rem; }
+.stellar-metric-value { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 .btn-toggle { 
 background: rgba(255, 76, 76, 0.15); 
@@ -2032,10 +2053,12 @@ body[data-tab="core"] .era-transition-shell {
 }
 
 .header-context {
+  width: min(100%, 40rem);
   min-width: 0;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(14rem, 1fr) 11rem 11rem;
   align-items: center;
-  justify-content: flex-end;
+  margin-left: auto;
   gap: 8px;
 }
 
@@ -2049,6 +2072,26 @@ body[data-tab="core"] .era-transition-shell {
   letter-spacing: 0.03em;
   white-space: nowrap;
 }
+
+.header-context .timeline-banner,
+.header-context .cosmic-phase-banner,
+.header-context .coherence-banner {
+  width: 100%;
+  box-sizing: border-box;
+  align-items: baseline;
+}
+
+.header-context .timeline-banner,
+.header-context .cosmic-phase-banner {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+}
+
+.header-context .coherence-banner {
+  grid-template-columns: minmax(0, 1fr) var(--value-width-short);
+}
+
+#coherence-display { text-align: right; }
 
 .context-label {
   margin-right: 5px;
@@ -2066,7 +2109,7 @@ body[data-tab="core"] .era-transition-shell {
 }
 
 body[data-epoch="1"][data-coherence-relevant="true"] .coherence-banner {
-  display: inline-flex;
+  display: grid;
 }
 
 main {
@@ -2286,6 +2329,8 @@ body:not([data-tab="core"]) .core-canvas {
   }
 
   .header-context {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 42vw);
     gap: 3px;
   }
 
@@ -2506,6 +2551,8 @@ body[data-tab="upgrades"] main {
 
 .forge-card-status {
   flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: var(--value-width-short) var(--value-width-status);
   gap: 6px;
 }
 
@@ -2518,6 +2565,15 @@ body[data-tab="upgrades"] main {
   font: 700 0.63rem 'Share Tech Mono', monospace;
   white-space: nowrap;
 }
+
+.forge-card-status .lvl-display,
+.forge-state-badge {
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.forge-card-status .lvl-display { width: var(--value-width-short); }
+.forge-state-badge { width: var(--value-width-status); }
 
 .forge-card[data-forge-state="affordable"] .forge-state-badge {
   border-color: rgba(0, 236, 198, 0.5);
@@ -2563,16 +2619,22 @@ body[data-tab="upgrades"] main {
 
 .forge-requirements-list li {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: var(--status-icon-width) minmax(0, 1fr) var(--value-width-progress);
   align-items: baseline;
   gap: 6px;
   text-align: left;
+}
+
+.forge-requirement-icon {
+  width: var(--status-icon-width);
+  text-align: center;
 }
 
 .forge-requirement-value {
   font-family: 'Share Tech Mono', monospace;
   font-variant-numeric: tabular-nums;
   text-align: right;
+  white-space: nowrap;
 }
 
 .requirement-met { color: #7bed9f; }
@@ -2675,7 +2737,7 @@ body[data-tab="upgrades"] main {
 
   .forge-card-status {
     align-items: flex-end;
-    flex-direction: column;
+    grid-template-columns: var(--value-width-short) var(--value-width-status);
   }
 
   .forge-card-action {
@@ -2708,7 +2770,7 @@ body[data-tab="upgrades"] main {
 }
 
 .resource-support-region {
-  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 8px;
 }
 
@@ -2725,7 +2787,7 @@ body[data-tab="upgrades"] main {
 
 .resource-card--primary {
   min-height: 76px;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) var(--value-width-rate);
   grid-template-areas:
     "level level"
     "label value"
@@ -2739,7 +2801,7 @@ body[data-tab="upgrades"] main {
 
 .resource-card--support {
   min-height: 58px;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) var(--value-width-rate);
   grid-template-areas:
     "level level"
     "label value"
@@ -2751,7 +2813,7 @@ body[data-tab="upgrades"] main {
 
 .resource-card--detail {
   min-height: 34px;
-  grid-template-columns: minmax(90px, 1fr) auto auto;
+  grid-template-columns: minmax(90px, 1fr) var(--value-width-medium) var(--value-width-rate);
   grid-template-areas: "label value rate";
   gap: 12px;
   padding: 6px 9px;
@@ -2893,8 +2955,14 @@ body[data-tab="upgrades"] main {
 }
 
 .meta-resource-row {
+  display: inline-grid;
+  grid-template-columns: max-content var(--value-width-medium);
+  align-items: baseline;
+  gap: 6px;
   color: #a9a3cb;
 }
+
+.meta-resource-value { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 @media (max-width: 600px) {
   .resource-hud {
@@ -2902,7 +2970,7 @@ body[data-tab="upgrades"] main {
   }
 
   .resource-support-region {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 6px;
     margin-top: 6px;
   }
@@ -2934,8 +3002,11 @@ body[data-tab="upgrades"] main {
   }
 
   .resource-card--detail {
-    grid-template-columns: minmax(80px, 1fr) auto auto;
-    gap: 8px;
+    grid-template-columns: minmax(80px, 1fr) var(--value-width-rate);
+    grid-template-areas:
+      "label value"
+      ". rate";
+    gap: 2px 8px;
   }
 }
 
@@ -3191,7 +3262,7 @@ body[data-epoch="5"] .legacy-era3-plus {
 
 .cosmos-status-heading {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) var(--value-width-medium);
   align-items: baseline;
   gap: 3px 10px;
 }
@@ -3234,7 +3305,7 @@ body[data-epoch="5"] .legacy-era3-plus {
 
 .cosmos-live-metric {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) var(--value-width-medium);
   gap: 12px;
   color: #9ba8ba;
   font-size: 0.72rem;
@@ -3260,8 +3331,12 @@ body[data-epoch="5"] .legacy-era3-plus {
 .cosmos-progress-label { position: relative; display: block; padding: 4px 8px; font-size: 0.7rem; font-variant-numeric: tabular-nums; }
 
 .cosmos-check-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 5px; }
-.cosmos-check { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; gap: 7px; padding: 6px 8px; border-radius: 5px; font-size: 0.75rem; text-align: left; background: rgba(255, 255, 255, 0.04); }
+.cosmos-check { display: grid; grid-template-columns: var(--status-icon-width) minmax(0, 1fr) var(--value-width-progress); align-items: baseline; gap: 7px; padding: 6px 8px; border-radius: 5px; font-size: 0.75rem; text-align: left; background: rgba(255, 255, 255, 0.04); }
+.cosmos-check-icon { width: var(--status-icon-width); text-align: center; }
 .cosmos-check-value { font-family: 'Share Tech Mono', monospace; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.metric-comparison-current,
+.metric-comparison-separator,
+.metric-comparison-target { display: inline-block; }
 .cosmos-check--met { color: #55efc4; }
 .cosmos-check--missing { color: #fab1a0; }
 
@@ -3320,6 +3395,8 @@ body[data-epoch="5"] .legacy-era3-plus {
   }
 
   .header-context {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
     justify-content: flex-start;
   }
 

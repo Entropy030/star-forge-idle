@@ -15,6 +15,7 @@ import { updateSupernovaOutcome } from './stellar.js';
 import { CodexEngine } from './codex.js';
 import { renderResourceHud } from './resourceHud.js';
 import { renderCosmosExperience } from './cosmosExperience.js';
+import { formatHudNumber } from './resourceFormatters.js';
 import { getActionFailureMessage, isActionSuccessful } from './actionFeedback.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
 // ==========================================================================
@@ -485,15 +486,31 @@ export const ArtifactManager = {
 };
 
 
-export const format = function (dec) {
-  if (!(dec instanceof Decimal)) dec = new Decimal(dec);
-  if (dec.lt(1e6)) return Math.floor(dec.toNumber()).toLocaleString();
-  if (dec.lt(1e9)) return (dec.toNumber() / 1e6).toFixed(2) + " M";
-  if (dec.lt(1e12)) return (dec.toNumber() / 1e9).toFixed(2) + " B";
-  if (dec.lt(1e15)) return (dec.toNumber() / 1e12).toFixed(2) + " T";
-  if (dec.lt(1e18)) return (dec.toNumber() / 1e15).toFixed(2) + " Qa";
-  if (dec.lt(1e21)) return (dec.toNumber() / 1e18).toFixed(2) + " Qi";
-  return dec.toExponential(2);
+export const format = formatHudNumber;
+
+function updateComparisonValue(node, current, target, unit = '', separator = '/') {
+  if (!node) return;
+  let currentNode = node.querySelector('.metric-comparison-current');
+  let separatorNode = node.querySelector('.metric-comparison-separator');
+  let targetNode = node.querySelector('.metric-comparison-target');
+  if (!currentNode || !separatorNode || !targetNode) {
+    currentNode = node.ownerDocument.createElement('span');
+    currentNode.className = 'metric-comparison-current';
+    separatorNode = node.ownerDocument.createElement('span');
+    separatorNode.className = 'metric-comparison-separator';
+    targetNode = node.ownerDocument.createElement('span');
+    targetNode.className = 'metric-comparison-target';
+    node.replaceChildren(currentNode, separatorNode, targetNode);
+  }
+  currentNode.textContent = String(current ?? '');
+  separatorNode.textContent = ` ${separator} `;
+  targetNode.textContent = `${target ?? ''}${unit ? ` ${unit}` : ''}`;
+}
+
+function syncChildren(container, children) {
+  const current = [...container.children];
+  if (current.length === children.length && current.every((child, index) => child === children[index])) return;
+  container.replaceChildren(...children);
 }
 
 export function initAudio() {
@@ -990,21 +1007,32 @@ export const Viewport = {
       row._cache.milestone.textContent = def.max !== undefined ? '' : t('milestone_tooltip', { lvl: nextMilestoneLvl });
 
       row._cache.requirements.hidden = eligibility.unlocked || eligibility.requirements.length === 0;
-      row._cache.requirementsList.replaceChildren(...eligibility.requirements.map(requirement => {
-        const item = document.createElement('li');
+      const existingRequirements = new Map(
+        [...row._cache.requirementsList.children].map(item => [item.dataset.requirementId, item])
+      );
+      const requirementRows = eligibility.requirements.map(requirement => {
+        const item = existingRequirements.get(requirement.id) || document.createElement('li');
+        item.dataset.requirementId = requirement.id;
         item.className = requirement.met ? 'requirement-met' : 'requirement-missing';
-        const icon = document.createElement('span');
-        icon.className = 'forge-requirement-icon';
+        let icon = item.querySelector('.forge-requirement-icon');
+        let label = item.querySelector('.forge-requirement-label');
+        let value = item.querySelector('.forge-requirement-value');
+        if (!icon || !label || !value) {
+          icon = document.createElement('span');
+          icon.className = 'forge-requirement-icon';
+          label = document.createElement('span');
+          label.className = 'forge-requirement-label';
+          value = document.createElement('span');
+          value.className = 'forge-requirement-value';
+          item.replaceChildren(icon, label, value);
+        }
         icon.textContent = requirement.met ? '✓' : '✕';
-        const label = document.createElement('span');
-        label.className = 'forge-requirement-label';
+        icon.setAttribute('aria-label', requirement.met ? 'Requirement met' : 'Requirement not met');
         label.textContent = requirement.label;
-        const value = document.createElement('span');
-        value.className = 'forge-requirement-value';
-        value.textContent = `${format(requirement.current)} / ${format(requirement.target)}`;
-        item.append(icon, label, value);
+        updateComparisonValue(value, format(requirement.current), format(requirement.target));
         return item;
-      }));
+      });
+      syncChildren(row._cache.requirementsList, requirementRows);
 
       if (isAffordable) row.classList.add('upgrade-affordable');
       else row.classList.remove('upgrade-affordable');
@@ -1086,7 +1114,7 @@ export const Viewport = {
     this.renderForgeBuyControls();
     const buyMode = normalizeForgeBuyMode(gameState.buyMode);
     const buyLabel = buyMode === 'max' ? 'Max' : buyMode;
-    const updateRequirement = (row, met, label, value) => {
+    const updateRequirement = (row, met, label, current, target, unit = '') => {
       if (!row) return;
       row.className = met ? 'requirement-met' : 'requirement-missing';
       const icon = row.querySelector('.forge-requirement-icon');
@@ -1094,7 +1122,7 @@ export const Viewport = {
       const valueNode = row.querySelector('.forge-requirement-value');
       if (icon) icon.textContent = met ? '✓' : '✕';
       if (labelNode) labelNode.textContent = label;
-      if (valueNode) valueNode.textContent = value;
+      updateComparisonValue(valueNode, format(current), format(target), unit);
     };
 
     const updateCard = (cardId, btnId, canAfford, { locked = false } = {}) => {
@@ -1211,7 +1239,7 @@ export const Viewport = {
       if (carbonRequirements) {
         carbonRequirements.hidden = !carbonLocked;
         const requirement = carbonRequirements.querySelector('li');
-        updateRequirement(requirement, !carbonLocked, 'Main Sequence', `${format(gameState.era3.temperature)} / ${format(COSMIC_REGISTRY.resources.carbon.unlockTemp)} K`);
+        updateRequirement(requirement, !carbonLocked, 'Main Sequence', gameState.era3.temperature, COSMIC_REGISTRY.resources.carbon.unlockTemp, 'K');
       }
       this.setTextContent('carbon-level', gameState.era3.carbonYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.carbonYield)}`);
       updateCard('era3-card-carbon', 'btn-carbon', carbonAfford, { locked: carbonLocked });
@@ -1240,7 +1268,7 @@ export const Viewport = {
       if (ironRequirements) {
         ironRequirements.hidden = !ironLocked;
         const requirement = ironRequirements.querySelector('li');
-        updateRequirement(requirement, !ironLocked, 'Main Sequence', `${format(gameState.era3.temperature)} / ${format(COSMIC_REGISTRY.resources.iron.unlockTemp)} K`);
+        updateRequirement(requirement, !ironLocked, 'Main Sequence', gameState.era3.temperature, COSMIC_REGISTRY.resources.iron.unlockTemp, 'K');
       }
       this.setTextContent('iron-level', gameState.era3.ironYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.ironYield)}`);
       updateCard('era3-card-iron', 'btn-iron', ironAfford, { locked: ironLocked });
@@ -1257,11 +1285,11 @@ export const Viewport = {
 
       gatewayTempStatus.className = `cosmos-check cosmos-check--${tempOk ? 'met' : 'missing'}`;
       gatewayTempStatus.querySelector('.cosmos-check-icon').textContent = tempOk ? '✓' : '○';
-      gatewayTempStatus.querySelector('.cosmos-check-value').textContent = `${format(temperatureRequirement.current)} / ${format(temperatureRequirement.target)} K`;
+      updateComparisonValue(gatewayTempStatus.querySelector('.cosmos-check-value'), format(temperatureRequirement.current), format(temperatureRequirement.target), 'K');
 
       gatewayIronStatus.className = `cosmos-check cosmos-check--${ironOk ? 'met' : 'missing'}`;
       gatewayIronStatus.querySelector('.cosmos-check-icon').textContent = ironOk ? '✓' : '○';
-      gatewayIronStatus.querySelector('.cosmos-check-value').textContent = `${format(ironRequirement.current)} / ${format(ironRequirement.target)}`;
+      updateComparisonValue(gatewayIronStatus.querySelector('.cosmos-check-value'), format(ironRequirement.current), format(ironRequirement.target));
 
       btnHypernova.disabled = !ignition.isEligible;
       if (ignition.isEligible) {
@@ -1550,7 +1578,9 @@ export const Viewport = {
         const progressBar = document.getElementById('objective-progress-bar');
         if (progressBar) progressBar.style.width = `${currentObj.progress}%`;
         
-        this.setTextContent('objective-progress-text', `${format(currentObj.current)} / ${format(currentObj.target)}`);
+        const progressText = document.getElementById('objective-progress-text');
+        updateComparisonValue(progressText, format(currentObj.current), format(currentObj.target));
+        progressText?.setAttribute('aria-label', `${format(currentObj.current)} of ${format(currentObj.target)}`);
       } else {
         tracker.style.display = 'none';
         this.setTextContent('objective-title', '');
@@ -1558,7 +1588,12 @@ export const Viewport = {
         this.setTextContent('objective-explanation', '');
         const progressBar = document.getElementById('objective-progress-bar');
         if (progressBar) progressBar.style.width = '0%';
-        this.setTextContent('objective-progress-text', '');
+        const progressText = document.getElementById('objective-progress-text');
+        if (progressText) {
+          updateComparisonValue(progressText, '', '');
+          progressText.querySelector('.metric-comparison-separator').textContent = '';
+          progressText.removeAttribute('aria-label');
+        }
       }
     }
 

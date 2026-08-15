@@ -84,7 +84,16 @@ describe('P3.3B3 Forge decision hierarchy', () => {
     expect(requirements[1].querySelector('.forge-requirement-icon').textContent).toBe('✕');
     expect(requirements[1].querySelector('.forge-requirement-label').textContent).toBe('Gravitational Coupling level');
     expect(requirements[1].querySelector('.forge-requirement-value').textContent).toBe('3 / 5');
+    expect(requirements[0].querySelector('.metric-comparison-current').textContent).toBe('100');
+    expect(requirements[0].querySelector('.metric-comparison-separator').textContent).toBe(' / ');
+    expect(requirements[0].querySelector('.metric-comparison-target').textContent).toBe('100');
     expect(row.querySelector('.upgrade-btn').disabled).toBe(true);
+
+    const firstRequirement = requirements[0];
+    const firstLabel = firstRequirement.querySelector('.forge-requirement-label');
+    Viewport.renderGenericTierList('quantum-upgrades-container', 'quantum', 'QF', '#6c5ce7');
+    expect(row.querySelector('.forge-requirements-list li')).toBe(firstRequirement);
+    expect(firstRequirement.querySelector('.forge-requirement-label')).toBe(firstLabel);
   });
 
   it('bulk-buy controls update the existing authoritative buy mode', () => {
@@ -146,7 +155,7 @@ describe('P3.3B3 Forge decision hierarchy', () => {
     replaceRuntimeState(getPresetFreshEraIII());
     Viewport.renderStellarNodeButtons();
 
-    expect(document.getElementById('compress-effect').textContent).toMatch(/^\+[\d,.]+(?: [A-Z])? K per compression$/);
+    expect(document.getElementById('compress-effect').textContent).toMatch(/^\+[\d,.]+(?:[A-Z])? K per compression$/);
     expect(document.getElementById('compress-threshold').textContent).toContain('Main Sequence');
     expect(document.getElementById('era3-card-gateway').closest('#tab-content-core')).not.toBeNull();
     expect(document.querySelector('#tab-content-upgrades #era3-card-gateway')).toBeNull();
