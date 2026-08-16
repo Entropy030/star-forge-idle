@@ -8,7 +8,7 @@ export const PLASMA_POSTURE_CONFIG = Object.freeze({
   ACCUMULATE: Object.freeze({
     particleFlux: 1.50,
     coolingMult: 0.50,
-    bindingMult: 0.75,
+    bindingMult: 0.70,
     label: 'Accumulate'
   }),
   BALANCE: Object.freeze({

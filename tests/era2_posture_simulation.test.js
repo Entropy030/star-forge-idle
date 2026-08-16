@@ -87,7 +87,7 @@ describe('Era 2 Posture Simulation Integration', () => {
       expect(accumStep.cooling.toNumber()).toBeLessThan(balanceStep.cooling.toNumber());
       expect(accumStep.throughput.protonSynthesizer.toNumber()).toBeLessThan(balanceStep.throughput.protonSynthesizer.toNumber());
 
-      // Check exact calibration ratio (1.5x flux, 0.5x cooling, 0.75x binding)
+      // Check exact calibration ratio (1.5x flux, 0.5x cooling, 0.70x binding)
       expect(accumStep.throughput.quarkCondenser.toNumber()).toBe(balanceStep.throughput.quarkCondenser.toNumber() * PLASMA_POSTURE_CONFIG.ACCUMULATE.particleFlux);
       expect(accumStep.cooling.toNumber()).toBe(balanceStep.cooling.toNumber() * PLASMA_POSTURE_CONFIG.ACCUMULATE.coolingMult);
       expect(accumStep.throughput.protonSynthesizer.toNumber()).toBe(balanceStep.throughput.protonSynthesizer.toNumber() * PLASMA_POSTURE_CONFIG.ACCUMULATE.bindingMult);
@@ -168,17 +168,17 @@ describe('Era 2 Posture Simulation Integration', () => {
       // Mathematical Verification:
       // Flux Average: (1.50 + 0.50)/2 = 1.000x -> Exactly equal to BALANCE
       // Cooling Average: (0.50 + 1.50)/2 = 1.000x -> Exactly equal to BALANCE
-      // Binding Average: (0.75 + 1.30)/2 = 1.025x -> Nominal +2.5% binding under abundant inputs
+      // Binding Average: (0.70 + 1.30)/2 = 1.000x -> Exactly equal to BALANCE (0.0% nominal advantage)
       expect(sToggle.plasmaTemperature.toNumber()).toBe(sBalance.plasmaTemperature.toNumber());
 
       // Under abundant inputs, 60s of 5 Protons/s base:
       // BALANCE: 60 * 5 * 1.00 = 300 Protons synthesized
-      // TOGGLE: 30 * (5 * 0.75) + 30 * (5 * 1.30) = 112.5 + 195 = 307.5 Protons synthesized (+2.5%)
-      // Quarks consumed: 300 * 3 = 900 in BALANCE vs 307.5 * 3 = 922.5 in TOGGLE
+      // TOGGLE: 30 * (5 * 0.70) + 30 * (5 * 1.30) = 105.0 + 195.0 = 300.0 Protons synthesized (exact 1.0000x)
+      // Quarks consumed: 300 * 3 = 900 in BALANCE vs 300 * 3 = 900 in TOGGLE
       // Quarks generated: 60 * 10 * 1.00 = 600 in BALANCE vs (30 * 15 + 30 * 5) = 600 in TOGGLE
-      // Net Quarks delta: 600 - 900 = -300 in BALANCE vs 600 - 922.5 = -322.5 in TOGGLE
+      // Net Quarks delta: 600 - 900 = -300 in BALANCE vs 600 - 900 = -300 in TOGGLE
       const expectedQuarksBalance = 10000 - 300;
-      const expectedQuarksToggle = 10000 - 322.5;
+      const expectedQuarksToggle = 10000 - 300;
       expect(sBalance.resources.quarks.amount.toNumber()).toBeCloseTo(expectedQuarksBalance, 1);
       expect(sToggle.resources.quarks.amount.toNumber()).toBeCloseTo(expectedQuarksToggle, 1);
 
@@ -188,6 +188,7 @@ describe('Era 2 Posture Simulation Integration', () => {
       for (let t = 0; t < 60; t++) simulatePlasmaEra(sCondense, 1.0);
       expect(sCondense.plasmaTemperature.toNumber()).toBeLessThanOrEqual(sToggle.plasmaTemperature.toNumber());
     });
+
   });
 
   describe('Full Run-to-Completion Recoverability Verification', () => {

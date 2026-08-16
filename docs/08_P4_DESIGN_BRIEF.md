@@ -179,14 +179,25 @@ P4 implementation will expose posture multipliers as named configuration constan
 
 For illustrative reference only, the PRE-P4.4 prototype tested:
 ```javascript
-// PROTOTYPE CALIBRATION EXAMPLE — NOT APPROVED PRODUCTION BALANCE
+// PROTOTYPE CALIBRATION EXAMPLE (PRE-P4.4)
 export const PROTOTYPE_POSTURE_EXAMPLE = {
   ACCUMULATE: { particleFlux: 1.50, coolingMult: 0.50, bindingMult: 0.75 },
   BALANCE:    { particleFlux: 1.00, coolingMult: 1.00, bindingMult: 1.00 },
   CONDENSE:   { particleFlux: 0.50, coolingMult: 1.50, bindingMult: 1.30 }
 };
 ```
-*(Exact production values remain subject to P4 calibration testing; the durable requirement is the directional semantic relationship).*
+
+P4 Initial Production Calibration (adjusted to eliminate the +2.5% arithmetic rapid-toggle binding advantage):
+```javascript
+// P4 INITIAL PRODUCTION CALIBRATION
+export const PLASMA_POSTURE_CONFIG = {
+  ACCUMULATE: { particleFlux: 1.50, coolingMult: 0.50, bindingMult: 0.70 },
+  BALANCE:    { particleFlux: 1.00, coolingMult: 1.00, bindingMult: 1.00 },
+  CONDENSE:   { particleFlux: 0.50, coolingMult: 1.50, bindingMult: 1.30 }
+};
+```
+*(Exact production values remain subject to ongoing P4 tuning; the durable requirement is the directional semantic relationship).*
+
 
 ---
 
