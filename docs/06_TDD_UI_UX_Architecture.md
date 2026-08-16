@@ -102,3 +102,31 @@ The game uses contextual feedback near the Core, process, Forge card, or termina
 Cold-return facts appear in the Cosmos context as an ephemeral `WHILE YOU WERE AWAY` region. It derives only from stable before/after snapshots, load metadata, and collected domain events; it never mutates or persists gameplay state.
 
 The region shows useful non-zero resource/physical changes, newly available transitions, discoveries/milestones, Observer decisions, paused automation, the eight-hour cap, and checkpoint failure when relevant. A sub-minute resource-only return remains hidden, but its credited simulation is still applied. The briefing is not a toast, does not steal focus, has a semantic heading and dismiss button, supports keyboard operation, uses no required motion, and collapses to one column at 390 px without covering primary actions.
+
+## Contextual interaction direction (Model C — Approved, Implementation Pending)
+
+Following PRE-P4.3 prototype evaluation (D23), **Model C (Contextual Quick Actions)** is the approved design direction for connecting the Cosmos universe view with immediately relevant player interventions.
+
+The approved interaction model follows:
+
+```text
+CURRENT PHYSICAL CONTEXT
+        ↓
+IMMEDIATELY RELEVANT INTERVENTION
+        ↓
+EXISTING AUTHORITATIVE COMMAND
+```
+
+Guardrails:
+1. **Cosmos vs. Forge Ownership:** Cosmos projects only the single immediate bottleneck action or next logical intervention. Full Forge remains authoritative for browsing, planning, branch comparison, alternate choices, and bulk purchasing (Buy 1 / 10 / Max). Cosmos must never become a duplicate Forge shop.
+2. **Major Decision Boundary:** Model C must not act as a universal "NEXT" trigger for major irreversible or meta commitments. Supernova remains a player-authored Legacy decision; Inflation and Recombination remain explicit cosmic milestone triggers.
+3. **Mobile Touch Target Contract:** Contextual quick action buttons must satisfy the repository mobile baseline of `>= 44px` effective touch height and area.
+4. **Authority & Mutation:** Contextual selectors must be pure and read-only. Clicking a projected quick action dispatches the existing canonical engine command through `dispatchEngineCommand()` without bypassing eligibility or cost rules.
+
+## Star Core visual causality (Approved, Implementation Pending)
+
+Following PRE-P4.3 prototype evaluation (D24), **Core Visual Causality** is approved as a durable UI/UX design principle: The Star Core / Universe View is primarily a physical-state visualizer. Meaningful physical state changes should create readable semantic visual changes where practical.
+
+Contract:
+1. **Semantic Derivation:** Authoritative numerical state maps to semantic physical state classes (e.g. quantum fluctuation density, plasma thermal stabilization, protostar core fusion phases) that modulate Canvas 2D rendering.
+2. **Reduced-Motion Equivalence:** Every gameplay-relevant semantic visual state must retain complete informational equivalence under system or in-game reduced motion. High-frequency turbulence, orbital motion, and pulse rates are replaced with static geometry, distinct color gradients, and explicit accessible text attributes (`#star-core[data-semantic-label]`). Motion may enhance presentation, but must never be the exclusive medium for state comprehension.

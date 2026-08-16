@@ -191,6 +191,7 @@ Future maintenance:
 7. **S6 complete:** final local gates, all presets, supported Era I–III progression, persistence/PWA acceptance, remote CI, live deployment, and the repeatable Supernova reset are verified.
 8. **PRE-P4.1 complete:** runtime history is canonical, abandoned Era-I baryon-simulation fields are normalized out of v17 state, and legacy UI/dev action paths no longer duplicate gameplay authority.
 9. **PRE-P4.2 complete:** valid cold returns share the authoritative runtime tick, major decisions remain player-authored, successful catch-up checkpoints before live scheduling, and an ephemeral accessible briefing summarizes meaningful change.
-10. **Next:** PRE-P4.3 interaction/Core prototype planning may begin; no prototype work is included here.
+10. **PRE-P4.3 complete:** Model C (Contextual Quick Actions) and Star Core visual causality are approved as product direction (D23, D24); Model E persistent stage is rejected for current scope; the prototype branch `antigravity/prototype-pre-p4-interaction` is preserved as disposable experimental evidence; production implementation is deferred until PRE-P4.4.
+11. **Next:** PRE-P4.4 — Era-II Physical Agency Prototype.
 
 Full evidence and follow-up boundaries are in [docs/P3_STABILIZATION_AUDIT.md](docs/P3_STABILIZATION_AUDIT.md).

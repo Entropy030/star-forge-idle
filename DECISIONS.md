@@ -179,3 +179,26 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Why:** Star Forge is an idle game, but readiness is not consent. Passive universe evolution should continue while Inflation, Recombination, Supernova, and Galactic Ignition remain player-authored decisions.
 
 **Consequences:** Playtest speed never affects cold-return credit. Domain achievements, objectives, missions, narrative, and Codex reconcile headlessly; presentation effects are summarized once rather than replayed. Successful catch-up is checkpointed before live scheduling. The return briefing is ephemeral and never serialized. Storage failure preserves the caught-up in-memory universe but cannot promise durability beyond the existing storage boundary.
+
+## D23 — Contextual interaction model (Model C)
+
+**Decision:** Select **MODEL C — Contextual Quick Actions** as the approved product direction for the Cosmos ↔ Forge interaction model. **MODEL E — Persistent Universe Stage** is not selected for current production. Production implementation is pending completion of PRE-P4.4.
+
+**Why:** Empirical browser measurements confirm Model C eliminates routine navigation friction (dropping from 2 tab switches and 3 navigation actions to 0 tab switches and 1 quick-action click per routine upgrade loop). The Star Core, active physical processes, and narrative objectives remain continuously visible during purchase decisions. Authoritative command dispatch is preserved with zero duplication of cost or eligibility logic. Desktop geometry remains a clean single column, and 390px mobile layout operates with zero horizontal overflow and compliant touch targets without requiring split-pane or glyph workarounds.
+
+**Guardrails and Nuance:**
+- **Contextual Action Guardrail:** The concept is `CURRENT PHYSICAL CONTEXT → IMMEDIATELY RELEVANT INTERVENTION → EXISTING AUTHORITATIVE COMMAND`. The full Forge remains authoritative for planning, browsing, branch comparison, alternate upgrades, and bulk purchasing (Buy 1 / 10 / Max). Cosmos must never become a duplicate Forge shop.
+- **Major Decision Guardrail:** Model C must not become a universal "NEXT" button for all commitments. Supernova remains a deliberately player-authored Legacy/stellar-collapse decision on the Legacy surface. Inflation and Recombination transitions remain explicit cosmic milestone triggers.
+- **Model E Nuance:** Model E was rejected for the current Cosmos ↔ Forge interaction scope because Model C resolves the measured friction at substantially lower layout and implementation cost. Persistent-world stage presentation is not universally banned and may be reconsidered if future Era-IV Galactic Matrix requirements justify it.
+- **Status:** Design Approved; Production Implementation Pending (deferred until PRE-P4.4 characterizes Era-II physical agency).
+
+## D24 — Star Core visual causality
+
+**Decision:** **CORE VISUAL CAUSALITY APPROVED** as a durable design principle: The Star Core / Universe View is primarily a physical-state visualizer. Meaningful physical state changes must create readable semantic visual changes where practical. Production implementation is pending completion of PRE-P4.4.
+
+**Why:** Grounds abstract numerical progression in tangible cosmic phases (`AUTHORITATIVE GAMEPLAY STATE → SEMANTIC PHYSICAL STATE → READABLE VISUAL CONSEQUENCE`). Player actions produce immediate, readable visual reactions (pulse frequency, turbulence, ring coherence, corona arcs) on the Star Core canvas without requiring tab switches.
+
+**Guardrails and Nuance:**
+- **Specification vs. Principle:** The prototype's exact numeric thresholds, state strings, particle counts, RGB colors, and animation quantities were disposable experimental evidence, not final production specifications. Production contracts require the semantic mapping relationship, not literal prototype values.
+- **Reduced-Motion Contract:** Every gameplay-relevant semantic visual state must retain complete informational equivalence under reduced motion. Nonessential particle turbulence and oscillation are replaced with static geometric alignment, distinct color gradients, and explicit accessible text (`#star-core[data-semantic-label]`). Motion may communicate state, but must never be the only channel conveying state.
+- **Status:** Design Approved; Production Implementation Pending.
