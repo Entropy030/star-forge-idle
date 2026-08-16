@@ -272,3 +272,17 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 - `DESIGN APPROVED: YES` (Human Approved & Published).
 - `PRODUCTION IMPLEMENTED: NO` (Design synthesis complete; exact mechanics require prototyping before implementation).
 
+## D28 — Era-I Vacuum Field Allocation: Coherence as System Quality (Pre-P5.3A)
+
+**Decision:**
+1. **Structural Mechanic Approval:** Vacuum Field Allocation with **Coherence as System Quality** (Variant B) is formally approved as the authoritative structural mechanic for Era I.
+2. **Intertemporal Tradeoff:** Field allocation allows the player to modulate the balance between immediate Fundamental-Law / Quantum Fluctuation throughput (Propagation focus) and Vacuum Stabilization (Stabilization focus). Accumulated Vacuum Coherence actively scales the productive efficiency / quality of the already-established Fundamental-Law system, creating an intertemporal trade-off (*immediate output vs. investment in system quality*).
+3. **Robustness Validation:** Structural robustness is validated across a sustained healthy design region ($k \in [0.5, 1.5]$ under moderate tradeoff) and confirmed consistent across linear, concave, and saturating quality curves with a forgiving 60-second optimal switching window.
+4. **Low-Attention Compatibility:** Low-attention and idle play are strictly preserved; safe defaults progress reliably without risk of failure or stalling.
+5. **Anti-Exploit Guarantee:** Rapid toggling provides zero gameplay advantage over clean strategic allocation across all tested cadences ($0.1\text{s}$ to $20\text{s}$).
+6. **Deferred Calibration Details:** Exact mathematical feedback formulas, production multiplier values, unlock timings (e.g. Law 3 vs Era start), 2-mode vs 3-mode UI controls, mode names, and production pacing remain unapproved and deferred to P5.3/P5.4.
+
+**Status:**
+- `DESIGN APPROVED: YES` (Structural Mechanic Human Approved & Published).
+- `PRODUCTION IMPLEMENTED: NO` (Implementation deferred to P5.3).
+

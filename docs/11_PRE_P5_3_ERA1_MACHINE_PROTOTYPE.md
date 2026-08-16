@@ -5,10 +5,10 @@
 ## 1. Executive Summary & Prototype Purpose
 
 ### Status & Boundaries
-- **Status:** `PROTOTYPE / DESIGN EVIDENCE — FINAL EVIDENCE RECONCILIATION COMPLETE (AWAITING HUMAN REVIEW)`
+- **Status:** `HUMAN APPROVED & PUBLISHED`
 - **Scope:** Design evidence only. **Zero production gameplay implementation.**
 - **Baseline:** `b80b5d39e1826147f5e4cbfe81b91bedf5bef79f` (P5.1 + P5 Design Synthesis Human Approved).
-- **Authoritative Directives:** D27 (P5 Design Synthesis) and human review boundaries.
+- **Authoritative Directives:** D27 (P5 Design Synthesis), D28 (Era-I Structural Mechanic Approval).
 
 ### Core Prototype Question
 > **"Can Era-I Vacuum Field Allocation create genuine situational agency without collapsing into a solved script: `PRODUCTION EARLY → STABILIZATION LATE → INFLATION`?"**
@@ -17,7 +17,7 @@
 1. **Production-Equivalent Baseline Bottleneck:** In the zero-click baseline, all 5 Fundamental Laws and material thresholds ($50\text{k ED}, 100\text{k QF}$) are reached in $\approx 361\text{s}\text{–}480\text{s}$, leaving Vacuum Coherence as an **immovable $520\text{s}$ passive bottleneck** (over $52\%$ of total Era-I playtime).
 2. **Variant A (Simple Direct Tradeoff) Fails Agency:** A pure 2-mode generation trade-off inevitably collapses into a strictly monotonic dominant script (*Propagate until Strong Force $\to$ Stabilize* at $608\text{s}$; early stabilization is strictly penalized at $863\text{s}$).
 3. **Variant B (Stabilization as System Quality) Breaks the Script:** When Vacuum Coherence acts as a system quality multiplier on existing law yields, **Single Mid Switch (stabilizing at Law 4 / $545\text{s}$) consistently outperforms Single Late Switch ($584\text{s}$)**. This creates genuine intertemporal choice: stabilizing early provides immediate efficiency dividends on subsequent law outputs.
-4. **Stable Healthy Parameter Interval:** Dense parameter sweeps confirm a continuous **Healthy Design Region** exists in the Moderate Tradeoff space for Feedback Strengths $k \in [0.5, 1.5]$. The mechanism is **consistent across all tested curve shapes** (Linear, Concave, Saturating).
+4. **Stable Healthy Parameter Interval:** Dense parameter sweeps confirm a sustained **Healthy Design Region** exists in the Moderate Tradeoff space for Feedback Strengths $k \in [0.5, 1.5]$, with an upper transition zone ($k \ge 1.6$) where stabilization increasingly approaches dominance. The mechanism is **consistent across all tested curve shapes** (Linear, Concave, Saturating).
 5. **Broad Forgiving Switch Window:** The single-switch timing curve demonstrates a **60-second forgiving optimal plateau** ($t \in [130\text{s}, 190\text{s}]$), avoiding fragile knife-edge timing traps.
 6. **No Rapid-Toggle Advantage Found Across Tested Cadences:** Rapid toggling across cadences from $0.1\text{s}$ (near-tick) to $20\text{s}$ consistently underperforms clean macro-level strategic play by $19\%\text{–}24\%$.
 7. **Low-Attention Compatibility:** Safe default configurations (Always Stabilize) finish reliably within $647\text{s}$ ($+18.6\%$ delta relative to active optimum), providing a clear active incentive while ensuring low-attention progression never stalls or bricks.
@@ -261,20 +261,22 @@ naturally dwarfs clicking (1 QF/click), smoothly shifting focus to field allocat
 - **Reconciled Analytical Baseline ($0.05\text{s}, 96.2\text{s}, 212.5\text{s}, 291.4\text{s}, 361.2\text{s}, 1,000.0\text{s}$):** Exactly reflects pure passive generation math and authoritative registry prerequisites without active observation clicks.
 - **Status:** Previous manual estimates are formally **superseded** by the reconciled analytical baseline.
 
-### 2. Production Checkpoint Parity
-- Verified 1:1 mathematical equivalence with `src/config/registry.js` and `src/core/economy.js` across:
-  - Upgrade base costs and scaling multipliers;
-  - Generation and Energy Density formulas;
-  - Level-5 unlock dependencies and Peak QF thresholds;
-  - Milestone and Harmony synergy tiers;
-  - Passive Coherence rate ($0.10\%/\text{s}$).
+### 2. Production Parity Verification
+- **FORMULA-LEVEL PRODUCTION PARITY VERIFIED BY INSPECTION:**
+  - Verified formula-level mathematical alignment with authoritative definitions in `src/config/registry.js`, `src/eras/quantum/eligibility.js`, and `src/core/economy.js`.
+  - The analytical model exactly mirrors:
+    - Upgrade base costs ($10, 120, 1500, 5000, 18000$) and cost scaling factors ($1.35, 1.40, 1.45, 1.50, 1.55$);
+    - Generation rates ($1, 12, 140, 450, 1800\text{ QF/s}$) and Energy Density rates ($0.5, 4, 30, 100, 400\text{ ED/s}$);
+    - Level-5 unlock prerequisite dependencies and Peak QF thresholds ($100, 500, 2500, 10000$);
+    - Milestone and Harmony synergy tier math;
+    - Passive Coherence rate ($0.10\%/\text{s}$) and Inflation gates ($100\text{k QF}, 50\text{k ED}, 100\%\text{ VC}$).
 
 ### 3. Objective Robustness Classification Rules
 Every tested grid point is evaluated against consistent, objective structural criteria:
-- **`FAIL — SCRIPTED`:** Late Switch is $> 10\text{s}$ faster than Mid Switch because feedback is too weak, or Always Propagate is the only viable path.
-- **`OVERCOUPLED`:** Always Stabilize or Early Switch is $> 30\text{s}$ faster than Mid Switch, trivializing allocation in the opposite direction.
-- **`MARGINAL`:** Mid Switch, Late Switch, and Always Stabilize are within $\le 5\text{s}$ of each other, providing negligible decision consequence.
-- **`HEALTHY`:** Mid Switch is faster than or competitive with Late Switch, while Always Stabilize remains a viable safe alternative.
+- **`FAIL — SCRIPTED`:** Late Switch is $> 10\text{s}$ faster than Mid Switch because feedback is too weak to reward early stabilization ($t_{\text{late}} < t_{\text{mid}} - 10\text{s}$).
+- **`OVERCOUPLED`:** Always Stabilize or Early Switch is $> 30\text{s}$ faster than Mid Switch ($t_{\text{stab}} < t_{\text{mid}} - 30\text{s}$ or $t_{\text{early}} < t_{\text{mid}} - 30\text{s}$), trivializing allocation in the opposite direction.
+- **`MARGINAL`:** Mid Switch, Late Switch, and Always Stabilize differences are minimal ($|\text{Mid} - \text{Late}| \le 10\text{s}$ or within $\le 5\text{s}$ across all options), providing low decision differentiation.
+- **`HEALTHY`:** Mid Switch is faster than Late Switch ($t_{\text{mid}} < t_{\text{late}}$), while Always Stabilize remains a viable, safe alternative ($t_{\text{stab}} \ge t_{\text{mid}}$).
 
 ### 4. Full 21-Point Robustness Grid
 
@@ -300,7 +302,7 @@ Every tested grid point is evaluated against consistent, objective structural cr
 | | $k = 1.0$ | $3,333.4$ | $970.1$ | $785.8$ | $655.6$ | $551.2$ | $1,000.0$ | `FAIL — SCRIPTED` |
 | | $k = 1.5$ | $3,333.4$ | $804.6$ | $672.9$ | $583.9$ | $503.1$ | $1,000.0$ | `FAIL — SCRIPTED` |
 | | $k = 2.0$ | $3,333.4$ | $694.4$ | $597.5$ | $527.5$ | $470.3$ | $1,000.0$ | `FAIL — SCRIPTED` |
-| | $k = 3.0$ | $3,333.4$ | $556.6$ | $509.5$ | $468.7$ | $459.9$ | $1,000.0$ | `HEALTHY` |
+| | $k = 3.0$ | $3,333.4$ | $556.6$ | $509.5$ | $468.7$ | $459.9$ | $1,000.0$ | `MARGINAL` |
 
 ### 5. Dense Sweep in Moderate Region ($k \in [0.4, 1.8]$)
 
@@ -324,9 +326,9 @@ Every tested grid point is evaluated against consistent, objective structural cr
 
 ```text
 DENSE SWEEP VERDICT:
-Healthy behavior is observed continuously across the tested interval k in [0.5, 1.5].
-Within this interval, mid-era stabilization consistently provides a 9s to 45s advantage
-over late switching while maintaining a clear, non-punishing low-attention delta (+4% to +34%).
+A sustained healthy design region exists under moderate tradeoff for k in [0.5, 1.5],
+with an upper transition zone (k >= 1.6) where stabilization increasingly approaches
+dominance.
 ```
 
 ### 6. Curve-Shape Sensitivity (Consistent Across Tested Formulations)
@@ -343,20 +345,18 @@ over late switching while maintaining a clear, non-punishing low-attention delta
 
 ---
 
-## 12. Structural Conclusion & Recommendation
+## 12. Structural Conclusion & Approved Status
 
 ```text
 ============================================================
 PRE-P5.3A RECONCILED STRUCTURAL CONCLUSION:
 VARIANT B — COHERENCE AS SYSTEM QUALITY IS STRUCTURALLY VALIDATED
-
-RECOMMENDATION:
-RECOMMENDED FOR HUMAN APPROVAL
+HUMAN APPROVED AS THE DURABLE ERA-I MECHANIC (D28)
 
 CONFIRMED STRUCTURAL QUALITIES:
-1. Meaningful Decision: Mid-era stabilization provides a real, perceptible 40s
+1. Meaningful Decision: Mid-era stabilization provides a real, perceptible ~40s
    intertemporal advantage over scripted late switching.
-2. Robust Design Region: Healthy behavior is observed continuously across k in [0.5, 1.5].
+2. Robust Design Region: Healthy behavior is observed across k in [0.5, 1.5].
 3. Forgiving Execution: Broad 60-second optimal switching window around Law 4.
 4. Exploit Resistant: No rapid-toggle advantage found across any tested cadence.
 5. Low-Attention Viable: Safe default achieves reliable completion (+18.6% delta, 0 risk).
@@ -364,13 +364,14 @@ CONFIRMED STRUCTURAL QUALITIES:
 
 EXACT STATUS:
 - ERA-I MACHINE DIRECTION: VACUUM FIELD ALLOCATION (HUMAN APPROVED)
-- EXACT MECHANIC: VARIANT B (RECOMMENDED FOR HUMAN APPROVAL)
-- PRODUCTION IMPLEMENTATION: ZERO CODE MODIFIED (DEFERRED TO P5.3)
+- ERA-I STRUCTURAL MECHANIC: VARIANT B — COHERENCE AS SYSTEM QUALITY (HUMAN APPROVED)
+- ERA-I NUMERICAL CALIBRATION: NOT APPROVED (DEFERRED TO P5.3/P5.4)
+- PRODUCTION IMPLEMENTATION: NOT STARTED (DEFERRED TO P5.3)
 ============================================================
 ```
 
 ### Explicitly Unapproved Downstream Decisions (Deferred to P5.3/P5.4)
-The following decisions remain unapproved and are deliberately excluded from this prototype phase:
+The following calibration choices remain unresolved:
 1. Final mathematical feedback formula;
 2. Final production multiplier and tradeoff strength;
 3. Exact unlock timing (Law 3 vs Era start);
