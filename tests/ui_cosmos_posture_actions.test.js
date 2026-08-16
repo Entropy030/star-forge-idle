@@ -167,11 +167,59 @@ describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () =>
 
       // ArrowRight from BALANCE should navigate to CONDENSE
       group.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+      expect(onPostureChange).toHaveBeenCalledTimes(1);
       expect(onPostureChange).toHaveBeenCalledWith('CONDENSE');
 
       // ArrowLeft from BALANCE should navigate to ACCUMULATE
       onPostureChange.mockClear();
       group.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true, cancelable: true }));
+      expect(onPostureChange).toHaveBeenCalledTimes(1);
+      expect(onPostureChange).toHaveBeenCalledWith('ACCUMULATE');
+    });
+
+    it('dispatches exactly once on Space key activation on focused posture button', () => {
+      const state = createInitialState();
+      state.activeEpoch = 2;
+      state.era2.posture = 'BALANCE';
+
+      const onPostureChange = vi.fn();
+      renderCosmosExperience(doc, getCosmosPresentation(state), null, onPostureChange);
+
+      const accumBtn = postureEl.querySelector('[data-posture="ACCUMULATE"]');
+      accumBtn.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true, cancelable: true }));
+      expect(onPostureChange).toHaveBeenCalledTimes(1);
+      expect(onPostureChange).toHaveBeenCalledWith('ACCUMULATE');
+    });
+
+    it('dispatches exactly once on Enter key activation on focused posture button', () => {
+      const state = createInitialState();
+      state.activeEpoch = 2;
+      state.era2.posture = 'BALANCE';
+
+      const onPostureChange = vi.fn();
+      renderCosmosExperience(doc, getCosmosPresentation(state), null, onPostureChange);
+
+      const condenseBtn = postureEl.querySelector('[data-posture="CONDENSE"]');
+      condenseBtn.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+      expect(onPostureChange).toHaveBeenCalledTimes(1);
+      expect(onPostureChange).toHaveBeenCalledWith('CONDENSE');
+    });
+
+    it('does not accumulate event listeners over repeated renders (N renders + 1 click = 1 dispatch)', () => {
+      const state = createInitialState();
+      state.activeEpoch = 2;
+      state.era2.posture = 'BALANCE';
+
+      const onPostureChange = vi.fn();
+      // Render 10 times consecutively
+      for (let i = 0; i < 10; i++) {
+        renderCosmosExperience(doc, getCosmosPresentation(state), null, onPostureChange);
+      }
+
+      const accumBtn = postureEl.querySelector('[data-posture="ACCUMULATE"]');
+      accumBtn.click();
+
+      expect(onPostureChange).toHaveBeenCalledTimes(1);
       expect(onPostureChange).toHaveBeenCalledWith('ACCUMULATE');
     });
   });
@@ -188,6 +236,7 @@ describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () =>
       expect(pres.process.action.id).toBe('quarkCondenser');
       expect(pres.process.action.label).toBe('Construct Quark Condenser');
       expect(pres.process.action.currency).toBe('Quarks');
+      expect(pres.process.action.effect).toBe('Increase primordial quark influx');
       expect(pres.process.action.enabled).toBe(false);
 
       // Add enough quarks
@@ -208,6 +257,7 @@ describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () =>
       expect(pres.process.action.id).toBe('gluonBinding');
       expect(pres.process.action.label).toBe('Synthesize Gluon Matrix');
       expect(pres.process.action.currency).toBe('Gluons');
+      expect(pres.process.action.effect).toBe('Enable gluon production for hadron binding');
       expect(pres.process.action.enabled).toBe(true);
     });
 
@@ -224,6 +274,7 @@ describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () =>
       expect(pres.process.action.id).toBe('leptonHarvest');
       expect(pres.process.action.label).toBe('Construct Lepton Collector');
       expect(pres.process.action.currency).toBe('Gluons');
+      expect(pres.process.action.effect).toBe('Enable lepton harvesting for electron formation');
       expect(pres.process.action.enabled).toBe(true);
     });
 
@@ -241,6 +292,7 @@ describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () =>
       expect(pres.process.action.id).toBe('plasmaAutomation');
       expect(pres.process.action.label).toBe('Synthesize Protons');
       expect(pres.process.action.currency).toBe('Quarks');
+      expect(pres.process.action.effect).toBe('Combine quarks and gluons into stable protons');
       expect(pres.process.action.enabled).toBe(true);
     });
 
@@ -259,6 +311,7 @@ describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () =>
       expect(pres.process.action.id).toBe('baryoRadiator');
       expect(pres.process.action.label).toBe('Construct Baryogenesis Radiator');
       expect(pres.process.action.currency).toBe('Protons');
+      expect(pres.process.action.effect).toBe('Radiate excess thermal energy to cool plasma');
       expect(pres.process.action.enabled).toBe(true);
     });
 
@@ -303,6 +356,56 @@ describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () =>
       expect(onAction).toHaveBeenCalledTimes(1);
       expect(state.upgrades.plasma.quarkCondenser.level).toBe(1);
       expect(state.resources.quarks.amount.toNumber()).toBe(10);
+    });
+
+    it('does not accumulate action listeners over repeated renders (N renders + 1 click = 1 dispatch)', () => {
+      const state = engine.getStateUnsafe();
+      state.activeEpoch = 2;
+      state.upgrades.plasma.quarkCondenser.level = 0;
+      state.resources.quarks.amount = new Decimal(50);
+
+      const onAction = vi.fn((action) => {
+        if (action.kind === 'upgrade-plasma') {
+          dispatchEngineCommand({
+            type: 'BUY_UPGRADE_PLASMA',
+            payload: { category: 'plasma', upgradeId: action.id, loops: 1 }
+          });
+        }
+      });
+
+      // Render 10 times consecutively
+      for (let i = 0; i < 10; i++) {
+        renderCosmosExperience(doc, getCosmosPresentation(state), onAction);
+      }
+
+      const actionBtn = processEl.querySelector('#cosmos-current-action-button');
+      actionBtn.click();
+
+      expect(onAction).toHaveBeenCalledTimes(1);
+      expect(state.upgrades.plasma.quarkCondenser.level).toBe(1);
+      expect(state.resources.quarks.amount.toNumber()).toBe(30);
+    });
+
+    it('produces identical state mutation between Cosmos quick-action and Forge purchase command (Forge parity)', () => {
+      const stateCosmos = createInitialState();
+      stateCosmos.activeEpoch = 2;
+      stateCosmos.resources.quarks.amount = new Decimal(100);
+
+      const stateForge = createInitialState();
+      stateForge.activeEpoch = 2;
+      stateForge.resources.quarks.amount = new Decimal(100);
+
+      const payload = { category: 'plasma', upgradeId: 'quarkCondenser', loops: 1 };
+
+      // Dispatch via Cosmos handler path
+      plasmaCommandHandlers.BUY_UPGRADE_PLASMA(stateCosmos, { type: 'BUY_UPGRADE_PLASMA', payload });
+
+      // Dispatch via Forge handler path
+      plasmaCommandHandlers.BUY_UPGRADE_PLASMA(stateForge, { type: 'BUY_UPGRADE_PLASMA', payload });
+
+      expect(stateCosmos.upgrades.plasma.quarkCondenser.level).toBe(stateForge.upgrades.plasma.quarkCondenser.level);
+      expect(stateCosmos.resources.quarks.amount.toString()).toBe(stateForge.resources.quarks.amount.toString());
+      expect(stateCosmos.upgrades.plasma.quarkCondenser.cost.toString()).toBe(stateForge.upgrades.plasma.quarkCondenser.cost.toString());
     });
   });
 

@@ -7,8 +7,17 @@ export function observeBrowserErrors(page) {
   page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));
   page.on('console', message => {
     if (message.type() === 'error') {
-      const location = message.location().url;
-      errors.push(`console: ${message.text()}${location ? ` (${location})` : ''}`);
+      const text = message.text();
+      const location = message.location()?.url || '';
+      if (
+        text.includes('fonts.gstatic.com') ||
+        text.includes('fonts.googleapis.com') ||
+        location.includes('fonts.gstatic.com') ||
+        location.includes('fonts.googleapis.com')
+      ) {
+        return;
+      }
+      errors.push(`console: ${text}${location ? ` (${location})` : ''}`);
     }
   });
   return errors;

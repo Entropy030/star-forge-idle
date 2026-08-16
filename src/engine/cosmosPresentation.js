@@ -125,98 +125,88 @@ function getEraTwoPosturePresentation(state) {
   };
 }
 
+function getPlasmaCurrencyKey(upgradeId) {
+  if (upgradeId === 'quarkCondenser' || upgradeId === 'plasmaAutomation') return 'quarks';
+  if (upgradeId === 'gluonBinding' || upgradeId === 'leptonHarvest') return 'gluons';
+  return 'protons';
+}
+
+function getPlasmaCurrencyLabel(upgradeId) {
+  if (upgradeId === 'quarkCondenser' || upgradeId === 'plasmaAutomation') return 'Quarks';
+  if (upgradeId === 'gluonBinding' || upgradeId === 'leptonHarvest') return 'Gluons';
+  return 'Protons';
+}
+
 function getEraTwoAction(state) {
+  const gluonEligibility = getPlasmaUpgradeEligibility(state, 'gluonBinding');
+  const leptonEligibility = getPlasmaUpgradeEligibility(state, 'leptonHarvest');
+  const synthesizerEligibility = getPlasmaUpgradeEligibility(state, 'plasmaAutomation');
+  const radiatorEligibility = getPlasmaUpgradeEligibility(state, 'baryoRadiator');
+
   const condenserLevel = level(state, 'plasma', 'quarkCondenser');
   const gluonLevel = level(state, 'plasma', 'gluonBinding');
   const leptonLevel = level(state, 'plasma', 'leptonHarvest');
   const synthesizerLevel = level(state, 'plasma', 'plasmaAutomation');
   const radiatorLevel = level(state, 'plasma', 'baryoRadiator');
 
-  if (condenserLevel < 3) {
-    const upgradeState = state.upgrades?.plasma?.quarkCondenser;
-    const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma.quarkCondenser.baseCost;
-    const canAfford = amount(state, 'quarks').gte(cost);
-    return {
-      kind: 'upgrade-plasma',
-      category: 'plasma',
-      id: 'quarkCondenser',
-      label: condenserLevel === 0 ? 'Construct Quark Condenser' : 'Upgrade Quark Condenser',
-      cost,
-      currency: 'Quarks',
-      effect: '+2 Quarks/s',
-      enabled: canAfford
-    };
+  let targetId = null;
+  let targetLabel = null;
+  let targetEffect = null;
+
+  if (!gluonEligibility.unlocked) {
+    targetId = 'quarkCondenser';
+    targetLabel = condenserLevel === 0 ? 'Construct Quark Condenser' : 'Upgrade Quark Condenser';
+    targetEffect = 'Increase primordial quark influx';
+  } else if (gluonLevel === 0) {
+    targetId = 'gluonBinding';
+    targetLabel = 'Synthesize Gluon Matrix';
+    targetEffect = 'Enable gluon production for hadron binding';
+  } else if (!leptonEligibility.unlocked) {
+    targetId = 'gluonBinding';
+    targetLabel = 'Upgrade Gluon Matrix';
+    targetEffect = 'Expand gluon matrix to unlock lepton collection';
+  } else if (leptonLevel === 0) {
+    targetId = 'leptonHarvest';
+    targetLabel = 'Construct Lepton Collector';
+    targetEffect = 'Enable lepton harvesting for electron formation';
+  } else if (!synthesizerEligibility.unlocked) {
+    targetId = 'leptonHarvest';
+    targetLabel = 'Upgrade Lepton Collector';
+    targetEffect = 'Expand lepton collection to unlock proton synthesis';
+  } else if (synthesizerLevel === 0) {
+    targetId = 'plasmaAutomation';
+    targetLabel = 'Synthesize Protons';
+    targetEffect = 'Combine quarks and gluons into stable protons';
+  } else if (!radiatorEligibility.unlocked) {
+    targetId = 'plasmaAutomation';
+    targetLabel = 'Upgrade Proton Synthesizer';
+    targetEffect = 'Expand proton synthesis to unlock radiator';
+  } else if (radiatorLevel === 0) {
+    targetId = 'baryoRadiator';
+    targetLabel = 'Construct Baryogenesis Radiator';
+    targetEffect = 'Radiate excess thermal energy to cool plasma';
+  } else {
+    return null;
   }
 
-  if (gluonLevel === 0) {
-    const upgradeState = state.upgrades?.plasma?.gluonBinding;
-    const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma.gluonBinding.baseCost;
-    const eligibility = getPlasmaUpgradeEligibility(state, 'gluonBinding');
-    const canAfford = amount(state, 'gluons').gte(cost);
-    return {
-      kind: 'upgrade-plasma',
-      category: 'plasma',
-      id: 'gluonBinding',
-      label: 'Synthesize Gluon Matrix',
-      cost,
-      currency: 'Gluons',
-      effect: '+1.5 Gluons/s',
-      enabled: eligibility.unlocked && canAfford
-    };
-  }
+  const upgradeState = state.upgrades?.plasma?.[targetId];
+  const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma[targetId].baseCost;
+  const discount = state.artifacts?.modifiers?.costDiscount || 0.0;
+  const effectiveCost = discount > 0 ? cost.times(1.0 - discount).floor() : cost;
+  const currencyKey = getPlasmaCurrencyKey(targetId);
+  const currencyLabel = getPlasmaCurrencyLabel(targetId);
+  const canAfford = amount(state, currencyKey).gte(effectiveCost);
 
-  if (gluonLevel >= 2 && leptonLevel === 0) {
-    const upgradeState = state.upgrades?.plasma?.leptonHarvest;
-    const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma.leptonHarvest.baseCost;
-    const eligibility = getPlasmaUpgradeEligibility(state, 'leptonHarvest');
-    const canAfford = amount(state, 'gluons').gte(cost);
-    return {
-      kind: 'upgrade-plasma',
-      category: 'plasma',
-      id: 'leptonHarvest',
-      label: 'Construct Lepton Collector',
-      cost,
-      currency: 'Gluons',
-      effect: '+1 Lepton/s',
-      enabled: eligibility.unlocked && canAfford
-    };
-  }
-
-  if (leptonLevel >= 1 && synthesizerLevel === 0) {
-    const upgradeState = state.upgrades?.plasma?.plasmaAutomation;
-    const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma.plasmaAutomation.baseCost;
-    const eligibility = getPlasmaUpgradeEligibility(state, 'plasmaAutomation');
-    const canAfford = amount(state, 'quarks').gte(cost);
-    return {
-      kind: 'upgrade-plasma',
-      category: 'plasma',
-      id: 'plasmaAutomation',
-      label: 'Synthesize Protons',
-      cost,
-      currency: 'Quarks',
-      effect: '3 Quarks + 1 Gluon → 1 Proton/s',
-      enabled: eligibility.unlocked && canAfford
-    };
-  }
-
-  if (synthesizerLevel >= 1 && radiatorLevel === 0) {
-    const upgradeState = state.upgrades?.plasma?.baryoRadiator;
-    const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma.baryoRadiator.baseCost;
-    const eligibility = getPlasmaUpgradeEligibility(state, 'baryoRadiator');
-    const canAfford = amount(state, 'protons').gte(cost);
-    return {
-      kind: 'upgrade-plasma',
-      category: 'plasma',
-      id: 'baryoRadiator',
-      label: 'Construct Baryogenesis Radiator',
-      cost,
-      currency: 'Protons',
-      effect: 'Consumes 2 Protons/s → −7,500 K/s',
-      enabled: eligibility.unlocked && canAfford
-    };
-  }
-
-  return null;
+  return {
+    kind: 'upgrade-plasma',
+    category: 'plasma',
+    id: targetId,
+    label: targetLabel,
+    cost: effectiveCost,
+    currency: currencyLabel,
+    effect: targetEffect,
+    enabled: canAfford
+  };
 }
 
 function getEraTwoPresentation(state) {

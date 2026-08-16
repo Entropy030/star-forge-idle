@@ -206,7 +206,8 @@ function renderPostureController(element, posture, onPostureChange) {
     group.addEventListener('keydown', (e) => {
       const buttons = [...group.querySelectorAll('.cosmos-posture-btn')];
       const activeId = element.dataset.activePosture || posture.active;
-      const currentIndex = buttons.findIndex(b => b.dataset.posture === activeId);
+      const focused = buttons.find(b => b === documentRef.activeElement || b === e.target);
+      const currentIndex = focused ? buttons.indexOf(focused) : buttons.findIndex(b => b.dataset.posture === activeId);
       if (currentIndex === -1) return;
 
       let nextIndex = -1;
@@ -218,7 +219,7 @@ function renderPostureController(element, posture, onPostureChange) {
         nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
       } else if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
-        const focused = buttons.find(b => b === documentRef.activeElement);
+        const focused = buttons.find(b => b === documentRef.activeElement || b === e.target);
         if (focused && focused.dataset.posture) {
           onPostureChange?.(focused.dataset.posture);
         }
