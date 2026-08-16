@@ -189,6 +189,11 @@ describe('Era-specific resource hierarchy', () => {
       '1.01M',
       '1.00B'
     ]);
+    expect(formatHudNumber(new Decimal(19.84))).toBe('19');
+    expect(formatHudNumber(new Decimal(19.99))).toBe('19');
+    expect(formatHudNumber(new Decimal(20.00))).toBe('20');
+    expect(formatHudNumber(new Decimal(0.9))).toBe('0');
+    expect(formatHudNumber(new Decimal(1234.5))).toBe('1,234');
     expect(formatHudValue(new Decimal(9.9), '%')).toBe('9.9%');
     expect(formatHudValue(new Decimal(10), '%')).toBe('10%');
     expect(formatHudValue(new Decimal(99.9), '%')).toBe('99.9%');
