@@ -78,11 +78,18 @@ The evaluator computes a single step’s throughput and bottleneck data. Cosmos 
 
 The implemented progression unlocks through Quark Condenser, Gluon Matrix Synthesis, Lepton Collector, Proton Synthesizer, and the cooling/radiator capability. Upgrade eligibility is level-based and authoritative in the plasma eligibility module.
 
-### Cooling
+### Cooling and Operating Posture Direction (Approved Design, Implementation Pending)
 
-Cooling is an active strategic process, not merely cosmetic temperature decay. The player must balance material throughput with progress toward a recombination-compatible plasma. UI guidance should state the current bottleneck and rate without turning the objective into a complete diagnostic report.
+Cooling is an active strategic process, not merely cosmetic temperature decay. The player must balance material throughput with progress toward a recombination-compatible plasma.
 
-### Recombination
+Following PRE-P4.4 evaluation (D25), an **Operating Posture Model** is approved as the future production design direction for Era II:
+- **`ACCUMULATE`:** Prioritizes raw matter / particle accumulation and infrastructure preparation.
+- **`BALANCE`:** Provides robust lower-attention progression without requiring active posture optimization.
+- **`CONDENSE`:** Prioritizes thermal stabilization / binding and becomes increasingly useful once sufficient matter infrastructure exists.
+
+*Implementation Note:* The live production baseline currently advances via single-mode thermodynamic simulation; live posture controls and command routing (`SET_PLASMA_POSTURE`) will be implemented during P4. Prototype multipliers ($\pm 50\%$) remain provisional calibration values.
+
+### Recombination and Cross-Era Handoff
 
 Recombination can become eligible through either supported route:
 
@@ -91,7 +98,8 @@ Recombination can become eligible through either supported route:
 
 The command additionally requires the active Era to be Era II. The UI may explain which route is currently satisfied but must not imply both are mandatory.
 
-Triggering Recombination permanently advances to Era III.
+Triggering Recombination permanently advances to Era III. Under the approved PRE-P4.4 design (D25), the cross-era handoff uses **Handoff A (constant 250 H starting Hydrogen in Era III)**.
+
 
 ## Era III — Stellar Evolution
 

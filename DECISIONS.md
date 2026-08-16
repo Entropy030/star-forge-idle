@@ -202,3 +202,40 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 - **Specification vs. Principle:** The prototype's exact numeric thresholds, state strings, particle counts, RGB colors, and animation quantities were disposable experimental evidence, not final production specifications. Production contracts require the semantic mapping relationship, not literal prototype values.
 - **Reduced-Motion Contract:** Every gameplay-relevant semantic visual state must retain complete informational equivalence under reduced motion. Nonessential particle turbulence and oscillation are replaced with static geometric alignment, distinct color gradients, and explicit accessible text (`#star-core[data-semantic-label]`). Motion may communicate state, but must never be the only channel conveying state.
 - **Status:** Design Approved; Production Implementation Pending.
+
+## D25 — Era II physical agency and operating posture model
+
+**Decision:** **ERA-II PHYSICAL POSTURE MODEL DESIGN APPROVED** as the approved product design direction for Era II. Retain **HANDOFF A (250 H constant baseline Starting Hydrogen)** for PRE-P4.4 design. The tested B30 normalized-quality handoff formula is rejected for PRE-P4.4. Production implementation is deferred to P4.
+
+**Conceptual Postures and Semantic Roles:**
+- **ACCUMULATE:** Prioritizes raw matter / particle accumulation and infrastructure preparation (+50% raw particle flux, reduced cooling/binding).
+- **BALANCE:** Provides robust lower-attention progression without requiring active posture optimization (1.0x baseline throughput).
+- **CONDENSE:** Prioritizes thermal stabilization / binding and becomes increasingly useful once sufficient matter infrastructure exists (+50% cooling, +30% binding, -50% raw particle flux).
+
+**Intended Design Rhythm:** Situational rather than symmetric (`build physical capacity → stabilize / convert physical state → reach Recombination`). No posture is universally optimal. Early `CONDENSE` is strongly inefficient when used before matter/radiator infrastructure exists, but verification proved it remains recoverable without deadlocking.
+
+**Evidence Boundaries and Measured Results:**
+- Standard Early Era-II state completed runs (prototype branch `antigravity/prototype-pre-p4-era2-agency`, commits `739a42c` and `b9de369`):
+  - `DELIBERATE_A_TO_B_TO_C`: `356.2s`
+  - `RECOVERY_WRONG_EARLY_40S`: `382.8s` (time delta: `+26.6s`)
+  - `RAPID_TOGGLE_1S`: `427.6s`
+  - `RAPID_TOGGLE_TICK`: `427.6s`
+  - `FIXED_BALANCE`: `428.1s`
+  - `FIXED_ACCUMULATE`: `520.1s`
+  - `FIXED_CONDENSE`: `615.7s`
+- **Durable Interpretation:**
+  1. Deliberate posture use can materially improve progression (`356.2s` vs `428.1s`).
+  2. `BALANCE` completes from the standard Early state (`428.1s`) and supports the intended lower-attention role.
+  3. Incorrect posture choices are recoverable (`382.8s`, a delay of only `26.6s` over optimal play); no permanent build trap was demonstrated.
+  4. **Rapid Switching Boundary:** No mathematical rapid-toggle optimization advantage was observed in the tested strategies (`427.6s` vs `428.1s` for Balance in Early; `86.6s–87.2s` vs `86.3s` in Mid). Human interaction and UX behavior remain future playtest questions.
+
+**Provisional Balance Values:** Prototype multipliers ($\pm 50\%$ flux vs cooling, $+30\%$ binding) remain provisional prototype calibration values and are **not approved production balance specifications**. Tuning is deferred to P4.
+
+**Handoff Decision and Rejection of Tested B30:**
+- **Selected Handoff:** Handoff A (constant 250 H Starting Hydrogen in Era III).
+- **Rejection Rationale:** The tested B30 normalized-quality handoff formula is rejected for PRE-P4.4 because across the standard successful strategy matrix ($n = 24$) it produced very little differentiation between otherwise distinct strategies (min 309 H, max 314 H, range 5 H, median 311 H, mean 311.42 H, std dev 1.44 H, relative separation 1.62%). Furthermore, in a separately tested high-matter reachable ready state, it was not invariant to post-readiness waiting (304 H at immediate trigger, 313 H at +60s, 311 H at +300s). Rejection is narrow to the tested formula; future cross-Era consequence mechanics are not permanently barred if a meaningful, non-exploitable design is developed.
+- **Corrected Era-III Downstream Effect:** In Era III, the first Fuser node (cost 100 H) is affordable immediately (0.0s) under both 250 H and 309–314 H. The actual measured effect was additional initial Gravity-node purchasing capacity (250 H: Fuser + Gravity 1–4, initial rate 40 H/s, 1,000 H reached in 18.8s; B30 median 311 H: Fuser + Gravity 1–5, initial rate 50 H/s, 1,000 H reached in 13.8s, saving 5.0s / 26.6% on the initial 1,000 H ramp).
+
+**Status:**
+- `DESIGN APPROVED: YES`
+- `PRODUCTION IMPLEMENTED: NO` (Implementation deferred to P4).
