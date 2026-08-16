@@ -249,5 +249,12 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 
 **Status:**
 - `DESIGN APPROVED: YES`
-- `PRODUCTION IMPLEMENTED: YES` (Implemented and Verified in P5.1).
+- `PRODUCTION IMPLEMENTED: YES` (Implemented and Verified in P5.1; Human Approved).
+
+**Deferred Design Finding (Resource Grammar):**
+- Human review confirmed: `CROSS-ERA RESOURCE LOCATION CONTRACT: PARTIALLY CONSISTENT — VISUAL DIFFERENCES REMAIN` / `RESOURCE GRAMMAR: NEEDS DEDICATED UI NORMALIZATION`.
+- Durable Principle: *"Era identity may change WHAT occupies a semantic information slot, but should not unnecessarily change WHERE the player looks for that slot."* Dedicated layout normalization scheduled for future UI milestone.
+
+**Implementation Debt Note (Buy Max):**
+- Global Buy Max uses the existing 10,000-loop sentinel convention (`EXISTING BUY-MODE IMPLEMENTATION DEBT`). Closed-form analytical pricing is deferred to future economy refactoring.
 

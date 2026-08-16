@@ -103,9 +103,9 @@ Cold-return facts appear in the Cosmos context as an ephemeral `WHILE YOU WERE A
 
 The region shows useful non-zero resource/physical changes, newly available transitions, discoveries/milestones, Observer decisions, paused automation, the eight-hour cap, and checkpoint failure when relevant. A sub-minute resource-only return remains hidden, but its credited simulation is still applied. The briefing is not a toast, does not steal focus, has a semantic heading and dismiss button, supports keyboard operation, uses no required motion, and collapses to one column at 390 px without covering primary actions.
 
-## Contextual interaction direction (Model C — Approved, Implementation Pending)
+## Contextual interaction direction (Model C — Implemented & Verified)
 
-Following PRE-P4.3 prototype evaluation (D23), **Model C (Contextual Quick Actions)** is the approved design direction for connecting the Cosmos universe view with immediately relevant player interventions.
+Following PRE-P4.3 prototype evaluation (D23), **Model C (Contextual Quick Actions)** is the approved design direction for connecting the Cosmos universe view with immediately relevant player interventions, implemented and verified in P4 Phase 2 and polished in P5.1.
 
 The approved interaction model follows:
 
@@ -124,10 +124,35 @@ Guardrails:
 4. **Authority & Mutation:** Contextual selectors must be pure and read-only. Clicking a projected quick action dispatches the existing canonical engine command through `dispatchEngineCommand()` without bypassing eligibility or cost rules.
 5. **Shared Economy & Eligibility Authority:** Presentation layers (Cosmos and Forge) must not reimplement or duplicate pricing, discount, eligibility, or readiness formulas. All purchase details (effective cost, currency, affordability, eligibility) and milestone readiness states derive from authoritative domain helpers (e.g. `getPlasmaUpgradePurchaseDetails`, `getRecombinationEligibility`). When an era milestone is ready, foundational upgrade quick actions are suppressed (`action = null`) to maintain focus on the explicit milestone transition.
 
-## Star Core visual causality (Approved, Implementation Pending)
+## Star Core visual causality (Implemented & Verified)
 
-Following PRE-P4.3 prototype evaluation (D24), **Core Visual Causality** is approved as a durable UI/UX design principle: The Star Core / Universe View is primarily a physical-state visualizer. Meaningful physical state changes should create readable semantic visual changes where practical.
+Following PRE-P4.3 prototype evaluation (D24), **Core Visual Causality** is approved as a durable UI/UX design principle, implemented and verified in P4 Phase 3: The Star Core / Universe View is primarily a physical-state visualizer. Meaningful physical state changes create readable semantic visual changes where practical.
 
 Contract:
 1. **Semantic Derivation:** Authoritative numerical state maps to semantic physical state classes (e.g. quantum fluctuation density, plasma thermal stabilization, protostar core fusion phases) that modulate Canvas 2D rendering.
-2. **Reduced-Motion Equivalence:** Every gameplay-relevant semantic visual state must retain complete informational equivalence under system or in-game reduced motion. High-frequency turbulence, orbital motion, and pulse rates are replaced with static geometry, distinct color gradients, and explicit accessible text attributes (`#star-core[data-semantic-label]`). Motion may enhance presentation, but must never be the exclusive medium for state comprehension.
+2. **Reduced-Motion Equivalence:** Every gameplay-relevant semantic visual state must retain complete informational equivalence under system reduced motion (`prefers-reduced-motion: reduce`). High-frequency turbulence, orbital motion, and pulse rates are replaced with static geometry, distinct color gradients, and explicit accessible text attributes (`#star-core[data-semantic-label]`). Motion may enhance presentation, but must never be the exclusive medium for state comprehension.
+
+## Durable Cross-Era Resource Grammar Principle (P5.1 Deferred Finding)
+
+Human review in P5.1 confirmed that while Era I, Era II, and Era III share the same visual aesthetic, cross-era resource placement is partially consistent with visual differences remaining across eras.
+
+**Durable Principle:**
+> *"Era identity may change WHAT occupies a semantic information slot, but should not unnecessarily change WHERE the player looks for that slot."*
+
+Future layout normalization in P5.2/P5.3 should investigate a consistent cross-era surface hierarchy resembling:
+
+```text
+OBJECTIVE / NEXT
+        ↓
+PRIMARY STATE / PRIMARY RESOURCE
+        ↓
+STAR CORE
+        ↓
+ERA-SPECIFIC PHYSICAL CONTROL / CONTEXT
+        ↓
+CURRENT PROCESS
+        ↓
+SUPPORT RESOURCES
+        ↓
+CHRONO
+```

@@ -21,15 +21,31 @@ graph TD
   P5_3 --> P5_4["P5.4 — Coarse Balance & Full Run\n(Order-of-Magnitude Viability)"]
 ```
 
-### P5.1 — Interaction & UI Integrity (Active Phase)
+### P5.1 — Interaction & UI Integrity (Complete & Human Approved)
 Eliminates interaction bugs, presentation inconsistencies, and digit jitter across all current surfaces before executing gameplay restructures:
 - **Whole-number visible stock balances:** Truncated display floor prevents misleading affordability indicators while retaining underlying high-precision Decimal state.
 - **Model-C Contextual Quick Action Integrity:** Resolves stale closure event capture in Era-II Cosmos so enabled contextual actions dispatch and execute reliably.
 - **Era-III Buy Max Correction:** Fixes hardcoded unit purchasing on Forge Stellar Core nodes so `Buy 10` and `Buy Max` execute iterative multi-level purchases.
+  - *Note:* Buy Max currently uses the existing 10,000-loop sentinel convention (`EXISTING BUY-MODE IMPLEMENTATION DEBT`). Analytical closed-form pricing is deferred to future economy refactoring.
 - **Header Alignment Normalization:** Aligns Era-II top-header and Matter Production status panels with existing design system hierarchy.
-- **Codex & Archive Geometry Stability:** Locks navigation column geometry so article selection never introduces layout shifts.
-- **Cross-Era Information Grammar:** Normalizes resource placement hierarchy (Primary, Support, Rates, Process, Gateway) across Eras I–III.
+- **Codex & Archive Geometry Stability:** Locks navigation column geometry (`200px` fixed width) so article selection never introduces layout shifts.
 - **Reduced Motion Settings Simplification:** Removes redundant player-facing setting toggle while preserving 100% OS-level `prefers-reduced-motion: reduce` compliance across CSS and Canvas.
+
+#### Deferred Design Finding — Cross-Era Resource Grammar
+Human review in P5.1 established:
+```text
+CROSS-ERA RESOURCE LOCATION CONTRACT:
+PARTIALLY CONSISTENT — VISUAL DIFFERENCES REMAIN
+
+RESOURCE GRAMMAR:
+NEEDS DEDICATED UI NORMALIZATION
+```
+- **Review Confirmation:** Eras I, II, and III share the same visual aesthetic, but their resource and primary-state information architecture is not yet sufficiently location-consistent (e.g. Primary HUD card populated in Eras I/II vs. Support-only in Era III; Gateway locations split across Cosmos, Forge, and Legacy).
+- **Resolution Strategy:** This is not a blocker for P5.1 integrity fixes. It requires a deliberate cross-era layout-normalization pass in P5.2/P5.3 rather than an ad-hoc patch.
+- **Durable Principle:**
+  > *"Era identity may change WHAT occupies a semantic information slot, but should not unnecessarily change WHERE the player looks for that slot."*
+- **Candidate Normalization Surface Hierarchy:**
+  $$\text{OBJECTIVE / NEXT} \longrightarrow \text{PRIMARY STATE / PRIMARY RESOURCE} \longrightarrow \text{STAR CORE} \longrightarrow \text{ERA-SPECIFIC PHYSICAL CONTROL / CONTEXT} \longrightarrow \text{CURRENT PROCESS} \longrightarrow \text{SUPPORT RESOURCES} \longrightarrow \text{CHRONO}$$
 
 ### P5.2 — Progression & Mechanic Introduction (Future Scope)
 - Meaningful introduction and onboarding for newly revealed mechanics.
@@ -89,7 +105,7 @@ To inform P5.2 and P5.3 design without cloning features or destabilizing scope, 
 | Milestone | Scope Summary | Implementation Status | Publication Status |
 | :--- | :--- | :---: | :---: |
 | **P4 Overall** | Era-II Postures, Model C, Core Causality, Handoff A | **Complete** | **`p4-stable-v1` Published** |
-| **P5.1** | Interaction & UI Integrity (Whole Numbers, Model C, Buy Max, Layouts) | **In Progress** | **Local Only** |
+| **P5.1** | Interaction & UI Integrity (Whole Numbers, Model C, Buy Max, Layouts) | **Complete (Human Approved)** | **Published to `star/main`** |
 | **P5.2** | Progression & Narrative Transitions (Prestige Onboarding) | *Not Started* | *Pending* |
 | **P5.3** | Incremental Systems & Agency (Stock / Flow / Conversion / Policy) | *Not Started* | *Pending* |
 | **P5.4** | Coarse Balancing & Playable Full Run Validation | *Not Started* | *Pending* |
