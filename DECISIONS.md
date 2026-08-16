@@ -286,3 +286,26 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 - `DESIGN APPROVED: YES` (Structural Mechanic Human Approved & Published).
 - `PRODUCTION IMPLEMENTED: NO` (Implementation deferred to P5.3).
 
+## D29 — Era-III Hydrostatic Stellar Engine: Capacity / Throughput + Thermal Capability (Pre-P5.3B)
+
+**Decision:**
+1. **Structural Architecture Human Approved:** The **Hydrostatic Stellar Engine — Model B1** is formally approved as the authoritative structural architecture for Era III.
+2. **Coupled Machine Mechanics:**
+   - **Gravity:** Controls Hydrogen inflow rate and fuel containment capacity.
+   - **Fusers:** Control Hydrogen $\to$ Helium conversion throughput.
+   - **Compression:** Converts accumulated Helium into Core Temperature through discrete core densification.
+   - **Core Temperature:** Operates as an active physical capability state that continuously scales reaction velocities across active burning layers while retaining authoritative threshold gates ($10\text{M K}$ Main Sequence, $500\text{M K}$ Carbon Synthesizer, $2.0\text{B K}$ Iron Synthesizer, $100\text{M K}$ Supernova temperature check).
+3. **Core Player Agency:** Derived from diagnosing and investing against changing physical bottlenecks (Fuel Inflow vs. Conversion Throughput vs. Core Densification vs. Heavy Nucleosynthesis).
+4. **Preservation of Late-Game Architecture:** Stellar Configuration (**Efficient / Massive / Compact**) remains strategically meaningful and deliberately shapes the predicted remnant (**White Dwarf, Black Hole, Pulsar, Neutron Star**) and final Supernova rewards.
+5. **First-Run Compact Automation Identity:** Compact configuration provides an authentic, high-value identity through early stochastic Pulsar Shard generation ($0.01\text{ Shard/s/lvl} = 36\text{ Shards/hour/lvl}$) and low-cost Auto-Compression ($1\text{ Shard}$), while remaining non-mandatory (manual compression burden for non-Compact paths is $\le 4\text{ clicks}$ via BuyMax/Buy10).
+6. **Explicitly Rejected Non-Minimal Mechanics:**
+   - No passive Gravity heating (rejected to avoid Gravity God-Stat dominance);
+   - No stage-dependent lifecycle multiplier layer (rejected as arbitrary scripted phase bloat);
+   - No permanent Compression retention multiplier tree (rejected as redundant complexity);
+   - No new currency;
+   - No dedicated policy / posture selector (preserves Era II's unique mechanical identity).
+7. **Deferred Calibration Details:** Exact Temperature feedback formulas and logarithmic coefficients, containment coupling scaling, Compression base costs and scaling, and overall pacing and playtime balance through the full Era-III arc remain deliberately unapproved and are deferred to P5.3/P5.4.
+
+**Status:**
+- `DESIGN APPROVED: YES` (Structural Mechanic Human Approved & Published).
+- `PRODUCTION IMPLEMENTED: NO` (Implementation deferred to P5.3).

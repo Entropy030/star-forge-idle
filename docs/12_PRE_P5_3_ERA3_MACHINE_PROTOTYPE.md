@@ -5,16 +5,17 @@
 ## 1. Executive Summary & Review Status
 
 ### Status & Boundaries
-- **Status:** `PROTOTYPE / DESIGN EVIDENCE — FINAL FULL-ERA EVIDENCE COMPLETION (AWAITING HUMAN REVIEW)`
-- **Scope:** Design evidence and ablation analysis only. **Zero production gameplay implementation.**
-- **Baseline:** `43991abd03f4c22d687318c0cf3a323d089c674d` (P5.1, P5 Design Synthesis, Pre-P5.3A Human Approved & Published).
-- **Authoritative Directives:** D27 (P5 Design Synthesis — Hydrostatic Stellar Engine direction approved; no new posture selector approved).
+- **Status:** `HUMAN APPROVED & PUBLISHED` (Decision D29 in `DECISIONS.md`).
+- **Scope:** Authoritative design evidence and structural prototype contract. **Zero production gameplay implementation.**
+- **Baseline:** Published `star/main` baseline.
+- **Authoritative Directives:** D27 (P5 Design Synthesis — Hydrostatic Stellar Engine direction approved); D29 (Model B1 Structural Contract Human Approved).
 
 ### Final Structural Conclusion
 ```text
 ============================================================
 PRE-P5.3B FINAL STRUCTURAL CONCLUSION:
-MODEL B1 IS STRUCTURALLY VALIDATED ACROSS FULL ERA-III PROGRESSION
+MODEL B1 IS HUMAN APPROVED ACROSS FULL ERA-III PROGRESSION
+
 
 RECOMMENDATION:
 RECOMMENDED FOR HUMAN APPROVAL AS THE AUTHORITATIVE ERA-III MODEL
