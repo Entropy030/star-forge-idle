@@ -1,9 +1,10 @@
 # P4 Design Brief — Physical Agency, Contextual Cosmos, and Visual Causality
 
-> **Document Status:** DRAFT FOR HUMAN REVIEW  
-> **Production Implementation:** NOT STARTED  
-> **Target Milestone:** P4 (Pre-P4 Decisions Productionization)  
+> **Document Status:** 🟢 APPROVED BY HUMAN REVIEW
+> **Production Implementation:** READY FOR PHASE 1
+> **Target Milestone:** P4 (Pre-P4 Decisions Productionization)
 > **Authoritative Baseline:** `main` after PRE-P4.4 / D25 closure (commit `3f9c3a7`)
+
 
 ---
 
@@ -213,18 +214,19 @@ The Star Core must provide readable visual feedback corresponding to underlying 
 
 | Authoritative State | Semantic Requirement | Visual Feedback Direction | Accessible Fallback |
 | :--- | :--- | :--- | :--- |
-| **Thermal Intensity ($T$)** | Hotter plasma appears more energetic / thermally intense; cooler plasma appears stabilized. | High-temp bloom / white-blue shift $\rightarrow$ cool amber/gold stabilization. | `#star-core[data-thermal-state]` + descriptive text. |
+| **Thermal Intensity ($T$)** | Hotter plasma appears more energetic / thermally intense; cooler plasma appears stabilized. | Visibly communicates high thermal intensity/energy at high temperatures, transitioning to stabilized, concentrated emission as plasma cools. | `#star-core[data-thermal-state]` + descriptive text. |
 | **`ACCUMULATE`** | Visibly communicates high matter influx and energetic agitation. | Increased particle agitation and outward flux. | `#star-core[data-posture="ACCUMULATE"]` + `"Posture: Accumulate"`. |
 | **`BALANCE`** | Visibly communicates steady-state equilibrium. | Balanced harmonic orbital motion. | `#star-core[data-posture="BALANCE"]` + `"Posture: Balance"`. |
 | **`CONDENSE`** | Visibly communicates inward concentration and thermal binding. | Compact core density and inward particle flow. | `#star-core[data-posture="CONDENSE"]` + `"Posture: Condense"`. |
-| **Recombination Readiness** | Distinct from ordinary in-progress plasma. | Calm, unified corona indicating neutral gas formation. | `#star-core[data-transition-ready="true"]` + `"Recombination Ready"`. |
+| **Recombination Readiness** | Distinct from ordinary in-progress plasma. | Visibly communicates stable neutral gas formation, clearly distinguishable from in-progress energetic plasma. | `#star-core[data-transition-ready="true"]` + `"Recombination Ready"`. |
 
 ### B. Art & Animation Tuning (Production-Tunable)
 The following visual parameters are explicitly designated as production-tunable during implementation and do not form rigid acceptance criteria:
 * Exact RGB color values and gradient stops;
-* Particle count (capped at max 200 for performance);
+* Particle counts within the bounded particle pool (utilizing the existing CanvasCore `MAX_PARTICLES` engine limit of 200);
 * Orbit velocities, pulse frequencies, and oscillation amplitudes;
 * Exact intermediate thermal interpolation curves.
+
 
 ### Reduced-Motion Contract
 Under reduced-motion preference:
@@ -307,8 +309,9 @@ Under reduced-motion preference:
 
 * **Mobile Touch Targets:** Primary controls (posture selectors and quick-action buttons) must satisfy standard minimum touch targets (`>= 44px` effective height).
 * **Keyboard Navigation:** Posture selection supports standard keyboard interaction (Tab navigation and Space/Enter selection, or standard radio arrow navigation).
+* **Visible Focus:** Compliant visible focus indicators (`:focus-visible`) across all interactive posture selectors, quick actions, and milestone buttons.
 * **Non-Color Indicators:** Active posture is distinguished by text weight, high-contrast borders, active indicators, and background shading.
-* **Layout Stability:** Reserved dimensions in layout containers ensure state changes do not cause observable layout shifts.
+* **Mobile Geometry & Stability:** No horizontal overflow or layout clipping at the established 390×844 mobile viewport baseline; reserved dimensions in layout containers ensure state changes do not cause observable layout shifts.
 
 ---
 
@@ -373,8 +376,8 @@ Under reduced-motion preference:
 ### C. Visual Causality & Accessibility
 * [ ] Star Core Canvas 2D visibly modulates thermal state and posture feedback.
 * [ ] Reduced-motion mode provides equivalent semantic information via DOM attributes and text.
-* [ ] Controls satisfy mobile touch target baseline (`>= 44px`) and keyboard operability.
-* [ ] Tested layouts exhibit no observable layout instability.
+* [ ] Controls satisfy mobile touch target baseline (`>= 44px`), visible focus indicators (`:focus-visible`), and keyboard operability.
+* [ ] 390×844 mobile layout exhibits zero horizontal overflow and no observable layout instability.
 
 ### D. Offline & Persistence
 * [ ] Selected posture persists across save/load, reload, and offline catch-up.
@@ -407,10 +410,11 @@ PHASE 3: Era-II Star Core Semantic Visual Causality & Accessibility
   Validation: Visual rendering tests, reduced-motion attribute verification, mobile geometry check.
 
 PHASE 4: Recombination Handoff A Enforcement & Integration Validation
-  Scope: Replace legacy starting Hydrogen formula with constant 250 H, align Era-II guidance, full suite pass.
+  Scope: Enforce constant 250 H starting Hydrogen in TRIGGER_RECOMBINATION (ensuring post-transition Hydrogen is strictly 250 H regardless of pre-transition Era-II Hydrogen residue), align Era-II guidance, full suite pass.
   Files: src/eras/plasma/commands.js, src/core/objectiveDefinitions.js, tests/.
   Validation: Complete FAST, FULL, and BROWSER test suites, documentation synchronization.
 ```
+
 
 ---
 
