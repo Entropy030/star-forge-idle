@@ -82,9 +82,8 @@ export const plasmaCommandHandlers = {
 
     state.activeEpoch = 3;
 
-    let electronBonus = state.resources.electrons.amount;
-    let startingHydrogen = state.resources.protons.amount.times(1.5).plus(electronBonus).max(250);
-    state.resources.hydrogen.amount = state.resources.hydrogen.amount.plus(startingHydrogen);
+    // Handoff A (D25): Era III Starting Hydrogen is strictly and deterministically constant 250 H.
+    state.resources.hydrogen.amount = new Decimal(250);
 
     if (state.resources.antimatterResidue) {
       let residueGained = state.resources.protons.amount.div(1000).clampMin(1).round();

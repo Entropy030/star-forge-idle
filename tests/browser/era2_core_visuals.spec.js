@@ -66,6 +66,11 @@ test.describe('Era-II Star Core Semantic Visual Causality & Accessibility (Phase
     const readyAria = await starCore.getAttribute('aria-label');
     expect(readyAria).toContain('Cosmic Recombination is ready');
 
+    // 6. Verify Fresh Era III baseline enforces Handoff A (250 H starting Hydrogen)
+    await loadPlaytestPreset(page, 'Fresh Era III');
+    await expect(page.locator('#active-epoch-name')).toContainText('Era III');
+    await expect(page.locator('.resource-card[data-resource-id="hydrogen"] .resource-card-value')).toHaveText('250');
+
     // Verify no browser errors
     expect(errors).toEqual([]);
   });

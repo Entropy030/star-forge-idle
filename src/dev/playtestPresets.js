@@ -68,7 +68,7 @@ export function getPresetEraIIRecombinationReady() {
 export function getPresetFreshEraIII() {
   const state = getPresetEraIIRecombinationReady();
   state.activeEpoch = 3;
-  state.resources.hydrogen.amount = new Decimal(100);
+  state.resources.hydrogen.amount = new Decimal(250);
   state.era3.temperature = new Decimal(2000);
   state.era3.stage = "Protostar";
   return state;
