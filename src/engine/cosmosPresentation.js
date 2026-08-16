@@ -4,7 +4,11 @@ import { getCompressionHeatYield, getMilestoneMultiplier } from '../core/economy
 import { getInflationEligibility } from '../eras/quantum/inflation.js';
 import { getVacuumCoherenceRates, isInflationPreparationRelevant, isVacuumCoherenceRelevant } from '../eras/quantum/coherence.js';
 import { computePlasmaStep } from '../eras/plasma/evaluator.js';
-import { getPlasmaUpgradeEligibility, getRecombinationEligibility } from '../eras/plasma/eligibility.js';
+import {
+  getPlasmaUpgradeEligibility,
+  getPlasmaUpgradePurchaseDetails,
+  getRecombinationEligibility
+} from '../eras/plasma/eligibility.js';
 import { getGalacticIgnitionEligibility, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 
 const ZERO = new Decimal(0);
@@ -54,7 +58,7 @@ function getEraOnePresentation(state) {
       metrics: coherenceRelevant ? [
         { label: 'Passive stabilization', value: coherenceRates.passiveRate, unit: '%/s', prefix: '+' },
         { label: 'Observation', value: coherenceRates.observationGain, unit: '%', prefix: '+' },
-        ...(inflationRelevant ? [{ label: 'Inflation target', value: new Decimal(100), unit: '%' }] : [])
+        { label: 'Inflation target', value: new Decimal(100), unit: '%' }
       ] : [],
       ariaLabel: inflationRelevant
         ? `Observe the core to add a quantum fluctuation and ${coherenceRates.observationGain.toString()} percent Vacuum Coherence.`
@@ -125,19 +129,12 @@ function getEraTwoPosturePresentation(state) {
   };
 }
 
-function getPlasmaCurrencyKey(upgradeId) {
-  if (upgradeId === 'quarkCondenser' || upgradeId === 'plasmaAutomation') return 'quarks';
-  if (upgradeId === 'gluonBinding' || upgradeId === 'leptonHarvest') return 'gluons';
-  return 'protons';
-}
-
-function getPlasmaCurrencyLabel(upgradeId) {
-  if (upgradeId === 'quarkCondenser' || upgradeId === 'plasmaAutomation') return 'Quarks';
-  if (upgradeId === 'gluonBinding' || upgradeId === 'leptonHarvest') return 'Gluons';
-  return 'Protons';
-}
-
 function getEraTwoAction(state) {
+  const recombinationEligibility = getRecombinationEligibility(state);
+  if (recombinationEligibility.isEligible) {
+    return null;
+  }
+
   const gluonEligibility = getPlasmaUpgradeEligibility(state, 'gluonBinding');
   const leptonEligibility = getPlasmaUpgradeEligibility(state, 'leptonHarvest');
   const synthesizerEligibility = getPlasmaUpgradeEligibility(state, 'plasmaAutomation');
@@ -189,23 +186,17 @@ function getEraTwoAction(state) {
     return null;
   }
 
-  const upgradeState = state.upgrades?.plasma?.[targetId];
-  const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma[targetId].baseCost;
-  const discount = state.artifacts?.modifiers?.costDiscount || 0.0;
-  const effectiveCost = discount > 0 ? cost.times(1.0 - discount).floor() : cost;
-  const currencyKey = getPlasmaCurrencyKey(targetId);
-  const currencyLabel = getPlasmaCurrencyLabel(targetId);
-  const canAfford = amount(state, currencyKey).gte(effectiveCost);
+  const purchaseDetails = getPlasmaUpgradePurchaseDetails(state, targetId);
 
   return {
     kind: 'upgrade-plasma',
     category: 'plasma',
     id: targetId,
     label: targetLabel,
-    cost: effectiveCost,
-    currency: currencyLabel,
+    cost: purchaseDetails.cost,
+    currency: purchaseDetails.currencyLabel,
     effect: targetEffect,
-    enabled: canAfford
+    enabled: purchaseDetails.isAffordable
   };
 }
 

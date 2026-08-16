@@ -122,6 +122,7 @@ Guardrails:
 2. **Major Decision Boundary:** Model C must not act as a universal "NEXT" trigger for major irreversible or meta commitments. Supernova remains a player-authored Legacy decision; Inflation and Recombination remain explicit cosmic milestone triggers.
 3. **Mobile Touch Target Contract:** Contextual quick action buttons must satisfy the repository mobile baseline of `>= 44px` effective touch height and area.
 4. **Authority & Mutation:** Contextual selectors must be pure and read-only. Clicking a projected quick action dispatches the existing canonical engine command through `dispatchEngineCommand()` without bypassing eligibility or cost rules.
+5. **Shared Economy & Eligibility Authority:** Presentation layers (Cosmos and Forge) must not reimplement or duplicate pricing, discount, eligibility, or readiness formulas. All purchase details (effective cost, currency, affordability, eligibility) and milestone readiness states derive from authoritative domain helpers (e.g. `getPlasmaUpgradePurchaseDetails`, `getRecombinationEligibility`). When an era milestone is ready, foundational upgrade quick actions are suppressed (`action = null`) to maintain focus on the explicit milestone transition.
 
 ## Star Core visual causality (Approved, Implementation Pending)
 

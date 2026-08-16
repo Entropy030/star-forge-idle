@@ -34,6 +34,45 @@ export function getPlasmaUpgradeEligibility(state, upgradeId) {
   };
 }
 
+export function getPlasmaCurrencyKey(upgradeId) {
+  if (upgradeId === 'quarkCondenser' || upgradeId === 'plasmaAutomation') return 'quarks';
+  if (upgradeId === 'gluonBinding' || upgradeId === 'leptonHarvest') return 'gluons';
+  return 'protons';
+}
+
+export function getPlasmaCurrencyLabel(upgradeId) {
+  if (upgradeId === 'quarkCondenser' || upgradeId === 'plasmaAutomation') return 'Quarks';
+  if (upgradeId === 'gluonBinding' || upgradeId === 'leptonHarvest') return 'Gluons';
+  return 'Protons';
+}
+
+export function getPlasmaUpgradePurchaseDetails(state, upgradeId) {
+  const def = COSMIC_REGISTRY.upgrades?.plasma?.[upgradeId];
+  const upgradeState = state.upgrades?.plasma?.[upgradeId];
+  const baseCost = upgradeState?.cost || def?.baseCost || new Decimal(0);
+  const discount = state.artifacts?.modifiers?.costDiscount || 0.0;
+  const effectiveCost = discount > 0 ? baseCost.times(1.0 - discount).floor() : baseCost;
+  const currencyKey = getPlasmaCurrencyKey(upgradeId);
+  const currencyLabel = getPlasmaCurrencyLabel(upgradeId);
+  const resourceAmount = state.resources?.[currencyKey]?.amount || new Decimal(0);
+  const isAffordable = resourceAmount.gte(effectiveCost);
+  const eligibility = getPlasmaUpgradeEligibility(state, upgradeId);
+  const isMaxed = def?.max !== undefined && (upgradeState?.level || 0) >= def.max;
+
+  return {
+    upgradeId,
+    cost: effectiveCost,
+    baseCost,
+    currencyKey,
+    currencyLabel,
+    discount,
+    isAffordable,
+    isMaxed,
+    isEligible: eligibility.unlocked,
+    eligibility
+  };
+}
+
 export function getRecombinationEligibility(state) {
   const protonThreshold = COSMIC_REGISTRY.constants.recombinationProtonThreshold;
   const correctEpoch = state.activeEpoch === 2;

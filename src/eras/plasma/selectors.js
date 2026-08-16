@@ -1,6 +1,12 @@
 import { computePlasmaStep } from './evaluator.js';
 import { getPlasmaUpgradeEligibility } from './eligibility.js';
-export { getPlasmaUpgradeEligibility, getRecombinationEligibility } from './eligibility.js';
+export {
+  getPlasmaUpgradeEligibility,
+  getRecombinationEligibility,
+  getPlasmaCurrencyKey,
+  getPlasmaCurrencyLabel,
+  getPlasmaUpgradePurchaseDetails
+} from './eligibility.js';
 export { getQuarkGluonImbalanceMultiplier } from './imbalance.js';
 
 export function getPlasmaRates(state) {

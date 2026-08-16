@@ -328,6 +328,58 @@ describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () =>
       expect(pres.process.action).toBeNull();
     });
 
+    it('suppresses contextual upgrade actions when Recombination is ready via protons route', () => {
+      const state = createInitialState();
+      state.activeEpoch = 2;
+      state.upgrades.plasma.quarkCondenser.level = 3;
+      state.upgrades.plasma.gluonBinding.level = 2;
+      state.upgrades.plasma.leptonHarvest.level = 1;
+      state.upgrades.plasma.plasmaAutomation.level = 1;
+      state.upgrades.plasma.baryoRadiator.level = 0; // unconstructed
+      state.resources.protons.amount = new Decimal(1000000); // Recombination threshold met (1M protons)
+
+      const pres = getCosmosPresentation(state);
+      expect(pres.primary.ready).toBe(true);
+      expect(pres.transition.ready).toBe(true);
+      expect(pres.process.action).toBeNull(); // Action cleanly suppressed
+    });
+
+    it('suppresses contextual upgrade actions when Recombination is ready via temperature route', () => {
+      const state = createInitialState();
+      state.activeEpoch = 2;
+      state.upgrades.plasma.quarkCondenser.level = 3;
+      state.upgrades.plasma.gluonBinding.level = 2;
+      state.upgrades.plasma.leptonHarvest.level = 1;
+      state.upgrades.plasma.plasmaAutomation.level = 1;
+      state.upgrades.plasma.baryoRadiator.level = 0; // unconstructed
+      state.plasmaTemperature = new Decimal(3000); // Recombination temp met
+
+      const pres = getCosmosPresentation(state);
+      expect(pres.primary.ready).toBe(true);
+      expect(pres.transition.ready).toBe(true);
+      expect(pres.process.action).toBeNull(); // Action cleanly suppressed
+    });
+
+    it('computes effective cost, currency and affordability via shared getPlasmaUpgradePurchaseDetails', () => {
+      const state = createInitialState();
+      state.activeEpoch = 2;
+      state.upgrades.plasma.quarkCondenser.level = 0;
+      state.upgrades.plasma.quarkCondenser.cost = new Decimal(100);
+      state.artifacts = { modifiers: { costDiscount: 0.25 } };
+      state.resources.quarks.amount = new Decimal(75);
+
+      const pres = getCosmosPresentation(state);
+      expect(pres.process.action).not.toBeNull();
+      expect(pres.process.action.cost.toNumber()).toBe(75); // 100 * (1 - 0.25)
+      expect(pres.process.action.currency).toBe('Quarks');
+      expect(pres.process.action.enabled).toBe(true);
+
+      // Decrement balance below discounted cost
+      state.resources.quarks.amount = new Decimal(74);
+      const presUnaffordable = getCosmosPresentation(state);
+      expect(presUnaffordable.process.action.enabled).toBe(false);
+    });
+
     it('renders contextual action button inside cosmos-process-status and handles click dispatch', () => {
       const state = engine.getStateUnsafe();
       state.activeEpoch = 2;

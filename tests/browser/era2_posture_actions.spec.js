@@ -82,15 +82,11 @@ test.describe('Era-II Cosmos Posture Controls & Model-C Contextual Actions (Phas
     await expect(accumBtn).toHaveAttribute('aria-checked', 'true');
     await expect(accumBtn).toBeFocused();
 
-    // 6. Load Recombination Ready -> Baryogenesis Radiator is projected
+    // 6. Load Recombination Ready -> Posture controls visible, contextual upgrade action absent, transition button available
     await loadPlaytestPreset(page, 'Recombination Ready');
     await expect(posturePanel).toBeVisible();
-    await expect(actionBtn).toBeVisible();
-    await expect(actionBtn).toHaveText(/Construct Baryogenesis Radiator/);
-
-    // Purchase the 5th pipeline upgrade -> action completes and becomes absent (null)
-    await actionBtn.click();
-    await expect(actionBtn).toHaveCount(0); // Quick action cleanly absent
+    await expect(actionBtn).toHaveCount(0); // Quick action cleanly suppressed upon Recombination readiness
+    await expect(page.locator('#btn-recombination')).toBeVisible();
 
     overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, 'Recombination Ready 390px overflow').toBeLessThanOrEqual(0);
