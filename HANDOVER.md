@@ -193,6 +193,6 @@ Future maintenance:
 9. **PRE-P4.2 complete:** valid cold returns share the authoritative runtime tick, major decisions remain player-authored, successful catch-up checkpoints before live scheduling, and an ephemeral accessible briefing summarizes meaningful change.
 10. **PRE-P4.3 complete:** Model C (Contextual Quick Actions) and Star Core visual causality are approved as product direction (D23, D24); Model E persistent stage is rejected for current scope; the prototype branch `antigravity/prototype-pre-p4-interaction` is preserved as disposable experimental evidence; production implementation is deferred to P4.
 11. **PRE-P4.4 complete:** Era-II Physical Agency / Operating Posture model is approved as design direction (D25); semantic postures (`ACCUMULATE`, `BALANCE`, `CONDENSE`) are validated; provisional multipliers remain unapproved; Handoff A (constant 250 H Starting Hydrogen) is selected; tested B30 formula is rejected; the prototype branch `antigravity/prototype-pre-p4-era2-agency` (commits `739a42c`, `b9de369`) is preserved as disposable experimental evidence; production implementation is deferred to P4.
-12. **Next:** P4 Design Brief.
+12. **Next:** P4 Design Brief (drafted in [docs/08_P4_DESIGN_BRIEF.md](docs/08_P4_DESIGN_BRIEF.md), awaiting human review).
 
 Full evidence and follow-up boundaries are in [docs/P3_STABILIZATION_AUDIT.md](docs/P3_STABILIZATION_AUDIT.md).

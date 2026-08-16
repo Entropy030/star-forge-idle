@@ -25,6 +25,8 @@ Requires Node.js 22.13 or newer.
 8. [UI/UX architecture TDD](docs/06_TDD_UI_UX_Architecture.md) — surface ownership and rendering contracts.
 9. [Testing and CI](docs/07_TESTING_AND_CI.md) — current validation commands, lanes, coverage, and CI triggers.
 10. [Documentation policy](docs/DOCUMENTATION_POLICY.md) — lightweight source-of-truth rules.
+11. [P4 Design Brief](docs/08_P4_DESIGN_BRIEF.md) — production design specification for Era-II agency, Model C, and visual causality.
+
 
 Focused references:
 
