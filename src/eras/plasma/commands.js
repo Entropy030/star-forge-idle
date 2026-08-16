@@ -2,8 +2,43 @@
 import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getQuarkGluonImbalanceMultiplier } from './imbalance.js';
 import { getPlasmaUpgradeEligibility, getRecombinationEligibility } from './eligibility.js';
+import { PLASMA_POSTURES } from './constants.js';
 
 export const plasmaCommandHandlers = {
+  SET_PLASMA_POSTURE: (state, cmd) => {
+    if (state.activeEpoch !== 2) {
+      return { ok: false, changed: false, events: [], error: { code: 'UNHANDLED_EPOCH' } };
+    }
+    if (!state.era2 || typeof state.era2 !== 'object') {
+      return { ok: false, changed: false, events: [], error: { code: 'INVALID_STATE' } };
+    }
+
+    const posture = cmd.payload?.posture;
+    if (!PLASMA_POSTURES.includes(posture)) {
+      return { ok: false, changed: false, events: [], error: { code: 'INVALID_POSTURE' } };
+    }
+
+    if (state.era2.posture === posture) {
+      return { ok: true, changed: false, events: [] };
+    }
+
+    const previousPosture = state.era2.posture || 'BALANCE';
+    state.era2.posture = posture;
+
+    return {
+      ok: true,
+      changed: true,
+      events: [
+        {
+          type: 'PLASMA_POSTURE_CHANGED',
+          epoch: 2,
+          posture,
+          previousPosture
+        }
+      ]
+    };
+  },
+
   CLICK_CORE_ERA2: (state, cmd) => {
     if (state.activeEpoch !== 2) return { ok: false, changed: false, events: [], error: { code: 'UNHANDLED_EPOCH' } };
 

@@ -1,8 +1,14 @@
 /* global Decimal */
 import { getMilestoneMultiplier } from '../../core/economy.js';
+import { getPostureProfile } from './constants.js';
 
 export function computePlasmaStep(state, dt) {
   let delta = new Decimal(dt);
+  const posture = state.era2?.posture || 'BALANCE';
+  const profile = getPostureProfile(posture);
+  const particleFlux = profile.particleFlux;
+  const coolingMult = profile.coolingMult;
+  const bindingMult = profile.bindingMult;
   
   let result = {
     deltas: {
@@ -25,41 +31,41 @@ export function computePlasmaStep(state, dt) {
     }
   };
 
-  // Recipe 1: Quark Condenser (Passive, no inputs)
+  // Recipe 1: Quark Condenser (Passive raw Quarks generation, modulated by particleFlux)
   let qcLevel = state.upgrades.plasma.quarkCondenser?.level || 0;
   if (qcLevel > 0) {
     let mult = getMilestoneMultiplier(qcLevel);
-    let baseRate = new Decimal(qcLevel).times(mult);
+    let baseRate = new Decimal(qcLevel).times(mult).times(particleFlux);
     let produced = baseRate.times(2).times(delta);
     result.deltas.quarks = result.deltas.quarks.plus(produced);
     result.throughput.quarkCondenser = baseRate.times(2);
   }
 
-  // Recipe 2: Gluon Matrix Synthesis (Passive, no inputs)
+  // Recipe 2: Gluon Matrix Synthesis (Passive raw Gluons generation, modulated by particleFlux)
   let gmLevel = state.upgrades.plasma.gluonBinding?.level || 0;
   if (gmLevel > 0) {
     let mult = getMilestoneMultiplier(gmLevel);
-    let baseRate = new Decimal(gmLevel).times(mult);
+    let baseRate = new Decimal(gmLevel).times(mult).times(particleFlux);
     let produced = baseRate.times(1.5).times(delta);
     result.deltas.gluons = result.deltas.gluons.plus(produced);
     result.throughput.gluonBinding = baseRate.times(1.5);
   }
 
-  // Recipe 3: Lepton Collector (Passive, no inputs)
+  // Recipe 3: Lepton Collector (Passive raw Leptons generation, modulated by particleFlux)
   let lcLevel = state.upgrades.plasma.leptonHarvest?.level || 0;
   if (lcLevel > 0) {
     let mult = getMilestoneMultiplier(lcLevel);
-    let baseRate = new Decimal(lcLevel).times(mult);
+    let baseRate = new Decimal(lcLevel).times(mult).times(particleFlux);
     let produced = baseRate.times(1).times(delta);
     result.deltas.leptons = result.deltas.leptons.plus(produced);
     result.throughput.leptonHarvest = baseRate.times(1);
   }
 
-  // Recipe 4: Proton Synthesizer (Consumes Quarks and Gluons)
+  // Recipe 4: Proton Synthesizer (Hadron binding capacity, modulated by bindingMult)
   let synthLevel = state.upgrades.plasma.plasmaAutomation?.level || 0;
   if (synthLevel > 0) {
     let mult = getMilestoneMultiplier(synthLevel);
-    let baseRate = new Decimal(synthLevel).times(mult).times(1); // 1 Proton per sec per level baseline
+    let baseRate = new Decimal(synthLevel).times(mult).times(1).times(bindingMult); // 1 Proton per sec per level baseline * bindingMult
     let maxProtons = baseRate.times(delta);
     
     // Inputs: 3 Quarks, 1 Gluon per 1 Proton
@@ -77,14 +83,14 @@ export function computePlasmaStep(state, dt) {
       result.deltas.protons = result.deltas.protons.plus(actualProtons);
       
       // HUD represents actual throughput achieved this tick divided by dt
-      result.throughput.protonSynthesizer = actualProtons.div(delta); 
+      result.throughput.protonSynthesizer = actualProtons.div(delta);
     }
   }
 
-  // Recipe 5: Lepton Decay (Passive Leptons -> Electrons when Temp < 500k)
+  // Recipe 5: Lepton Decay (Lepton decay capacity rate, modulated by bindingMult)
   // Base rule: 1 Lepton -> 1 Electron per sec per Collector Level (or at least 1/s if unlocked)
   if (state.plasmaTemperature && state.plasmaTemperature.lt(500000)) {
-    let decayCapacityRate = new Decimal(Decimal.max(1, lcLevel)); 
+    let decayCapacityRate = new Decimal(Decimal.max(1, lcLevel)).times(bindingMult);
     let maxDecay = decayCapacityRate.times(delta);
     let leptonsAvailable = (state.resources.leptons?.amount || new Decimal(0)).plus(result.deltas.leptons);
     
@@ -97,7 +103,7 @@ export function computePlasmaStep(state, dt) {
     }
   }
 
-  // Recipe 6: Baryogenesis Radiator (Consumes Protons for Cooling)
+  // Recipe 6: Baryogenesis Radiator (Consumes Protons for Cooling, modulated by coolingMult)
   let radiatorLevel = state.upgrades.plasma.baryoRadiator?.level || 0;
   if (radiatorLevel > 0) {
     let baseRate = new Decimal(radiatorLevel); // 2 protons/s per level
@@ -110,16 +116,16 @@ export function computePlasmaStep(state, dt) {
     
     if (actualCycles.gt(0)) {
       result.deltas.protons = result.deltas.protons.minus(actualCycles.times(2));
-      let coolingDone = actualCycles.times(7500);
+      let coolingDone = actualCycles.times(7500).times(coolingMult);
       result.cooling = coolingDone;
       result.throughput.baryoRadiator = actualCycles.div(delta);
     }
   }
 
-  // Recipe 7: Recombination (Passive Protons + Electrons -> Hydrogen when Temp < 100k)
+  // Recipe 7: Recombination (Passive Protons + Electrons -> Hydrogen when Temp < 100k, modulated by bindingMult)
   if (state.plasmaTemperature && state.plasmaTemperature.lt(100000)) {
     let tempFactor = Decimal.max(1, new Decimal(100000).minus(state.plasmaTemperature).div(10000));
-    let baseRate = tempFactor.times(2); // 2 per sec base
+    let baseRate = tempFactor.times(2).times(bindingMult); // 2 per sec base * bindingMult
     let maxRecomb = baseRate.times(delta);
 
     let protonsAvailable = (state.resources.protons?.amount || new Decimal(0)).plus(result.deltas.protons);

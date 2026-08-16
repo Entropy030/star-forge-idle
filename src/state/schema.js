@@ -52,6 +52,11 @@ export const ensureStateShape = function(gameState) {
   if (typeof gameState.era2.currentAct !== 'number') gameState.era2.currentAct = 1;
   if (typeof gameState.era2.starlightEnergy !== 'number') gameState.era2.starlightEnergy = 0;
   if (typeof gameState.era2.fusionStage !== 'string') gameState.era2.fusionStage = "H";
+  const validPostures = ['ACCUMULATE', 'BALANCE', 'CONDENSE'];
+  if (!validPostures.includes(gameState.era2.posture)) {
+    gameState.era2.posture = 'BALANCE';
+  }
+
 
   if (!gameState.prestige) {
     gameState.prestige = { autoStabilizer: false };
@@ -105,9 +110,11 @@ export const ensureStateShape = function(gameState) {
   }
   delete gameState.resources.annihilationEnergy;
   delete gameState.resources.survivingMatter;
-
+  if (!gameState.currencies) gameState.currencies = {};
   for (let curKey in initialState.currencies) {
+
     if (!gameState.currencies[curKey]) {
+
       gameState.currencies[curKey] = { amount: new Decimal(0) };
     } else if (!(gameState.currencies[curKey].amount instanceof Decimal)) {
       gameState.currencies[curKey].amount = new Decimal(gameState.currencies[curKey].amount || 0);
@@ -132,8 +139,10 @@ export const ensureStateShape = function(gameState) {
 
   // Ensure every upgrade category and key from the registry exists in state
   // (covers both brand-new categories and new keys added to existing categories)
+  if (!gameState.upgrades) gameState.upgrades = {};
   for (let category in COSMIC_REGISTRY.upgrades) {
     if (!gameState.upgrades[category]) gameState.upgrades[category] = {};
+
     for (let key in COSMIC_REGISTRY.upgrades[category]) {
       if (!gameState.upgrades[category][key]) {
         const def = COSMIC_REGISTRY.upgrades[category][key];

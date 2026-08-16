@@ -6,7 +6,8 @@ export function getInitialEra2State() {
     currentAct: 1,
     starlightEnergy: 0,
     fusionStage: "H",
-    plasmaFusersEnabled: false
+    plasmaFusersEnabled: false,
+    posture: "BALANCE"
   };
 }
 
