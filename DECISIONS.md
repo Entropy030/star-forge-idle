@@ -190,28 +190,27 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 - **Contextual Action Guardrail:** The concept is `CURRENT PHYSICAL CONTEXT → IMMEDIATELY RELEVANT INTERVENTION → EXISTING AUTHORITATIVE COMMAND`. The full Forge remains authoritative for planning, browsing, branch comparison, alternate upgrades, and bulk purchasing (Buy 1 / 10 / Max). Cosmos must never become a duplicate Forge shop.
 - **Major Decision Guardrail:** Model C must not become a universal "NEXT" button for all commitments. Supernova remains a deliberately player-authored Legacy/stellar-collapse decision on the Legacy surface. Inflation and Recombination transitions remain explicit cosmic milestone triggers.
 - **Model E Nuance:** Model E was rejected for the current Cosmos ↔ Forge interaction scope because Model C resolves the measured friction at substantially lower layout and implementation cost. Persistent-world stage presentation is not universally banned and may be reconsidered if future Era-IV Galactic Matrix requirements justify it.
-- **Status:** Design Approved; Production Implementation Pending (deferred until PRE-P4.4 characterizes Era-II physical agency).
+- **Status:** Design Approved; Production Implemented and Verified in P4 Phase 2 (Human Approved).
 
 ## D24 — Star Core visual causality
 
-**Decision:** **CORE VISUAL CAUSALITY APPROVED** as a durable design principle: The Star Core / Universe View is primarily a physical-state visualizer. Meaningful physical state changes must create readable semantic visual changes where practical. Production implementation is pending completion of PRE-P4.4.
+**Decision:** **CORE VISUAL CAUSALITY APPROVED** as a durable design principle: The Star Core / Universe View is primarily a physical-state visualizer. Meaningful physical state changes must create readable semantic visual changes where practical. Production implementation is complete in P4 Phase 3.
 
 **Why:** Grounds abstract numerical progression in tangible cosmic phases (`AUTHORITATIVE GAMEPLAY STATE → SEMANTIC PHYSICAL STATE → READABLE VISUAL CONSEQUENCE`). Player actions produce immediate, readable visual reactions (pulse frequency, turbulence, ring coherence, corona arcs) on the Star Core canvas without requiring tab switches.
 
 **Guardrails and Nuance:**
 - **Specification vs. Principle:** The prototype's exact numeric thresholds, state strings, particle counts, RGB colors, and animation quantities were disposable experimental evidence, not final production specifications. Production contracts require the semantic mapping relationship, not literal prototype values.
 - **Reduced-Motion Contract:** Every gameplay-relevant semantic visual state must retain complete informational equivalence under reduced motion. Nonessential particle turbulence and oscillation are replaced with static geometric alignment, distinct color gradients, and explicit accessible text (`#star-core[data-semantic-label]`). Motion may communicate state, but must never be the only channel conveying state.
-- **Status:** Design Approved; Production Implementation Pending.
+- **Status:** Design Approved; Production Implemented and Verified in P4 Phase 3 (Human Approved).
 
 ## D25 — Era II physical agency and operating posture model
 
-**Decision:** **ERA-II PHYSICAL POSTURE MODEL DESIGN APPROVED** as the approved product design direction for Era II. Retain **HANDOFF A (250 H constant baseline Starting Hydrogen)** for PRE-P4.4 design. The tested B30 normalized-quality handoff formula is rejected for PRE-P4.4. Production implementation is deferred to P4.
+**Decision:** **ERA-II PHYSICAL POSTURE MODEL DESIGN APPROVED** as the approved product design direction for Era II. Retain **HANDOFF A (250 H constant baseline Starting Hydrogen)** for production. The tested B30 normalized-quality handoff formula is rejected. Production implementation is complete in P4 (Phases 1, 2, and 4).
 
 **Conceptual Postures and Semantic Roles:**
-- **ACCUMULATE:** Prioritizes raw matter / particle accumulation and infrastructure preparation (accelerates particle flux at the cost of thermal stabilization).
-- **BALANCE:** Provides robust lower-attention progression without requiring active posture optimization (neutral baseline throughput).
-- **CONDENSE:** Prioritizes thermal stabilization / binding and becomes increasingly useful once sufficient matter infrastructure exists (accelerates cooling and bound-state formation at the cost of raw particle creation).
-
+- **ACCUMULATE:** Prioritizes raw matter / particle accumulation and infrastructure preparation (accelerates particle flux at the cost of thermal stabilization). Production calibration: `1.50 flux / 0.50 cooling / 0.70 binding`.
+- **BALANCE:** Provides robust lower-attention progression without requiring active posture optimization (neutral baseline throughput: `1.00 flux / 1.00 cooling / 1.00 binding`).
+- **CONDENSE:** Prioritizes thermal stabilization / binding and becomes increasingly useful once sufficient matter infrastructure exists (accelerates cooling and bound-state formation: `0.50 flux / 1.50 cooling / 1.30 binding`).
 
 **Intended Design Rhythm:** Situational rather than symmetric (`build physical capacity → stabilize / convert physical state → reach Recombination`). No posture is universally optimal. Early `CONDENSE` is strongly inefficient when used before matter/radiator infrastructure exists, but verification proved it remains recoverable without deadlocking.
 
@@ -228,15 +227,13 @@ This is a lightweight record of settled current contracts. Proposed work belongs
   1. Deliberate posture use can materially improve progression (`356.2s` vs `428.1s`).
   2. `BALANCE` completes from the standard Early state (`428.1s`) and supports the intended lower-attention role.
   3. Incorrect posture choices are recoverable (`382.8s`, a delay of only `26.6s` over optimal play); no permanent build trap was demonstrated.
-  4. **Rapid Switching Boundary:** No mathematical rapid-toggle optimization advantage was observed in the tested strategies (`427.6s` vs `428.1s` for Balance in Early; `86.6s–87.2s` vs `86.3s` in Mid). Human interaction and UX behavior remain future playtest questions.
-
-**Provisional Balance Values:** Prototype multipliers ($\pm 50\%$ flux vs cooling, $+30\%$ binding) remain provisional prototype calibration values and are **not approved production balance specifications**. Tuning is deferred to P4.
+  4. **Rapid Switching Boundary:** Production calibration `ACCUMULATE.bindingMult = 0.70` produces arithmetic symmetry `(0.70 + 1.30)/2 = 1.00`, removing rapid-toggle optimization advantage.
 
 **Handoff Decision and Rejection of Tested B30:**
 - **Selected Handoff:** Handoff A (constant 250 H Starting Hydrogen in Era III).
-- **Rejection Rationale:** The tested B30 normalized-quality handoff formula is rejected for PRE-P4.4 because across the standard successful strategy matrix ($n = 24$) it produced very little differentiation between otherwise distinct strategies (min 309 H, max 314 H, range 5 H, median 311 H, mean 311.42 H, std dev 1.44 H, relative separation 1.62%). Furthermore, in a separately tested high-matter reachable ready state, it was not invariant to post-readiness waiting (304 H at immediate trigger, 313 H at +60s, 311 H at +300s). Rejection is narrow to the tested formula; future cross-Era consequence mechanics are not permanently barred if a meaningful, non-exploitable design is developed.
+- **Rejection Rationale:** The tested B30 normalized-quality handoff formula is rejected because across the standard successful strategy matrix ($n = 24$) it produced very little differentiation between otherwise distinct strategies (min 309 H, max 314 H, range 5 H, median 311 H, mean 311.42 H, std dev 1.44 H, relative separation 1.62%). Furthermore, in a separately tested high-matter reachable ready state, it was not invariant to post-readiness waiting (304 H at immediate trigger, 313 H at +60s, 311 H at +300s). Rejection is narrow to the tested formula; future cross-Era consequence mechanics are not permanently barred if a meaningful, non-exploitable design is developed.
 - **Corrected Era-III Downstream Effect:** In Era III, the first Fuser node (cost 100 H) is affordable immediately (0.0s) under both 250 H and 309–314 H. The actual measured effect was additional initial Gravity-node purchasing capacity (250 H: Fuser + Gravity 1–4, initial rate 40 H/s, 1,000 H reached in 18.8s; B30 median 311 H: Fuser + Gravity 1–5, initial rate 50 H/s, 1,000 H reached in 13.8s, saving 5.0s / 26.6% on the initial 1,000 H ramp).
 
 **Status:**
 - `DESIGN APPROVED: YES`
-- `PRODUCTION IMPLEMENTED: NO` (Implementation deferred to P4).
+- `PRODUCTION IMPLEMENTED: YES` (Implemented and Verified in P4 Phases 1, 2, and 4; Human Approved).
