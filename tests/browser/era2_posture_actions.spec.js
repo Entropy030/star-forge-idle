@@ -59,19 +59,42 @@ test.describe('Era-II Cosmos Posture Controls & Model-C Contextual Actions (Phas
     await expect(balanceBtn.locator('.cosmos-posture-badge')).toHaveText('Equilibrium');
     await expect(condenseBtn.locator('.cosmos-posture-badge')).toHaveText('Cooling & Binding');
 
-    // 4. Inspect contextual action in Fresh Era II (Fresh Era II preset starts with 100 Quarks)
+    // 4. Test Model-C lifecycle: disabled at initial render -> enabled without listener rebind -> click executes
+    await page.evaluate(() => {
+      window.gameState.resources.quarks.amount = new Decimal(0);
+      window.Viewport.update();
+    });
     const actionBtn = page.locator('#cosmos-current-action-button');
     await expect(actionBtn).toBeVisible();
     await expect(actionBtn).toHaveText(/Construct Quark Condenser/);
-    await expect(actionBtn).toBeEnabled();
+    await expect(actionBtn).toBeDisabled();
+
+    // Attempt click while disabled
+    await actionBtn.click({ force: true });
+    const initialLvl = await page.evaluate(() => window.gameState.upgrades.plasma.quarkCondenser.level);
+    expect(initialLvl).toBe(0);
 
     const actionBox = await actionBtn.boundingBox();
     expect(actionBox, 'Contextual action bounding box').not.toBeNull();
     expect(actionBox.height, 'Contextual action height >= 44px').toBeGreaterThanOrEqual(44);
 
+    // Increase Quarks to 25 (cost is 20) without remounting DOM
+    await page.evaluate(() => {
+      window.gameState.resources.quarks.amount = new Decimal(25);
+      window.Viewport.update();
+    });
+    await expect(actionBtn).toBeEnabled();
+
     // Verify clicking enabled contextual action executes BUY_UPGRADE_PLASMA and advances level
     await actionBtn.click();
     await expect(actionBtn).toHaveText(/Upgrade Quark Condenser|Synthesize Gluon Matrix/);
+
+    const afterState = await page.evaluate(() => ({
+      level: window.gameState.upgrades.plasma.quarkCondenser.level,
+      quarks: window.gameState.resources.quarks.amount.toNumber()
+    }));
+    expect(afterState.level).toBe(1);
+    expect(afterState.quarks).toBe(5);
 
     // 5. Test keyboard navigation on radiogroup
     await balanceBtn.focus();
