@@ -237,3 +237,17 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Status:**
 - `DESIGN APPROVED: YES`
 - `PRODUCTION IMPLEMENTED: YES` (Implemented and Verified in P4 Phases 1, 2, and 4; Human Approved).
+
+## D26 — UI Stock Whole-Number Formatting and Interaction Integrity (P5.1)
+
+**Decision:**
+1. **Visible Resource Stock Balances:** Truncate / floor positive visible stock balances to whole numbers across all player-facing surfaces (Cosmos, Forge, HUD, and Cards) to prevent misleading affordability indicators. The underlying authoritative state preserves full Decimal precision. Rates and multipliers retain meaningful decimals.
+2. **Model-C Contextual Actions:** Cosmos quick action event listeners read the live dynamic action state (`element._currentAction`) rather than capturing stale closures, ensuring enabled quick actions dispatch reliably upon affordability transition without DOM reconstruction.
+3. **Multi-Purchase Multipliers:** Stellar core nodes in Era-III Forge route through `Economy.buy('core', key)` to respect active `Buy 1`, `Buy 10`, and `Buy Max` purchase modes.
+4. **Layout Geometry Stability:** Lock Codex / Archive navigation column width (`minmax(180px, 200px) minmax(0, 1fr)`) and enable robust word wrapping (`overflow-wrap: anywhere; word-break: break-word`) to prevent article selection from causing layout jitter.
+5. **Reduced Motion Settings Simplification:** Remove redundant manual in-game toggle while preserving 100% OS-level `prefers-reduced-motion: reduce` compliance across CSS animations and CanvasCore rendering.
+
+**Status:**
+- `DESIGN APPROVED: YES`
+- `PRODUCTION IMPLEMENTED: YES` (Implemented and Verified in P5.1).
+
