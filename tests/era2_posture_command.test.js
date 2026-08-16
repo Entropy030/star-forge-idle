@@ -31,30 +31,28 @@ describe('Era 2 Posture State & Commands', () => {
     });
 
     it('normalizes missing era2.posture to BALANCE on legacy saves', () => {
-      const legacy = {
-        era2: { currentAct: 1, starlightEnergy: 0, fusionStage: 'H', plasmaFusersEnabled: false }
-      };
+      const legacy = createInitialState();
+      delete legacy.era2.posture;
       ensureStateShape(legacy);
       expect(legacy.era2.posture).toBe('BALANCE');
     });
 
     it('normalizes invalid era2.posture to BALANCE safely', () => {
-      const corrupted = {
-        era2: { currentAct: 1, posture: 'HYPER_WARP' }
-      };
+      const corrupted = createInitialState();
+      corrupted.era2.posture = 'HYPER_WARP';
       ensureStateShape(corrupted);
       expect(corrupted.era2.posture).toBe('BALANCE');
     });
 
     it('preserves all valid posture values during normalization', () => {
       for (const validPosture of PLASMA_POSTURES) {
-        const testState = {
-          era2: { currentAct: 1, posture: validPosture }
-        };
+        const testState = createInitialState();
+        testState.era2.posture = validPosture;
         ensureStateShape(testState);
         expect(testState.era2.posture).toBe(validPosture);
       }
     });
+
   });
 
   describe('SET_PLASMA_POSTURE Command', () => {

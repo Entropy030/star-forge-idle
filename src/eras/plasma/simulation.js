@@ -2,7 +2,7 @@ import { computePlasmaStep } from './evaluator.js';
 
 export function simulatePlasmaEra(state, dt) {
   let anyChanged = false;
-  state.cosmicAge = (state.cosmicAge instanceof Decimal ? state.cosmicAge : new Decimal(state.cosmicAge || 0)).plus(dt);
+  state.cosmicAge = (state.cosmicAge || new Decimal(0)).plus(dt);
 
   const step = computePlasmaStep(state, dt);
 

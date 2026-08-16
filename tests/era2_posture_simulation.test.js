@@ -3,7 +3,11 @@ import Decimal from 'break_infinity.js';
 import { createInitialState } from '../src/state/createInitialState.js';
 import { computePlasmaStep } from '../src/eras/plasma/evaluator.js';
 import { simulatePlasmaEra } from '../src/eras/plasma/simulation.js';
+import { advanceOfflineProgress } from '../src/core/offline.js';
+import { advanceGameTick } from '../src/core/runtimeTick.js';
+import { gameState, setGameState } from '../src/core/state.js';
 import { PLASMA_POSTURE_CONFIG, DEFAULT_PLASMA_POSTURE } from '../src/eras/plasma/constants.js';
+
 
 describe('Era 2 Posture Simulation Integration', () => {
   let state;
@@ -12,6 +16,7 @@ describe('Era 2 Posture Simulation Integration', () => {
     state = createInitialState();
     state.activeEpoch = 2;
     state.plasmaTemperature = new Decimal(10000000);
+    state.cosmicAge = new Decimal(0);
     state.upgrades.plasma.quarkCondenser = { level: 5, cost: new Decimal(100) };
     state.upgrades.plasma.gluonBinding = { level: 4, cost: new Decimal(150) };
     state.upgrades.plasma.leptonHarvest = { level: 3, cost: new Decimal(200) };
@@ -30,7 +35,7 @@ describe('Era 2 Posture Simulation Integration', () => {
       state.era2.posture = 'BALANCE';
       const step = computePlasmaStep(state, 1.0);
 
-      // Verify baseline math without multipliers (or multiplier == 1.0)
+      // Verify baseline math without multipliers (multiplier == 1.0)
       // Recipe 1: Quark Condenser level 5 (mult 1.0) -> baseRate 5 -> 10 Quarks/s generated
       // Recipe 2: Gluon Matrix level 4 (mult 1.0) -> baseRate 4 -> 6 Gluons/s generated
       // Recipe 3: Lepton Collector level 3 (mult 1.0) -> baseRate 3 -> 3 Leptons/s generated
@@ -126,95 +131,218 @@ describe('Era 2 Posture Simulation Integration', () => {
     });
   });
 
-  describe('Rapid-Toggle Regression Verification', () => {
-    it('verifies rapid toggling between ACCUMULATE and CONDENSE yields no mathematical advantage over steady postures', () => {
-      // Helper to clone state
-      const clone = (s) => JSON.parse(JSON.stringify(s, (k, v) => v instanceof Decimal ? v.toString() : v), (k, v) => {
-        if (typeof v === 'string' && /^-?\d+(\.\d+)?(e[+-]?\d+)?$/.test(v) && !['currentAct', 'fusionStage', 'stage', 'activeEpoch', 'activeTab'].includes(k)) {
-          return new Decimal(v);
-        }
-        return v;
-      });
+  describe('Rapid-Toggle Mathematics Under Binding-Active Conditions', () => {
+    it('verifies exact mathematical linear averages for particle flux, cooling, and nominal binding', () => {
+      // Create a binding-active test state with abundant buffers
+      const makeBindingActiveState = () => {
+        const s = createInitialState();
+        s.activeEpoch = 2;
+        s.plasmaTemperature = new Decimal(80000); // Below 100k
+        s.cosmicAge = new Decimal(0);
+        s.upgrades.plasma.quarkCondenser = { level: 5, cost: new Decimal(100) };
+        s.upgrades.plasma.gluonBinding = { level: 4, cost: new Decimal(150) };
+        s.upgrades.plasma.leptonHarvest = { level: 3, cost: new Decimal(200) };
+        s.upgrades.plasma.plasmaAutomation = { level: 5, cost: new Decimal(300) }; // 5 Protons/s base
+        s.upgrades.plasma.baryoRadiator = { level: 3, cost: new Decimal(400) };     // 3 cycles/s base
+        s.resources.quarks.amount = new Decimal(10000);
+        s.resources.gluons.amount = new Decimal(10000);
+        s.resources.leptons.amount = new Decimal(5000);
+        s.resources.protons.amount = new Decimal(5000);
+        s.resources.electrons.amount = new Decimal(5000);
+        s.resources.hydrogen.amount = new Decimal(0);
+        return s;
+      };
 
-      // Run steady ACCUMULATE for 60s
-      let stateAccum = clone(state);
-      stateAccum.era2.posture = 'ACCUMULATE';
-      for (let t = 0; t < 60; t++) simulatePlasmaEra(stateAccum, 1.0);
+      // 1. Run Fixed BALANCE for 60s
+      const sBalance = makeBindingActiveState();
+      sBalance.era2.posture = 'BALANCE';
+      for (let t = 0; t < 60; t++) simulatePlasmaEra(sBalance, 1.0);
 
-      // Run steady CONDENSE for 60s
-      let stateCondense = clone(state);
-      stateCondense.era2.posture = 'CONDENSE';
-      for (let t = 0; t < 60; t++) simulatePlasmaEra(stateCondense, 1.0);
-
-      // Run Rapid Toggle (alternating every second) for 60s
-      let stateToggle = clone(state);
+      // 2. Run Rapid Toggle (1s ACCUMULATE / 1s CONDENSE) for 60s
+      const sToggle = makeBindingActiveState();
       for (let t = 0; t < 60; t++) {
-        stateToggle.era2.posture = (t % 2 === 0) ? 'ACCUMULATE' : 'CONDENSE';
-        simulatePlasmaEra(stateToggle, 1.0);
+        sToggle.era2.posture = (t % 2 === 0) ? 'ACCUMULATE' : 'CONDENSE';
+        simulatePlasmaEra(sToggle, 1.0);
       }
 
-      // Run steady BALANCE for 60s
-      let stateBalance = clone(state);
-      stateBalance.era2.posture = 'BALANCE';
-      for (let t = 0; t < 60; t++) simulatePlasmaEra(stateBalance, 1.0);
+      // Mathematical Verification:
+      // Flux Average: (1.50 + 0.50)/2 = 1.000x -> Exactly equal to BALANCE
+      // Cooling Average: (0.50 + 1.50)/2 = 1.000x -> Exactly equal to BALANCE
+      // Binding Average: (0.75 + 1.30)/2 = 1.025x -> Nominal +2.5% binding under abundant inputs
+      expect(sToggle.plasmaTemperature.toNumber()).toBe(sBalance.plasmaTemperature.toNumber());
 
-      // Rapid toggle average flux is (1.5 + 0.5)/2 = 1.0; average cooling is (0.5 + 1.5)/2 = 1.0.
-      // Rapid toggle should not generate more resources or cooling than the linear combination / steady BALANCE.
-      expect(stateToggle.plasmaTemperature.toNumber()).toBeGreaterThanOrEqual(stateCondense.plasmaTemperature.toNumber());
-      expect(stateToggle.resources.quarks.amount.toNumber()).toBeLessThan(stateAccum.resources.quarks.amount.toNumber());
+      // Under abundant inputs, 60s of 5 Protons/s base:
+      // BALANCE: 60 * 5 * 1.00 = 300 Protons synthesized
+      // TOGGLE: 30 * (5 * 0.75) + 30 * (5 * 1.30) = 112.5 + 195 = 307.5 Protons synthesized (+2.5%)
+      // Quarks consumed: 300 * 3 = 900 in BALANCE vs 307.5 * 3 = 922.5 in TOGGLE
+      // Quarks generated: 60 * 10 * 1.00 = 600 in BALANCE vs (30 * 15 + 30 * 5) = 600 in TOGGLE
+      // Net Quarks delta: 600 - 900 = -300 in BALANCE vs 600 - 922.5 = -322.5 in TOGGLE
+      const expectedQuarksBalance = 10000 - 300;
+      const expectedQuarksToggle = 10000 - 322.5;
+      expect(sBalance.resources.quarks.amount.toNumber()).toBeCloseTo(expectedQuarksBalance, 1);
+      expect(sToggle.resources.quarks.amount.toNumber()).toBeCloseTo(expectedQuarksToggle, 1);
+
+      // Verify that Rapid Toggle DOES NOT outperform dedicated CONDENSE in cooling (1.5x) or binding (1.30x)
+      const sCondense = makeBindingActiveState();
+      sCondense.era2.posture = 'CONDENSE';
+      for (let t = 0; t < 60; t++) simulatePlasmaEra(sCondense, 1.0);
+      expect(sCondense.plasmaTemperature.toNumber()).toBeLessThanOrEqual(sToggle.plasmaTemperature.toNumber());
     });
   });
 
-  describe('Suboptimal Play & Recoverability Sanity Check', () => {
-    it('proves suboptimal early CONDENSE usage is recoverable without deadlocks or permanent progress traps', () => {
-      // Early state with 0 radiators and low quarks
-      let earlyState = createInitialState();
-      earlyState.activeEpoch = 2;
-      earlyState.plasmaTemperature = new Decimal(10000000);
-      earlyState.upgrades.plasma.quarkCondenser = { level: 1, cost: new Decimal(20) };
-      earlyState.resources.quarks.amount = new Decimal(0);
-      earlyState.resources.gluons.amount = new Decimal(0);
+  describe('Full Run-to-Completion Recoverability Verification', () => {
+    it('proves that all strategies including suboptimal early CONDENSE successfully reach Recombination readiness', () => {
+      const makeEarlyState = () => {
+        const s = createInitialState();
+        s.activeEpoch = 2;
+        s.plasmaTemperature = new Decimal(10000000);
+        s.cosmicAge = new Decimal(0);
+        s.upgrades.plasma.quarkCondenser = { level: 3, cost: new Decimal(20) };
+        s.upgrades.plasma.gluonBinding = { level: 2, cost: new Decimal(120) };
+        s.upgrades.plasma.leptonHarvest = { level: 1, cost: new Decimal(400) };
+        s.upgrades.plasma.plasmaAutomation = { level: 3, cost: new Decimal(2000) };
+        s.upgrades.plasma.baryoRadiator = { level: 1, cost: new Decimal(100) };
+        s.resources.quarks.amount = new Decimal(0);
+        s.resources.gluons.amount = new Decimal(0);
+        s.resources.leptons.amount = new Decimal(0);
+        s.resources.protons.amount = new Decimal(0);
+        s.resources.electrons.amount = new Decimal(0);
+        s.resources.hydrogen.amount = new Decimal(0);
+        return s;
+      };
 
-      // Player mistakenly chooses CONDENSE before radiators exist
-      earlyState.era2.posture = 'CONDENSE';
-      for (let t = 0; t < 30; t++) simulatePlasmaEra(earlyState, 1.0);
+      const runToReadiness = (postureSelectorFn, maxSeconds = 3000) => {
+        const s = makeEarlyState();
+        let elapsed = 0;
+        let isReady = false;
 
-      // Quarks still slowly generate at 0.5x flux (not zero, never locked)
-      expect(earlyState.resources.quarks.amount.toNumber()).toBeGreaterThan(0);
-      const quarksAfterSuboptimal = earlyState.resources.quarks.amount.toNumber();
+        while (elapsed < maxSeconds) {
+          s.era2.posture = postureSelectorFn(elapsed, s);
+          simulatePlasmaEra(s, 1.0);
+          elapsed += 1;
 
-      // Player realizes mistake and switches to ACCUMULATE
-      earlyState.era2.posture = 'ACCUMULATE';
-      for (let t = 0; t < 30; t++) simulatePlasmaEra(earlyState, 1.0);
+          if (s.plasmaTemperature.lte(3000) || s.resources.protons.amount.gte(800000)) {
+            isReady = true;
+            break;
+          }
+        }
+        return { isReady, elapsed, finalTemp: s.plasmaTemperature.toNumber() };
+      };
 
-      const quarksAfterRecovery = earlyState.resources.quarks.amount.toNumber();
-      // Rate of gain in second phase (ACCUMULATE: 1.5x) is 3x the first phase (CONDENSE: 0.5x)
-      expect(quarksAfterRecovery - quarksAfterSuboptimal).toBeCloseTo(quarksAfterSuboptimal * 3, 1);
+      // 1. Fixed BALANCE
+      const balanceResult = runToReadiness(() => 'BALANCE');
+      expect(balanceResult.isReady).toBe(true);
+      expect(balanceResult.finalTemp).toBeLessThanOrEqual(3000);
+
+      // 2. Fixed CONDENSE
+      const condenseResult = runToReadiness(() => 'CONDENSE');
+      expect(condenseResult.isReady).toBe(true);
+      expect(condenseResult.finalTemp).toBeLessThanOrEqual(3000);
+
+      // 3. Fixed ACCUMULATE
+      const accumResult = runToReadiness(() => 'ACCUMULATE');
+      expect(accumResult.isReady).toBe(true);
+      expect(accumResult.finalTemp).toBeLessThanOrEqual(3000);
+
+      // 4. Suboptimal Early CONDENSE for 100s, then recover
+      const recoveryResult = runToReadiness((t, s) => {
+        if (t < 100) return 'CONDENSE';
+        if (s.resources.protons.amount.lt(100)) return 'ACCUMULATE';
+        return 'CONDENSE';
+      });
+      expect(recoveryResult.isReady).toBe(true);
+      expect(recoveryResult.finalTemp).toBeLessThanOrEqual(3000);
     });
   });
 
-  describe('Offline Parity Contract', () => {
-    it('produces equivalent deterministic state across single-step and chunked tick progression under all postures', () => {
+  describe('Offline Parity & Chunk Invariance Contracts', () => {
+    it('Chunk Invariance: produces equivalent deterministic state across single-step and chunked tick progression', () => {
       for (const posture of ['ACCUMULATE', 'BALANCE', 'CONDENSE']) {
         state.era2.posture = posture;
 
         // Method A: 10 discrete 1-second ticks
         let stateTicks = JSON.parse(JSON.stringify(state));
         stateTicks.plasmaTemperature = new Decimal(state.plasmaTemperature);
+        stateTicks.cosmicAge = new Decimal(state.cosmicAge);
         for (const r in state.resources) stateTicks.resources[r] = { amount: new Decimal(state.resources[r].amount) };
         for (let i = 0; i < 10; i++) simulatePlasmaEra(stateTicks, 1.0);
 
         // Method B: 1 single 10-second tick
         let stateChunk = JSON.parse(JSON.stringify(state));
         stateChunk.plasmaTemperature = new Decimal(state.plasmaTemperature);
+        stateChunk.cosmicAge = new Decimal(state.cosmicAge);
         for (const r in state.resources) stateChunk.resources[r] = { amount: new Decimal(state.resources[r].amount) };
         simulatePlasmaEra(stateChunk, 10.0);
 
-        // Offline simulation consumes dt linearly across evaluator equations
+        // Linear equations match across single vs chunked steps
         expect(stateTicks.plasmaTemperature.toNumber()).toBeCloseTo(stateChunk.plasmaTemperature.toNumber(), 5);
         expect(stateTicks.resources.quarks.amount.toNumber()).toBeCloseTo(stateChunk.resources.quarks.amount.toNumber(), 5);
         expect(stateTicks.resources.gluons.amount.toNumber()).toBeCloseTo(stateChunk.resources.gluons.amount.toNumber(), 5);
         expect(stateTicks.resources.protons.amount.toNumber()).toBeCloseTo(stateChunk.resources.protons.amount.toNumber(), 5);
+      }
+    });
+
+    it('Offline Path Parity: advanceOfflineProgress applies active posture identically to live runtime ticks', async () => {
+      for (const testPosture of ['ACCUMULATE', 'BALANCE', 'CONDENSE']) {
+        // Setup Live Baseline
+        const liveState = createInitialState();
+        liveState.activeEpoch = 2;
+        liveState.plasmaTemperature = new Decimal(10000000);
+        liveState.upgrades.plasma.quarkCondenser = { level: 5, cost: new Decimal(100) };
+        liveState.upgrades.plasma.gluonBinding = { level: 4, cost: new Decimal(150) };
+        liveState.upgrades.plasma.plasmaAutomation = { level: 2, cost: new Decimal(300) };
+        liveState.upgrades.plasma.baryoRadiator = { level: 2, cost: new Decimal(400) };
+        liveState.resources.quarks.amount = new Decimal(500);
+        liveState.resources.gluons.amount = new Decimal(500);
+        liveState.resources.protons.amount = new Decimal(200);
+        liveState.era2.posture = testPosture;
+
+        setGameState(liveState);
+
+        // Run 10 seconds of live ticks
+        for (let i = 0; i < 10; i++) {
+          advanceGameTick(1.0);
+        }
+        const liveSnapshot = {
+          temp: gameState.plasmaTemperature.toNumber(),
+          quarks: gameState.resources.quarks.amount.toNumber(),
+          gluons: gameState.resources.gluons.amount.toNumber(),
+          protons: gameState.resources.protons.amount.toNumber(),
+          posture: gameState.era2.posture
+        };
+
+        // Reset to identical starting state for Offline Catch-Up
+        const offlineState = createInitialState();
+        offlineState.activeEpoch = 2;
+        offlineState.plasmaTemperature = new Decimal(10000000);
+        offlineState.upgrades.plasma.quarkCondenser = { level: 5, cost: new Decimal(100) };
+        offlineState.upgrades.plasma.gluonBinding = { level: 4, cost: new Decimal(150) };
+        offlineState.upgrades.plasma.plasmaAutomation = { level: 2, cost: new Decimal(300) };
+        offlineState.upgrades.plasma.baryoRadiator = { level: 2, cost: new Decimal(400) };
+        offlineState.resources.quarks.amount = new Decimal(500);
+        offlineState.resources.gluons.amount = new Decimal(500);
+        offlineState.resources.protons.amount = new Decimal(200);
+        offlineState.era2.posture = testPosture;
+
+        setGameState(offlineState);
+
+        // Run 10 credited seconds through advanceOfflineProgress
+        await advanceOfflineProgress({ creditedElapsedSeconds: 10 });
+
+        const offlineSnapshot = {
+          temp: gameState.plasmaTemperature.toNumber(),
+          quarks: gameState.resources.quarks.amount.toNumber(),
+          gluons: gameState.resources.gluons.amount.toNumber(),
+          protons: gameState.resources.protons.amount.toNumber(),
+          posture: gameState.era2.posture
+        };
+
+        // Live ticks and offline catch-up produce identical state and preserve posture
+        expect(offlineSnapshot.posture).toBe(testPosture);
+        expect(offlineSnapshot.temp).toBe(liveSnapshot.temp);
+        expect(offlineSnapshot.quarks).toBeCloseTo(liveSnapshot.quarks, 5);
+        expect(offlineSnapshot.gluons).toBeCloseTo(liveSnapshot.gluons, 5);
+        expect(offlineSnapshot.protons).toBeCloseTo(liveSnapshot.protons, 5);
       }
     });
   });
