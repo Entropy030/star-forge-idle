@@ -128,6 +128,21 @@ test.describe('Era-II Cosmos Posture Controls & Model-C Contextual Actions (Phas
     });
     expect(orderValid, 'DOM hierarchy order').toBe(true);
 
+    // Live Recombination transition to Era III with exact 250 H starting Hydrogen
+    await loadPlaytestPreset(page, 'Recombination Ready');
+    const recombBtn = page.locator('#btn-recombination');
+    await expect(recombBtn).toBeVisible();
+    await recombBtn.click();
+
+    // Verify transition completed to Era III and live Hydrogen is actively generating from 250 H baseline
+    await expect(page.locator('#active-epoch-name')).toContainText('Era III');
+    const hydrogenCard = page.locator('.resource-card[data-resource-id="hydrogen"] .resource-card-value');
+    await expect(hydrogenCard).toBeVisible();
+    const hydrogenText = await hydrogenCard.innerText();
+    const hydrogenValue = parseFloat(hydrogenText.replace(/,/g, ''));
+    expect(hydrogenValue).toBeGreaterThanOrEqual(250);
+    expect(hydrogenValue).toBeLessThan(350);
+
     expect(errors).toEqual([]);
   });
 });
