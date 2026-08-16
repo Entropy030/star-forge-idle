@@ -208,9 +208,10 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Decision:** **ERA-II PHYSICAL POSTURE MODEL DESIGN APPROVED** as the approved product design direction for Era II. Retain **HANDOFF A (250 H constant baseline Starting Hydrogen)** for PRE-P4.4 design. The tested B30 normalized-quality handoff formula is rejected for PRE-P4.4. Production implementation is deferred to P4.
 
 **Conceptual Postures and Semantic Roles:**
-- **ACCUMULATE:** Prioritizes raw matter / particle accumulation and infrastructure preparation (+50% raw particle flux, reduced cooling/binding).
-- **BALANCE:** Provides robust lower-attention progression without requiring active posture optimization (1.0x baseline throughput).
-- **CONDENSE:** Prioritizes thermal stabilization / binding and becomes increasingly useful once sufficient matter infrastructure exists (+50% cooling, +30% binding, -50% raw particle flux).
+- **ACCUMULATE:** Prioritizes raw matter / particle accumulation and infrastructure preparation (accelerates particle flux at the cost of thermal stabilization).
+- **BALANCE:** Provides robust lower-attention progression without requiring active posture optimization (neutral baseline throughput).
+- **CONDENSE:** Prioritizes thermal stabilization / binding and becomes increasingly useful once sufficient matter infrastructure exists (accelerates cooling and bound-state formation at the cost of raw particle creation).
+
 
 **Intended Design Rhythm:** Situational rather than symmetric (`build physical capacity → stabilize / convert physical state → reach Recombination`). No posture is universally optimal. Early `CONDENSE` is strongly inefficient when used before matter/radiator infrastructure exists, but verification proved it remains recoverable without deadlocking.
 
