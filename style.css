@@ -3231,6 +3231,7 @@ body[data-epoch="5"] .legacy-era3-plus {
 /* P3.3B5: era-specific Cosmos progression primitives */
 .cosmos-status-panel,
 .cosmos-process-panel,
+.cosmos-posture-panel,
 .core-context,
 .cosmos-permanent-transition {
   width: 100%;
@@ -3239,6 +3240,7 @@ body[data-epoch="5"] .legacy-era3-plus {
 
 .cosmos-status-panel,
 .cosmos-process-panel,
+.cosmos-posture-panel,
 .cosmos-permanent-transition {
   padding: 14px;
   border: 1px solid rgba(162, 155, 254, 0.28);
@@ -3251,12 +3253,18 @@ body[data-epoch="5"] .legacy-era3-plus {
   background: rgba(10, 12, 25, 0.56);
 }
 
+.cosmos-posture-panel {
+  border-color: rgba(162, 155, 254, 0.22);
+  background: rgba(10, 12, 25, 0.65);
+}
+
 .cosmos-permanent-transition {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .cosmos-status-panel[hidden],
 .cosmos-process-panel[hidden],
+.cosmos-posture-panel[hidden],
 .core-context[hidden],
 .cosmos-permanent-transition[hidden] { display: none !important; }
 
@@ -3348,9 +3356,55 @@ body[data-epoch="5"] .legacy-era3-plus {
 .cosmos-process-label { font-size: 0.78rem; }
 .cosmos-process-value { color: #b2bec3; font-size: 0.7rem; }
 .cosmos-bottleneck { margin: 9px 0 0; color: #fab1a0; font-size: 0.74rem; }
-.cosmos-current-action { width: 100%; margin-top: 10px; padding: 9px; border: 1px solid #6c5ce7; border-radius: 6px; background: rgba(108, 92, 231, 0.22); color: #fff; cursor: pointer; }
+.cosmos-current-action { width: 100%; min-height: 44px; margin-top: 10px; padding: 9px 12px; border: 1px solid #6c5ce7; border-radius: 6px; background: rgba(108, 92, 231, 0.22); color: #fff; cursor: pointer; text-align: center; }
 .cosmos-current-action:disabled { opacity: 0.45; cursor: not-allowed; }
+.cosmos-action-label { font-weight: 600; }
+.cosmos-action-cost { font-family: 'Share Tech Mono', monospace; font-variant-numeric: tabular-nums; opacity: 0.85; }
 .cosmos-permanent-transition { border-color: rgba(162, 155, 254, 0.6); }
+
+.cosmos-posture-heading { margin-bottom: 8px; }
+.cosmos-posture-title { margin: 3px 0 0; color: #f5f6fa; font-size: 1rem; }
+.cosmos-posture-group { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.cosmos-posture-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: 44px;
+  padding: 10px;
+  border: 1px solid rgba(162, 155, 254, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-primary, #f1f5f9);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  box-sizing: border-box;
+}
+.cosmos-posture-btn:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(162, 155, 254, 0.35); }
+.cosmos-posture-btn:focus-visible { outline: 2px solid #00ecc6; outline-offset: 2px; }
+.cosmos-posture-btn--active {
+  border-color: #00ecc6;
+  background: rgba(0, 236, 198, 0.12);
+  box-shadow: inset 0 0 0 1px #00ecc6;
+}
+.cosmos-posture-btn-header { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 4px; }
+.cosmos-posture-name { font-size: 0.84rem; font-weight: 600; color: #f5f6fa; }
+.cosmos-posture-btn--active .cosmos-posture-name { color: #00ecc6; }
+.cosmos-posture-badge {
+  display: inline-block;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 0.62rem;
+  font-family: 'Share Tech Mono', monospace;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.06);
+  color: #a29bfe;
+}
+.cosmos-posture-btn--active .cosmos-posture-badge { background: rgba(0, 236, 198, 0.2); color: #00ecc6; }
+.cosmos-posture-desc { margin: 6px 0 0; font-size: 0.72rem; line-height: 1.35; color: #b2bec3; }
+.cosmos-posture-btn--active .cosmos-posture-desc { color: #dfe6e9; }
 
 .inline-feedback-text {
   order: 99;
@@ -3381,7 +3435,8 @@ body[data-epoch="5"] .legacy-era3-plus {
 
 @media (max-width: 520px) {
   .cosmos-process-network { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .cosmos-status-panel, .cosmos-process-panel, .cosmos-permanent-transition { padding: 11px; }
+  .cosmos-status-panel, .cosmos-process-panel, .cosmos-posture-panel, .cosmos-permanent-transition { padding: 11px; }
+  .cosmos-posture-group { grid-template-columns: 1fr; gap: 6px; }
   .cosmos-check, .forge-requirements-list li { gap: 5px; }
   .cosmos-check-value, .forge-requirement-value { font-size: 0.68rem; }
 }

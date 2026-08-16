@@ -20,6 +20,7 @@ import { formatHudNumber } from './resourceFormatters.js';
 import { getActionFailureMessage, isActionSuccessful } from './actionFeedback.js';
 import { getCosmicTuningEligibility } from '../core/tuning.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
+import { dispatchEngineCommand } from '../engine/dispatch.js';
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
 import { gameState, subscribeRuntimeState } from '../core/state.js';
@@ -1551,10 +1552,26 @@ export const Viewport = {
     this.updateResourceHud();
 
     const cosmosPresentation = getCosmosPresentation(gameState);
-    renderCosmosExperience(document, cosmosPresentation, (action) => {
-      if (action.kind === 'core-node') Economy.buyCoreNodes(action.id, 1);
-      else if (action.kind === 'view') this.switchTab(action.id);
-    });
+    renderCosmosExperience(
+      document,
+      cosmosPresentation,
+      (action) => {
+        if (action.kind === 'core-node') Economy.buyCoreNodes(action.id, 1);
+        else if (action.kind === 'view') this.switchTab(action.id);
+        else if (action.kind === 'upgrade-plasma') {
+          dispatchEngineCommand({
+            type: 'BUY_UPGRADE_PLASMA',
+            payload: { category: 'plasma', upgradeId: action.id, loops: 1 }
+          });
+        }
+      },
+      (posture) => {
+        dispatchEngineCommand({
+          type: 'SET_PLASMA_POSTURE',
+          payload: { posture }
+        });
+      }
+    );
     document.body.dataset.cosmosTransitionReady = String(Boolean(cosmosPresentation.transition.ready));
 
     const inflationContainer = this.getEl('era1-transition-container');

@@ -4,7 +4,7 @@ import { getCompressionHeatYield, getMilestoneMultiplier } from '../core/economy
 import { getInflationEligibility } from '../eras/quantum/inflation.js';
 import { getVacuumCoherenceRates, isInflationPreparationRelevant, isVacuumCoherenceRelevant } from '../eras/quantum/coherence.js';
 import { computePlasmaStep } from '../eras/plasma/evaluator.js';
-import { getRecombinationEligibility } from '../eras/plasma/eligibility.js';
+import { getPlasmaUpgradeEligibility, getRecombinationEligibility } from '../eras/plasma/eligibility.js';
 import { getGalacticIgnitionEligibility, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 
 const ZERO = new Decimal(0);
@@ -62,6 +62,7 @@ function getEraOnePresentation(state) {
           ? 'Forming universe core. Interact to add a supporting quantum fluctuation.'
           : 'Observe the quantum core and collect one Quantum Fluctuation.'
     },
+    posture: null,
     process: passiveActive && !coherenceRelevant ? {
       eyebrow: 'Current process',
       title: 'Passive law generation',
@@ -97,6 +98,127 @@ function getProtonBottleneck(state, step) {
   return { label: `${resource} are limiting Proton synthesis`, resource, actualRate, theoreticalRate };
 }
 
+function getEraTwoPosturePresentation(state) {
+  const active = state.era2?.posture || 'BALANCE';
+  return {
+    active,
+    options: [
+      {
+        id: 'ACCUMULATE',
+        label: 'Accumulate',
+        role: 'Matter Influx',
+        description: 'Favors raw particle acquisition; cooling and binding are reduced.'
+      },
+      {
+        id: 'BALANCE',
+        label: 'Balance',
+        role: 'Equilibrium',
+        description: 'Steady-state equilibrium with balanced acquisition, cooling, and binding.'
+      },
+      {
+        id: 'CONDENSE',
+        label: 'Condense',
+        role: 'Cooling & Binding',
+        description: 'Favors cooling and binding; raw particle influx is reduced.'
+      }
+    ]
+  };
+}
+
+function getEraTwoAction(state) {
+  const condenserLevel = level(state, 'plasma', 'quarkCondenser');
+  const gluonLevel = level(state, 'plasma', 'gluonBinding');
+  const leptonLevel = level(state, 'plasma', 'leptonHarvest');
+  const synthesizerLevel = level(state, 'plasma', 'plasmaAutomation');
+  const radiatorLevel = level(state, 'plasma', 'baryoRadiator');
+
+  if (condenserLevel < 3) {
+    const upgradeState = state.upgrades?.plasma?.quarkCondenser;
+    const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma.quarkCondenser.baseCost;
+    const canAfford = amount(state, 'quarks').gte(cost);
+    return {
+      kind: 'upgrade-plasma',
+      category: 'plasma',
+      id: 'quarkCondenser',
+      label: condenserLevel === 0 ? 'Construct Quark Condenser' : 'Upgrade Quark Condenser',
+      cost,
+      currency: 'Quarks',
+      effect: '+2 Quarks/s',
+      enabled: canAfford
+    };
+  }
+
+  if (gluonLevel === 0) {
+    const upgradeState = state.upgrades?.plasma?.gluonBinding;
+    const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma.gluonBinding.baseCost;
+    const eligibility = getPlasmaUpgradeEligibility(state, 'gluonBinding');
+    const canAfford = amount(state, 'gluons').gte(cost);
+    return {
+      kind: 'upgrade-plasma',
+      category: 'plasma',
+      id: 'gluonBinding',
+      label: 'Synthesize Gluon Matrix',
+      cost,
+      currency: 'Gluons',
+      effect: '+1.5 Gluons/s',
+      enabled: eligibility.unlocked && canAfford
+    };
+  }
+
+  if (gluonLevel >= 2 && leptonLevel === 0) {
+    const upgradeState = state.upgrades?.plasma?.leptonHarvest;
+    const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma.leptonHarvest.baseCost;
+    const eligibility = getPlasmaUpgradeEligibility(state, 'leptonHarvest');
+    const canAfford = amount(state, 'gluons').gte(cost);
+    return {
+      kind: 'upgrade-plasma',
+      category: 'plasma',
+      id: 'leptonHarvest',
+      label: 'Construct Lepton Collector',
+      cost,
+      currency: 'Gluons',
+      effect: '+1 Lepton/s',
+      enabled: eligibility.unlocked && canAfford
+    };
+  }
+
+  if (leptonLevel >= 1 && synthesizerLevel === 0) {
+    const upgradeState = state.upgrades?.plasma?.plasmaAutomation;
+    const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma.plasmaAutomation.baseCost;
+    const eligibility = getPlasmaUpgradeEligibility(state, 'plasmaAutomation');
+    const canAfford = amount(state, 'quarks').gte(cost);
+    return {
+      kind: 'upgrade-plasma',
+      category: 'plasma',
+      id: 'plasmaAutomation',
+      label: 'Synthesize Protons',
+      cost,
+      currency: 'Quarks',
+      effect: '3 Quarks + 1 Gluon → 1 Proton/s',
+      enabled: eligibility.unlocked && canAfford
+    };
+  }
+
+  if (synthesizerLevel >= 1 && radiatorLevel === 0) {
+    const upgradeState = state.upgrades?.plasma?.baryoRadiator;
+    const cost = upgradeState?.cost || COSMIC_REGISTRY.upgrades.plasma.baryoRadiator.baseCost;
+    const eligibility = getPlasmaUpgradeEligibility(state, 'baryoRadiator');
+    const canAfford = amount(state, 'protons').gte(cost);
+    return {
+      kind: 'upgrade-plasma',
+      category: 'plasma',
+      id: 'baryoRadiator',
+      label: 'Construct Baryogenesis Radiator',
+      cost,
+      currency: 'Protons',
+      effect: 'Consumes 2 Protons/s → −7,500 K/s',
+      enabled: eligibility.unlocked && canAfford
+    };
+  }
+
+  return null;
+}
+
 function getEraTwoPresentation(state) {
   const step = computePlasmaStep(state, 1);
   const eligibility = getRecombinationEligibility(state);
@@ -107,6 +229,8 @@ function getEraTwoPresentation(state) {
   const coolingRelevant = radiatorLevel > 0 || state.plasmaTemperature.lte(500000) || eligibility.isEligible;
   const protonPhase = synthesizerLevel > 0 || amount(state, 'protons').gt(0);
   const gluonPhase = gluonLevel > 0 || condenserLevel >= 3;
+  const action = getEraTwoAction(state);
+  const posture = getEraTwoPosturePresentation(state);
 
   if (coolingRelevant) {
     const checks = [
@@ -133,7 +257,8 @@ function getEraTwoPresentation(state) {
           { role: 'Input', label: 'Electrons', value: electronDelta.lt(0) ? 'Consumed' : 'Available', state: electronDelta.lt(0) ? 'consumed' : 'support' },
           { role: 'Process', label: 'Recombination', value: step.throughput.recombination, unit: '/s', state: step.throughput.recombination.gt(0) ? 'active' : 'blocked' },
           { role: 'Output', label: 'Hydrogen', value: step.deltas.hydrogen, unit: '/s', state: step.deltas.hydrogen.gt(0) ? 'active' : 'blocked' }
-        ]
+        ],
+        action
       };
     } else if (state.plasmaTemperature.lt(500000)) {
       process = {
@@ -145,7 +270,8 @@ function getEraTwoPresentation(state) {
           { role: 'Input', label: 'Leptons', value: step.throughput.leptonDecay.gt(0) ? 'Available' : 'Starved', state: step.throughput.leptonDecay.gt(0) ? 'support' : 'blocked' },
           { role: 'Process', label: 'Decay', value: step.throughput.leptonDecay, unit: '/s', state: step.throughput.leptonDecay.gt(0) ? 'active' : 'blocked' },
           { role: 'Output', label: 'Electrons', value: step.deltas.electrons, unit: '/s', state: step.deltas.electrons.gt(0) ? 'active' : 'blocked' }
-        ]
+        ],
+        action
       };
     } else {
       process = {
@@ -157,7 +283,8 @@ function getEraTwoPresentation(state) {
           { role: 'Input', label: 'Protons', value: step.throughput.baryoRadiator.gt(0) ? '2 per cycle' : 'Starved', state: step.throughput.baryoRadiator.gt(0) ? 'consumed' : 'blocked' },
           { role: 'Process', label: 'Radiator', value: step.throughput.baryoRadiator, unit: ' cycles/s', state: step.throughput.baryoRadiator.gt(0) ? 'active' : 'blocked' },
           { role: 'Result', label: 'Cooling', value: step.cooling.times(-1), unit: ' K/s', state: step.cooling.gt(0) ? 'active' : 'blocked' }
-        ]
+        ],
+        action
       };
     }
 
@@ -181,6 +308,7 @@ function getEraTwoPresentation(state) {
         instruction: 'The Core represents the active particle network and its thermal state.',
         ariaLabel: 'Primordial plasma core. Interact to gather Quarks and Gluons.'
       },
+      posture,
       process,
       transition: { type: 'recombination', visible: true, ready: eligibility.isEligible, satisfiedVia },
       elementFocus: { carbonVisible: false, ironVisible: false }
@@ -206,6 +334,7 @@ function getEraTwoPresentation(state) {
         instruction: 'The Core now reflects input supply and Proton throughput.',
         ariaLabel: 'Primordial plasma core. Interact to gather Quarks and Gluons.'
       },
+      posture,
       process: {
         eyebrow: 'Current process',
         title: 'Proton synthesis',
@@ -216,7 +345,8 @@ function getEraTwoPresentation(state) {
           { role: 'Input', label: 'Gluons', value: '1 per Proton', state: bottleneck.resource === 'Gluons' ? 'blocked' : 'support' },
           { role: 'Process', label: 'Proton Synthesizer', value: step.throughput.protonSynthesizer, unit: '/s', state: step.throughput.protonSynthesizer.gt(0) ? 'active' : 'blocked' },
           { role: 'Output', label: 'Protons', value: step.deltas.protons, unit: '/s net', state: step.deltas.protons.gt(0) ? 'active' : 'blocked' }
-        ]
+        ],
+        action
       },
       transition: { type: 'recombination', visible: false, ready: false },
       elementFocus: { carbonVisible: false, ironVisible: false }
@@ -240,6 +370,7 @@ function getEraTwoPresentation(state) {
       instruction: 'The Core represents particle formation; interaction supplies early Quarks and Gluons.',
       ariaLabel: 'Primordial plasma core. Interact to gather Quarks and Gluons.'
     },
+    posture,
     process: {
       eyebrow: 'Current process',
       title: 'Foundational particle production',
@@ -249,7 +380,8 @@ function getEraTwoPresentation(state) {
       nodes: [
         { role: 'Production', label: 'Quark condensation', value: step.throughput.quarkCondenser, unit: '/s', state: step.throughput.quarkCondenser.gt(0) ? 'active' : 'blocked' },
         ...(gluonPhase ? [{ role: 'Production', label: 'Gluon synthesis', value: step.throughput.gluonBinding, unit: '/s', state: step.throughput.gluonBinding.gt(0) ? 'active' : 'blocked' }] : [])
-      ]
+      ],
+      action
     },
     transition: { type: 'recombination', visible: false, ready: false },
     elementFocus: { carbonVisible: false, ironVisible: false }
@@ -350,6 +482,7 @@ function getEraThreePresentation(state) {
       instruction: 'The Core represents stellar state, temperature, and compression response.',
       ariaLabel: `Stellar Core at ${temperature.toString()} Kelvin. Interact to add direct heat.`
     },
+    posture: null,
     process: {
       eyebrow: supernovaEligibility.canTrigger ? 'Current stellar decision' : 'Current stellar action',
       title: action.label,
@@ -388,7 +521,7 @@ function getEraThreePresentation(state) {
 }
 
 export function getCosmosPresentation(state) {
-  if (!state) return { epoch: 0, mode: 'empty', primary: null, core: null, process: null, transition: { visible: false } };
+  if (!state) return { epoch: 0, mode: 'empty', primary: null, core: null, posture: null, process: null, transition: { visible: false } };
   if (state.activeEpoch === 1) return getEraOnePresentation(state);
   if (state.activeEpoch === 2) return getEraTwoPresentation(state);
   if (state.activeEpoch === 3) return getEraThreePresentation(state);
@@ -397,6 +530,7 @@ export function getCosmosPresentation(state) {
     mode: 'later-era',
     primary: null,
     core: null,
+    posture: null,
     process: null,
     transition: { visible: false },
     elementFocus: { carbonVisible: false, ironVisible: false }
