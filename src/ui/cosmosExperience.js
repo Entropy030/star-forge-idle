@@ -315,18 +315,28 @@ function renderProcess(element, process, onAction) {
 
       button.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (process.action.enabled) {
-          onAction?.(process.action);
+        const liveAction = element._currentAction;
+        if (liveAction && liveAction.enabled) {
+          onAction?.(liveAction);
         }
       });
       element.append(button);
     }
     element.dataset.structureKey = structureKey;
   }
+  element._currentAction = process.action;
   if (process.action) {
     const button = element.querySelector('#cosmos-current-action-button');
     if (button) {
       button.disabled = !process.action.enabled;
+      button.dataset.actionKind = process.action.kind;
+      button.dataset.actionId = process.action.id;
+      const labelSpan = button.querySelector('.cosmos-action-label');
+      if (labelSpan) setText(labelSpan, process.action.label);
+      const costSpan = button.querySelector('.cosmos-action-cost');
+      if (costSpan && process.action.cost !== undefined && process.action.currency) {
+        setText(costSpan, ` · Cost: ${formatHudNumber(process.action.cost)} ${process.action.currency}`);
+      }
     }
   }
   for (const model of process.nodes || []) {

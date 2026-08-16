@@ -532,6 +532,48 @@ describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () =>
       expect(nextDetails.cost.toNumber()).toBe(44);
       expect(nextDetails.isAffordable).toBe(true); // 120 >= 44
     });
+
+    it('dispatches onAction when button transitions from unaffordable to affordable without DOM reconstruction', () => {
+      const testState = createInitialState();
+      testState.activeEpoch = 2;
+      testState.resources.quarks.amount = new Decimal(0); // initially unaffordable (cost 20)
+      engine.loadState(testState);
+
+      const onActionMock = vi.fn((action) => {
+        dispatchEngineCommand({
+          type: 'BUY_UPGRADE_PLASMA',
+          payload: { category: 'plasma', upgradeId: action.id, loops: 1 }
+        });
+      });
+
+      // 1. Initial render with 0 Quarks
+      renderCosmosExperience(doc, getCosmosPresentation(testState), onActionMock);
+      const actionButton = processEl.querySelector('#cosmos-current-action-button');
+      expect(actionButton).not.toBeNull();
+      expect(actionButton.disabled).toBe(true);
+
+      // Attempt click while disabled
+      actionButton.click();
+      expect(onActionMock).not.toHaveBeenCalled();
+
+      // 2. Accumulate quarks to 25 (affordable, but structureKey unchanged)
+      testState.resources.quarks.amount = new Decimal(25);
+      renderCosmosExperience(doc, getCosmosPresentation(testState), onActionMock);
+      expect(actionButton.disabled).toBe(false);
+
+      // Click now that it is affordable
+      actionButton.click();
+      expect(onActionMock).toHaveBeenCalledTimes(1);
+      expect(onActionMock).toHaveBeenCalledWith(expect.objectContaining({
+        id: 'quarkCondenser',
+        enabled: true
+      }));
+
+      // Verify authoritative engine state updated
+      const engineState = engine.getStateUnsafe();
+      expect(engineState.upgrades.plasma.quarkCondenser.level).toBe(1);
+      expect(engineState.resources.quarks.amount.toNumber()).toBe(5); // 25 - 20 = 5
+    });
   });
 
   describe('DOM Layout & Hierarchy Invariance', () => {

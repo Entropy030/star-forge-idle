@@ -59,14 +59,19 @@ test.describe('Era-II Cosmos Posture Controls & Model-C Contextual Actions (Phas
     await expect(balanceBtn.locator('.cosmos-posture-badge')).toHaveText('Equilibrium');
     await expect(condenseBtn.locator('.cosmos-posture-badge')).toHaveText('Cooling & Binding');
 
-    // 4. Inspect contextual action in Fresh Era II
+    // 4. Inspect contextual action in Fresh Era II (Fresh Era II preset starts with 100 Quarks)
     const actionBtn = page.locator('#cosmos-current-action-button');
     await expect(actionBtn).toBeVisible();
     await expect(actionBtn).toHaveText(/Construct Quark Condenser/);
+    await expect(actionBtn).toBeEnabled();
 
     const actionBox = await actionBtn.boundingBox();
     expect(actionBox, 'Contextual action bounding box').not.toBeNull();
     expect(actionBox.height, 'Contextual action height >= 44px').toBeGreaterThanOrEqual(44);
+
+    // Verify clicking enabled contextual action executes BUY_UPGRADE_PLASMA and advances level
+    await actionBtn.click();
+    await expect(actionBtn).toHaveText(/Upgrade Quark Condenser|Synthesize Gluon Matrix/);
 
     // 5. Test keyboard navigation on radiogroup
     await balanceBtn.focus();
