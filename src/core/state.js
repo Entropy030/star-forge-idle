@@ -49,6 +49,13 @@ export let gameState = createReactiveState(getInitialGameState(), (prop) => {
 });
 const runtimeStateSubscribers = new Set();
 
+if (typeof window !== 'undefined') {
+  window.gameState = gameState;
+  subscribeRuntimeState((s) => {
+    window.gameState = s;
+  });
+}
+
 export function getRuntimeState() {
   return gameState;
 }
