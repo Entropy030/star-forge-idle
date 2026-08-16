@@ -5,7 +5,7 @@
 ## 1. Executive Summary & Design Scope
 
 ### Status & Guardrails
-- **Status:** `DESIGN SYNTHESIS — AWAITING HUMAN REVIEW`
+- **Status:** `DESIGN SYNTHESIS — REFINED POST-HUMAN REVIEW (AWAITING FINAL DOCUMENT APPROVAL)`
 - **Scope:** Design only. **Zero gameplay implementation** in this phase.
 - **Baseline:** P5.1 is complete, human-approved, and published to `star/main`.
 - **Precedent Baseline:** `p4-stable-v1` remains untouched and authoritative.
@@ -16,8 +16,8 @@ To maintain strict architectural and design clarity, every statement in this doc
 2. `[OBSERVED PLAYTEST PROBLEM]`: Verified human full-run friction or telemetry evidence.
 3. `[RESEARCH-DERIVED HYPOTHESIS]`: Theoretical lessons derived from genre benchmarks.
 4. `[DESIGN CANDIDATE]`: Evaluated architectural models for future phases.
-5. `[DESIGN RECOMMENDATION]`: Recommended design path (**NOT YET HUMAN APPROVED**).
-6. `[HUMAN-APPROVED DECISION]`: Formally approved decisions recorded in `DECISIONS.md`.
+5. `[DESIGN RECOMMENDATION]`: Recommended design path (**SUBJECT TO PROTOTYPING & APPROVAL**).
+6. `[HUMAN-APPROVED DECISION]`: Formally approved decisions recorded in `DECISIONS.md` or approved review passes.
 
 ---
 
@@ -60,11 +60,10 @@ graph TD
     GM["Gluon Matrix"] -->|Gluons| Synth
     LC["Lepton Collector"] -->|Leptons| Decay["Lepton Decay (<500k K)\n(1 L -> 1 e-)"]
     Synth -->|Protons| Radiator["Baryo Radiator\n(2 P -> 7,500 K Cool)"]
-    Synth -->|Protons| RecombP["Recombination Pathway"]
-    Decay -->|Electrons| RecombP
+    Synth -->|Protons| RecombChemistry["Passive Recombination Chem (<100k K)\n(1 P + 1 e- -> 1 Primordial H)"]
+    Decay -->|Electrons| RecombChemistry
     Radiator -->|Cools Plasma| Temp2["Plasma Temp (1e9 -> 3,000 K)"]
-    RecombP -->|"Passive (Temp <100k K)"| H2["Primordial Hydrogen"]
-    Gate2{"Recombination Transition\n(1M Protons OR Temp <= 3,000 K)"}
+    Gate2{"Explicit Recombination Action\n(1M Protons OR Temp <= 3,000 K)"}
   end
 
   subgraph Era_III_Current["Era III: Current Production (Stellar Dawn)"]
@@ -81,22 +80,27 @@ graph TD
 ### Era I: Current Production Reality
 - **What does the player currently build?** 5 sequential Fundamental Law upgrades (`gravityForce`, `weakForce`, `electromagneticForce`, `vacuumResonance`, `strongForce`).
 - **What flows through it?** Quantum Fluctuations (currency) and Energy Density (threshold metric).
-- **What is the current bottleneck?** Passive generation waiting time; Vacuum Coherence accumulation ($0.1\%/\text{s}$ passive).
-- **What does the player currently control?** Core Observation click timing; sequential purchase order of 5 upgrades.
-- **What event currently proves mastery?** Reaching static numeric thresholds: $100,000\text{ QF} + 50,000\text{ ED} + 100\%\text{ Coherence}$.
+- **What is the current bottleneck?** Passive generation waiting time; Vacuum Coherence accumulation ($0.1\%/\text{s}$ passive base rate).
+- **What does the player currently control?** Core Observation click timing; sequential purchase order of the 5 upgrades.
+- **What event currently proves mastery?** Reaching static numeric thresholds: $100,000\text{ QF} + 50,000\text{ ED} + 100\%\text{ Vacuum Coherence}$.
 - **What currently becomes automated?** Passive QF and ED production are automated by purchasing laws.
 - **Current Machine Classification:** `UPGRADE LADDER` (with embryonic synergy via Harmony tiers).
 
 ### Era II: Current Production Reality
 - **What does the player currently build?** Hadronic infrastructure (Quark Condenser, Gluon Matrix, Lepton Collector, Proton Synthesizer, Baryogenesis Radiator).
 - **What flows through it?** Quarks, Gluons, Leptons, Protons, Electrons, and Plasma Thermal Energy.
-- **What is the current bottleneck?** Dynamically shifts between Quarks (early), Gluons/Binding (mid), Proton capacity vs. Thermal Cooling (late).
+- **What is the current bottleneck?** Dynamically shifts between Quarks (early), Gluons/Binding (mid), Proton capacity vs. Radiative Cooling (late).
 - **What does the player currently control?** 
-  1. Operating Postures (`ACCUMULATE` for $+50\%$ flux / $-30\%$ cool, `BALANCE` for $1.0\times$, `CONDENSE` for $+50\%$ binding / $+50\%$ cool / $-30\%$ flux).
-  2. Model-C Contextual Quick Actions (`BUY_UPGRADE_PLASMA`).
-  3. Strategic transition route choice (Matter Path: 1,000,000 Protons vs. Thermal Path: $\le 3,000\text{ K}$).
-- **What event currently proves mastery?** Navigating the phase transition to Recombination readiness (either via thermal management or matter accumulation).
-- **What currently becomes automated?** Raw particle generation, Lepton decay, and passive Recombination ($T < 100,000\text{ K}$).
+  1. **Operating Postures:** Configured in `src/eras/plasma/constants.js` with exact production multipliers:
+     - `ACCUMULATE`: `particleFlux: 1.50` ($+50\%$), `coolingMult: 0.50` ($-50\%$), `bindingMult: 0.70` ($-30\%$).
+     - `BALANCE`: `particleFlux: 1.00`, `coolingMult: 1.00`, `bindingMult: 1.00` ($1.0\times$ across all axes).
+     - `CONDENSE`: `particleFlux: 0.50` ($-50\%$), `coolingMult: 1.50` ($+50\%$), `bindingMult: 1.30` ($+30\%$).
+  2. **Model-C Contextual Quick Actions:** (`BUY_UPGRADE_PLASMA`).
+  3. **Transition Route Selection:** Choosing whether to pursue the Thermodynamic cooling pathway ($T \le 3,000\text{ K}$) or the Baryonic Mass pathway ($1,000,000\text{ Protons}$).
+- **Recombination Distinction:**
+  - *Passive Recombination Chemistry:* At $T < 100,000\text{ K}$, protons and electrons continuously bind into primordial hydrogen in the background.
+  - *Explicit Recombination Transition:* When either $T \le 3,000\text{ K}$ or $\text{Protons} \ge 1,000,000$ is met, the player explicitly clicks `TRIGGER_RECOMBINATION` to advance to Era III. **Major era transitions never auto-fire.**
+- **What currently becomes automated?** Raw particle generation, Lepton decay ($T < 500,000\text{ K}$), and passive hydrogen formation ($T < 100,000\text{ K}$).
 - **Current Machine Classification:** `SYSTEM MACHINE` (Coupled multi-variable physical network).
 
 ### Era III: Current Production Reality
@@ -106,13 +110,9 @@ graph TD
   - *Early Era III:* Hydrogen generation and Helium accumulation for manual Compression pulses.
   - *Mid Era III:* Core Temperature thresholds ($500\text{M K}$ for Carbon, $2.0\text{B K}$ for Iron).
   - *Late Era III:* Iron accumulation ($1,000\text{ Fe}$) and Archetype configuration.
-- **What does the player currently control?** 
-  1. Gravity and Fuser scaling.
-  2. Compression timing.
-  3. Archetype investment balance (Efficient vs. Massive vs. Compact) which dictates the predicted stellar collapse outcome (White Dwarf, Black Hole, Pulsar, Neutron Star).
-  4. Deliberate Supernova reset trigger.
-- **What event proves mastery?** Successful synthesis of Iron, achieving Main Sequence stability, and executing a deliberate Supernova with predicted remnant rewards.
-- **What currently becomes automated?** Hydrogen generation, auto-fusion, and (via Pulsar Shards) auto-compression.
+- **What does the player currently control?** Gravity and Fuser scaling, Compression timing, Archetype investment balance (dictating the predicted collapse outcome), and the deliberate Supernova reset trigger.
+- **What event proves mastery?** Synthesis of $1,000\text{ Iron}$, achieving Main Sequence stability, and executing a deliberate Supernova with predicted remnant rewards.
+- **What currently becomes automated?** Hydrogen generation, auto-fusion, and (via Pulsar Shard upgrades) auto-compression.
 - **Current Machine Classification:** `MIXED` (Early Era III is an Upgrade Ladder; Late Era III is a System Machine with meaningful prestige steering).
 
 ---
@@ -122,16 +122,17 @@ graph TD
 `[OBSERVED PLAYTEST FINDING]`: Human playtesting confirmed that Era II feels substantially more engaging and player-directed than Era I or early Era III.
 
 ### The Concrete Agency Mechanism in Era II
-The perceived agency in Era II is **not** magic, nor is it merely "having three posture buttons." It stems from seven structural properties:
+The perceived agency in Era II is rooted in seven structural properties:
 
-1. **Coupled Multi-Variable State:** A single action changes a multi-dimensional system rather than an isolated scalar. Activating `CONDENSE` simultaneously increases cooling rate, accelerates proton synthesis, and suppresses raw quark flux.
+1. **Coupled Multi-Variable State:** A single action changes a multi-dimensional system rather than an isolated scalar. Activating `CONDENSE` simultaneously increases cooling rate ($1.50\times$), accelerates proton synthesis ($1.30\times$), and suppresses raw particle flux ($0.50\times$).
 2. **Visible Trade-offs without Permanent Penalty:** The player visibly trades raw intake for processing efficiency. The trade-off is immediately reversible (zero switch penalty, zero cooldown lock-in, zero build trap).
 3. **Legible Bottleneck Shifting:** The player can look at the Cosmos HUD and immediately diagnose *why* production stalled (e.g. "Gluons are depleted while Quarks are full $\to$ switch to `ACCUMULATE`" or "Temperature is stalling Proton survival $\to$ switch to `CONDENSE`").
-4. **Multiple Viable Strategic Routes:** Recombination provides two genuine physical pathways:
-   - *The Thermodynamic Pathway:* Radiate heat down to $3,000\text{ K}$ (favors `CONDENSE` and high Radiator investment).
-   - *The Baryonic Mass Pathway:* Overpower thermal barriers by accumulating $1,000,000\text{ Protons}$ (favors `ACCUMULATE` and high Synthesizer investment).
+4. **Two Designed Recombination Routes Exist:** The architecture explicitly supports two distinct physical criteria:
+   - *The Thermodynamic Pathway:* Radiate heat down to $3,000\text{ K}$.
+   - *The Baryonic Mass Pathway:* Overpower thermal barriers by accumulating $1,000,000\text{ Protons}$.
+   - `[OBSERVED PLAYTEST EVIDENCE]`: Human playtesting found that the Cooling route currently appears dramatically more practical than the 1,000,000-Proton route. **Their practical balance / equal viability is NOT yet validated** and is explicitly deferred to P5.4 coarse route balancing.
 5. **Clear Physical Meaning:** Every resource represents a real physical entity (Quark, Gluon, Lepton, Proton, Electron, Kelvin) behaving according to physical principles (hadron binding, beta decay, radiative cooling).
-6. **Zero Micro-Management Trap:** `BALANCE` ($1.0\times$ baseline) guarantees steady, non-punishing progression for passive/idle play, while active posture steering rewards attention with a $2\times$ throughput advantage.
+6. **Zero Micro-Management Trap:** `BALANCE` ($1.0\times$ baseline) guarantees steady, non-punishing progression for passive/idle play, while active posture steering rewards attention with faster throughput.
 7. **Immediate Sensory Feedback:** The Star Core Canvas and HUD instantly reflect the active posture through color temperature, particle agitation, and rate indicators.
 
 ```text
@@ -156,125 +157,72 @@ Every candidate system machine in Star Forge must provide definitive answers to 
 
 ---
 
-## 6. Era I Candidates: The Quantum Foam
-
-### Design Constraints for Era I
-- **Role:** Onboarding era. Must remain accessible and clean.
-- **Vocabulary:** Strictly Quantum Fluctuations, Energy Density, Vacuum Coherence, Observation, Inflation. (No Hydrogen, stars, or complex networks).
-- **Complexity Budget:** $0\text{–}1$ new persistent system concept; $1$ meaningful decision surface; zero build traps; zero required mathematical optimizers.
-
----
-
-### Candidate I-A: Field Resonance Coupling (Allocation Engine)
+## 6. Era I Machine Direction: Vacuum Field Allocation
 
 ```text
-CONCEPT:
-The 5 Fundamental Laws are not merely independent generators; they form a
-resonant quantum field. The player allocates "Quantum Focus" (Coherence potential)
-between two coupled modes:
-  1. FLUCTUATION EXPANSION (High QF generation, low Energy Density)
-  2. VACUUM CONDENSATION (High Energy Density & Coherence, low QF)
+ERA-I DIRECTION:
+HUMAN APPROVED
+
+WORKING DESIGN LABEL:
+VACUUM FIELD ALLOCATION
+
+EXACT MECHANIC STATUS:
+PROTOTYPE REQUIRED
 ```
 
-1. **What do I build?** The 5 Fundamental Laws, which increase total Field Capacity.
+### Approved Design Intent
+**"Turn Vacuum Coherence from a passive waiting timer into one small, legible player-controlled physical allocation."**
+
+- **Role:** Onboarding era. Must remain accessible and simple.
+- **Vocabulary:** Strictly Quantum Fluctuations, Energy Density, Vacuum Coherence, Observation, Inflation.
+- **Complexity Budget:** Minimal new terminology; 0 new currencies; zero build traps; zero required mathematical optimizers.
+- **Balance Rule:** Exact numerical multipliers, mode names, unlock timing, and number of modes remain open and excluded from this synthesis phase.
+
+### Conceptual Trade-off Model (Qualitative Relationships)
+Rather than hardcoding numbers, the machine operates on qualitative physical trade-offs:
+- **Fluctuation / Propagation Priority:** Increases short-term fluctuation and law-building throughput at the expense of stabilization progress.
+- **Stabilization Priority:** Increases Vacuum Coherence and horizon stabilization progress at the expense of short-term production throughput.
+
+### The Six Machine Questions for Vacuum Field Allocation
+1. **What do I build?** Fundamental Law nodes that expand field capacity and establish physical forces.
 2. **What flows through it?** Quantum potential converting into Quantum Fluctuations (currency) and Energy Density (structure).
-3. **What is the bottleneck?** Early: Field Capacity. Mid: Balancing QF spend on upgrades vs. maintaining enough Energy Density to cool the initial universe. Late: Vacuum Coherence reaching 100%.
-4. **What do I control?** The **Coupling Focus Slider / Mode** (`EXPAND` vs. `STABILIZE`).
-5. **What event proves mastery?** Achieving simultaneous Field Resonance (tuning the laws into harmonic ratio) to trigger **Cosmic Inflation**.
-6. **What becomes automated?** Passive QF generation is locked into baseline throughput.
-- **Retained Mechanics:** All 5 Fundamental Laws, Core Observation, QF, ED, Coherence, Cosmic Inflation.
-- **Transformed Mechanics:** Fundamental Law synergy moves from a hidden harmony milestone to active field resonance coupling.
-- **New State Required:** `state.era1.couplingMode` (`'EXPAND' | 'HARMONIZE' | 'STABILIZE'`).
-- **New Player Controls:** 1 selector on Cosmos / Core context (3 discrete states).
-- **Earliest Decision:** After unlocking Weak Nuclear Vector (Law 2), choosing whether to maximize QF buying speed or start building Energy Density.
-- **Why not just an upgrade button?** It changes the conversion ratio of all existing generators dynamically.
+3. **What is the bottleneck?** Early: Fluctuation buying power for initial laws. Mid: Sustaining Energy Density. Late: Vacuum Coherence reaching 100%.
+4. **What do I control?** The **Vacuum Field Allocation** focus between force propagation and vacuum stabilization.
+5. **What event proves mastery?** Reaching full stability ($100\%\text{ Coherence}$) while sustaining the required Energy Density to trigger Cosmic Inflation.
+6. **What becomes automated?** Passive baseline generation continues unhindered in all modes.
 
----
-
-### Candidate I-B: Wave-Packet Confinement & Superposition (Pulse & Squeeze)
-
+### Major Unresolved Prototype Question (Fake-Choice Red Team)
 ```text
-CONCEPT:
-Quantum fluctuations spawn as unconfined probability waves. Observing the Core
-"collapses" wave packets into discrete energy packets. Upgrades increase
-Confinement Volume and Superposition Stability.
-```
+CRITICAL RED-TEAM INQUIRY:
+Does Vacuum Field Allocation produce a real situational decision, or is the solved
+strategy always:
+  1. Set to Propagation mode early to buy all laws
+  2. Flip to Stabilization mode late to wait for 100% Coherence
+  3. Trigger Inflation?
 
-1. **What do I build?** Confinement boundaries (Fundamental Laws establish boundary strength).
-2. **What flows through it?** Superposition wave amplitudes condensing into settled Energy Density.
-3. **What is the bottleneck?** Wave decoherence rate: unobserved fluctuations leak into the void if confinement volume is insufficient.
-4. **What do I control?** Observation Timing and Confinement Policy (Loose/Permissive vs. Tight/Coherent).
-5. **What event proves mastery?** Sustaining Maximum Superposition across all 5 force sectors without decoherence collapse, triggering Inflation.
-6. **What becomes automated?** Boundary maintenance becomes passive as higher laws unlock.
-- **Retained Mechanics:** QF, ED, Coherence, 5 Laws.
-- **Transformed Mechanics:** Observation becomes a wave-packet collapse trigger rather than a simple clicker.
-- **New State Required:** `state.era1.superpositionPhase`, `state.era1.confinementState`.
-- **New Player Controls:** Confinement mode switch (`PERMISSIVE` vs `CONFINED`).
-- **Earliest Decision:** Deciding when to collapse accumulated superposition for a surge of Energy Density.
-- **Why not just an upgrade button?** Involves temporal phase alignment between active observation and passive wave growth.
+If the optimal path is strictly linear, the mechanic fails the agency goal and
+becomes another scripted sequence.
 
----
+PROTOTYPE ACCEPTANCE CRITERION:
+The prototype must demonstrate at least two reasonable decision timings /
+operating approaches under representative play rather than one trivial dominant
+sequence.
 
-### Candidate I-C: Vacuum Coherence Channeling (Polarized Stabilizer)
-
-```text
-CONCEPT:
-Vacuum Coherence is not an isolated slow timer; it is the physical medium that
-amplifies all fundamental forces. The player channels Vacuum Coherence between
-Force Propagation (QF boost) and Horizon Expansion (Energy Density boost).
-```
-
-1. **What do I build?** Fundamental Law nodes that channel coherence.
-2. **What flows through it?** Vacuum Coherence flowing into Force Vectors.
-3. **What is the bottleneck?** Coherence dissipation rate under high fluctuation turbulence.
-4. **What do I control?** Channeling priority on the Cosmos HUD:
-   - *Vector A: Force Propagation* ($+100\%\text{ QF Rate}$, $+0.05\%\text{ Coherence/s}$)
-   - *Vector B: Vacuum Stabilization* ($+25\%\text{ QF Rate}$, $+0.30\%\text{ Coherence/s}$)
-5. **What event proves mastery?** Stabilizing the vacuum at $100\%\text{ Coherence}$ while sustaining $\ge 50,000\text{ Energy Density}$.
-6. **What becomes automated?** Base coherence stabilization becomes autonomous upon unlocking Strong Force.
-- **Retained Mechanics:** 5 Laws, QF, ED, Coherence formulas, Inflation requirements.
-- **Transformed Mechanics:** Coherence pacing directly responds to player allocation, resolving the observed "Coherence is too slow" playtest problem without arbitrary balance tweaks.
-- **New State Required:** `state.era1.coherenceChannel` (`'PROPAGATION' | 'STABILIZATION'`).
-- **New Player Controls:** 1 binary toggle / 2-state channel selector in Cosmos Core context.
-- **Earliest Decision:** At Law 3 (Electromagnetic Tensor), deciding whether to speed up QF purchasing or accelerate Coherence stabilization toward Inflation.
-- **Why not just an upgrade button?** It directly addresses the rate-limiting bottleneck of Era I through player intent.
-
----
-
-### Era I Evaluation Matrix & Recommendation
-
-| Criteria (Scale 1–5) | Candidate I-A (Field Resonance) | Candidate I-B (Wave Confinement) | Candidate I-C (Coherence Channeling) |
-| :--- | :---: | :---: | :---: |
-| **Ownership** | 4 | 4 | 4 |
-| **Agency** | 4 | 4 | 4 |
-| **Physical Coherence** | 5 | 4 | 5 |
-| **Legibility** | 4 | 3 | 5 |
-| **Incremental Satisfaction** | 4 | 4 | 5 |
-| **Low UI Complexity** | 4 | 3 | 5 |
-| **Low Guide Dependency** | 4 | 3 | 5 |
-| **Reversibility** | 5 | 4 | 5 |
-| **Reuse of Existing Systems** | 5 | 3 | 5 |
-| **Implementation Cost** | 4 | 2 | 5 |
-| **Total Score** | **43 / 50** | **34 / 50** | **48 / 50** |
-
-```text
-ERA-I DESIGN RECOMMENDATION (NOT HUMAN APPROVED):
-CANDIDATE I-C: VACUUM COHERENCE CHANNELING (POLARIZED STABILIZER)
-
-Rationale:
-Candidate I-C achieves the exact onboarding agency goal with zero bloat. It takes
-the single biggest playtest complaint ("Vacuum Coherence feels like waiting on a
-slow timer") and transforms it into a meaningful physical operating decision:
-channeling vacuum stability into raw fluctuation flux vs. horizon stabilization.
-It requires only 1 clean selector, introduces 0 new currencies, and reuses 100% of
-existing production state variables.
+GUARDRAIL:
+Do NOT attempt to force agency through artificial switch penalties, cooldowns,
+thermal hysteresis, or rapid-toggle incentives.
 ```
 
 ---
 
 ## 7. Era II Target Machine: The Primordial Soup
 
-`[CURRENT PRODUCTION STATUS]`: Era II is already the strongest early machine in the game. It does not require a ground-up redesign.
+```text
+ERA-II TARGET STATUS:
+CURRENT MACHINE DIRECTION HUMAN APPROVED
+NO NEW P5.3 MECHANICS APPROVED
+ROUTE BALANCE DEFERRED TO P5.4
+```
 
 ```text
 ERA-II TARGET MACHINE FLOW:
@@ -287,138 +235,67 @@ SUB-MILLION KELVIN PLASMA
 PRIMORDIAL HYDROGEN & NEUTRAL GAS EMERGENCE
 ```
 
-### What is Already Working in Era II
-1. The 3 Operating Postures (`ACCUMULATE`, `BALANCE`, `CONDENSE`) create tangible physical agency.
-2. The dual transition routes (Thermal $3,000\text{ K}$ vs. Mass $1\text{M Protons}$) reward distinct strategic playstyles.
-3. Model-C Contextual Quick Actions provide immediate mechanical connection to the active bottleneck.
-4. Canvas 2D thermal visualization reflects live plasma state.
-
-### Identified Areas for Future Deepening (P5.3 Scope)
-- **What still feels linear:** The Lepton Collector $\to$ Lepton Decay $\to$ Electron sub-chain currently operates largely behind the scenes as a passive temperature check ($T < 500,000\text{ K}$).
-- **Future Systemic Opportunity:** In P5.3, make the Lepton-Electron ratio a visible catalytic component of Recombination efficiency without adding new currencies.
+### Current Scope Boundaries for Era II
+1. **Preserve Functioning Model:** Retain the 3 Operating Postures (`ACCUMULATE`, `BALANCE`, `CONDENSE`), Model-C contextual quick actions, and Canvas thermal visualization as-is.
+2. **No Feature Bloat:** The proposed "Lepton-Electron catalytic ratio as a visible Recombination mechanic" is classified as:
+   `UNVALIDATED FUTURE IDEA / NOT CURRENT ROADMAP`.
+3. **Balance Responsibility:** P5.4 owns validating and balancing the two Recombination routes (Cooling vs. Proton accumulation).
 
 ---
 
-## 8. Era III Candidates: The Stellar Dawn
-
-### Design Constraints for Era III
-- **Role:** Mid-game engine and gateway to repeatable prestige.
-- **Problem Statement:** Early Era III currently reverts to linear upgrade clicking (Gravity $\to$ Fuser $\to$ Compression clicks) until late stellar configuration unlocks.
-- **Preserved Core Strength:** Late Era III configuration, remnant prediction, and deliberate Supernova reset must remain the grand payoff.
-- **Complexity Budget:** Existing resources ($\text{H}, \text{He}, \text{C}, \text{Fe}, \text{Temp}$) + 1 coherent relationship layer. Zero new currencies.
-
----
-
-### Candidate III-A: Hydrostatic Balance & Core Convection (Pressure-Thermal Engine)
+## 8. Era III Machine Direction: Hydrostatic Stellar Engine
 
 ```text
-CONCEPT:
-A star is a balance between Gravitational Inward Pressure and Thermal Outward
-Radiation. The player manages the Hydrostatic Balance:
-  - Inward Gravity increases Core Density (accelerating Fusion rate and Compression yield).
-  - Outward Radiation increases Thermal Expansion (unlocking higher elemental burning).
-If Gravity outpaces Radiation, the core heats faster but burns fuel rapidly.
-If Radiation outpaces Gravity, the star stabilizes and burns fuel efficiently.
+ERA-III DIRECTION:
+HUMAN APPROVED
+
+APPROVED PHYSICAL MODEL:
+HYDROSTATIC STELLAR ENGINE
+
+CONTROL DESIGN STATUS:
+REMAINS OPEN — COUPLED EXISTING SYSTEMS FIRST
+NEW POLICY SELECTOR NOT APPROVED
 ```
+
+### Approved Physical Model
+The human review approves the physical concept of a **Hydrostatic Stellar Engine**: making EXISTING systems behave and read as coupled parts of one unified stellar machine:
 
 ```mermaid
-graph LR
-  Gravity["Gravitational Pressure\n(Gravity Nodes)"] -->|"Compresses Core"| Density["Core Density & Temp"]
-  Fusion["Nuclear Fusion\n(H -> He -> C -> Fe)"] -->|"Radiates Outward"| Pressure["Thermal Pressure"]
-  Density <-->|"Hydrostatic Equilibrium Ratio"| Pressure
-  Pressure -->|"Efficient / Stable"| WhiteDwarf["White Dwarf Outcome"]
-  Density -->|"High Density / Dynamic"| Neutron["Pulsar / Neutron Star"]
-  Density -->|"Extreme Overpressure"| BlackHole["Black Hole Outcome"]
+graph TD
+  Grav["GRAVITY\n(Inward Containment & Matter Accrual)"] -->|"Compresses Core"| Fuel["FUSION\n(Hydrogen -> Helium Fuel Conversion)"]
+  Fuel -->|"Increases Density"| Comp["HELIUM & COMPRESSION\n(Thermal Development)"]
+  Comp -->|"Drives Core Heat"| Temp["CORE TEMPERATURE\n(Physical Reaction Thresholds)"]
+  Temp -->|"Unlocks Advanced Burning"| Advanced["CARBON & IRON SYNTHESIS\n(Higher-Order Nuclear Products)"]
+  Advanced -->|"Shapes Stellar Structure"| Config["STELLAR CONFIGURATION\n(Efficient vs Massive vs Compact)"]
+  Config -->|"Predicts Collapse Outcome"| Remnant["PREDICTED REMNANT\n(White Dwarf | Black Hole | Pulsar)"]
+  Remnant -->|"Observer Reset Trigger"| Nova["SUPERNOVA\n(Deliberate Meta Transformation)"]
 ```
 
-1. **What do I build?** Gravity nodes (inward force) and Fusion burning stages (outward thermal force).
-2. **What flows through it?** Hydrogen/Helium fuel converting into thermal pressure and heavier elemental ashes.
-3. **What is the bottleneck?** Hydrostatic stability: over-compressing without sufficient fusion causes fuel starvation; under-compressing stalls core heating below the Carbon ignition threshold ($500\text{M K}$).
-4. **What do I control?** 
-   - **Stellar Operating Balance:** Fuel Feed Rate vs. Gravitational Containment.
-   - Compression pulse timing.
-   - Allocation between stellar expansion and dense core burning.
-5. **What event proves mastery?** Igniting the Iron Core ($2.0\text{B K}$) while maintaining hydrostatic containment, achieving a planned Remnant collapse.
-6. **What becomes automated?** Baseline hydrogen collection and auto-fusion are automated as the star enters Main Sequence.
-- **Connection to Existing Remnant System:** The hydrostatic pressure balance directly drives the three archetype metrics (`efficient` = high radiation stability, `massive` = extreme gravitational overpressure, `compact` = balanced high-density collapse).
-
----
-
-### Candidate III-B: Multi-Shell Stellar Nucleosynthesis (Concentric Reactor)
+### Control-Design Boundary: Coupled Economy First
+The research lesson from Era II is that *player intent changes system relationships*. The reusable lesson is **NOT** "every era must receive posture buttons."
 
 ```text
-CONCEPT:
-As Core Temperature rises, the star forms concentric burning shells:
-  - Outer Shell: Hydrogen -> Helium
-  - Middle Shell: Helium -> Carbon (Triple-Alpha, >=500M K)
-  - Core Shell: Carbon -> Iron (Silicon Burning, >=2B K)
-The player regulates "Convective Dredge-Up" between burning shells.
+PRIMARY DESIGN HYPOTHESIS:
+Make existing investment, conversion, and compression relationships create the
+decision space BEFORE adding another mode selector.
+
+PROTOTYPE RESEARCH QUESTION:
+Can Gravity, Fuser, Compression, Temperature, Carbon, and Iron be coupled strongly
+enough that the player diagnoses and invests against a changing bottleneck
+WITHOUT adding a separate policy selector?
+
+PREFERRED OUTCOME:
+YES. A new operating policy selector is justified ONLY if the coupled economy alone
+does not provide enough meaningful agency.
 ```
 
-1. **What do I build?** Shell catalysts and convective transport channels.
-2. **What flows through it?** Elemental fuel cascading from outer envelope to dense core.
-3. **What is the bottleneck?** Thermal transport: heat from the core must migrate outward to keep the hydrogen envelope burning, while ashes must sink inward.
-4. **What do I control?** **Convective Transport Policy** (`ENVELOPE DREDGE` vs. `CORE COMPRESSION` vs. `BALANCED BURNING`).
-5. **What event proves mastery?** Sustaining all three concentric burning shells simultaneously to accumulate $1,000\text{ Fe}$.
-6. **What becomes automated?** Outer hydrogen shell burning becomes autonomous once Helium burning ignites.
-- **Connection to Existing Remnant System:** Envelope-dominant stars become White Dwarfs; Core-burning behemoths collapse into Black Holes; balanced shells form Pulsars.
-
----
-
-### Candidate III-C: Stellar Ignition & Thermal Runaway (Ignition Staging)
-
-```text
-CONCEPT:
-Early Era III is divided into explicit thermodynamic ignition phases:
-  Phase 1: Protostellar Accretion (accumulating critical mass)
-  Phase 2: Core Flash (Hydrogen ignition at 10M K)
-  Phase 3: Main Sequence Equilibrium (steady Helium accumulation)
-  Phase 4: Degenerate Core Compression (Carbon & Iron synthesis)
-The player triggers explicit "Ignition Thresholds" that permanently transform
-the Forge into higher-order operations.
-```
-
-1. **What do I build?** Accretion mass collectors and ignition conduits.
-2. **What flows through it?** Gravitational potential energy converting into stellar luminescence and synthesized elements.
-3. **What is the bottleneck?** Reaching the next thermal ignition threshold ($10\text{M K} \to 500\text{M K} \to 2\text{B K}$).
-4. **What do I control?** Ignition trigger timing and fuel pre-loading before each ignition flash.
-5. **What event proves mastery?** Triggering the final Iron Core Collapse (Supernova).
-6. **What becomes automated?** Prior phase mechanics become self-sustaining upon triggering the next phase ignition.
-- **Connection to Existing Remnant System:** The efficiency and speed of each ignition phase feed into the final remnant score.
-
----
-
-### Era III Evaluation Matrix & Recommendation
-
-| Criteria (Scale 1–5) | Candidate III-A (Hydrostatic Balance) | Candidate III-B (Concentric Shells) | Candidate III-C (Ignition Staging) |
-| :--- | :---: | :---: | :---: |
-| **Ownership** | 5 | 4 | 4 |
-| **Agency** | 5 | 4 | 4 |
-| **Physical Coherence** | 5 | 5 | 4 |
-| **Legibility** | 4 | 3 | 4 |
-| **Incremental Satisfaction** | 5 | 4 | 4 |
-| **Low UI Complexity** | 4 | 3 | 4 |
-| **Low Guide Dependency** | 4 | 3 | 5 |
-| **Reversibility** | 5 | 4 | 4 |
-| **Reuse of Existing Systems** | 5 | 4 | 5 |
-| **Implementation Cost** | 4 | 3 | 4 |
-| **Total Score** | **46 / 50** | **38 / 50** | **42 / 50** |
-
-```text
-ERA-III DESIGN RECOMMENDATION (NOT HUMAN APPROVED):
-CANDIDATE III-A: HYDROSTATIC BALANCE & CORE CONVECTION
-
-Rationale:
-Candidate III-A elevates the entire stellar arc into a coherent physical machine.
-Instead of early Era III feeling like buying disconnected Gravity and Fuser buttons,
-the player is actively managing the fundamental physical balance of a living star:
-Gravitational Inward Pressure vs. Outward Fusion Radiation.
-Crucially, this flows seamlessly into the existing late-game archetype system:
-- High Radiation Stability -> White Dwarf (Efficient Build)
-- Extreme Gravitational Pressure -> Black Hole (Massive Build)
-- High-Density Equilibrium -> Pulsar / Neutron Star (Compact Build)
-It reuses 100% of existing currencies and variables without adding factory bloat.
-```
+### The Six Machine Questions for the Hydrostatic Stellar Engine
+1. **What do I build?** Gravity infrastructure (inward containment) and Fusion burning stages (outward thermal energy).
+2. **What flows through it?** Nuclear fuel cascading from Hydrogen to Helium, Carbon, and Iron, coupled with Core Temperature.
+3. **What is the bottleneck?** Hydrostatic stability: compressing without sufficient fuel stalls fusion; fusing without compression stalls core temperature below Carbon/Iron thresholds.
+4. **What do I control?** The balance of investment between Gravity containment, Fusion capacity, and Compression timing, directly steering toward a chosen stellar archetype.
+5. **What event proves mastery?** Successfully synthesizing $1,000\text{ Fe}$, igniting the degenerate core at $2.0\text{B K}$, and executing a planned Supernova collapse.
+6. **What becomes automated?** Baseline hydrogen accumulation and auto-fusion as the star reaches Main Sequence.
 
 ---
 
@@ -428,7 +305,7 @@ Star Forge avoids fictional industrial tropes ("Space Factories", "Quantum Mines
 
 | Era | Physical Infrastructure Concept | What it Physically Represents | Authoritative Anchor |
 | :--- | :--- | :--- | :--- |
-| **Era I** | **Field Capacity** | Maximum coherent energy density the local vacuum geometry can sustain before decohering. | Fundamental Law levels & Vacuum Resonance. |
+| **Era I** | **Field Capacity** | Maximum coherent energy density local vacuum geometry can sustain before decohering. | Fundamental Law levels & Vacuum Resonance. |
 | **Era I** | **Stabilization Throughput** | The rate at which quantum wave fluctuations settle into structured spacetime metrics. | Vacuum Coherence generation & Observation coupling. |
 | **Era II** | **Hadron Binding Capacity** | The strong-force capacity to assemble free Quarks and Gluons into stable Baryons. | Proton Synthesizer level & Gluon Matrix density. |
 | **Era II** | **Thermal Radiative Area** | Effective surface area for dissipating primeval plasma heat into dark vacuum. | Baryogenesis Radiator capacity & cooling flux. |
@@ -440,37 +317,37 @@ Star Forge avoids fictional industrial tropes ("Space Factories", "Quantum Mines
 
 ## 10. The Automation Ladder
 
-Automation in Star Forge is a **reward for conceptual mastery**, not an immediate skip button. The progression follows five distinct rungs:
+Automation in Star Forge is a **reward for conceptual mastery**, not an immediate skip button. It must replace mastered routines with higher-level decisions, not merely delete gameplay.
 
 ```text
 RUNG 1: MANUAL LOCAL ACTION
-The player directly intervenes (e.g. Core Observation click, manual Compression pulse).
+Direct player intervention (e.g. Core Observation click, manual Compression pulse).
         ↓
 RUNG 2: REPEATABLE SYSTEM
-The player constructs continuous passive flow (e.g. Fundamental Law generation, Auto-Fusers).
+Continuous passive flow established by player construction (e.g. Fundamental Law generation, Auto-Fusers).
         ↓
 RUNG 3: AUTOMATED ROUTINE
-The game executes basic maintenance automatically (e.g. Lepton decay, Auto-Buy Gravity, Auto-Compressor).
+Background execution of mastered sub-routines (e.g. Lepton beta decay, Stardust Auto-Buy Gravity, Pulsar Auto-Compressor).
         ↓
 RUNG 4: POLICY & ALLOCATION CONTROL
-The player no longer buys units; they steer the system's operational balance (e.g. Era-II Postures, Era-I Coherence Channeling, Era-III Hydrostatic Balance).
+Steering operational balance rather than buying individual units (e.g. Era-II Postures, Era-I Vacuum Field Allocation, Era-III Hydrostatic Balance).
         ↓
 RUNG 5: TRANSFORMATION CONTROL
-The player governs epochal phase shifts and universal resets (e.g. Cosmic Inflation, Recombination, Supernova, Galactic Ignition).
+Governing epochal phase shifts and universal resets (e.g. Cosmic Inflation, Recombination, Supernova, Galactic Ignition).
 ```
 
-### Current Systems Mapped to the Automation Ladder
+### Production Reality vs. Future Design in Automation
 
-| System | Current Rung | Target Post-P5 Rung | Progression Trigger |
-| :--- | :---: | :---: | :--- |
-| **Era I Fluctuations** | Rung 2 (Passive Laws) | Rung 2 $\to$ 4 | Unlocking Law 3 unlocks Coherence Channeling. |
-| **Era I Observation** | Rung 1 (Manual Click) | Rung 1 (Active Boost) | Remains optional manual acceleration. |
-| **Era II Particle Inflow** | Rung 2 (Generators) | Rung 4 (Postures) | Posture selection modulates whole inflow network. |
-| **Era II Recombination** | Rung 2 (Passive $T<100\text{k}$) | Rung 3 (Automated) | Occurs autonomously once thermal criteria are met. |
-| **Era III Gravity Buying** | Rung 1 $\to$ 3 (AutoBuyer) | Rung 3 (Automated) | Stardust AutoBuyer unlocks at Carbon threshold. |
-| **Era III Compression** | Rung 1 (Manual Action) | Rung 3 (Pulsar AutoCompress) | Pulsar Shard engine automates routine compression. |
-| **Era III Archetype Steering** | Rung 4 (Build Selection) | Rung 4 (Hydrostatic Steering) | Balance between Gravity and Fusion dictates Remnant. |
-| **Supernova Reset** | Rung 5 (Observer Decision) | Rung 5 (Meta Transformation) | Permanent player-authored prestige trigger. |
+| System | Current Production Classification | Future Target Classification | Progression Trigger / Anchor |
+| :--- | :--- | :--- | :--- |
+| **Era I Fluctuations** | `[CURRENT PRODUCTION]`: Rung 2 (Passive Laws) | Rung 2 $\to$ 4 | Unlocking Law 3 introduces Vacuum Field Allocation. |
+| **Era I Observation** | `[CURRENT PRODUCTION]`: Rung 1 (Manual Click) | Rung 1 (Active Boost) | Remains optional manual acceleration. |
+| **Era II Particle Inflow** | `[CURRENT PRODUCTION]`: Rung 4 (Postures) | Rung 4 (Postures) | Posture selection modulates whole inflow network. |
+| **Era II Lepton Decay** | `[CURRENT PRODUCTION]`: Rung 3 (Automated $T<500\text{k}$) | Rung 3 (Automated) | Occurs autonomously as plasma cools. |
+| **Era III Gravity AutoBuyer**| `[CURRENT PRODUCTION]`: Rung 3 (Stardust Upgrade) | Rung 3 (Automated) | Stardust `autoBuyer` upgrade unlocks at Carbon temp. |
+| **Era III Auto-Compressor** | `[CURRENT PRODUCTION]`: Rung 3 (Pulsar Upgrade) | Rung 3 (Automated) | Pulsar Shard `autoCompress` upgrade automates compression. |
+| **Era III Archetype Steering**| `[CURRENT PRODUCTION]`: Rung 4 (Build Selection) | Rung 4 (Coupled Balance) | Investment balance dictates Remnant. |
+| **Supernova Reset** | `[CURRENT PRODUCTION]`: Rung 5 (Observer Decision) | Rung 5 (Meta Transformation) | Permanent player-authored prestige trigger. |
 
 ---
 
@@ -522,74 +399,43 @@ LEGACY / PRESTIGE: METAPHYSICAL LAWS
 
 ---
 
-## 14. Red-Team Analysis of Candidate Models
+## 14. Evaluated Candidate Design Principles (P1–P8)
 
-### Red-Teaming Era-I Candidates
+Following human review, the 8 candidate design principles are formalized as follows:
 
-#### Candidate I-A (Field Resonance)
-- **Dominant Strategy Risk:** Medium. Players might find one mathematical ratio of laws that is objectively optimal, turning it into a "set and forget" slider.
-- **UI Burden:** Medium. Requires showing resonance ratios on 5 upgrade cards.
-
-#### Candidate I-B (Wave-Packet Confinement)
-- **Rapid-Toggle / Active Micro Risk:** **HIGH**. Players might feel compelled to click Observation at specific sub-second intervals to "catch the peak wave amplitude." (Violates Anti-Pattern 6).
-- **Idle Incompatibility:** High. Punishes players who leave the game unattended if waves decohere.
-
-#### Candidate I-C (Coherence Channeling) — Recommended
-- **Dominant Strategy Risk:** Low. Early game demands QF propagation; late game demands Coherence stabilization. The optimal mode naturally flips as the player approaches the Inflation requirements.
-- **Fake Choice Risk:** Low. Both modes provide massive clear benefits to distinct progression axes.
-- **Idle Compatibility:** Excellent. Passive generation continues uninterrupted regardless of channel mode.
-- **UI Burden:** Minimal. 1 two-state toggle in the Cosmos header context.
-
----
-
-### Red-Teaming Era-III Candidates
-
-#### Candidate III-A (Hydrostatic Balance) — Recommended
-- **Dominant Strategy Risk:** Low. Different remnant targets require fundamentally different balance profiles (White Dwarf requires radiation dominance; Black Hole requires massive gravitational overpressure; Pulsar requires tight equilibrium).
-- **Build Trap Risk:** Zero. Hydrostatic balance is dynamic and reversible at any time without resetting the run.
-- **UI Burden:** Low. Projects inward pressure vs outward pressure on the existing Cosmos Core canvas and status block.
-
-#### Candidate III-B (Concentric Shells)
-- **Complexity / Guide Dependency Risk:** High. Managing 3 separate convective transfer rates risks turning Era III into a miniature logistics puzzle.
-- **Factory Game Drift:** Medium-High. Pushes the game dangerously close to a resource pipeline simulator.
-
-#### Candidate III-C (Ignition Staging)
-- **Upgrade Ladder Drift:** High. If ignition phases are just sequential threshold buttons, it risks reverting back to an upgrade ladder with fancy narrative names.
-
----
-
-## 15. Candidate Principles Review
-
-We evaluate the 8 candidate design principles from research:
-
-| # | Principle | Status | Detailed Reasoning |
+| # | Principle | Status | Authoritative Definition & Nuance |
 | :--- | :--- | :---: | :--- |
-| **P1** | **Build systems, not upgrade ladders.** | **KEEP** | Essential to Star Forge identity. Upgrades should enhance or reconfigure interacting physical capabilities, not just provide isolated $+X\%$ scalars. |
-| **P2** | **Each era needs at least one meaningful operating decision (not necessarily a posture).** | **KEEP** | Proven by Era II. Era I needs Coherence Channeling; Era III needs Hydrostatic Balance. Postures are one UI manifestation, but the core requirement is *meaningful operational intent*. |
-| **P3** | **New layers transform old layers.** | **KEEP** | When Era II unlocks, Era I energy density becomes plasma heat. When Era III unlocks, Era II hydrogen becomes stellar fuel. When Supernova occurs, Era III iron becomes stardust. |
-| **P4** | **Automation is a mastery reward.** | **KEEP** | Routine manual operations (clicking, simple buying, basic compression) should automate only after the player has mastered the underlying physical relationship. |
-| **P5** | **Bottlenecks should be legible and mutable.** | **KEEP** | The player must always be able to answer "Why is my progress slow right now?" and have a clear physical tool to influence that constraint. |
-| **P6** | **Decisions should be recoverable before they are punishing.** | **REFINE** | *Refinement:* Operational decisions (postures, channels, balances) must be **100% reversible with zero penalty**. Major epochal commitments (Inflation, Recombination, Supernova) are irreversible transformations, but are transparently previewed before confirmation. |
-| **P7** | **Prestige changes the player's level of control.** | **KEEP** | Supernova must not just give a numeric $+20\%$ production boost; it must unlock meta-level tools (Automation engines, Constant tuning, Remnant tailoring). |
-| **P8** | **Physical meaning is the interface to the economy.** | **KEEP** | The vocabulary of the game is astrophysics and thermodynamics. Mechanics must reflect physical principles (binding energy, radiative cooling, hydrostatic pressure) rather than arbitrary game tokens. |
+| **P1** | **Build systems, not upgrade ladders.** | **APPROVED** | Upgrades should primarily improve capabilities or relationships within an understandable system rather than exist as isolated next-step gates. |
+| **P2** | **Each era should contain at least one meaningful decision that changes how its physical system develops or operates.** | **APPROVED AS REFINED** | Forms of decision include allocation, investment, configuration, timing, policy, or transformation. Does not mandate a dedicated posture/widget for every era. |
+| **P3** | **New layers should transform old layers.** | **APPROVED AS REFINED** | Transformation may mean automation, amplification, aggregation, changed relevance, changed context, or new interaction. Does not require literal resource carry-over; the fixed 250 H handoff remains authoritative. |
+| **P4** | **Automation is a mastery reward.** | **APPROVED** | Automation should replace mastered routines with higher-level decisions, not simply delete gameplay. |
+| **P5** | **Bottlenecks should be legible and mutable.** | **APPROVED** | The player must always be able to identify, understand, and influence the active constraint. |
+| **P6** | **Routine decisions should be safely reversible; transformations must be deliberate.** | **APPROVED AS REFINED** | Routine operational decisions should be safely reversible or recoverable without punitive lock-in. Irreversible transformations must be deliberate, previewed, and meaningful. Consequences are allowed; build traps are not. |
+| **P7** | **Prestige changes the player's level of control.** | **APPROVED** | Prestige should create qualitative strategic capability, not merely a flat production multiplier. |
+| **P8** | **Physical meaning is the interface to the economy.** | **APPROVED AS REFINED** | Economic relationships should be explainable through the physical fiction of the universe. Star Forge prefers legible causal physical meaning over literal astrophysics simulator complexity. |
 
 ---
 
-## 16. Resource & UI Grammar Implications
+## 15. Resource & UI Grammar Implications
 
 Following the P5.1 durable principle:
 > *"Era identity may change WHAT occupies a semantic information slot, but should not unnecessarily change WHERE the player looks for that slot."*
 
-Applying our synthesized machine models, the unified cross-era information hierarchy maps as follows:
+```text
+STATUS:
+CANDIDATE DESIGN DIRECTION — NOT YET HUMAN APPROVED
+```
+
+The unified cross-era information hierarchy maps into seven abstract semantic slots:
 
 ```mermaid
 graph TD
   Slot1["1. OBJECTIVE / NEXT\n(Concise immediate milestone goal)"]
-  Slot2["2. PRIMARY STATE / PRIMARY RESOURCE\n(Era I: QF & Coherence | Era II: Quarks/Protons & Temp | Era III: Hydrogen & Core Temp)"]
+  Slot2["2. PRIMARY STATE / PRIMARY RESOURCE\n(Core metric representing current progress)"]
   Slot3["3. STAR CORE / UNIVERSE VIEW\n(Interactive canvas visualizing active physical state & causality)"]
-  Slot4["4. ERA-SPECIFIC PHYSICAL CONTROL\n(Era I: Coherence Channel | Era II: Operating Posture | Era III: Hydrostatic Balance)"]
-  Slot5["5. CURRENT PROCESS & CONTEXTUAL ACTION\n(Active recipe throughput + Model-C Quick Action button)"]
-  Slot6["6. SUPPORT RESOURCES\n(Era I: Energy Density | Era II: Gluons, Leptons, Electrons | Era III: Helium, Carbon, Iron)"]
+  Slot4["4. ERA-SPECIFIC PHYSICAL CONTROL / CONTEXT\n(Era-native control surface or physical context panel)"]
+  Slot5["5. CURRENT PROCESS & CONTEXTUAL ACTION\n(Active process throughput + Model-C Quick Action button)"]
+  Slot6["6. SUPPORT RESOURCES\n(Active inputs, outputs, and intermediate materials)"]
   Slot7["7. CHRONO / NARRATIVE\n(Cosmic epoch context & unlocked lore briefing)"]
 
   Slot1 --> Slot2 --> Slot3 --> Slot4 --> Slot5 --> Slot6 --> Slot7
@@ -597,44 +443,46 @@ graph TD
 
 | Semantic Slot | Era I: Quantum Foam | Era II: Primordial Soup | Era III: Stellar Dawn |
 | :--- | :--- | :--- | :--- |
-| **1. Objective / Next** | Current Quantum Milestone (e.g. "Establish Strong Force") | Current Phase Goal (e.g. "Cool Plasma to 3,000 K") | Current Stellar Threshold (e.g. "Synthesize 1,000 Fe") |
+| **1. Objective / Next** | Current Quantum Milestone | Current Phase Goal | Current Stellar Threshold |
 | **2. Primary State / Resource** | Quantum Fluctuations (QF) | Active Hadron Stock (Quarks $\to$ Protons) | Accumulated Hydrogen (H) |
-| **3. Star Core Visualizer** | Quantum Singularity / Foam Fluctuation Canvas | Primordial Plasma Thermal Canvas | Living Protostar / Main Sequence Star Canvas |
-| **4. Era Physical Control** | **Vacuum Coherence Channel** (`PROPAGATE` vs `STABILIZE`) | **Operating Posture Controller** (`ACCUMULATE`, `BALANCE`, `CONDENSE`) | **Hydrostatic Balance Controller** (`PRESSURE` vs `RADIATION`) |
-| **5. Current Process & Quick Action** | Passive Law Generation + Model-C Next Law Action | Active Hadronic Recipe + Model-C Quick Upgrade Action | Active Fusion Stage + Model-C Quick Forge Action |
-| **6. Support Resources** | Energy Density, Vacuum Coherence % | Gluons, Leptons, Electrons, Plasma Temperature | Helium, Carbon, Iron, Core Temperature |
+| **3. Star Core Visualizer** | Quantum Singularity / Foam Canvas | Primordial Plasma Thermal Canvas | Living Protostar / Main Sequence Canvas |
+| **4. Era Control / Context** | Era-I Physical Allocation Context | Operating Posture Controller | Stellar Physical Context / Balance |
+| **5. Current Process & Quick Action** | Passive Law Generation + Quick Action | Active Hadronic Recipe + Quick Action | Active Fusion Stage + Quick Action |
+| **6. Support Resources** | Energy Density, Vacuum Coherence % | Gluons, Leptons, Electrons, Plasma Temp | Helium, Carbon, Iron, Core Temperature |
 | **7. Chrono / Context** | Quantum Epoch Log & Inflation Readiness | Primordial Cauldron Log & Recombination Halo | Stellar Evolution Log & Remnant Prediction |
+
+*Note: Exact slot population and ordering remain subject to dedicated layout normalization in P5.2/P5.3.*
 
 ---
 
-## 17. Summary of Recommendations & Next Steps
+## 16. Formal Design Status & Next Steps
 
 ```text
 ============================================================
-P5 DESIGN SYNTHESIS SUMMARY:
+P5 DESIGN SYNTHESIS STATUS MATRIX:
 
-ERA I RECOMMENDATION:
-Candidate I-C: Vacuum Coherence Channeling
-(2-State Polarized Stabilizer: Force Propagation vs Vacuum Stabilization)
+ERA I:
+- MACHINE DIRECTION: HUMAN APPROVED (Vacuum Field Allocation)
+- EXACT MECHANIC: PROTOTYPE REQUIRED (Must resolve fake-choice risk)
 
-ERA II TARGET:
-Preserve existing 3-Posture & Dual-Route Recombination Architecture.
-Deepen Lepton catalytic relationships in P5.3.
+ERA II:
+- CURRENT MACHINE DIRECTION: HUMAN APPROVED (Coupled Flows & 3 Postures)
+- NEW P5.3 MECHANICS: NONE APPROVED (Feature accumulation rejected)
+- ROUTE BALANCING: DEFERRED TO P5.4
 
-ERA III RECOMMENDATION:
-Candidate III-A: Hydrostatic Balance & Core Convection
-(Dynamic Equilibrium between Gravitational Pressure and Nuclear Radiation,
-flowing directly into existing Remnant Collapse Archetypes)
+ERA III:
+- MACHINE DIRECTION: HUMAN APPROVED (Hydrostatic Stellar Engine)
+- CONTROL DESIGN: COUPLED EXISTING SYSTEMS FIRST (Policy selector not approved)
 
-CANDIDATE PRINCIPLES:
-P1-P5, P7-P8 APPROVED AS CANDIDATES (KEEP)
-P6 REFINED (100% reversible operations; transparently previewed transformations)
+PRINCIPLES P1–P8:
+- P1, P4, P5, P7: APPROVED
+- P2, P3, P6, P8: APPROVED AS REFINED
 
-UI GRAMMAR:
-7-Slot Cross-Era Information Architecture established for future layout normalization.
+UI 7-SLOT HIERARCHY:
+- CANDIDATE DESIGN DIRECTION (Not yet human approved)
 
-CURRENT STATUS:
-AWAITING HUMAN REVIEW & APPROVAL
-ZERO GAMEPLAY CODE MODIFIED
+NEXT PHASE:
+- PROTOTYPE VACUUM FIELD ALLOCATION & HYDROSTATIC COUPLING (P5.3 PREPARATION)
+- PRESTIGE & TRANSITION PRESENTATION (P5.2 ROADMAP)
 ============================================================
 ```
