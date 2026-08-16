@@ -78,6 +78,8 @@ Eligibility modules own readiness and requirement details used outside the comma
 
 Eligibility must not import UI modules or engine runtime instances. It may read the state passed to it. Commands, transition UI, objectives, and automation should consume the same result.
 
+Plasma upgrade purchase calculation (base/scaled cost, artifact discount, currency mapping, affordability, and eligibility) is owned by the shared pure domain helper `getPlasmaUpgradePurchaseDetails` (`src/eras/plasma/eligibility.js`). `BUY_UPGRADE_PLASMA` consumes this helper for each loop iteration and remains the sole mutation authority. Forge and Cosmos presentation layers consume the same purchase details and never reproduce pricing or discount formulas independently.
+
 Domain selectors calculate read-only rates/outcomes. Presentation selectors convert current state and authoritative results into display models:
 
 - `src/engine/cosmosPresentation.js`

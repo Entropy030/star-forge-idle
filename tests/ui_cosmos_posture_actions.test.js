@@ -6,6 +6,7 @@ import { createInitialState } from '../src/state/createInitialState.js';
 import { createGameEngine } from '../src/engine/createEngine.js';
 import { dispatchEngineCommand, setEngineDispatcher } from '../src/engine/dispatch.js';
 import { plasmaCommandHandlers } from '../src/eras/plasma/commands.js';
+import { getPlasmaUpgradePurchaseDetails } from '../src/eras/plasma/eligibility.js';
 
 describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () => {
   let doc;
@@ -458,6 +459,78 @@ describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () =>
       expect(stateCosmos.upgrades.plasma.quarkCondenser.level).toBe(stateForge.upgrades.plasma.quarkCondenser.level);
       expect(stateCosmos.resources.quarks.amount.toString()).toBe(stateForge.resources.quarks.amount.toString());
       expect(stateCosmos.upgrades.plasma.quarkCondenser.cost.toString()).toBe(stateForge.upgrades.plasma.quarkCondenser.cost.toString());
+    });
+
+    it('guarantees shared purchase details effective cost matches exact command deduction (no discount & with discount)', () => {
+      // 1. No discount
+      const stateNoDiscount = createInitialState();
+      stateNoDiscount.activeEpoch = 2;
+      stateNoDiscount.resources.quarks.amount = new Decimal(50);
+      const detailsNoDiscount = getPlasmaUpgradePurchaseDetails(stateNoDiscount, 'quarkCondenser');
+      expect(detailsNoDiscount.cost.toNumber()).toBe(20);
+
+      const resNoDisc = plasmaCommandHandlers.BUY_UPGRADE_PLASMA(stateNoDiscount, {
+        type: 'BUY_UPGRADE_PLASMA',
+        payload: { category: 'plasma', upgradeId: 'quarkCondenser', loops: 1 }
+      });
+      expect(resNoDisc.ok).toBe(true);
+      expect(stateNoDiscount.resources.quarks.amount.toNumber()).toBe(50 - detailsNoDiscount.cost.toNumber());
+
+      // 2. Active 25% discount
+      const stateWithDiscount = createInitialState();
+      stateWithDiscount.activeEpoch = 2;
+      stateWithDiscount.artifacts = { modifiers: { costDiscount: 0.25 } };
+      stateWithDiscount.resources.quarks.amount = new Decimal(50);
+      const detailsWithDiscount = getPlasmaUpgradePurchaseDetails(stateWithDiscount, 'quarkCondenser');
+      expect(detailsWithDiscount.cost.toNumber()).toBe(15); // 20 * 0.75 = 15
+
+      const resDisc = plasmaCommandHandlers.BUY_UPGRADE_PLASMA(stateWithDiscount, {
+        type: 'BUY_UPGRADE_PLASMA',
+        payload: { category: 'plasma', upgradeId: 'quarkCondenser', loops: 1 }
+      });
+      expect(resDisc.ok).toBe(true);
+      expect(stateWithDiscount.resources.quarks.amount.toNumber()).toBe(50 - detailsWithDiscount.cost.toNumber());
+    });
+
+    it('rejects purchase command when unaffordable and preserves state identically', () => {
+      const state = createInitialState();
+      state.activeEpoch = 2;
+      state.resources.quarks.amount = new Decimal(10); // cost is 20
+      const details = getPlasmaUpgradePurchaseDetails(state, 'quarkCondenser');
+      expect(details.isAffordable).toBe(false);
+
+      const res = plasmaCommandHandlers.BUY_UPGRADE_PLASMA(state, {
+        type: 'BUY_UPGRADE_PLASMA',
+        payload: { category: 'plasma', upgradeId: 'quarkCondenser', loops: 1 }
+      });
+      expect(res.ok).toBe(false);
+      expect(res.error.code).toBe('CANNOT_AFFORD');
+      expect(state.upgrades.plasma.quarkCondenser.level).toBe(0);
+      expect(state.resources.quarks.amount.toNumber()).toBe(10);
+    });
+
+    it('evaluates dynamic cost scaling iteratively across bulk purchase loops', () => {
+      const state = createInitialState();
+      state.activeEpoch = 2;
+      state.resources.quarks.amount = new Decimal(200);
+
+      // Level 0 -> cost 20 (base)
+      // Level 1 -> cost 26 (20 * 1.3)
+      // Level 2 -> cost 34 (26 * 1.3 = 33.8 -> 34)
+      // Sum for 3 loops = 20 + 26 + 34 = 80
+      const res = plasmaCommandHandlers.BUY_UPGRADE_PLASMA(state, {
+        type: 'BUY_UPGRADE_PLASMA',
+        payload: { category: 'plasma', upgradeId: 'quarkCondenser', loops: 3 }
+      });
+
+      expect(res.ok).toBe(true);
+      expect(state.upgrades.plasma.quarkCondenser.level).toBe(3);
+      expect(state.resources.quarks.amount.toNumber()).toBe(200 - 80); // 120
+
+      // Subsequent purchase details reflects level 3 (cost 34 * 1.3 = 44.2 -> 44)
+      const nextDetails = getPlasmaUpgradePurchaseDetails(state, 'quarkCondenser');
+      expect(nextDetails.cost.toNumber()).toBe(44);
+      expect(nextDetails.isAffordable).toBe(true); // 120 >= 44
     });
   });
 

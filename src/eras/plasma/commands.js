@@ -1,7 +1,10 @@
-/* global Decimal */
 import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getQuarkGluonImbalanceMultiplier } from './imbalance.js';
-import { getPlasmaUpgradeEligibility, getRecombinationEligibility } from './eligibility.js';
+import {
+  getPlasmaUpgradeEligibility,
+  getPlasmaUpgradePurchaseDetails,
+  getRecombinationEligibility
+} from './eligibility.js';
 import { PLASMA_POSTURES } from './constants.js';
 
 export const plasmaCommandHandlers = {
@@ -104,25 +107,19 @@ export const plasmaCommandHandlers = {
     
     const def = registry[upgradeId];
     const upgradeState = state.upgrades.plasma[upgradeId];
-    const eligibility = getPlasmaUpgradeEligibility(state, upgradeId);
-    if (!eligibility.unlocked) {
+
+    const initialDetails = getPlasmaUpgradePurchaseDetails(state, upgradeId);
+    if (!initialDetails.isEligible) {
       return { ok: false, changed: false, events: [], error: { code: 'PREREQUISITES_NOT_MET' } };
     }
     
-    let currencyKey = 'protons';
-    if (upgradeId === 'quarkCondenser' || upgradeId === 'plasmaAutomation') currencyKey = 'quarks';
-    if (upgradeId === 'gluonBinding' || upgradeId === 'leptonHarvest') currencyKey = 'gluons';
-
-    const discount = state.artifacts?.modifiers?.costDiscount || 0.0;
-    
     let bought = 0;
     for (let i = 0; i < loops; i++) {
-      if (def.max !== undefined && upgradeState.level >= def.max) break;
+      const details = i === 0 ? initialDetails : getPlasmaUpgradePurchaseDetails(state, upgradeId);
+      if (details.isMaxed) break;
+      if (!details.isAffordable) break;
       
-      const effectiveCost = discount > 0 ? upgradeState.cost.times(1.0 - discount).floor() : upgradeState.cost;
-      if (state.resources[currencyKey].amount.lt(effectiveCost)) break;
-      
-      state.resources[currencyKey].amount = state.resources[currencyKey].amount.minus(effectiveCost);
+      state.resources[details.currencyKey].amount = state.resources[details.currencyKey].amount.minus(details.cost);
       upgradeState.level += 1;
       upgradeState.cost = upgradeState.cost.times(def.costScaling || 2).round();
       bought++;
