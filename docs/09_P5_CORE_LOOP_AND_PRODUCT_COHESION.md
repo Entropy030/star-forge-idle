@@ -106,6 +106,7 @@ To inform P5.2 and P5.3 design without cloning features or destabilizing scope, 
 | :--- | :--- | :---: | :---: |
 | **P4 Overall** | Era-II Postures, Model C, Core Causality, Handoff A | **Complete** | **`p4-stable-v1` Published** |
 | **P5.1** | Interaction & UI Integrity (Whole Numbers, Model C, Buy Max, Layouts) | **Complete (Human Approved)** | **Published to `star/main`** |
+| **P5 Design Synthesis** | Physical Machine Models for Eras I–III, Agency Analysis, Principles P1–P8 | **Complete (Human Approved)** | **Published to `star/main`** |
 | **P5.2** | Progression & Narrative Transitions (Prestige Onboarding) | *Not Started* | *Pending* |
 | **P5.3** | Incremental Systems & Agency (Stock / Flow / Conversion / Policy) | *Not Started* | *Pending* |
 | **P5.4** | Coarse Balancing & Playable Full Run Validation | *Not Started* | *Pending* |

@@ -5,7 +5,7 @@
 ## 1. Executive Summary & Design Scope
 
 ### Status & Guardrails
-- **Status:** `DESIGN SYNTHESIS — REFINED POST-HUMAN REVIEW (AWAITING FINAL DOCUMENT APPROVAL)`
+- **Status:** `HUMAN APPROVED & PUBLISHED`
 - **Scope:** Design only. **Zero gameplay implementation** in this phase.
 - **Baseline:** P5.1 is complete, human-approved, and published to `star/main`.
 - **Precedent Baseline:** `p4-stable-v1` remains untouched and authoritative.
@@ -36,6 +36,20 @@ Star Forge Idle is explicitly **NOT**:
 
 Instead, Star Forge is an **incremental physical system simulator**:
 $$\text{PHYSICAL CONDITION} \longrightarrow \text{OBSERVATION / PROCESS} \longrightarrow \text{COUPLING \& THROUGHPUT} \longrightarrow \text{STRUCTURAL TRANSFORMATION}$$
+
+### Low-Attention Incremental Play Requirement
+Meaningful agency must remain compatible with low-attention incremental play. A valid future system must support:
+1. **Active / Adaptive Operation:** Informed strategic decisions provide modest efficiency gains.
+2. **Low-Attention Operation:** Safe default configurations guarantee steady, non-punishing progression.
+3. **Idle Progression:** Unattended progression advances reliably through authoritative ticks.
+
+The design must **NOT** reward:
+- Rapid toggling or frantic button-switching;
+- Constant babysitting or micro-management;
+- Short fixed rotation schedules;
+- Macro-style timing optimization.
+
+A safe low-attention strategy must remain fully viable even if it is not mathematically optimal.
 
 ---
 

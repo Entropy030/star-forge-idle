@@ -258,3 +258,17 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Implementation Debt Note (Buy Max):**
 - Global Buy Max uses the existing 10,000-loop sentinel convention (`EXISTING BUY-MODE IMPLEMENTATION DEBT`). Closed-form analytical pricing is deferred to future economy refactoring.
 
+## D27 — P5 Design Synthesis: Physical Machine Directions for Eras I–III
+
+**Decision:**
+1. **Era-I Vacuum Field Allocation:** Turn Vacuum Coherence from a passive waiting timer into a small, legible physical allocation between force propagation and vacuum stabilization. Exact mechanic requires prototyping to resolve fake-choice risk under low-attention play.
+2. **Era-II Primordial Soup:** Preserve the current coupled-flow and 3-posture model as-is. Route balance (Cooling vs. Proton accumulation) is deferred to P5.4 coarse balancing. No new P5.3 mechanics approved.
+3. **Era-III Hydrostatic Stellar Engine:** Unify existing stellar mechanics (Gravity, Fusion, Compression, Temperature, Carbon, Iron, Configuration, Remnant) into a coupled hydrostatic engine (Gravitational Pressure vs. Outward Fusion Radiation). The control design prioritizes coupling existing systems first; no dedicated policy selector is approved.
+4. **Candidate Principles P1–P8:** Formally approved with refined wording for P2 (meaningful decisions change physical operation), P3 (transformation without requiring literal resource carryover), P6 (safe reversibility of routine actions; deliberate transformations), and P8 (physical meaning as economy interface).
+5. **Low-Attention Incremental Constraint:** Meaningful agency must remain compatible with low-attention and idle play. Systems must not reward rapid toggling, constant babysitting, short fixed rotation schedules, or macro-style timing optimization.
+6. **7-Slot UI Hierarchy:** Retained as candidate design direction for future layout normalization (not yet human approved).
+
+**Status:**
+- `DESIGN APPROVED: YES` (Human Approved & Published).
+- `PRODUCTION IMPLEMENTED: NO` (Design synthesis complete; exact mechanics require prototyping before implementation).
+
