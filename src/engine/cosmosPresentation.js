@@ -9,6 +9,7 @@ import {
   getPlasmaUpgradePurchaseDetails,
   getRecombinationEligibility
 } from '../eras/plasma/eligibility.js';
+import { getEraTwoVisualSemantics } from '../eras/plasma/semantics.js';
 import { getGalacticIgnitionEligibility, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 
 const ZERO = new Decimal(0);
@@ -212,6 +213,7 @@ function getEraTwoPresentation(state) {
   const gluonPhase = gluonLevel > 0 || condenserLevel >= 3;
   const action = getEraTwoAction(state);
   const posture = getEraTwoPosturePresentation(state);
+  const visualSemantics = getEraTwoVisualSemantics(state);
 
   if (coolingRelevant) {
     const checks = [
@@ -287,9 +289,10 @@ function getEraTwoPresentation(state) {
         eyebrow: 'Matter formation',
         title: 'The plasma is resolving into particles',
         instruction: 'The Core represents the active particle network and its thermal state.',
-        ariaLabel: 'Primordial plasma core. Interact to gather Quarks and Gluons.'
+        ariaLabel: visualSemantics?.ariaLabel || 'Primordial plasma core. Interact to gather Quarks and Gluons.'
       },
       posture,
+      visualSemantics,
       process,
       transition: { type: 'recombination', visible: true, ready: eligibility.isEligible, satisfiedVia },
       elementFocus: { carbonVisible: false, ironVisible: false }
@@ -313,9 +316,10 @@ function getEraTwoPresentation(state) {
         eyebrow: 'Particle synthesis',
         title: 'The plasma is assembling stable matter',
         instruction: 'The Core now reflects input supply and Proton throughput.',
-        ariaLabel: 'Primordial plasma core. Interact to gather Quarks and Gluons.'
+        ariaLabel: visualSemantics?.ariaLabel || 'Primordial plasma core. Interact to gather Quarks and Gluons.'
       },
       posture,
+      visualSemantics,
       process: {
         eyebrow: 'Current process',
         title: 'Proton synthesis',
@@ -349,9 +353,10 @@ function getEraTwoPresentation(state) {
       eyebrow: 'Primordial plasma',
       title: 'Matter is emerging from the hot plasma',
       instruction: 'The Core represents particle formation; interaction supplies early Quarks and Gluons.',
-      ariaLabel: 'Primordial plasma core. Interact to gather Quarks and Gluons.'
+      ariaLabel: visualSemantics?.ariaLabel || 'Primordial plasma core. Interact to gather Quarks and Gluons.'
     },
     posture,
+    visualSemantics,
     process: {
       eyebrow: 'Current process',
       title: 'Foundational particle production',

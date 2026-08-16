@@ -341,8 +341,24 @@ export function renderCosmosExperience(documentRef, presentation, onAction, onPo
     root.dataset.cosmosEra = String(presentation.epoch);
     root.dataset.cosmosMode = presentation.mode;
   }
+  const starCoreEl = documentRef.getElementById('star-core');
+  if (starCoreEl) {
+    if (presentation.epoch === 2 && presentation.visualSemantics) {
+      const vs = presentation.visualSemantics;
+      starCoreEl.dataset.posture = vs.posture;
+      starCoreEl.dataset.thermalState = vs.thermalCategory;
+      starCoreEl.dataset.transitionReady = String(vs.recombinationReady);
+      starCoreEl.dataset.semanticLabel = vs.semanticLabel;
+      starCoreEl.setAttribute('aria-label', vs.ariaLabel);
+    } else if (presentation.epoch !== 2) {
+      delete starCoreEl.dataset.posture;
+      delete starCoreEl.dataset.thermalState;
+      delete starCoreEl.dataset.transitionReady;
+      delete starCoreEl.dataset.semanticLabel;
+    }
+  }
   renderPrimary(documentRef.getElementById('cosmos-primary-status'), presentation);
-  renderCoreContext(documentRef.getElementById('core-context'), presentation.core, documentRef.getElementById('star-core'));
+  renderCoreContext(documentRef.getElementById('core-context'), presentation.core, starCoreEl);
   renderPostureController(documentRef.getElementById('cosmos-posture-controller'), presentation.posture, onPostureChange);
   renderProcess(documentRef.getElementById('cosmos-process-status'), presentation.process, onAction);
 }

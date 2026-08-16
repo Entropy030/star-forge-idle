@@ -984,6 +984,15 @@ box-shadow: 0 0 45px 15px rgba(255, 107, 107, 0.45), inset 0 0 15px rgba(255,255
 filter: blur(0.6px);
 animation: plasmaCorePulse 3.5s ease-in-out infinite !important;
 }
+#star-core[data-posture="ACCUMULATE"] {
+  box-shadow: 0 0 55px 20px rgba(255, 120, 90, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.7) !important;
+}
+#star-core[data-posture="CONDENSE"] {
+  box-shadow: 0 0 35px 12px rgba(0, 236, 198, 0.5), inset 0 0 18px rgba(255, 255, 255, 0.75) !important;
+}
+#star-core[data-transition-ready="true"] {
+  box-shadow: 0 0 60px 22px rgba(255, 215, 0, 0.6), 0 0 20px 4px var(--neon-teal), inset 0 0 18px rgba(255, 255, 255, 0.85) !important;
+}
 #star-core[data-canvas-style="galaxy-wheel"] {
 width: 140px !important;
 height: 140px !important;
@@ -1157,8 +1166,11 @@ h1 { font-size: 1.25rem; letter-spacing: 4px; }
 
 @media (prefers-reduced-motion: reduce) {
   body::before, body::after, h1, #star-core, .core-inner-glow, .q-string::after, .q-dust,
-  .plasma-fluid-glow, .p-particle { 
-    animation: none !important; 
+  .plasma-fluid-glow, .p-particle,
+  #star-core[data-canvas-style="singularity-point"],
+  #star-core[data-canvas-style="plasma-haze"],
+  #star-core[data-canvas-style="galaxy-wheel"] {
+    animation: none !important;
   }
   #star-core[data-canvas-style="singularity-point"],
   #star-core[data-canvas-style="plasma-haze"] { 
@@ -1836,7 +1848,12 @@ body {
 [CSS-SEC-20B] REDUCED MOTION ACCESSIBILITY
 ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *, *::before, *::after,
+  #star-core,
+  #star-core[data-canvas-style="singularity-point"],
+  #star-core[data-canvas-style="plasma-haze"],
+  #star-core[data-canvas-style="galaxy-wheel"],
+  [data-act="3"] #star-core {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

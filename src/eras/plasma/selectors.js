@@ -7,6 +7,7 @@ export {
   getPlasmaCurrencyLabel,
   getPlasmaUpgradePurchaseDetails
 } from './eligibility.js';
+export { getEraTwoVisualSemantics } from './semantics.js';
 export { getQuarkGluonImbalanceMultiplier } from './imbalance.js';
 
 export function getPlasmaRates(state) {

@@ -1,5 +1,6 @@
 /* global ResizeObserver */
 import { gameState } from '../core/state.js';
+import { getEraTwoVisualSemantics } from '../eras/plasma/semantics.js';
 
 export function dispatchEraRenderer(epoch, renderers, cx, cy) {
   switch (epoch) {
@@ -238,56 +239,141 @@ export const CanvasCore = (function () {
     ctx.restore();
   }
 
-  // --- ERA 2: PRIMORDIAL PLASMA CRUCIBLE (COOLING INTERPOLATED) ---
+  // --- ERA 2: PRIMORDIAL PLASMA CRUCIBLE (STATE-DRIVEN SEMANTIC CAUSALITY) ---
   function drawEra2(cx, cy) {
-    let tempK = 10000000;
-    if (typeof gameState !== 'undefined' && gameState.plasmaTemperature) {
-      tempK = (typeof gameState.plasmaTemperature.toNumber === 'function')
-        ? gameState.plasmaTemperature.toNumber()
-        : Number(gameState.plasmaTemperature) || 10000000;
-    }
+    const semantics = (typeof gameState !== 'undefined' ? getEraTwoVisualSemantics(gameState) : null) || {
+      posture: 'BALANCE',
+      temperatureK: 10000000,
+      coolProgress: 0,
+      thermalCategory: 'hot',
+      activityLevel: 0.65,
+      concentrationFactor: 0.6,
+      recombinationReady: false
+    };
 
-    // Interpolation factor: 1.0 = freshly hot (10M K, start of Era II), 0.0 = at recombination (3000K)
-    const startTemp = 10000000;
-    const endTemp = 3000;
-    const coolProgress = Math.min(1, Math.max(0,
-      (startTemp - tempK) / (startTemp - endTemp)
-    ));
+    const isReducedMotion = (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ||
+      (typeof document !== 'undefined' && document.body && document.body.classList.contains('reduced-motion'));
+
+    const coolProgress = semantics.coolProgress;
 
     // Blend from hot white-blue (coolProgress=0) to warm orange-red (coolProgress=1)
     const r = Math.round(200 + coolProgress * 55);   // 200 -> 255
     const g = Math.round(220 - coolProgress * 130);  // 220 -> 90
     const b = Math.round(255 - coolProgress * 175);  // 255 -> 80
 
-    const pulse = 1 + Math.cos(time * 2.5) * 0.06;
-    const radius = 60 * pulse;
+    // Pulse modulation by posture and reduced-motion
+    let pulse = 1.0;
+    if (!isReducedMotion) {
+      if (semantics.posture === 'ACCUMULATE') {
+        pulse = 1 + Math.sin(time * 3.5) * 0.08 * semantics.activityLevel;
+      } else if (semantics.posture === 'CONDENSE') {
+        pulse = 1 + Math.cos(time * 1.5) * 0.03;
+      } else {
+        pulse = 1 + Math.cos(time * 2.2) * 0.05;
+      }
+    }
+
+    // Radius modulation: Accumulate is slightly expanded, Condense is tighter/denser
+    let baseRadius = 58;
+    if (semantics.posture === 'ACCUMULATE') {
+      baseRadius = 64 + 6 * (1 - coolProgress);
+    } else if (semantics.posture === 'CONDENSE') {
+      baseRadius = 52 - 4 * coolProgress;
+    }
+    const radius = baseRadius * pulse;
 
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
 
     // Plasma Core Haze
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 2.5);
-    grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.9)`);
-    grad.addColorStop(0.4, `rgba(${Math.round(r * 0.9)}, ${Math.round(g * 0.4)}, ${Math.round(b * 0.3)}, 0.5)`);
-    grad.addColorStop(0.7, 'rgba(120, 20, 160, 0.2)');
+    const hazeScale = 2.2 + (1 - semantics.concentrationFactor) * 0.4;
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * hazeScale);
+    grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.85 + semantics.concentrationFactor * 0.1})`);
+    grad.addColorStop(0.35, `rgba(${Math.round(r * 0.95)}, ${Math.round(g * 0.5)}, ${Math.round(b * 0.4)}, ${0.4 + semantics.activityLevel * 0.2})`);
+    grad.addColorStop(0.7, `rgba(${Math.round(r * 0.5)}, ${Math.round(g * 0.2)}, 160, ${0.15 + (1 - coolProgress) * 0.15})`);
     grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
     ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.arc(cx, cy, radius * 2.5, 0, Math.PI * 2);
+    ctx.arc(cx, cy, radius * hazeScale, 0, Math.PI * 2);
     ctx.fill();
 
-    // Orbiting Quark Dust
-    for (let i = 0; i < 12; i++) {
-      const orbAngle = time * 1.5 + (i * Math.PI / 6);
-      const orbDist = radius * 0.8 + Math.sin(time * 3 + i) * 15;
-      const px = cx + Math.cos(orbAngle) * orbDist;
-      const py = cy + Math.sin(orbAngle) * orbDist * 0.7;
+    // Recombination-Ready Luminous Neutral Halo
+    if (semantics.recombinationReady) {
+      const ringRadius = radius * 1.65;
+      const glowRadius = radius * 2.2;
 
-      ctx.fillStyle = i % 2 === 0 ? `rgba(${r}, ${g}, ${Math.round(b * 0.6)}, 0.8)` : 'rgba(255, 90, 140, 0.8)';
+      const recombGrad = ctx.createRadialGradient(cx, cy, radius * 0.7, cx, cy, glowRadius);
+      recombGrad.addColorStop(0, 'rgba(255, 220, 100, 0.25)');
+      recombGrad.addColorStop(0.5, 'rgba(0, 236, 198, 0.2)');
+      recombGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+      ctx.fillStyle = recombGrad;
       ctx.beginPath();
-      ctx.arc(px, py, 2.5, 0, Math.PI * 2);
+      ctx.arc(cx, cy, glowRadius, 0, Math.PI * 2);
       ctx.fill();
+
+      // Coherent neutral ring
+      ctx.strokeStyle = 'rgba(255, 215, 0, 0.65)';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(cx, cy, ringRadius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(0, 236, 198, 0.45)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      const neutralAngle = isReducedMotion ? 0 : time * 0.4;
+      ctx.ellipse(cx, cy, ringRadius * 1.15, ringRadius * 0.5, neutralAngle, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Orbiting Particle & Force Field (12 particles, zero per-frame allocation)
+    for (let i = 0; i < 12; i++) {
+      const baseAngle = i * (Math.PI / 6);
+      let orbDist = radius * 0.85;
+      let orbAngle = baseAngle;
+      let particleSize = 2.2;
+
+      if (semantics.posture === 'ACCUMULATE') {
+        // High dispersion, fast outward energetic drift
+        orbDist = radius * 1.05 + ((i * 5) % 15) + (isReducedMotion ? 0 : Math.sin(time * 3 + i) * 10);
+        orbAngle = isReducedMotion ? baseAngle : (time * 2.2 + baseAngle);
+        particleSize = 2.8;
+      } else if (semantics.posture === 'CONDENSE') {
+        // Concentrated tight inward binding
+        orbDist = radius * 0.55 + (i % 3) * 4;
+        orbAngle = isReducedMotion ? baseAngle : (time * 0.8 + baseAngle);
+        particleSize = 1.8;
+      } else {
+        // Balanced steady equilibrium
+        orbDist = radius * 0.82 + Math.sin(i * 1.3) * 6;
+        orbAngle = isReducedMotion ? baseAngle : (time * 1.4 + baseAngle);
+      }
+
+      const px = cx + Math.cos(orbAngle) * orbDist;
+      const py = cy + Math.sin(orbAngle) * orbDist * 0.72;
+
+      ctx.fillStyle = (i % 2 === 0)
+        ? `rgba(${r}, ${g}, ${Math.round(b * 0.6)}, 0.85)`
+        : (semantics.posture === 'CONDENSE' ? 'rgba(0, 236, 198, 0.85)' : 'rgba(255, 90, 140, 0.85)');
+
+      ctx.beginPath();
+      ctx.arc(px, py, particleSize, 0, Math.PI * 2);
+      ctx.fill();
+
+      // For Condense posture, draw subtle inward binding connecting lines between particle pairs
+      if (semantics.posture === 'CONDENSE' && i % 2 === 0) {
+        const nextAngle = orbAngle + (Math.PI / 6);
+        const npx = cx + Math.cos(nextAngle) * orbDist;
+        const npy = cy + Math.sin(nextAngle) * orbDist * 0.72;
+        ctx.strokeStyle = 'rgba(0, 236, 198, 0.25)';
+        ctx.lineWidth = 1.0;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(npx, npy);
+        ctx.stroke();
+      }
     }
 
     ctx.restore();
