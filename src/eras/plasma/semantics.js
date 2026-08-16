@@ -1,9 +1,26 @@
 import Decimal from 'break_infinity.js';
 import { getRecombinationEligibility } from './eligibility.js';
 
+// Presentation Tuning bounds:
 const START_TEMP = 10000000;
 const END_TEMP = 3000;
 
+/**
+ * Pure domain selector deriving the Era-II Star Core semantic visual model.
+ *
+ * DURABLE SEMANTIC CONTRACT:
+ * - Hotter = visually more energetic / intense agitation
+ * - Cooler = visually more stabilized / concentrated
+ * - ACCUMULATE = outward activity / matter influx
+ * - BALANCE = steady-state equilibrium
+ * - CONDENSE = inward concentration / binding focus
+ * - RECOMBINATION READY = visibly distinguishable stable neutral-gas formation
+ *
+ * PRODUCTION ART / PRESENTATION TUNING:
+ * - Specific numerical weights (e.g. 0.65 baseline activity, 0.35 condensation activity)
+ * - Category temperature thresholds (1M K, 100k K) used only for descriptive labelling
+ * - Text template phrasing
+ */
 export function getEraTwoVisualSemantics(state) {
   if (!state || state.activeEpoch !== 2) {
     return null;

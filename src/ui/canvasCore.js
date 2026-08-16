@@ -62,6 +62,16 @@ export const CanvasCore = (function () {
     return p;
   }
 
+  let reducedMotionQuery = null;
+  let isReducedMotionCached = false;
+
+  function updateReducedMotion() {
+    isReducedMotionCached = Boolean(
+      (reducedMotionQuery && reducedMotionQuery.matches) ||
+      (typeof document !== 'undefined' && document.body && document.body.classList.contains('reduced-motion'))
+    );
+  }
+
   function init() {
     try {
       canvas = document.getElementById('core-fx-canvas');
@@ -82,6 +92,16 @@ export const CanvasCore = (function () {
         canvas.parentElement.classList.add('canvas-active');
       } else {
         window.addEventListener('resize', resize);
+      }
+
+      if (typeof window !== 'undefined' && window.matchMedia) {
+        reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        updateReducedMotion();
+        if (typeof reducedMotionQuery.addEventListener === 'function') {
+          reducedMotionQuery.addEventListener('change', updateReducedMotion);
+        } else if (typeof reducedMotionQuery.addListener === 'function') {
+          reducedMotionQuery.addListener(updateReducedMotion);
+        }
       }
 
       document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -240,6 +260,8 @@ export const CanvasCore = (function () {
   }
 
   // --- ERA 2: PRIMORDIAL PLASMA CRUCIBLE (STATE-DRIVEN SEMANTIC CAUSALITY) ---
+  // Durable contract: hotter = energetic, cooler = stable, Accumulate = outward, Balance = equilibrium, Condense = inward, Ready = completion.
+  // Note: Specific RGB gradients, radii, pulse amplitudes, and orbit speeds below are PRODUCTION ART / PRESENTATION TUNING.
   function drawEra2(cx, cy) {
     const semantics = (typeof gameState !== 'undefined' ? getEraTwoVisualSemantics(gameState) : null) || {
       posture: 'BALANCE',
@@ -251,12 +273,13 @@ export const CanvasCore = (function () {
       recombinationReady: false
     };
 
-    const isReducedMotion = (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ||
-      (typeof document !== 'undefined' && document.body && document.body.classList.contains('reduced-motion'));
+    const isReducedMotion = isReducedMotionCached ||
+      (typeof document !== 'undefined' && document.body && document.body.classList.contains('reduced-motion')) ||
+      (typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false);
 
     const coolProgress = semantics.coolProgress;
 
-    // Blend from hot white-blue (coolProgress=0) to warm orange-red (coolProgress=1)
+    // Presentation Tuning: Blend from hot white-blue (coolProgress=0) to warm orange-red (coolProgress=1)
     const r = Math.round(200 + coolProgress * 55);   // 200 -> 255
     const g = Math.round(220 - coolProgress * 130);  // 220 -> 90
     const b = Math.round(255 - coolProgress * 175);  // 255 -> 80
