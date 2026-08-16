@@ -162,4 +162,35 @@ test.describe('live layout geometry contracts', () => {
     const cls = await page.evaluate(() => window.__s5Cls);
     expect(cls).toBeLessThanOrEqual(0.005);
   });
+
+  test('Codex navigation column width remains strictly stable across article selections', async ({ page }) => {
+    for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
+      await page.setViewportSize(viewport);
+      await openApp(page, '?playtest=1');
+      await loadPlaytestPreset(page, 'Mid Era III');
+
+      await page.locator('#nav-settings').click();
+      const listEl = page.locator('#codex-entry-list');
+      await expect(listEl).toBeVisible();
+
+      const buttons = page.locator('#codex-entry-list button');
+      const count = await buttons.count();
+      expect(count).toBeGreaterThanOrEqual(2);
+
+      const widths = [];
+      for (let i = 0; i < Math.min(count, 4); i++) {
+        await buttons.nth(i).click();
+        const box = await listEl.boundingBox();
+        if (box) widths.push(box.width);
+      }
+
+      const baseline = widths[0];
+      for (const w of widths) {
+        expect(Math.abs(w - baseline), `Codex nav width delta at ${viewport.width}px`).toBeLessThanOrEqual(0.5);
+      }
+
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(overflow, `Horizontal overflow at ${viewport.width}px`).toBeLessThanOrEqual(0);
+    }
+  });
 });

@@ -2072,14 +2072,15 @@ body[data-tab="core"] .era-transition-shell {
 .header-context {
   width: min(100%, 40rem);
   min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(14rem, 1fr) 11rem 11rem;
+  display: flex;
+  justify-content: flex-end;
   align-items: center;
   margin-left: auto;
   gap: 8px;
 }
 
 .header-context .stage-text {
+  flex: 0 1 auto;
   min-width: 0;
   margin: 0;
   padding: 4px 8px;
@@ -3139,16 +3140,20 @@ body[data-epoch="5"] .legacy-era3-plus {
 
 .archive-layout {
   display: grid;
-  grid-template-columns: minmax(160px, 1fr) minmax(0, 2fr);
+  grid-template-columns: minmax(180px, 200px) minmax(0, 1fr);
   gap: 16px;
   height: 400px;
   margin-top: 12px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .archive-list,
 .archive-detail {
+  min-width: 0;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 4px;
   box-sizing: border-box;
@@ -3166,12 +3171,16 @@ body[data-epoch="5"] .legacy-era3-plus {
   padding: 16px;
   background: rgba(0, 0, 0, 0.3);
   text-align: left;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .archive-detail-title {
   margin: 0 0 12px;
   color: var(--neon-teal);
   font-size: 1.1em;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .archive-detail-body {
@@ -3179,6 +3188,8 @@ body[data-epoch="5"] .legacy-era3-plus {
   color: #b2bec3;
   font-size: 0.9em;
   line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .archive-list .btn-macro-shift {
@@ -3318,7 +3329,16 @@ body[data-epoch="5"] .legacy-era3-plus {
 .core-context-instruction,
 .cosmos-permanent-transition p { margin: 5px 0 0; color: #b2bec3; font-size: 0.8rem; line-height: 1.45; }
 
-.core-context { text-align: center; padding: 5px 12px 12px; }
+.core-context {
+  text-align: center;
+  padding: 5px 12px 12px;
+}
+
+.core-context .cosmos-eyebrow,
+.core-context .core-context-title,
+.core-context .core-context-instruction {
+  text-align: center;
+}
 
 .cosmos-live-metrics {
   display: grid;

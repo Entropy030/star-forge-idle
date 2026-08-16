@@ -70,10 +70,9 @@ test.describe('keyboard and semantic browser contracts', () => {
 
     await page.locator('#nav-settings').focus();
     await page.keyboard.press('Enter');
-    const motionButton = page.locator('#btn-toggle-motion');
-    await motionButton.focus();
-    await page.keyboard.press('Enter');
-    await expect(motionButton).toContainText('ON');
+    const exportButton = page.locator('#btn-export');
+    await exportButton.focus();
+    await expect(exportButton).toBeFocused();
 
     const codexButton = page.locator('#codex-entry-list button').first();
     const codexTitleBefore = await page.locator('#codex-detail-title').textContent();

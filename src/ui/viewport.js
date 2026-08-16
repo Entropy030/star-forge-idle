@@ -1547,8 +1547,14 @@ export const Viewport = {
 
     this.setTextContent('active-epoch-name', currentEpoch.name);
     this.setTextContent('stage', getCurrentPhase(gameState));
-    this.setTextContent('coherence-label', 'Vacuum Coherence');
-    this.setTextContent('coherence-display', `${format(getVacuumCoherence(gameState))}%`);
+    const coherenceBanner = document.querySelector('.header-context .coherence-banner');
+    if (coherenceBanner) {
+      coherenceBanner.style.display = gameState.activeEpoch === 1 ? '' : 'none';
+    }
+    if (gameState.activeEpoch === 1) {
+      this.setTextContent('coherence-label', 'Vacuum Coherence');
+      this.setTextContent('coherence-display', `${format(getVacuumCoherence(gameState))}%`);
+    }
     this.updateResourceHud();
 
     const cosmosPresentation = getCosmosPresentation(gameState);
