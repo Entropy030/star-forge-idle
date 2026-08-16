@@ -52,7 +52,9 @@ const runtimeStateSubscribers = new Set();
 if (typeof window !== 'undefined') {
   window.gameState = gameState;
   subscribeRuntimeState((s) => {
-    window.gameState = s;
+    if (typeof window !== 'undefined') {
+      window.gameState = s;
+    }
   });
 }
 
