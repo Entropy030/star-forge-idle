@@ -378,7 +378,10 @@ export const Economy = {
   },
 
   refreshUI() {
-    if (gameState.activeTab === 'prestige') {
+    if (typeof window !== 'undefined' && window.Viewport?.update) {
+      window.Viewport.update();
+    }
+    if (gameState.activeTab === 'prestige' && typeof window !== 'undefined' && window.Viewport) {
       window.Viewport.renderShop('stardust');
       window.Viewport.renderShop('pulsar');
       window.Viewport.renderShop('singularity');

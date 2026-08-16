@@ -716,13 +716,6 @@ export function initializeDomRuntime() {
     Viewport.log(`CRT Retro Overlay set to ${active ? 'ON' : 'OFF'}`);
   });
 
-  bindClick('btn-toggle-motion', () => {
-    document.body.classList.toggle('reduced-motion');
-    const isReduced = document.body.classList.contains('reduced-motion');
-    const btn = document.getElementById('btn-toggle-motion');
-    if (btn) btn.textContent = `Toggle Reduced Motion: ${isReduced ? 'ON' : 'OFF'}`;
-  });
-
   bindClick('btn-ai-state', () => getAIState());
   bindClick('btn-bot-start', () => {
     if (window.playtestHarness && window.playtestHarness.isRunning) {
@@ -826,7 +819,7 @@ export function initializeDomRuntime() {
 
   ['gravity', 'fuser', 'compress', 'carbon', 'iron'].forEach(key => {
     bindClick(`btn-${key}`, () => {
-      const res = Economy.buyCoreNodes(key, 1);
+      const res = Economy.buy('core', key);
       if (res && !isActionSuccessful(res)) {
         Viewport.setInlineActionFeedback(`btn-${key}`, getActionFailureMessage(res));
       } else {
