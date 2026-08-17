@@ -150,14 +150,16 @@ describe('P5.2B: Transition Presentation Semantics & Onboarding Contract', () =>
       const resetItems = preview.sections.resets.items;
       expect(resetItems.some(item => item.label.includes('Local Resources'))).toBe(true);
       expect(resetItems.some(item => item.label.includes('Local Construction'))).toBe(true);
+      expect(resetItems.some(item => item.desc.includes('Stellar Configuration'))).toBe(true);
 
-      // Persists group: does NOT claim Stardust Forge upgrades persist
+      // Persists group: includes verified permanent Legacy Upgrades
       const persistItems = preview.sections.persists.items;
       expect(persistItems.some(item => item.label.includes('Meta Currencies'))).toBe(true);
+      expect(persistItems.some(item => item.label.includes('Legacy Upgrades'))).toBe(true);
+      expect(persistItems.some(item => item.desc.includes('Stardust Forge'))).toBe(true);
       expect(persistItems.some(item => item.label.includes('Artifacts'))).toBe(true);
       expect(persistItems.some(item => item.label.includes('Achievements'))).toBe(true);
       expect(persistItems.some(item => item.label.includes('Cards'))).toBe(true);
-      expect(persistItems.some(item => item.label.includes('Legacy Upgrades'))).toBe(false);
 
       // Modifiers: White Dwarf has secondRunProductionMult = 1.0 and unconsumed stability mult, so modifierDescriptions is empty
       expect(preview.outcome.modifierDescriptions).toEqual([]);
@@ -193,17 +195,20 @@ describe('P5.2B: Transition Presentation Semantics & Onboarding Contract', () =>
       expect(preview.sections.persists.items.length).toBeGreaterThan(0);
     });
 
-    it('characterizes exact current Supernova persistence boundary and proves upgrade reset conflict', () => {
+    it('characterizes exact Supernova persistence contract: preserves legacy upgrades, resets run-local construction and resources', () => {
       const state = getPresetEraIIISupernovaReady();
       state.currencies.stardust.amount = new Decimal(50);
       state.currencies.pulsarShards.amount = new Decimal(10);
       state.currencies.singularityMass.amount = new Decimal(5);
 
-      // Set legacy upgrades to demonstrate current command behavior
-      state.upgrades.stardust = { radiantIgnition: { level: 3 } };
-      state.upgrades.pulsar = { quantumLens: { level: 2 } };
-      state.upgrades.singularity = { eventHorizon: { level: 1 } };
-      state.upgrades.stellar = { efficient: { level: 4 } };
+      // Representative upgrades from each persistent family with explicit level and cost state
+      state.upgrades.stardust = { radiantIgnition: { level: 3, cost: new Decimal(100) } };
+      state.upgrades.pulsar = { autoCompress: { level: 1, cost: new Decimal(1) } };
+      state.upgrades.singularity = { eventHorizon: { level: 2, cost: new Decimal(50) } };
+
+      // Run-local upgrades that MUST reset
+      state.upgrades.stellar = { efficient: { level: 4, cost: new Decimal(500) } };
+      state.upgrades.quantum = { lawGravity: { level: 5 } };
 
       state.artifacts.equipped = ['test-artifact', null, null];
       state.cards = { unlocked: ['card-1'] };
@@ -228,19 +233,27 @@ describe('P5.2B: Transition Presentation Semantics & Onboarding Contract', () =>
       expect(gameState.codex.unlockedEntryIds).toContain('recombination');
       expect(gameState.meta.stellarRunsCompleted).toBe(1);
 
-      // 2. VERIFIED RESET: Run-Local Stellar State
+      // 2. VERIFIED PERSISTED: Legacy Upgrades (Level and Cost state preserved)
+      // Stardust representative
+      expect(gameState.upgrades.stardust.radiantIgnition.level).toBe(3);
+      expect(gameState.upgrades.stardust.radiantIgnition.cost.toNumber()).toBe(100);
+
+      // Pulsar representative (AutoCompress mastery protected)
+      expect(gameState.upgrades.pulsar.autoCompress.level).toBe(1);
+      expect(gameState.upgrades.pulsar.autoCompress.cost.toNumber()).toBe(1);
+
+      // Singularity representative
+      expect(gameState.upgrades.singularity.eventHorizon.level).toBe(2);
+      expect(gameState.upgrades.singularity.eventHorizon.cost.toNumber()).toBe(50);
+
+      // 3. VERIFIED RESET: Run-Local Stellar Upgrades and Construction
+      expect(gameState.upgrades.stellar.efficient?.level || 0).toBe(0);
+      expect(gameState.upgrades.quantum.lawGravity?.level || 0).toBe(0);
       expect(gameState.era3.gravity.toNumber()).toBe(1);
       expect(gameState.era3.fusionYield.toNumber()).toBe(0);
       expect(gameState.era3.temperature.toNumber()).toBe(0);
       expect(gameState.resources.hydrogen.amount.toNumber()).toBe(0);
       expect(gameState.resources.iron.amount.toNumber()).toBe(0);
-
-      // 3. RUNTIME TRUTH: state.upgrades are NOT preserved by TRIGGER_SUPERNOVA
-      // This characterizes the runtime truth: Stardust, Pulsar, Singularity upgrades are reset to empty/0 on Supernova.
-      expect(gameState.upgrades.stellar.efficient?.level || 0).toBe(0);
-      expect(gameState.upgrades.stardust.radiantIgnition?.level || 0).toBe(0);
-      expect(gameState.upgrades.pulsar.quantumLens?.level || 0).toBe(0);
-      expect(gameState.upgrades.singularity.eventHorizon?.level || 0).toBe(0);
     });
   });
 

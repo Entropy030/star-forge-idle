@@ -178,18 +178,19 @@ export function getSupernovaTransformationPreview(state) {
     sections: {
       resets: {
         title: 'Current Run Reset',
-        summary: 'The physical stellar body, local stocks, and current run upgrade investments are consumed in the supernova collapse.',
+        summary: 'The physical stellar body, local stocks, and current stellar run construction are consumed in the supernova collapse.',
         items: [
           { label: 'Current Stellar Object', desc: 'Star stage, core temperature, and thermal multipliers return to baseline.' },
           { label: 'Run-Local Resources', desc: 'Hydrogen, Helium, Carbon, and Iron stockpiles are reset.' },
-          { label: 'Run-Local Construction', desc: 'Gravity, Fusers, Compression, and Core node investments are cleared.' }
+          { label: 'Run-Local Construction', desc: 'Gravity, Fusers, Compression, Core node investments, and Stellar Configuration upgrades are cleared.' }
         ]
       },
       persists: {
         title: 'Permanent Legacy',
-        summary: 'All meta-progression currencies, artifacts, and lifetime accomplishments carry forward into all future runs.',
+        summary: 'All meta-progression currencies, legacy upgrades, artifacts, and lifetime accomplishments carry forward into all future runs.',
         items: [
           { label: 'Meta Currencies', desc: 'All Stardust, Pulsar Shards, and Singularity Mass balances persist.' },
+          { label: 'Legacy Upgrades', desc: 'Stardust Forge, Pulsar Engine, and Event Horizon investments carry into future stellar runs.' },
           { label: 'Artifacts & Equipment', desc: 'Equipped Artifacts and permanent loadout modifiers persist.' },
           { label: 'Achievements & Records', desc: 'Unlocked Achievements, Lifetime statistics, and Codex discoveries persist.' },
           { label: 'Celestial Cards & Missions', desc: 'Celestial card collections and completed mission history persist.' }

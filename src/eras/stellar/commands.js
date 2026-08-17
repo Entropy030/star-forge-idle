@@ -226,7 +226,12 @@ export const stellarCommandHandlers = {
       settings: state.settings,
       completedMissions: state.completedMissions,
       cards: state.cards,
-      codex: state.codex
+      codex: state.codex,
+      legacyUpgrades: {
+        stardust: state.upgrades?.stardust ? { ...state.upgrades.stardust } : {},
+        pulsar: state.upgrades?.pulsar ? { ...state.upgrades.pulsar } : {},
+        singularity: state.upgrades?.singularity ? { ...state.upgrades.singularity } : {}
+      }
     };
 
     // Grant rewards exactly once
@@ -268,6 +273,11 @@ export const stellarCommandHandlers = {
     if (persistent.codex) {
       fresh.codex = persistent.codex;
     }
+
+    // Attach persistent legacy upgrades (Stardust, Pulsar, Singularity); run-local stellar upgrades remain reset at {}
+    fresh.upgrades.stardust = persistent.legacyUpgrades.stardust;
+    fresh.upgrades.pulsar = persistent.legacyUpgrades.pulsar;
+    fresh.upgrades.singularity = persistent.legacyUpgrades.singularity;
 
     // Set post-supernova target
     fresh.activeEpoch = 3;

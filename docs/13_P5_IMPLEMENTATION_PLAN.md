@@ -183,15 +183,15 @@ graph TD
 
 | Contract Dimension | Specification |
 | :--- | :--- |
-| **Status** | `IMPLEMENTED LOCALLY — CORRECTION PASS AWAITING HUMAN REVIEW` |
+| **Status** | `IMPLEMENTED LOCALLY — LEGACY PERSISTENCE CONTRACT FIXED — AWAITING FINAL HUMAN REVIEW` |
 | **Purpose** | Enhance player onboarding for existing cosmic transformations (Inflation, Recombination, Stellar Dawn, First Supernova / Legacy) using existing narrative and contextual surfaces. |
-| **In Scope** | - Contextual transition previews explaining: *What Changes, What Resets, What Persists, What Is Gained, What Happens Next, Why It Matters*.<br>- Pure presentation domain model `src/engine/transitionPresentation.js`.<br>- Shared constant authority `RECOMBINATION_STARTING_HYDROGEN = 250` across commands and presentation.<br>- Contextual Cosmos and Legacy Supernova Terminal presentation for existing mechanics.<br>- Distinction between repeatable Supernova (Legacy reset) and permanent Galactic Ignition (Era IV gate).<br>- Alignment of Recombination Codex unlock for both Proton and Cooling routes. |
-| **Out of Scope** | - Generic toast notifications, modal spam, or blocking tutorial carousels.<br>- Onboarding for unimplemented D28/D29 mechanics.<br>- Gameplay or economy mutations. |
-| **Files Involved** | `src/engine/transitionPresentation.js` [NEW], `src/eras/plasma/constants.js`, `src/eras/plasma/commands.js`, `src/ui/stellar.js`, `src/ui/viewport.js`, `src/content/codex.js`, `index.html`, `style.css`. |
-| **State / Schema Impact** | None. |
-| **Blocking Finding** | **LEGACY UPGRADE PERSISTENCE CONFLICT:** The Legacy UI describes Stardust Forge upgrades as permanent modifiers carrying beyond the current star, but `TRIGGER_SUPERNOVA` recreates initial state and does not preserve `state.upgrades` (resetting Stardust, Pulsar, and Singularity upgrades to level 0). P5.2B presentation is reconciled to runtime truth (suppressing claims of upgrade persistence); resolution of gameplay persistence vs. UI permanence is deferred to Human Review / P5.3B0. |
+| **In Scope** | - Contextual transition previews explaining: *What Changes, What Resets, What Persists, What Is Gained, What Happens Next, Why It Matters*.<br>- Pure presentation domain model `src/engine/transitionPresentation.js`.<br>- Shared constant authority `RECOMBINATION_STARTING_HYDROGEN = 250` across commands and presentation.<br>- Contextual Cosmos and Legacy Supernova Terminal presentation for existing mechanics.<br>- Distinction between repeatable Supernova (Legacy reset) and permanent Galactic Ignition (Era IV gate).<br>- Alignment of Recombination Codex unlock for both Proton and Cooling routes.<br>- **Legacy Upgrade Persistence:** Human Decision resolved: Stardust Forge, Pulsar Engine, and Event Horizon upgrades persist across Supernova; run-local construction and stellar configuration upgrades reset. |
+| **Out of Scope** | - Generic toast notifications, modal spam, or blocking tutorial carousels.<br>- Onboarding for unimplemented D28/D29 mechanics.<br>- Other gameplay or economy mutations. |
+| **Files Involved** | `src/engine/transitionPresentation.js` [NEW], `src/eras/plasma/constants.js`, `src/eras/plasma/commands.js`, `src/eras/stellar/commands.js`, `src/ui/stellar.js`, `src/ui/viewport.js`, `src/content/codex.js`, `index.html`, `style.css`. |
+| **State / Schema Impact** | None (save version stays 17). |
+| **Resolved Finding** | **LEGACY UPGRADE PERSISTENCE CONFLICT RESOLVED:** Human decision confirmed that Legacy upgrade families (`state.upgrades.stardust`, `state.upgrades.pulsar`, `state.upgrades.singularity`) are permanent cross-run progression and must persist across Supernova. Implemented directly in `TRIGGER_SUPERNOVA` command by preserving legacy upgrade objects (level and next-cost state). Run-local categories (`state.upgrades.stellar`, etc.) remain reset at level 0. |
 | **Testing Plan** | - Unit tests for transition presentation models, shared constants, and command boundaries (`tests/transition_semantics.test.js` [NEW]).<br>- Playwright browser suite verifying transition cards, Supernova preview structure, and responsive layout (`tests/browser/transition_onboarding.spec.js` [NEW]). |
-| **Human Review Gate** | Review narrative clarity, transition communication, and resolve Legacy upgrade persistence conflict. |
+| **Human Review Gate** | Final human review and approval of P5.2B. |
 | **Rollback Boundary** | Revert presentation selector and transition UI changes. |
 
 ---
