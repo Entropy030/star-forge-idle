@@ -109,6 +109,7 @@ To inform P5.2 and P5.3 design without cloning features or destabilizing scope, 
 | **P5 Design Synthesis** | Physical Machine Models for Eras I–III, Agency Analysis, Principles P1–P8 | **Complete (Human Approved)** | **Published to `star/main`** |
 | **PRE-P5.3A Prototype** | Era-I Vacuum Field Allocation (Coherence as System Quality) | **Complete (Human Approved)** | **Published to `star/main`** |
 | **PRE-P5.3B Prototype** | Era-III Hydrostatic Stellar Engine Coupling (Model B1) | **Complete (Human Approved)** | **Published to `star/main`** |
-| **P5.2** | Progression & Narrative Transitions (Prestige Onboarding) | *Not Started* | *Pending* |
-| **P5.3** | Incremental Systems & Agency (Stock / Flow / Conversion / Policy) | *Not Started* | *Pending* |
-| **P5.4** | Coarse Balancing & Playable Full Run Validation | *Not Started* | *Pending* |
+| **P5 Implementation Plan** | Execution Architecture, Authority Matrix, Phase Contracts (D30, D31) | **Complete (Human Approved)** | **Published to `star/main`** |
+| **P5.2** | Progression & Narrative Transitions (Grammar & Prestige Onboarding) | *Not Started* | *Pending* |
+| **P5.3** | Incremental Systems & Agency (Vertical Slices P5.3A, P5.3B0, P5.3B1, P5.3C) | *Not Started* | *Pending* |
+| **P5.4** | Coarse Balancing & Playable Full Run Validation (Calibration-Only) | *Not Started* | *Pending* |

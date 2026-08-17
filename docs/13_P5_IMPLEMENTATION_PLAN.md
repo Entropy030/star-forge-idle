@@ -5,11 +5,11 @@
 ## 0. Executive Summary & Baseline
 
 ### Status & Guardrails
-- **Status:** `DRAFT — AWAITING HUMAN APPROVAL`
+- **Status:** `HUMAN APPROVED — PUBLISHED IMPLEMENTATION EXECUTION CONTRACT`
 - **Scope:** Execution Architecture and Implementation Planning. **Zero gameplay implementation** in this document.
 - **Baseline:** `690bbb72bdb4febfaaa225deeffc84c3c81b4f79` (matches `star/main` published baseline).
 - **Save Version:** `17` (strictly preserved without version bump).
-- **Precedent Decisions:** D01–D29 are authoritative.
+- **Precedent Decisions:** D01–D31 are authoritative (D30 and D31 approved).
 
 ---
 
@@ -344,24 +344,39 @@ graph TD
 
 ---
 
-## 10. Human Decision Gates
+## 10. Human Decision Gates & Technical Status
 
-The following decisions require explicit human review before production implementation:
+All Product Gates for P5 have been formally reviewed and approved by Human Review:
 
-### Gate 1: Era-I Control Surface
-- **Recommendation:** **3-State Discrete Field Allocation** (`PROPAGATION`, `BALANCED`, `STABILIZATION`) with `BALANCED` as safe default.
-- **Rationale:** Tested in PRE-P5.3A; ensures safe unattended play; avoids forcing extreme decisions at unlock; provides neutral default for existing saves; compact and accessible. Visually distinct from Era-II plasma postures.
-- **Status:** `NOT HUMAN APPROVED — REQUIRES HUMAN DECISION BEFORE P5.3A`
+### Gate 1: Era-I Control Surface (D30)
+- **Approved Decision:** **3-State Discrete Field Allocation** (`PROPAGATION`, `BALANCED`, `STABILIZATION`) with `BALANCED` as authoritative safe default.
+- **Durable Meaning:**
+  - PROPAGATION favors immediate Fundamental-Law / QF / ED throughput.
+  - STABILIZATION favors Vacuum Coherence / system-quality investment.
+  - BALANCED is the safe neutral / low-attention default.
+  - The control represents physical field allocation, visually and semantically distinct from Era-II plasma postures.
+  - No continuous slider, no cooldown, no switching penalty, no rapid-toggle reward.
+- **Status:** `HUMAN APPROVED (D30) — IMPLEMENTATION SCHEDULED FOR P5.3A`
 
-### Gate 2: Era-III Primary Semantic Slot
-- **Recommendation:** **Core Temperature** assigned to `#resource-primary-region` in Era III.
-- **Rationale:** Current Era-III Primary slot is empty. D29 defines Core Temperature as the active physical capability state. Creates cross-era consistency (Era I: QF, Era II: Plasma Temp, Era III: Core Temp). No DOM changes required.
-- **Status:** `NOT HUMAN APPROVED — REQUIRES HUMAN DECISION BEFORE P5.3B1`
+### Gate 2: Era-III Primary Semantic Slot (D31)
+- **Approved Decision:** **Core Temperature** assigned to `#resource-primary-region` in Era III.
+- **Durable Meaning:**
+  - Era III currently has no Primary resource/state in that slot.
+  - D29 defines Core Temperature as the active physical capability state of the Hydrostatic Stellar Engine.
+  - Improves cross-era semantic-location consistency without requiring DOM restructuring.
+  - Hydrogen, Helium, Carbon, and Iron remain dynamically assigned to Support and Detail roles.
+- **Status:** `HUMAN APPROVED (D31) — IMPLEMENTATION SCHEDULED FOR P5.3B1`
+
+### Technical Status & Remaining Boundaries:
+1. **No Remaining Product Gates Block P5.2A:** The execution sequence is unblocked to begin with P5.2A (Semantic Progression & Resource Grammar Foundation).
+2. **Stellar Authority Reconciliation:** Handled strictly as a **technical investigation** in P5.3B0 before B1 coupling.
+3. **Exact Calibration Unresolved:** Exact numerical multipliers, quality curves, containment scaling, and pacing remain deliberately unresolved and belong to P5.4 coarse balancing.
+4. **Production Implementation:** Has not started.
 
 ---
 
 ```
 P5 IMPLEMENTATION PLAN COMPLETE
 TARGET FILE: docs/13_P5_IMPLEMENTATION_PLAN.md
-STATUS: DRAFT AWAITING HUMAN APPROVAL
+STATUS: HUMAN APPROVED — PUBLISHED IMPLEMENTATION EXECUTION CONTRACT
 ```

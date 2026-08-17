@@ -139,7 +139,7 @@ Human review in P5.1 confirmed that while Era I, Era II, and Era III share the s
 **Durable Principle:**
 > *"Era identity may change WHAT occupies a semantic information slot, but should not unnecessarily change WHERE the player looks for that slot."*
 
-Future layout normalization in P5.2/P5.3 should investigate a consistent cross-era surface hierarchy resembling:
+Future layout normalization in P5.2/P5.3 references a cross-era surface hierarchy:
 
 ```text
 OBJECTIVE / NEXT
@@ -156,3 +156,7 @@ SUPPORT RESOURCES
         ↓
 CHRONO
 ```
+
+**Approved Cross-Era Surface Contracts (D30, D31):**
+1. **Era-III Primary Semantic State (D31):** Core Temperature occupies `#resource-primary-region` in Era III, formalizing Temperature as the central active physical capability state. Existing resource containers remain the layout migration path without requiring DOM restructuring. (The broader candidate 7-slot hierarchy remains a design reference, not approved wholesale).
+2. **Era-I Vacuum Field Allocation Control (D30):** Discrete 3-state controller (`PROPAGATION`, `BALANCED`, `STABILIZATION` with `BALANCED` default) represents physical field allocation / system-quality investment. Presentation must remain visually and semantically distinct from the Era-II `ACCUMULATE` / `BALANCE` / `CONDENSE` posture controller.

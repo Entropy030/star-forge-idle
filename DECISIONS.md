@@ -309,3 +309,32 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 **Status:**
 - `DESIGN APPROVED: YES` (Structural Mechanic Human Approved & Published).
 - `PRODUCTION IMPLEMENTED: NO` (Implementation deferred to P5.3).
+
+## D30 — Era-I Vacuum Field Allocation Control Surface
+
+**Decision:**
+1. Production control is a discrete 3-state Field Allocation: `PROPAGATION`, `BALANCED`, `STABILIZATION`.
+2. `BALANCED` is the authoritative default for:
+   - fresh games;
+   - normalized v17 saves missing the field;
+   - safe low-attention behavior.
+3. The control represents field allocation / intertemporal system-quality investment, not an Era-II-style operating posture.
+4. Presentation must remain visually distinguishable from the Era-II `ACCUMULATE` / `BALANCE` / `CONDENSE` controller.
+5. Exact multipliers and final nomenclature presentation details remain calibration/content concerns where applicable.
+
+**Status:**
+- `DESIGN APPROVED: YES`
+- `PRODUCTION IMPLEMENTED: NO`
+
+## D31 — Era-III Core Temperature as Primary Semantic State
+
+**Decision:**
+1. Era III uses Core Temperature as its Primary State in the existing Primary resource region (`#resource-primary-region`).
+2. The decision formalizes Temperature as the player-facing physical capability state of the Hydrostatic Stellar Engine.
+3. Hydrogen, Helium, Carbon, and Iron remain dynamically assigned to Support and Detail roles according to the active stellar process.
+4. This is a semantic slot assignment, not approval of the entire previously candidate 7-slot hierarchy.
+5. No new DOM hierarchy is required solely for this decision.
+
+**Status:**
+- `DESIGN APPROVED: YES`
+- `PRODUCTION IMPLEMENTED: NO`
