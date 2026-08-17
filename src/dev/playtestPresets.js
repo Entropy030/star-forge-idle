@@ -35,6 +35,15 @@ export function getPresetLateEraI() {
   return state;
 }
 
+export function getPresetEraIInflationReady() {
+  const state = getPresetLateEraI();
+  state.resources.quantumFluctuations.amount = new Decimal(120000);
+  state.resources.energyDensity.amount = new Decimal(60000);
+  state.stats.maxQF = new Decimal(120000);
+  setVacuumCoherence(state, new Decimal(100));
+  return state;
+}
+
 export function getPresetFreshEraII() {
   const state = getPresetLateEraI();
   state.activeEpoch = 2;

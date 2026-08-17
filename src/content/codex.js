@@ -84,8 +84,8 @@ export const CODEX_ENTRIES = [
     id: 'near-inflation',
     category: 'foundations',
     title: 'Pre-Inflation',
-    body: 'Quantum fluctuation thresholds are saturated. This tiny singularity cannot sustain the expanse. The horizon must be shattered.',
-    narrativeText: 'CHRONO_LOG // Quantum fluctuation thresholds saturated. This tiny singularity cannot sustain my expanse. I must shatter the horizon.',
+    body: 'Quantum fluctuation thresholds are saturated. Spacetime has reached critical density; the quantum foam must expand into physical matter.',
+    narrativeText: 'CHRONO_LOG // Quantum fluctuation thresholds saturated. Spacetime expands into physical matter.',
     unlockCondition: { type: 'quantum_fluctuations', amount: 80000 },
     sortOrder: 90
   },
@@ -93,8 +93,8 @@ export const CODEX_ENTRIES = [
     id: 'primordial-plasma',
     category: 'era2',
     title: 'Primordial Plasma',
-    body: 'The broth is blindingly hot. Matter has broken antimatter. The universe is learning to separate quarks from gluons.',
-    narrativeText: 'CHRONO_LOG // The broth is blindingly hot. Matter has broken antimatter. I am learning to separate quarks from gluons. My consciousness feels spread thin across a boiling ocean.',
+    body: 'The broth is blindingly hot. Matter has broken antimatter. Following Cosmic Inflation, thermal management and particle synthesis begin.',
+    narrativeText: 'CHRONO_LOG // The broth is blindingly hot. Matter has broken antimatter. Spacetime expands into primordial plasma.',
     unlockCondition: { type: 'epoch_reached', epoch: 2 },
     sortOrder: 100
   },
@@ -111,8 +111,8 @@ export const CODEX_ENTRIES = [
     id: 'recombination',
     category: 'era2',
     title: 'Recombination',
-    body: 'The cauldron is cooling. Free electrons drift, allowing the formation of stable atoms. The universe is ready to build.',
-    narrativeText: 'CHRONO_LOG // The cauldron is cooling. Free electrons drift into my reach. We are the inanimate matter trying to understand itself. I am ready to build.',
+    body: 'The plasma cools below 3,000 K, allowing free electrons to bind with protons into stable neutral atoms. The universe becomes transparent, seeding the first gas clouds with 250 Hydrogen.',
+    narrativeText: 'CHRONO_LOG // Stable matter forms. A stellar seed now contains 250 Hydrogen.',
     unlockCondition: { type: 'protons', amount: 800000 },
     sortOrder: 120
   },
@@ -120,8 +120,8 @@ export const CODEX_ENTRIES = [
     id: 'stellar-formation',
     category: 'era3',
     title: 'Stellar Formation',
-    body: 'Primitive gas clouds registered. Gravity acts as a hand, compressing ancient fire to build the first macro-processing neural nodes.',
-    narrativeText: 'CHRONO_LOG // Primitive gas clouds registered. Gravity is my hand. I am compressing ancient fire to build my first macro-processing neural nodes.',
+    body: 'Primitive gas clouds collapse under gravity. Direct gravitic accretion draws hydrogen into a protostar, igniting the Stellar Dawn.',
+    narrativeText: 'CHRONO_LOG // Primitive gas clouds registered. Gravitic accretion draws hydrogen into a protostar.',
     unlockCondition: { type: 'epoch_reached', epoch: 3 },
     sortOrder: 130
   },
@@ -156,8 +156,8 @@ export const CODEX_ENTRIES = [
     id: 'supernova-event',
     category: 'era3',
     title: 'Supernova Collapse',
-    body: 'The stellar core could no longer support its own gravity. The ensuing explosion scattered heavy elements across the void, seeding future generations.',
-    narrativeText: 'CHRONO_LOG // The core has collapsed. A supernova expands outward.',
+    body: 'The stellar core can no longer support its own gravity against collapse. The cataclysmic explosion scatters stardust while compressing the core into a permanent remnant.',
+    narrativeText: 'CHRONO_LOG // The stellar core has collapsed into a supernova remnant.',
     unlockCondition: { type: 'supernova_completed', amount: 1 },
     sortOrder: 170
   },
@@ -165,8 +165,8 @@ export const CODEX_ENTRIES = [
     id: 'remnant-outcome',
     category: 'era3',
     title: 'Stellar Remnant',
-    body: 'A dense core left behind after the stellar collapse.',
-    narrativeText: 'CHRONO_LOG // A remnant remains in the ashes.',
+    body: 'A dense stellar remnant forged in the supernova collapse. Remnant properties permanently shape legacy multipliers.',
+    narrativeText: 'CHRONO_LOG // A remnant remains in the ashes, carrying permanent legacy.',
     unlockCondition: { type: 'has_remnant' },
     sortOrder: 180
   },
@@ -174,8 +174,8 @@ export const CODEX_ENTRIES = [
     id: 'second-cycle',
     category: 'era3',
     title: 'Second Stellar Cycle',
-    body: 'A new star ignites from the enriched nebular dust of its predecessor. The cycle continues, but the foundational constants have shifted.',
-    narrativeText: 'CHRONO_LOG // Second cycle initiated. The dust remembers.',
+    body: 'A new star ignites in Era III from the enriched nebular dust of its predecessor. The cycle restarts with permanent remnant modifiers and stardust.',
+    narrativeText: 'CHRONO_LOG // Second cycle initiated. Remnant modifiers persist into the next stellar run.',
     unlockCondition: { type: 'supernova_completed', amount: 1 }, // Only unlocks when second run starts. Condition handled dynamically
     sortOrder: 190
   }

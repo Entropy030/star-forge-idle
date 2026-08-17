@@ -1131,6 +1131,88 @@ body[data-epoch="5"] { --theme-accent: #d63031; }
   line-height: 1.6;
 }
 
+.supernova-transformation-preview {
+  margin: 14px 0 10px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.supernova-preview-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.supernova-preview-badge {
+  display: inline-block;
+  font: 0.65rem/1.2 'Share Tech Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #fdcb6e;
+  background: rgba(253, 203, 110, 0.12);
+  border: 1px solid rgba(253, 203, 110, 0.3);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+.supernova-preview-group {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+
+.supernova-preview-group-title {
+  font: 0.72rem/1.3 'Share Tech Mono', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a29bfe;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.supernova-preview-group--reset .supernova-preview-group-title {
+  color: #ff7675;
+}
+
+.supernova-preview-group--persists .supernova-preview-group-title {
+  color: #00cec9;
+}
+
+.supernova-preview-group--next .supernova-preview-group-title {
+  color: #ffeaa7;
+}
+
+.supernova-preview-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.supernova-preview-item {
+  font-size: 0.8rem;
+  color: #b2bec3;
+  line-height: 1.4;
+}
+
+.supernova-preview-item strong {
+  color: #f5f6fa;
+}
+
+.supernova-preview-distinction {
+  font-size: 0.78rem;
+  color: #fab1a0;
+  margin-top: 4px;
+  line-height: 1.35;
+}
+
 
 
 /* Cosmic Codex Infotainment Layout Cards */

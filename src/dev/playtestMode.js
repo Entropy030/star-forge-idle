@@ -140,6 +140,7 @@ function renderPlaytestUI() {
         <option value="">-- Select Preset --</option>
         <option value="getPresetFreshEraI">Fresh Era I</option>
         <option value="getPresetLateEraI">Late Era I</option>
+        <option value="getPresetEraIInflationReady">Inflation Ready</option>
         <option value="getPresetFreshEraII">Fresh Era II</option>
         <option value="getPresetEraIIUpgradeChain">Mid Era II</option>
         <option value="getPresetEraIIRecombinationReady">Recombination Ready</option>

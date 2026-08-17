@@ -5,7 +5,7 @@ import {
   getPlasmaUpgradePurchaseDetails,
   getRecombinationEligibility
 } from './eligibility.js';
-import { PLASMA_POSTURES } from './constants.js';
+import { PLASMA_POSTURES, RECOMBINATION_STARTING_HYDROGEN } from './constants.js';
 
 export const plasmaCommandHandlers = {
   SET_PLASMA_POSTURE: (state, cmd) => {
@@ -83,7 +83,7 @@ export const plasmaCommandHandlers = {
     state.activeEpoch = 3;
 
     // Handoff A (D25): Era III Starting Hydrogen is strictly and deterministically constant 250 H.
-    state.resources.hydrogen.amount = new Decimal(250);
+    state.resources.hydrogen.amount = new Decimal(RECOMBINATION_STARTING_HYDROGEN);
 
     if (state.resources.antimatterResidue) {
       let residueGained = state.resources.protons.amount.div(1000).clampMin(1).round();

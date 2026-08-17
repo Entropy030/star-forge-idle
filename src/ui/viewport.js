@@ -1622,6 +1622,7 @@ export const Viewport = {
     if (gameState.activeEpoch !== 1) {
       const inflationBtn = this.getEl('btn-inflation');
       const inflationCard = this.getEl('era1-locked-card');
+      const inflationPreview = this.getEl('era1-transition-preview');
       if (inflationBtn) {
         inflationBtn.style.display = 'none';
         inflationBtn.disabled = true;
@@ -1631,16 +1632,19 @@ export const Viewport = {
         const reqText = inflationCard.querySelector('.req-text');
         if (reqText) reqText.textContent = '';
       }
+      if (inflationPreview) inflationPreview.style.display = 'none';
     }
 
     if (gameState.activeEpoch !== 2) {
       const recombinationBtn = this.getEl('btn-recombination');
       const recombinationCard = this.getEl('era2-locked-card');
+      const recombinationPreview = this.getEl('era2-transition-preview');
       if (recombinationBtn) {
         recombinationBtn.style.display = 'none';
         recombinationBtn.disabled = true;
       }
       if (recombinationCard) recombinationCard.style.display = 'none';
+      if (recombinationPreview) recombinationPreview.style.display = 'none';
     }
 
     // Progressive primary navigation: Cosmos, Forge, Legacy, More.
@@ -1692,6 +1696,7 @@ export const Viewport = {
 
       const inflationBtn = this.getEl('btn-inflation');
       const inflationCard = this.getEl('era1-locked-card');
+      const inflationPreview = this.getEl('era1-transition-preview');
       const eligibility = getInflationEligibility(gameState);
       
       if (inflationBtn && inflationCard) {
@@ -1699,12 +1704,14 @@ export const Viewport = {
           inflationBtn.style.display = 'block';
           inflationBtn.disabled = false;
           inflationCard.style.display = 'none';
+          if (inflationPreview) inflationPreview.style.display = 'block';
           const reqText = inflationCard.querySelector('.req-text');
           if (reqText) reqText.textContent = '';
         } else {
           inflationBtn.style.display = 'none';
           inflationBtn.disabled = true;
           inflationCard.style.display = 'block';
+          if (inflationPreview) inflationPreview.style.display = 'none';
           const reqText = 'Complete the preparation requirements above.';
           let reqDiv = inflationCard.querySelector('.req-text');
           if (!reqDiv) {
@@ -1768,11 +1775,13 @@ export const Viewport = {
 
       const recombBtn = this.getEl('btn-recombination');
       const recombCard = this.getEl('era2-locked-card');
+      const recombPreview = this.getEl('era2-transition-preview');
       const isRecombReady = getRecombinationEligibility(gameState).isEligible;
       if (recombBtn && recombCard) {
         const transitionVisible = cosmosPresentation.transition.type === 'recombination' && cosmosPresentation.transition.visible;
         recombBtn.style.display = transitionVisible && isRecombReady ? 'block' : 'none';
         recombCard.style.display = transitionVisible && !isRecombReady ? 'block' : 'none';
+        if (recombPreview) recombPreview.style.display = transitionVisible && isRecombReady ? 'block' : 'none';
         recombBtn.disabled = !isRecombReady;
       }
 

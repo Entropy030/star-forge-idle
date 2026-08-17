@@ -2,6 +2,8 @@ export const PLASMA_POSTURES = Object.freeze(['ACCUMULATE', 'BALANCE', 'CONDENSE
 
 export const DEFAULT_PLASMA_POSTURE = 'BALANCE';
 
+export const RECOMBINATION_STARTING_HYDROGEN = 250;
+
 // Initial Phase-1 calibration baseline derived from PRE-P4.4 prototype evidence.
 // These are tunable production parameters subject to future balance refinement.
 export const PLASMA_POSTURE_CONFIG = Object.freeze({
