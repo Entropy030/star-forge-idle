@@ -72,10 +72,11 @@ describe('Era-specific resource hierarchy', () => {
     expect(allIds(presentation)).not.toContain('coherence');
   });
 
-  it('leaves Inflation readiness to the Cosmos progression panel', () => {
+  it('keeps Quantum Fluctuations primary and moves requirements to Support during Inflation preparation', () => {
     const presentation = getEraResourcePresentation(getPresetLateEraI());
-    expect(ids(presentation.primary)).toEqual([]);
-    expect(ids(presentation.support)).toEqual(['quantumFluctuations', 'energyDensity', 'coherence']);
+    expect(ids(presentation.primary)).toEqual(['quantumFluctuations']);
+    expect(presentation.primary[0].roleHint).toContain('100,000');
+    expect(ids(presentation.support)).toEqual(['energyDensity', 'coherence']);
   });
 
   it('hides unintroduced Era II intermediates even when dormant values exist', () => {
@@ -105,35 +106,69 @@ describe('Era-specific resource hierarchy', () => {
     expect(ids(presentation.details)).toEqual(expect.arrayContaining(['quarks', 'gluons', 'leptons']));
   });
 
-  it('keeps Era III temperature-first and hides Carbon and Iron before relevance', () => {
+  it('keeps Era III temperature-first in Primary (D31) and hides Carbon and Iron before relevance', () => {
     for (const state of [getPresetFreshEraIII(), getPresetMidEraIII()]) {
       const presentation = getEraResourcePresentation(state);
-      expect(ids(presentation.primary)).toEqual([]);
+      expect(ids(presentation.primary)).toEqual(['coreTemperature']);
+      expect(presentation.primary[0].unit).toBe('K');
       expect(ids(presentation.support)).toEqual(['hydrogen', 'helium']);
       expect(allIds(presentation)).not.toContain('carbon');
       expect(allIds(presentation)).not.toContain('iron');
     }
   });
 
-  it('progressively introduces Carbon, then promotes Iron and its fuels late', () => {
+  it('progressively introduces Carbon, then promotes Iron and its fuels late while Core Temperature remains Primary', () => {
     const carbonState = getPresetMidEraIII();
     carbonState.era3.temperature = new Decimal(500000000);
     const carbonPresentation = getEraResourcePresentation(carbonState);
+    expect(ids(carbonPresentation.primary)).toEqual(['coreTemperature']);
+    expect(carbonPresentation.primary[0].roleHint).toBe('Heat toward Iron (2.00B K)');
     expect(ids(carbonPresentation.support)).toEqual(['hydrogen', 'helium', 'carbon']);
     expect(allIds(carbonPresentation)).not.toContain('iron');
 
     const latePresentation = getEraResourcePresentation(getPresetEraIIISupernovaReady());
-    expect(ids(latePresentation.primary)).toEqual([]);
+    expect(ids(latePresentation.primary)).toEqual(['coreTemperature']);
     expect(ids(latePresentation.support)).toEqual(['iron', 'carbon', 'helium']);
     expect(ids(latePresentation.details)).toEqual(['hydrogen']);
   });
 
-  it('hides zero-value meta currencies and exposes earned currency only in meta data', () => {
+  it('keeps current-run Resource HUD focused on active physical state while Legacy exposes meta currencies', () => {
     const state = getPresetFreshEraIII();
-    expect(getEraResourcePresentation(state).meta).toEqual([]);
-
     state.currencies.stardust.amount = new Decimal(12);
-    expect(ids(getEraResourcePresentation(state).meta)).toEqual(['stardust']);
+    state.currencies.pulsarShards.amount = new Decimal(5);
+    state.currencies.singularityMass.amount = new Decimal(1);
+
+    const presentation = getEraResourcePresentation(state);
+    expect(presentation.meta).toEqual([]);
+
+    expect(state.currencies.stardust.amount.toNumber()).toBe(12);
+    expect(state.currencies.pulsarShards.amount.toNumber()).toBe(5);
+    expect(state.currencies.singularityMass.amount.toNumber()).toBe(1);
+  });
+
+  it('ensures no duplicate resource IDs appear across primary, support, and details', () => {
+    const presets = [
+      getPresetFreshEraI(),
+      getPresetLateEraI(),
+      getPresetFreshEraII(),
+      getPresetEraIIUpgradeChain(),
+      getPresetFreshEraIII(),
+      getPresetMidEraIII(),
+      getPresetEraIIISupernovaReady()
+    ];
+
+    for (const state of presets) {
+      const presentation = getEraResourcePresentation(state);
+      const primaryIds = ids(presentation.primary);
+      const supportIds = ids(presentation.support);
+      const detailsIds = ids(presentation.details);
+
+      expect(primaryIds.length).toBeGreaterThan(0); // All active presets have a non-empty Primary slot
+
+      const combined = [...primaryIds, ...supportIds, ...detailsIds];
+      const unique = new Set(combined);
+      expect(combined.length).toBe(unique.size);
+    }
   });
 
   it('does not mutate gameplay state while selecting presentation', () => {

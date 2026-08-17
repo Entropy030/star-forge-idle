@@ -24,16 +24,10 @@ function resource(id, label, value, options = {}) {
   return { id, label, value, ...options };
 }
 
-function getMetaResources(state) {
-  const definitions = [
-    ['stardust', 'Stardust'],
-    ['pulsarShards', 'Pulsar Shards'],
-    ['singularityMass', 'Singularity Mass']
-  ];
-
-  return definitions
-    .map(([id, label]) => resource(id, label, currencyAmount(state, id)))
-    .filter((item) => item.value.gt(0));
+function getMetaResources() {
+  // Persistent / meta currencies belong strictly to Legacy (D05, P5.2A),
+  // keeping the current-run Resource HUD focused on physical universe state.
+  return [];
 }
 
 function getEraOnePresentation(state) {
@@ -46,9 +40,8 @@ function getEraOnePresentation(state) {
 
   if (inflationIntroduced) {
     return {
-      primary: [],
+      primary: [resource('quantumFluctuations', 'Quantum Fluctuations', qf, { roleHint: 'Threshold: 100,000' })],
       support: [
-        resource('quantumFluctuations', 'Quantum Fluctuations', qf, { roleHint: 'Threshold: 100,000' }),
         resource('energyDensity', 'Energy Density', energyDensity, { roleHint: 'Threshold: 50,000' }),
         resource('coherence', 'Vacuum Coherence', coherence, {
           unit: '%',
@@ -132,6 +125,19 @@ function getEraTwoPresentation(state) {
   };
 }
 
+function getCoreTemperatureRoleHint(temperature) {
+  if (temperature.lt(COSMIC_REGISTRY.constants.mainSequenceTempThreshold)) {
+    return 'Heat toward Main Sequence';
+  }
+  if (temperature.lt(COSMIC_REGISTRY.resources.carbon.unlockTemp)) {
+    return 'Heat toward Carbon (500M K)';
+  }
+  if (temperature.lt(COSMIC_REGISTRY.resources.iron.unlockTemp)) {
+    return 'Heat toward Iron (2.00B K)';
+  }
+  return 'Collapse readiness';
+}
+
 function getEraThreePresentation(state) {
   const temperature = state.era3?.temperature || ZERO;
   const hydrogen = amount(state, 'hydrogen');
@@ -141,15 +147,22 @@ function getEraThreePresentation(state) {
   const carbonRelevant = temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp) || (state.era3?.carbonYield || ZERO).gt(0) || carbon.gt(0);
   const ironRelevant = temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) || (state.era3?.ironYield || ZERO).gt(0) || iron.gt(0);
 
+  const primary = [
+    resource('coreTemperature', 'Core Temperature', temperature, {
+      unit: 'K',
+      roleHint: getCoreTemperatureRoleHint(temperature)
+    })
+  ];
+
   if (ironRelevant) {
     return {
-      primary: [],
+      primary,
       support: [
         resource('iron', 'Iron', iron, { roleHint: 'Collapse material' }),
         resource('carbon', 'Carbon', carbon, { roleHint: 'Iron synthesis fuel' }),
         resource('helium', 'Helium', helium, { roleHint: 'Carbon synthesis fuel' })
       ],
-      details: [resource('hydrogen', 'Hydrogen', hydrogen)]
+      details: [resource('hydrogen', 'Hydrogen', hydrogen, { roleHint: 'Stellar fuel' })]
     };
   }
 
@@ -160,7 +173,7 @@ function getEraThreePresentation(state) {
   if (carbonRelevant) support.push(resource('carbon', 'Carbon', carbon, { roleHint: 'Heavy-element target' }));
 
   return {
-    primary: [],
+    primary,
     support,
     details: []
   };
