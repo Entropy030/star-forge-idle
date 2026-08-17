@@ -113,7 +113,7 @@ export const CODEX_ENTRIES = [
     title: 'Recombination',
     body: 'The plasma cools below 3,000 K, allowing free electrons to bind with protons into stable neutral atoms. The universe becomes transparent, seeding the first gas clouds with 250 Hydrogen.',
     narrativeText: 'CHRONO_LOG // Stable matter forms. A stellar seed now contains 250 Hydrogen.',
-    unlockCondition: { type: 'protons', amount: 800000 },
+    unlockCondition: { type: 'epoch_reached', epoch: 3 },
     sortOrder: 120
   },
   {

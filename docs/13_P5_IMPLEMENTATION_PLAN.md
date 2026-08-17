@@ -183,15 +183,16 @@ graph TD
 
 | Contract Dimension | Specification |
 | :--- | :--- |
-| **Purpose** | Enhance player onboarding for existing cosmic transitions (Inflation, Recombination, Stellar Dawn, First Supernova / Legacy) using existing narrative and contextual surfaces. |
-| **In Scope** | - Contextual transition briefings explaining: *What Changes, What Is Sacrificed, What Persists, What Is Gained, Why It Matters*.<br>- Contextual Cosmos and Legacy explanations for existing mechanics.<br>- Chrono milestone messages and Codex archive entries for current transitions.<br>- Clear distinction between repeatable Supernova (Legacy reset) and permanent Galactic Ignition (Era IV gate). |
-| **Out of Scope** | - Generic toast notifications, modal spam, or blocking tutorial carousels.<br>- Onboarding for unimplemented D28/D29 mechanics (onboarding travels with the vertical slice). |
-| **Files Involved** | `src/content/codex.js`, `src/engine/cosmosPresentation.js`, `src/core/runtimeTick.js` (milestone text), `src/ui/viewport.js` (transition card text). |
+| **Status** | `IMPLEMENTED LOCALLY — CORRECTION PASS AWAITING HUMAN REVIEW` |
+| **Purpose** | Enhance player onboarding for existing cosmic transformations (Inflation, Recombination, Stellar Dawn, First Supernova / Legacy) using existing narrative and contextual surfaces. |
+| **In Scope** | - Contextual transition previews explaining: *What Changes, What Resets, What Persists, What Is Gained, What Happens Next, Why It Matters*.<br>- Pure presentation domain model `src/engine/transitionPresentation.js`.<br>- Shared constant authority `RECOMBINATION_STARTING_HYDROGEN = 250` across commands and presentation.<br>- Contextual Cosmos and Legacy Supernova Terminal presentation for existing mechanics.<br>- Distinction between repeatable Supernova (Legacy reset) and permanent Galactic Ignition (Era IV gate).<br>- Alignment of Recombination Codex unlock for both Proton and Cooling routes. |
+| **Out of Scope** | - Generic toast notifications, modal spam, or blocking tutorial carousels.<br>- Onboarding for unimplemented D28/D29 mechanics.<br>- Gameplay or economy mutations. |
+| **Files Involved** | `src/engine/transitionPresentation.js` [NEW], `src/eras/plasma/constants.js`, `src/eras/plasma/commands.js`, `src/ui/stellar.js`, `src/ui/viewport.js`, `src/content/codex.js`, `index.html`, `style.css`. |
 | **State / Schema Impact** | None. |
-| **Accessibility Impact** | Verify transition explanations are readable by screen readers and respect reduced-motion settings. |
-| **Testing Plan** | - Unit tests for Codex entry unlock conditions.<br>- Playwright browser tests verifying transition cards and briefings render correctly upon reaching eligibility. |
-| **Human Review Gate** | Review narrative clarity and transition communication. |
-| **Rollback Boundary** | Revert narrative/presentation text changes. |
+| **Blocking Finding** | **LEGACY UPGRADE PERSISTENCE CONFLICT:** The Legacy UI describes Stardust Forge upgrades as permanent modifiers carrying beyond the current star, but `TRIGGER_SUPERNOVA` recreates initial state and does not preserve `state.upgrades` (resetting Stardust, Pulsar, and Singularity upgrades to level 0). P5.2B presentation is reconciled to runtime truth (suppressing claims of upgrade persistence); resolution of gameplay persistence vs. UI permanence is deferred to Human Review / P5.3B0. |
+| **Testing Plan** | - Unit tests for transition presentation models, shared constants, and command boundaries (`tests/transition_semantics.test.js` [NEW]).<br>- Playwright browser suite verifying transition cards, Supernova preview structure, and responsive layout (`tests/browser/transition_onboarding.spec.js` [NEW]). |
+| **Human Review Gate** | Review narrative clarity, transition communication, and resolve Legacy upgrade persistence conflict. |
+| **Rollback Boundary** | Revert presentation selector and transition UI changes. |
 
 ---
 

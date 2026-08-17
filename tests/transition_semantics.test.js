@@ -12,6 +12,7 @@ import {
 } from '../src/engine/transitionPresentation.js';
 import { RECOMBINATION_STARTING_HYDROGEN } from '../src/eras/plasma/constants.js';
 import { getPresetEraIIISupernovaReady } from '../src/dev/playtestPresets.js';
+import { CodexEngine } from '../src/ui/codex.js';
 
 describe('P5.2B: Transition Presentation Semantics & Onboarding Contract', () => {
   beforeEach(() => {
@@ -80,9 +81,10 @@ describe('P5.2B: Transition Presentation Semantics & Onboarding Contract', () =>
       expect(preview.startingCondition.amount).toBe(250);
       expect(preview.startingCondition.label).toContain('250 Hydrogen');
 
-      // Verify no-reset & persistence
+      // Verify no-reset & persistence (no false Proton conversion or residue conversion claim)
       expect(preview.resets[0].label).toBe('None');
-      expect(preview.persists.some(p => p.label === 'Antimatter Residue')).toBe(true);
+      expect(preview.persists.some(p => p.label === 'Plasma Discoveries')).toBe(true);
+      expect(preview.persists.some(p => p.label.includes('Residue'))).toBe(false);
       expect(preview.next).toContain('Gravity');
     });
 
@@ -99,10 +101,28 @@ describe('P5.2B: Transition Presentation Semantics & Onboarding Contract', () =>
       expect(gameState.resources.hydrogen.amount.toNumber()).toBe(RECOMBINATION_STARTING_HYDROGEN);
       expect(gameState.resources.hydrogen.amount.toNumber()).toBe(250);
     });
+
+    it('unlocks the Recombination codex entry after reaching Era III via Cooling route', () => {
+      const state = createInitialState();
+      state.activeEpoch = 2;
+      state.plasmaTemperature = new Decimal(2500); // Cooling route satisfied
+      state.resources.protons.amount = new Decimal(0); // 0 protons (would fail protons >= 800k)
+      replaceRuntimeState(state);
+
+      // Trigger recombination
+      const result = engine.dispatch({ type: 'TRIGGER_RECOMBINATION' });
+      expect(result.ok).toBe(true);
+      expect(gameState.activeEpoch).toBe(3);
+
+      // Reconcile and verify codex unlocks
+      CodexEngine.update(gameState);
+      expect(gameState.codex.unlockedEntryIds).toContain('recombination');
+      expect(gameState.codex.unlockedEntryIds).toContain('stellar-formation');
+    });
   });
 
   describe('Supernova Collapse (Repeatable Era-III Transformation)', () => {
-    it('generates first Supernova preview with explicit RESET, PERSISTS, GAIN, and NEXT semantics', () => {
+    it('generates first Supernova preview with verified RESET, PERSISTS, GAIN, and NEXT semantics', () => {
       const state = getPresetEraIIISupernovaReady();
       // Ensure first supernova (stats.supernovas == 0)
       state.stats.supernovas = new Decimal(0);
@@ -131,10 +151,23 @@ describe('P5.2B: Transition Presentation Semantics & Onboarding Contract', () =>
       expect(resetItems.some(item => item.label.includes('Local Resources'))).toBe(true);
       expect(resetItems.some(item => item.label.includes('Local Construction'))).toBe(true);
 
-      // Persists group
+      // Persists group: does NOT claim Stardust Forge upgrades persist
       const persistItems = preview.sections.persists.items;
       expect(persistItems.some(item => item.label.includes('Meta Currencies'))).toBe(true);
-      expect(persistItems.some(item => item.label.includes('Legacy Upgrades'))).toBe(true);
+      expect(persistItems.some(item => item.label.includes('Artifacts'))).toBe(true);
+      expect(persistItems.some(item => item.label.includes('Achievements'))).toBe(true);
+      expect(persistItems.some(item => item.label.includes('Cards'))).toBe(true);
+      expect(persistItems.some(item => item.label.includes('Legacy Upgrades'))).toBe(false);
+
+      // Modifiers: White Dwarf has secondRunProductionMult = 1.0 and unconsumed stability mult, so modifierDescriptions is empty
+      expect(preview.outcome.modifierDescriptions).toEqual([]);
+
+      // Test Massive archetype (Black Hole) which has active secondRunProductionMult = 1.5
+      const massiveState = getPresetEraIIISupernovaReady();
+      massiveState.upgrades.stellar = { efficient: { level: 0 }, massive: { level: 3 }, compact: { level: 0 } };
+      const massivePreview = getSupernovaTransformationPreview(massiveState);
+      expect(massivePreview.outcome.modifierDescriptions.some(m => m.includes('Production Speed: +50%'))).toBe(true);
+      expect(massivePreview.outcome.modifierDescriptions.some(m => m.includes('Core Stability'))).toBe(false);
 
       // Next distinction
       expect(preview.sections.next.distinction).toContain('Supernova does NOT advance to Era IV');
@@ -160,29 +193,54 @@ describe('P5.2B: Transition Presentation Semantics & Onboarding Contract', () =>
       expect(preview.sections.persists.items.length).toBeGreaterThan(0);
     });
 
-    it('preserves TRIGGER_SUPERNOVA command characterization (persistence, rewards, Era III restart)', () => {
+    it('characterizes exact current Supernova persistence boundary and proves upgrade reset conflict', () => {
       const state = getPresetEraIIISupernovaReady();
-      state.currencies.stardust.amount = new Decimal(10);
-      state.currencies.pulsarShards.amount = new Decimal(2);
-      state.upgrades.stellar = { efficient: { level: 3 }, massive: { level: 0 }, compact: { level: 0 } };
+      state.currencies.stardust.amount = new Decimal(50);
+      state.currencies.pulsarShards.amount = new Decimal(10);
+      state.currencies.singularityMass.amount = new Decimal(5);
+
+      // Set legacy upgrades to demonstrate current command behavior
+      state.upgrades.stardust = { radiantIgnition: { level: 3 } };
+      state.upgrades.pulsar = { quantumLens: { level: 2 } };
+      state.upgrades.singularity = { eventHorizon: { level: 1 } };
+      state.upgrades.stellar = { efficient: { level: 4 } };
+
+      state.artifacts.equipped = ['test-artifact', null, null];
+      state.cards = { unlocked: ['card-1'] };
+      state.completedMissions = ['mission-1'];
+      state.codex = { unlockedEntryIds: ['void', 'recombination'] };
+
       replaceRuntimeState(state);
 
       const result = engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
       expect(result.ok).toBe(true);
 
-      // Returns to Era III
+      // 1. VERIFIED PERSISTED: Currencies, Stats, Meta, Artifacts, Achievements, Cards, Missions, Codex
       expect(gameState.activeEpoch).toBe(3);
-
-      // Permanent stardust granted and accumulated
-      expect(gameState.currencies.stardust.amount.toNumber()).toBeGreaterThan(10);
+      expect(gameState.currencies.stardust.amount.toNumber()).toBeGreaterThan(50); // Previous + reward
+      expect(gameState.currencies.pulsarShards.amount.toNumber()).toBeGreaterThanOrEqual(10);
+      expect(gameState.currencies.singularityMass.amount.toNumber()).toBeGreaterThanOrEqual(5);
       expect(gameState.stats.supernovas.toNumber()).toBe(1);
       expect(gameState.achievements.firstSupernova.unlocked).toBe(true);
+      expect(gameState.artifacts.equipped[0]).toBe('test-artifact');
+      expect(gameState.cards.unlocked).toContain('card-1');
+      expect(gameState.completedMissions).toContain('mission-1');
+      expect(gameState.codex.unlockedEntryIds).toContain('recombination');
+      expect(gameState.meta.stellarRunsCompleted).toBe(1);
 
-      // Local stellar run reset
+      // 2. VERIFIED RESET: Run-Local Stellar State
       expect(gameState.era3.gravity.toNumber()).toBe(1);
       expect(gameState.era3.fusionYield.toNumber()).toBe(0);
       expect(gameState.era3.temperature.toNumber()).toBe(0);
+      expect(gameState.resources.hydrogen.amount.toNumber()).toBe(0);
       expect(gameState.resources.iron.amount.toNumber()).toBe(0);
+
+      // 3. RUNTIME TRUTH: state.upgrades are NOT preserved by TRIGGER_SUPERNOVA
+      // This characterizes the runtime truth: Stardust, Pulsar, Singularity upgrades are reset to empty/0 on Supernova.
+      expect(gameState.upgrades.stellar.efficient?.level || 0).toBe(0);
+      expect(gameState.upgrades.stardust.radiantIgnition?.level || 0).toBe(0);
+      expect(gameState.upgrades.pulsar.quantumLens?.level || 0).toBe(0);
+      expect(gameState.upgrades.singularity.eventHorizon?.level || 0).toBe(0);
     });
   });
 

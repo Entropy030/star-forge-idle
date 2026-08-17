@@ -93,7 +93,6 @@ export function getRecombinationTransformationPreview(state) {
     ],
     persists: [
       { label: 'Plasma Discoveries', desc: 'All unlocked particle technologies and Codex records persist.' },
-      { label: 'Antimatter Residue', desc: 'Proton accumulation converts into Antimatter Residue for permanent loadout benefits.' },
       { label: 'Lifetime Statistics', desc: 'All lifetime progress and achievements persist.' }
     ],
     gains: [
@@ -145,15 +144,11 @@ export function getSupernovaTransformationPreview(state) {
   }
 
   const modifierItems = [];
+  // Only secondRunProductionMult is actively consumed by stellar simulation; secondRunStabilityMult is currently unconsumed in runtime.
   if (outcome.modifiers.secondRunProductionMult && outcome.modifiers.secondRunProductionMult !== 1.0) {
     const pct = Math.round((outcome.modifiers.secondRunProductionMult - 1.0) * 100);
     const sign = pct >= 0 ? '+' : '';
     modifierItems.push(`Production Speed: ${sign}${pct}%`);
-  }
-  if (outcome.modifiers.secondRunStabilityMult && outcome.modifiers.secondRunStabilityMult !== 1.0) {
-    const pct = Math.round((outcome.modifiers.secondRunStabilityMult - 1.0) * 100);
-    const sign = pct >= 0 ? '+' : '';
-    modifierItems.push(`Core Stability: ${sign}${pct}%`);
   }
 
   const errorText = SUPERNOVA_STATUS_LABELS[eligibility.errorCode] || eligibility.errorCode;
@@ -183,7 +178,7 @@ export function getSupernovaTransformationPreview(state) {
     sections: {
       resets: {
         title: 'Current Run Reset',
-        summary: 'The physical stellar body and local stocks are consumed in the supernova collapse.',
+        summary: 'The physical stellar body, local stocks, and current run upgrade investments are consumed in the supernova collapse.',
         items: [
           { label: 'Current Stellar Object', desc: 'Star stage, core temperature, and thermal multipliers return to baseline.' },
           { label: 'Run-Local Resources', desc: 'Hydrogen, Helium, Carbon, and Iron stockpiles are reset.' },
@@ -192,11 +187,12 @@ export function getSupernovaTransformationPreview(state) {
       },
       persists: {
         title: 'Permanent Legacy',
-        summary: 'All meta-progression, artifacts, and lifetime accomplishments carry forward into all future runs.',
+        summary: 'All meta-progression currencies, artifacts, and lifetime accomplishments carry forward into all future runs.',
         items: [
           { label: 'Meta Currencies', desc: 'All Stardust, Pulsar Shards, and Singularity Mass balances persist.' },
-          { label: 'Legacy Upgrades', desc: 'Purchased Stardust Forge upgrades and permanent multipliers remain active.' },
-          { label: 'Equipment & Records', desc: 'Equipped Artifacts, Codex discoveries, Achievements, and Lifetime stats persist.' }
+          { label: 'Artifacts & Equipment', desc: 'Equipped Artifacts and permanent loadout modifiers persist.' },
+          { label: 'Achievements & Records', desc: 'Unlocked Achievements, Lifetime statistics, and Codex discoveries persist.' },
+          { label: 'Celestial Cards & Missions', desc: 'Celestial card collections and completed mission history persist.' }
         ]
       },
       gains: {
