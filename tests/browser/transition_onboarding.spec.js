@@ -136,4 +136,37 @@ test.describe('P5.2B Cosmic Transition Onboarding & First Supernova Contract', (
     await page.screenshot({ path: 'test-results/p5_2b_first_supernova_legacy_mobile.png', fullPage: true });
     expect(errors).toEqual([]);
   });
+
+  test('Zero-currency owned Legacy upgrade persists and keeps Legacy shop section discoverable across Supernova', async ({ page }) => {
+    const errors = observeBrowserErrors(page);
+    await openApp(page, '?playtest=1');
+
+    await loadPlaytestPreset(page, 'Supernova Ready');
+
+    // Inject an owned legacy upgrade (fusionDiscount: level 2) with 0 stardust balance
+    await page.evaluate(() => {
+      window.gameState.upgrades.stardust.fusionDiscount.level = 2;
+      window.gameState.currencies.stardust.amount = new window.Decimal(0);
+      window.Viewport.renderPrestigeVisibility();
+    });
+
+    // Switch to Legacy tab
+    await page.locator('#nav-prestige').click();
+    const sdSection = page.locator('#prestige-stardust-section');
+    await expect(sdSection).toBeVisible();
+
+    // Trigger Supernova
+    const supernovaBtn = page.locator('#btn-supernova');
+    await supernovaBtn.click();
+
+    // Return to Legacy tab
+    await page.locator('#nav-prestige').click();
+
+    // Verify Stardust Forge remains visible and level 2 is retained
+    await expect(sdSection).toBeVisible();
+    const lvlDisplay = page.locator('#stardust-row-fusionDiscount .lvl-display');
+    await expect(lvlDisplay).toContainText('Lvl 2');
+
+    expect(errors).toEqual([]);
+  });
 });

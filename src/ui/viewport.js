@@ -875,16 +875,22 @@ export const Viewport = {
   },
 
   renderPrestigeVisibility() {
+    const hasOwnedUpgrade = (category) => {
+      const cat = gameState.upgrades?.[category];
+      if (!cat) return false;
+      return Object.values(cat).some(u => u && u.level > 0);
+    };
+
     const sdSection = document.getElementById('prestige-stardust-section');
     const plSection = document.getElementById('prestige-pulsar-section');
     const sgSection = document.getElementById('prestige-singularity-section');
-    if (sdSection) sdSection.style.display = gameState.currencies.stardust.amount.gt(0) ? '' : 'none';
-    if (plSection) plSection.style.display = (gameState.currencies.pulsarShards.amount.gt(0) || gameState.upgrades.pulsar.autoCompress.level > 0) ? '' : 'none';
-    if (sgSection) sgSection.style.display = (gameState.currencies.singularityMass.amount.gt(0) || gameState.upgrades.singularity.darkGravity.level > 0) ? '' : 'none';
+    if (sdSection) sdSection.style.display = (gameState.currencies?.stardust?.amount.gt(0) || hasOwnedUpgrade('stardust')) ? '' : 'none';
+    if (plSection) plSection.style.display = (gameState.currencies?.pulsarShards?.amount.gt(0) || hasOwnedUpgrade('pulsar')) ? '' : 'none';
+    if (sgSection) sgSection.style.display = (gameState.currencies?.singularityMass?.amount.gt(0) || hasOwnedUpgrade('singularity')) ? '' : 'none';
 
     const tuningBtn = document.getElementById('btn-open-tuning');
     if (tuningBtn) {
-      tuningBtn.style.display = (gameState.activeEpoch === 5 || gameState.currencies.bits.amount.gt(0)) ? 'block' : 'none';
+      tuningBtn.style.display = (gameState.activeEpoch === 5 || gameState.currencies?.bits?.amount.gt(0)) ? 'block' : 'none';
     }
   },
 

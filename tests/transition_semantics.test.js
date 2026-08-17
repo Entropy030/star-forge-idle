@@ -13,6 +13,8 @@ import {
 import { RECOMBINATION_STARTING_HYDROGEN } from '../src/eras/plasma/constants.js';
 import { getPresetEraIIISupernovaReady } from '../src/dev/playtestPresets.js';
 import { CodexEngine } from '../src/ui/codex.js';
+import { COSMIC_REGISTRY } from '../src/config/registry.js';
+import { Viewport } from '../src/ui/viewport.js';
 
 describe('P5.2B: Transition Presentation Semantics & Onboarding Contract', () => {
   beforeEach(() => {
@@ -195,19 +197,33 @@ describe('P5.2B: Transition Presentation Semantics & Onboarding Contract', () =>
       expect(preview.sections.persists.items.length).toBeGreaterThan(0);
     });
 
-    it('characterizes exact Supernova persistence contract: preserves legacy upgrades, resets run-local construction and resources', () => {
+    it('preserves all registry-defined Legacy upgrades (Stardust, Pulsar, Singularity) and resets run-local construction', () => {
       const state = getPresetEraIIISupernovaReady();
       state.currencies.stardust.amount = new Decimal(50);
       state.currencies.pulsarShards.amount = new Decimal(10);
       state.currencies.singularityMass.amount = new Decimal(5);
 
-      // Representative upgrades from each persistent family with explicit level and cost state
-      state.upgrades.stardust = { radiantIgnition: { level: 3, cost: new Decimal(100) } };
-      state.upgrades.pulsar = { autoCompress: { level: 1, cost: new Decimal(1) } };
-      state.upgrades.singularity = { eventHorizon: { level: 2, cost: new Decimal(50) } };
+      // Dynamically seed every actual production registry upgrade across all 3 legacy categories
+      let seedIndex = 1;
+      for (const key of Object.keys(COSMIC_REGISTRY.upgrades.stardust)) {
+        state.upgrades.stardust[key] = { level: seedIndex, cost: new Decimal(100 + seedIndex * 10) };
+        seedIndex++;
+      }
+      for (const key of Object.keys(COSMIC_REGISTRY.upgrades.pulsar)) {
+        state.upgrades.pulsar[key] = { level: seedIndex, cost: new Decimal(200 + seedIndex * 10) };
+        seedIndex++;
+      }
+      for (const key of Object.keys(COSMIC_REGISTRY.upgrades.singularity)) {
+        state.upgrades.singularity[key] = { level: seedIndex, cost: new Decimal(300 + seedIndex * 10) };
+        seedIndex++;
+      }
 
-      // Run-local upgrades that MUST reset
-      state.upgrades.stellar = { efficient: { level: 4, cost: new Decimal(500) } };
+      // Seed run-local upgrades that MUST reset
+      state.upgrades.stellar = {
+        efficient: { level: 4, cost: new Decimal(500) },
+        massive: { level: 3, cost: new Decimal(300) },
+        compact: { level: 2, cost: new Decimal(200) }
+      };
       state.upgrades.quantum = { lawGravity: { level: 5 } };
 
       state.artifacts.equipped = ['test-artifact', null, null];
@@ -233,27 +249,123 @@ describe('P5.2B: Transition Presentation Semantics & Onboarding Contract', () =>
       expect(gameState.codex.unlockedEntryIds).toContain('recombination');
       expect(gameState.meta.stellarRunsCompleted).toBe(1);
 
-      // 2. VERIFIED PERSISTED: Legacy Upgrades (Level and Cost state preserved)
-      // Stardust representative
-      expect(gameState.upgrades.stardust.radiantIgnition.level).toBe(3);
-      expect(gameState.upgrades.stardust.radiantIgnition.cost.toNumber()).toBe(100);
+      // 2. REGISTRY-DRIVEN ASSERTIONS: Every registered key preserves exact level and next cost
+      let verifyIndex = 1;
+      for (const key of Object.keys(COSMIC_REGISTRY.upgrades.stardust)) {
+        expect(gameState.upgrades.stardust[key].level).toBe(verifyIndex);
+        expect(gameState.upgrades.stardust[key].cost.toNumber()).toBe(100 + verifyIndex * 10);
+        verifyIndex++;
+      }
+      for (const key of Object.keys(COSMIC_REGISTRY.upgrades.pulsar)) {
+        expect(gameState.upgrades.pulsar[key].level).toBe(verifyIndex);
+        expect(gameState.upgrades.pulsar[key].cost.toNumber()).toBe(200 + verifyIndex * 10);
+        verifyIndex++;
+      }
+      for (const key of Object.keys(COSMIC_REGISTRY.upgrades.singularity)) {
+        expect(gameState.upgrades.singularity[key].level).toBe(verifyIndex);
+        expect(gameState.upgrades.singularity[key].cost.toNumber()).toBe(300 + verifyIndex * 10);
+        verifyIndex++;
+      }
 
-      // Pulsar representative (AutoCompress mastery protected)
-      expect(gameState.upgrades.pulsar.autoCompress.level).toBe(1);
-      expect(gameState.upgrades.pulsar.autoCompress.cost.toNumber()).toBe(1);
-
-      // Singularity representative
-      expect(gameState.upgrades.singularity.eventHorizon.level).toBe(2);
-      expect(gameState.upgrades.singularity.eventHorizon.cost.toNumber()).toBe(50);
-
-      // 3. VERIFIED RESET: Run-Local Stellar Upgrades and Construction
+      // 3. VERIFIED RESET: Run-Local Stellar Upgrades, Quantum Laws, and Construction
       expect(gameState.upgrades.stellar.efficient?.level || 0).toBe(0);
+      expect(gameState.upgrades.stellar.massive?.level || 0).toBe(0);
+      expect(gameState.upgrades.stellar.compact?.level || 0).toBe(0);
       expect(gameState.upgrades.quantum.lawGravity?.level || 0).toBe(0);
       expect(gameState.era3.gravity.toNumber()).toBe(1);
       expect(gameState.era3.fusionYield.toNumber()).toBe(0);
       expect(gameState.era3.temperature.toNumber()).toBe(0);
       expect(gameState.resources.hydrogen.amount.toNumber()).toBe(0);
       expect(gameState.resources.iron.amount.toNumber()).toBe(0);
+    });
+
+    it('hardens restore against missing/future registry keys by merging persisted state over fresh defaults', () => {
+      const state = getPresetEraIIISupernovaReady();
+      // Simulate state missing 'flareForecasting' in stardust category
+      state.upgrades.stardust = {
+        fusionDiscount: { level: 2, cost: new Decimal(20) }
+      };
+      // Simulate state missing 'autoSynthesize' in pulsar category
+      state.upgrades.pulsar = {
+        autoCompress: { level: 1, cost: new Decimal(1) }
+      };
+
+      replaceRuntimeState(state);
+
+      const result = engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
+      expect(result.ok).toBe(true);
+
+      // Persisted keys maintain their saved level & cost
+      expect(gameState.upgrades.stardust.fusionDiscount.level).toBe(2);
+      expect(gameState.upgrades.stardust.fusionDiscount.cost.toNumber()).toBe(20);
+      expect(gameState.upgrades.pulsar.autoCompress.level).toBe(1);
+      expect(gameState.upgrades.pulsar.autoCompress.cost.toNumber()).toBe(1);
+
+      // Missing keys are populated from fresh registry defaults without error
+      const flareDef = COSMIC_REGISTRY.upgrades.stardust.flareForecasting;
+      expect(gameState.upgrades.stardust.flareForecasting).toBeDefined();
+      expect(gameState.upgrades.stardust.flareForecasting.level).toBe(0);
+      expect(gameState.upgrades.stardust.flareForecasting.cost.toNumber()).toBe(new Decimal(flareDef.baseCost).toNumber());
+
+      const synthDef = COSMIC_REGISTRY.upgrades.pulsar.autoSynthesize;
+      expect(gameState.upgrades.pulsar.autoSynthesize).toBeDefined();
+      expect(gameState.upgrades.pulsar.autoSynthesize.level).toBe(0);
+      expect(gameState.upgrades.pulsar.autoSynthesize.cost.toNumber()).toBe(new Decimal(synthDef.baseCost).toNumber());
+    });
+  });
+
+  describe('Legacy Shop Visibility Contract', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <div class="prestige-section" id="prestige-stardust-section" style="display: none;"></div>
+        <div class="prestige-section" id="prestige-pulsar-section" style="display: none;"></div>
+        <div class="prestige-section" id="prestige-singularity-section" style="display: none;"></div>
+        <button id="btn-open-tuning" style="display: none;"></button>
+      `;
+    });
+
+    it('CASE A: keeps Stardust Forge visible when currency is 0 but fusionDiscount is owned', () => {
+      gameState.currencies.stardust.amount = new Decimal(0);
+      gameState.upgrades.stardust.fusionDiscount.level = 1;
+      Viewport.renderPrestigeVisibility();
+
+      const sdSection = document.getElementById('prestige-stardust-section');
+      expect(sdSection.style.display).not.toBe('none');
+    });
+
+    it('CASE B: keeps Pulsar Engine visible when currency is 0, autoCompress is 0, but autoSynthesize is owned', () => {
+      gameState.currencies.pulsarShards.amount = new Decimal(0);
+      gameState.upgrades.pulsar.autoCompress.level = 0;
+      gameState.upgrades.pulsar.autoSynthesize.level = 1;
+      Viewport.renderPrestigeVisibility();
+
+      const plSection = document.getElementById('prestige-pulsar-section');
+      expect(plSection.style.display).not.toBe('none');
+    });
+
+    it('CASE C: keeps Event Horizon visible when currency is 0, darkGravity is 0, but stellarIgnition is owned', () => {
+      gameState.currencies.singularityMass.amount = new Decimal(0);
+      gameState.upgrades.singularity.darkGravity.level = 0;
+      gameState.upgrades.singularity.stellarIgnition.level = 1;
+      Viewport.renderPrestigeVisibility();
+
+      const sgSection = document.getElementById('prestige-singularity-section');
+      expect(sgSection.style.display).not.toBe('none');
+    });
+
+    it('CASE D: hides sections when currency is 0 and no upgrades in family are owned', () => {
+      gameState.currencies.stardust.amount = new Decimal(0);
+      gameState.currencies.pulsarShards.amount = new Decimal(0);
+      gameState.currencies.singularityMass.amount = new Decimal(0);
+      for (const k of Object.keys(gameState.upgrades.stardust)) gameState.upgrades.stardust[k].level = 0;
+      for (const k of Object.keys(gameState.upgrades.pulsar)) gameState.upgrades.pulsar[k].level = 0;
+      for (const k of Object.keys(gameState.upgrades.singularity)) gameState.upgrades.singularity[k].level = 0;
+
+      Viewport.renderPrestigeVisibility();
+
+      expect(document.getElementById('prestige-stardust-section').style.display).toBe('none');
+      expect(document.getElementById('prestige-pulsar-section').style.display).toBe('none');
+      expect(document.getElementById('prestige-singularity-section').style.display).toBe('none');
     });
   });
 

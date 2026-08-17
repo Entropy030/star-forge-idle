@@ -274,10 +274,19 @@ export const stellarCommandHandlers = {
       fresh.codex = persistent.codex;
     }
 
-    // Attach persistent legacy upgrades (Stardust, Pulsar, Singularity); run-local stellar upgrades remain reset at {}
-    fresh.upgrades.stardust = persistent.legacyUpgrades.stardust;
-    fresh.upgrades.pulsar = persistent.legacyUpgrades.pulsar;
-    fresh.upgrades.singularity = persistent.legacyUpgrades.singularity;
+    // Attach persistent legacy upgrades (Stardust, Pulsar, Singularity) merging over fresh registry defaults; run-local stellar upgrades remain reset at {}
+    fresh.upgrades.stardust = {
+      ...fresh.upgrades.stardust,
+      ...persistent.legacyUpgrades.stardust
+    };
+    fresh.upgrades.pulsar = {
+      ...fresh.upgrades.pulsar,
+      ...persistent.legacyUpgrades.pulsar
+    };
+    fresh.upgrades.singularity = {
+      ...fresh.upgrades.singularity,
+      ...persistent.legacyUpgrades.singularity
+    };
 
     // Set post-supernova target
     fresh.activeEpoch = 3;
