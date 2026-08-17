@@ -337,4 +337,41 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 
 **Status:**
 - `DESIGN APPROVED: YES`
-- `PRODUCTION IMPLEMENTED: NO`
+- `PRODUCTION IMPLEMENTED: YES` (Implemented and Verified in P5.2A; Human Approved).
+
+## D32 — Legacy Upgrade Persistence Across Supernova
+
+**Decision:**
+1. **Reset Scope:** Repeatable Supernova resets the **current stellar run**, not permanent Legacy progression.
+2. **Persistent Legacy Families:** The following Legacy upgrade families persist across repeatable Supernova:
+   - **Stardust Forge:** `state.upgrades.stardust`
+   - **Pulsar Engine:** `state.upgrades.pulsar`
+   - **Event Horizon:** `state.upgrades.singularity`
+3. **Complete State Persistence:** Complete upgrade records persist across Supernova, including:
+   - `level`
+   - current / next `cost` state
+4. **Persistent Meta Currencies:** Legacy currencies persist according to existing runtime authority:
+   - Stardust (`state.currencies.stardust`)
+   - Pulsar Shards (`state.currencies.pulsarShards`)
+   - Singularity Mass (`state.currencies.singularityMass`)
+5. **Run-Local Resets:** Run-local stellar progression resets to baseline:
+   - Stellar Configuration upgrades (Efficient / Massive / Compact)
+   - Gravity, Fusers, Compression, and Core node investments
+   - Core Temperature and thermal multipliers
+   - Stellar stage (returns to Protostar)
+   - Run-local resources (Hydrogen, Helium, Carbon, Iron stockpiles reset to 0)
+6. **Prior Era Upgrades:** Quantum and Plasma upgrade families are not restored into the fresh post-Supernova Era-III run.
+7. **Shop Discoverability:** Owning a Legacy upgrade keeps its corresponding Legacy shop section discoverable in the UI even when the associated currency balance is zero.
+8. **Automation Mastery Protection:** Automation acquired through persistent Legacy progression remains owned across Supernova (specifically including Pulsar Auto-Compressor ownership).
+9. **Scope Boundary:** This decision defines **persistence ownership only**. It does NOT approve or alter:
+   - AutoCompress execution cadence semantics
+   - AutoCompress heat parity
+   - Inactive modifier wiring
+   - Stellar B1 formulas
+   Those remain technical work for P5.3B0 / later approved phases.
+10. **Save Version Invariance:** Save version remains `17`. No schema migration is required.
+
+**Status:**
+- `DESIGN APPROVED: YES`
+- `PRODUCTION IMPLEMENTED: YES`
+- `HUMAN APPROVED: YES`
