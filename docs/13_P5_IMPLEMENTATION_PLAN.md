@@ -368,15 +368,16 @@ All Product Gates for P5 have been formally reviewed and approved by Human Revie
 - **Status:** `HUMAN APPROVED (D31) — SEMANTIC PRIMARY SLOT IMPLEMENTED IN P5.2A (B1 Coupling & Diagnostics Scheduled for P5.3B1)`
 
 ### Technical Status & Remaining Boundaries:
-1. **P5.2A Implemented Locally:** Semantic Progression & Resource Grammar Foundation implemented locally, verified across 56 test files (371 unit tests) and 27 Playwright browser tests. D31 Core Temperature Primary semantic slot active. Awaiting human review.
+1. **P5.2A Complete & Human Approved:** Semantic Progression & Resource Grammar Foundation implemented and verified across 56 test files (371 unit tests) and 27 Playwright browser tests. D31 Core Temperature Primary semantic slot active in production. Gameplay semantics unchanged; no gameplay/state/simulation authority modified.
 2. **Stellar Authority Reconciliation:** Handled strictly as a **technical investigation** in P5.3B0 before B1 coupling.
 3. **Exact Calibration Unresolved:** Exact numerical multipliers, quality curves, containment scaling, and pacing remain deliberately unresolved and belong to P5.4 coarse balancing.
-4. **P5.2B Next:** Current Transitions & Prestige Onboarding (Current mechanics only).
+4. **P5.2B Next:** Current Transitions & First Supernova / Legacy Onboarding (Current mechanics only).
+5. **Non-Blocking Presentation Debt:** `getMetaResources()` returns `[]` to remove current-run HUD meta duplication while Legacy owns persistent currencies; dormant `#meta-resource-summary` DOM and rendering helpers remain non-disruptive cleanup debt.
 
 ---
 
 ```
 P5 IMPLEMENTATION PLAN
 TARGET FILE: docs/13_P5_IMPLEMENTATION_PLAN.md
-STATUS: HUMAN APPROVED — PUBLISHED EXECUTION CONTRACT (P5.2A IMPLEMENTED LOCALLY)
+STATUS: HUMAN APPROVED — PUBLISHED EXECUTION CONTRACT (P5.2A PUBLISHED & HUMAN APPROVED)
 ```

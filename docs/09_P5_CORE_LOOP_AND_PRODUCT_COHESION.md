@@ -110,6 +110,7 @@ To inform P5.2 and P5.3 design without cloning features or destabilizing scope, 
 | **PRE-P5.3A Prototype** | Era-I Vacuum Field Allocation (Coherence as System Quality) | **Complete (Human Approved)** | **Published to `star/main`** |
 | **PRE-P5.3B Prototype** | Era-III Hydrostatic Stellar Engine Coupling (Model B1) | **Complete (Human Approved)** | **Published to `star/main`** |
 | **P5 Implementation Plan** | Execution Architecture, Authority Matrix, Phase Contracts (D30, D31) | **Complete (Human Approved)** | **Published to `star/main`** |
-| **P5.2** | Progression & Narrative Transitions (Grammar & Prestige Onboarding) | *Not Started* | *Pending* |
+| **P5.2A** | Semantic Progression & Resource Grammar Foundation (D31 Core Temp) | **Complete (Human Approved)** | **Published to `star/main`** |
+| **P5.2B** | Current Transitions & First Supernova / Legacy Onboarding | *Not Started* | *Pending* |
 | **P5.3** | Incremental Systems & Agency (Vertical Slices P5.3A, P5.3B0, P5.3B1, P5.3C) | *Not Started* | *Pending* |
 | **P5.4** | Coarse Balancing & Playable Full Run Validation (Calibration-Only) | *Not Started* | *Pending* |
