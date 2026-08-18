@@ -7,7 +7,7 @@ export function getInitialEra1State() {
     currentAct: 1,
     quantumFoam: 0,
     unfoldCount: 0,
-    vacuumAllocation: 'BALANCED'
+    vacuumAllocation: COSMIC_REGISTRY.eraIAllocation.defaultMode
   };
 }
 

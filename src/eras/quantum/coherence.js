@@ -5,7 +5,7 @@ import { getQuantumUpgradeEligibility } from './eligibility.js';
 const BASE_PASSIVE_STABILIZATION_RATE = new Decimal(0.1);
 const BASE_OBSERVATION_GAIN = new Decimal(0.5);
 
-export const VACUUM_ALLOCATION_MODES = Object.freeze(['PROPAGATION', 'BALANCED', 'STABILIZATION']);
+export const VACUUM_ALLOCATION_MODES = Object.freeze(Object.keys(COSMIC_REGISTRY.eraIAllocation?.modes || {}));
 
 // Save v17 retains the historical top-level key, but its only authoritative
 // meaning is Era I Vacuum Coherence. Later eras must use their native metrics.

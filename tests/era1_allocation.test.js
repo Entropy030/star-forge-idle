@@ -256,15 +256,24 @@ describe('Era I Vacuum Field Allocation — Narrative, Codex & Objectives', () =
     replaceRuntimeState(makeUnlockedEra1State());
   });
 
-  it('emits vacuum_allocation_unlocked narrative milestone when available during tick', () => {
+  it('emits vacuum_allocation_unlocked narrative milestone with factual availability wording when available during tick', () => {
     expect(gameState.discoveries.has('vacuum_allocation_unlocked')).toBe(false);
     advanceGameTick(1, undefined, OFFLINE_TICK_CONTEXT);
     expect(gameState.discoveries.has('vacuum_allocation_unlocked')).toBe(true);
-    expect(gameState.history.some(e => e.id === 'vacuum_allocation_unlocked')).toBe(true);
+    const entry = gameState.history.find(e => e.id === 'vacuum_allocation_unlocked');
+    expect(entry).toBeDefined();
+    expect(entry.msg).toBe('Vacuum Resonance available. Field Allocation is now accessible: propagate Fundamental Laws, balance the field, or accelerate stabilization.');
   });
 
-  it('unlocks the vacuum-field-allocation Codex entry when allocation is available', () => {
+  it('strictly couples Codex availability to authoritative isVacuumFieldAllocationUnlocked helper', () => {
+    const lockedState = getInitialGameState();
+    lockedState.codex = { unlockedEntryIds: [] };
+    expect(isVacuumFieldAllocationUnlocked(lockedState)).toBe(false);
+    expect(reconcileCodexUnlocks(lockedState)).not.toContain('vacuum-field-allocation');
+    expect(lockedState.codex.unlockedEntryIds).not.toContain('vacuum-field-allocation');
+
     if (!gameState.codex) gameState.codex = { unlockedEntryIds: [] };
+    expect(isVacuumFieldAllocationUnlocked(gameState)).toBe(true);
     const unlocked = reconcileCodexUnlocks(gameState);
     expect(unlocked).toContain('vacuum-field-allocation');
     expect(gameState.codex.unlockedEntryIds).toContain('vacuum-field-allocation');

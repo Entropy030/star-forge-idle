@@ -44,9 +44,10 @@ export const ensureStateShape = function(gameState) {
   if (typeof gameState.era1.currentAct !== 'number') gameState.era1.currentAct = 1;
   if (typeof gameState.era1.quantumFoam !== 'number') gameState.era1.quantumFoam = 0;
   if (typeof gameState.era1.unfoldCount !== 'number') gameState.era1.unfoldCount = 0;
-  const validAllocations = ['PROPAGATION', 'BALANCED', 'STABILIZATION'];
+  const allocationConfig = COSMIC_REGISTRY.eraIAllocation;
+  const validAllocations = Object.keys(allocationConfig.modes);
   if (!validAllocations.includes(gameState.era1.vacuumAllocation)) {
-    gameState.era1.vacuumAllocation = 'BALANCED';
+    gameState.era1.vacuumAllocation = allocationConfig.defaultMode;
   }
   delete gameState.era1.asymmetryBias;
 

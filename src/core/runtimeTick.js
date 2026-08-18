@@ -53,7 +53,7 @@ export function advanceGameTick(dt, effectSink, context) {
     if (currentQF.gte(10000)) recordNarrativeMilestone('qf_10000', '[SYSTEM]: Strong Color Force bound. Baryogenesis imminent.');
 
     if (isVacuumFieldAllocationUnlocked(gameState)) {
-      recordNarrativeMilestone('vacuum_allocation_unlocked', 'Vacuum Resonance established. Field Allocation is now available: propagate Fundamental Laws, balance the field, or accelerate stabilization.');
+      recordNarrativeMilestone('vacuum_allocation_unlocked', 'Vacuum Resonance available. Field Allocation is now accessible: propagate Fundamental Laws, balance the field, or accelerate stabilization.');
     }
   }
 
