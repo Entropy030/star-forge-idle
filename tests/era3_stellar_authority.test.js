@@ -291,6 +291,49 @@ describe('P5.3B0: Stellar Authority & Automation Parity Reconciliation', () => {
       expect(state.flares.active).toBeNull();
     });
 
+    it('enforces COLLECT_SOLAR_FLARE command contract: epoch guard, missing flare guard, single resolution, and no duplicate reward', () => {
+      // 1. Wrong epoch guard
+      state.activeEpoch = 2;
+      const resWrongEpoch = stellarCommandHandlers.COLLECT_SOLAR_FLARE(state, { type: 'COLLECT_SOLAR_FLARE' });
+      expect(resWrongEpoch.ok).toBe(false);
+      expect(resWrongEpoch.error.code).toBe('UNHANDLED_EPOCH');
+
+      // 2. Missing flare guard
+      state.activeEpoch = 3;
+      state.flares.active = null;
+      const resNoFlare = stellarCommandHandlers.COLLECT_SOLAR_FLARE(state, { type: 'COLLECT_SOLAR_FLARE' });
+      expect(resNoFlare.ok).toBe(false);
+      expect(resNoFlare.error.code).toBe('NO_ACTIVE_FLARE');
+
+      // 3. Valid active flare resolution
+      state.flares.active = { expiresInSec: new Decimal(10) };
+      state.resources.hydrogen.amount = new Decimal(0);
+      const resSuccess = stellarCommandHandlers.COLLECT_SOLAR_FLARE(state, { type: 'COLLECT_SOLAR_FLARE' });
+      expect(resSuccess.ok).toBe(true);
+      expect(state.flares.active).toBeNull();
+      expect(state.flares.nextSpawnInSec.toNumber()).toBeGreaterThanOrEqual(90);
+
+      // 4. Repeated call immediately fails (no double collection / no duplicate reward)
+      const resDuplicate = stellarCommandHandlers.COLLECT_SOLAR_FLARE(state, { type: 'COLLECT_SOLAR_FLARE' });
+      expect(resDuplicate.ok).toBe(false);
+      expect(resDuplicate.error.code).toBe('NO_ACTIVE_FLARE');
+    });
+
+    it('counts down Fusion Surge in foreground and offline ticks without permanent persistence or offline flare spawns', () => {
+      state.buffs.fusionSurge.remainingSec = new Decimal(10);
+      state.flares.active = null;
+      state.flares.nextSpawnInSec = new Decimal(5);
+
+      // Foreground tick: decrements timer
+      simulateStellarEra(state, 3.0);
+      expect(state.buffs.fusionSurge.remainingSec.toNumber()).toBeCloseTo(7.0, 5);
+
+      // Offline tick: decrements timer, clamps at 0, does not spawn flare
+      simulateStellarEra(state, 10.0, { allowAutomation: false, allowRandomEvents: false });
+      expect(state.buffs.fusionSurge.remainingSec.toNumber()).toBe(0);
+      expect(state.flares.active).toBeNull(); // No random flare spawned offline
+    });
+
     it('applies 25% compression heat penalty when active live flare expires', () => {
       state.flares.active = { expiresInSec: new Decimal(1) };
       state.era3.temperature = new Decimal(0);
@@ -303,7 +346,33 @@ describe('P5.3B0: Stellar Authority & Automation Parity Reconciliation', () => {
     });
   });
 
-  describe('5. Schema Normalization & Save Compatibility', () => {
+  describe('5. AutoCompress Cadence & Scaled Progression Sweeps', () => {
+    it('accurately advances fractional accumulator for levels 1, 5, 10 and preserves fractional remainder', () => {
+      state.resources.helium.amount = new Decimal(100000);
+      state.era3.compressCost = new Decimal(10);
+
+      // Level 1 at dt = 0.4s -> 0.4 progress, 0 attempts
+      state.upgrades.pulsar.autoCompress.level = 1;
+      simulateStellarEra(state, 0.4);
+      expect(state.era3.autoCompressProgress.toNumber()).toBeCloseTo(0.4, 5);
+
+      // dt = 0.7s -> 0.4 + 0.7 = 1.1 -> 1 attempt, 0.1 remainder
+      simulateStellarEra(state, 0.7);
+      expect(state.era3.autoCompressProgress.toNumber()).toBeCloseTo(0.1, 5);
+
+      // Level 5 at dt = 0.5s -> 0.1 + 2.5 = 2.6 -> 2 attempts, 0.6 remainder
+      state.upgrades.pulsar.autoCompress.level = 5;
+      simulateStellarEra(state, 0.5);
+      expect(state.era3.autoCompressProgress.toNumber()).toBeCloseTo(0.6, 5);
+
+      // Level 10 at dt = 1.0s -> 0.6 + 10.0 = 10.6 -> 10 attempts, 0.6 remainder
+      state.upgrades.pulsar.autoCompress.level = 10;
+      simulateStellarEra(state, 1.0);
+      expect(state.era3.autoCompressProgress.toNumber()).toBeCloseTo(0.6, 5);
+    });
+  });
+
+  describe('6. Schema Normalization & Save Compatibility', () => {
     it('normalizes legacy save data without autoCompressProgress to Decimal(0) while preserving save version 17', () => {
       const rawSave = {
         saveVersion: 17,
@@ -319,6 +388,24 @@ describe('P5.3B0: Stellar Authority & Automation Parity Reconciliation', () => {
       expect(rawSave.saveVersion).toBe(17);
       expect(rawSave.era3.autoCompressProgress instanceof Decimal).toBe(true);
       expect(rawSave.era3.autoCompressProgress.toNumber()).toBe(0);
+    });
+
+    it('safely handles non-finite / invalid autoCompressProgress and preserves valid fractional remainder', () => {
+      const saveInvalid = {
+        saveVersion: 17,
+        activeEpoch: 3,
+        era3: { autoCompressProgress: "invalid_nan" }
+      };
+      ensureStateShape(saveInvalid);
+      expect(saveInvalid.era3.autoCompressProgress.toNumber()).toBe(0);
+
+      const saveValidFractional = {
+        saveVersion: 17,
+        activeEpoch: 3,
+        era3: { autoCompressProgress: "0.75" }
+      };
+      ensureStateShape(saveValidFractional);
+      expect(saveValidFractional.era3.autoCompressProgress.toNumber()).toBeCloseTo(0.75, 5);
     });
   });
 });

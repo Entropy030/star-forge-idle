@@ -2,7 +2,7 @@ import { gameState } from './state.js';
 import { getInitialGameState, setIsDirty } from './state.js';
 import { saveGame } from './persistence.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
-import { getCompressionHeatYield, getHydrogenGenRate, recalcTempMultiplier, updateStatsData } from './economy.js';
+import { getCompressionHeatYield, recalcTempMultiplier, updateStatsData } from './economy.js';
 
 
 export let autoCompressAccumulator = 0;

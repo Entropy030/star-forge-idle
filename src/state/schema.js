@@ -89,8 +89,13 @@ export const ensureStateShape = function(gameState) {
   if (!(gameState.era3.lifetimeCarbonThisRun instanceof Decimal)) {
     gameState.era3.lifetimeCarbonThisRun = new Decimal(gameState.era3.lifetimeCarbonThisRun || 0);
   }
-  if (!(gameState.era3.autoCompressProgress instanceof Decimal)) {
-    gameState.era3.autoCompressProgress = new Decimal(gameState.era3.autoCompressProgress || 0);
+  if (!(gameState.era3.autoCompressProgress instanceof Decimal) || !Number.isFinite(gameState.era3.autoCompressProgress.toNumber()) || gameState.era3.autoCompressProgress.lt(0)) {
+    try {
+      const parsed = new Decimal(gameState.era3.autoCompressProgress || 0);
+      gameState.era3.autoCompressProgress = (Number.isFinite(parsed.toNumber()) && parsed.gte(0)) ? parsed : new Decimal(0);
+    } catch {
+      gameState.era3.autoCompressProgress = new Decimal(0);
+    }
   }
   if (!gameState.era4) gameState.era4 = getInitialEra4State();
   if (!(gameState.era4.planetaryNodeCost instanceof Decimal)) {

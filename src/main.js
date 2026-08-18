@@ -1,7 +1,7 @@
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, t, i18n } from './config/registry.js';
 import { triggerGalacticIgnition, triggerSupernova } from './core/actions.js';
 import { Economy, updateStatsData, recalcTempMultiplier } from './core/economy.js';
-import { spawnFlare, collectFlare } from './core/stellar.js';
+import { spawnFlare } from './core/stellar.js';
 import { triggerGalacticMerge, stabilizeArmsAction as stabilizeArms, accretePlanetConfigurationAction as accretePlanetConfiguration, triggerBigBounce } from './core/actions.js';
 import { expireFlare } from './core/stellar.js';
 let flareSimSuppressed = false;

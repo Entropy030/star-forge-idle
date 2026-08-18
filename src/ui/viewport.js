@@ -24,8 +24,7 @@ import { dispatchEngineCommand } from '../engine/dispatch.js';
 // ==========================================================================
 import { COSMIC_REGISTRY, ICONS, ARTIFACT_DEFINITIONS, SHOP_CONFIGS, t, i18n } from '../config/registry.js';
 import { gameState, subscribeRuntimeState } from '../core/state.js';
-import { saveGame, exportSave, importSave, wipeSave } from '../core/persistence.js';
-import { Economy, getAmount, getHydrogenGenRate, getQuantumFluctuationRate, getEnergyDensityRate, getStardustYield, getPulsarShardYield, getSingularityMassYield, getBuyMultiplierCount, getCumulativeCost, getFusionSurgeMultiplier, getCompressionHeatYield } from '../core/economy.js';
+import { Economy, getAmount, getQuantumFluctuationRate, getEnergyDensityRate, getStardustYield, getPulsarShardYield, getSingularityMassYield, getBuyMultiplierCount, getCumulativeCost, getCompressionHeatYield } from '../core/economy.js';
 import { Templates } from './templates.js';
 import {
   FORGE_BUY_MODES,
