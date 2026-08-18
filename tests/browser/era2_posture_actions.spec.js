@@ -122,8 +122,8 @@ test.describe('Era-II Cosmos Posture Controls & Model-C Contextual Actions (Phas
     overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, 'Recombination Ready 390px overflow').toBeLessThanOrEqual(0);
 
-    // 7. Load Era I and Era III -> Posture controller should be hidden
-    await loadPlaytestPreset(page, 'Late Era I');
+    // 7. Load Fresh Era I and Era III -> Posture controller should be hidden
+    await loadPlaytestPreset(page, 'Fresh Era I');
     await expect(posturePanel).toBeHidden();
 
     await loadPlaytestPreset(page, 'Mid Era III');

@@ -1,3 +1,4 @@
+import Decimal from 'break_infinity.js';
 import { formatHudNumber, formatHudValue } from './resourceFormatters.js';
 
 function textNode(documentRef, tag, className, text) {
@@ -163,7 +164,8 @@ function renderPostureController(element, posture, onPostureChange) {
   const documentRef = element.ownerDocument;
   const optionsKey = JSON.stringify(posture.options.map(opt => [opt.id, opt.label, opt.role, opt.description]));
 
-  if (element.dataset.optionsKey !== optionsKey) {
+  if (element.dataset.optionsKey !== optionsKey || element.dataset.controllerType !== 'posture') {
+    element.dataset.controllerType = 'posture';
     const heading = documentRef.createElement('div');
     heading.className = 'cosmos-posture-heading';
     heading.append(
@@ -245,6 +247,148 @@ function renderPostureController(element, posture, onPostureChange) {
     btn.tabIndex = isActive ? 0 : -1;
     btn.classList.toggle('cosmos-posture-btn--active', isActive);
   }
+}
+
+
+function renderAllocationController(element, allocation, onAllocationChange) {
+  if (!element) return;
+  element.hidden = !allocation;
+  if (!allocation) {
+    element.replaceChildren();
+    delete element.dataset.optionsKey;
+    delete element.dataset.activeAllocation;
+    delete element.dataset.controllerType;
+    return;
+  }
+
+  const documentRef = element.ownerDocument;
+  const optionsKey = JSON.stringify(allocation.options.map(opt => [opt.id, opt.label, opt.role, opt.meaning]));
+
+  if (element.dataset.optionsKey !== optionsKey || element.dataset.controllerType !== 'allocation') {
+    element.dataset.controllerType = 'allocation';
+    const heading = documentRef.createElement('div');
+    heading.className = 'cosmos-posture-heading cosmos-allocation-heading';
+    heading.append(
+      textNode(documentRef, 'span', 'cosmos-eyebrow', 'Field Allocation'),
+      textNode(documentRef, 'h2', 'cosmos-posture-title', 'Vacuum Dynamic')
+    );
+
+    const track = documentRef.createElement('div');
+    track.className = 'cosmos-allocation-track';
+    track.setAttribute('role', 'radiogroup');
+    track.setAttribute('aria-label', 'Vacuum field allocation');
+
+    for (const option of allocation.options) {
+      const btn = documentRef.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('role', 'radio');
+      btn.className = 'cosmos-allocation-btn';
+      btn.dataset.allocation = option.id;
+      btn.setAttribute('aria-checked', 'false');
+      btn.tabIndex = -1;
+
+      const header = documentRef.createElement('div');
+      header.className = 'cosmos-allocation-btn-header';
+      header.append(
+        textNode(documentRef, 'strong', 'cosmos-allocation-name', option.label),
+        textNode(documentRef, 'span', 'cosmos-allocation-badge', option.role)
+      );
+
+      btn.append(header);
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        onAllocationChange?.(option.id);
+      });
+
+      track.append(btn);
+    }
+
+    track.addEventListener('keydown', (e) => {
+      const buttons = [...track.querySelectorAll('.cosmos-allocation-btn')];
+      const activeId = element.dataset.activeAllocation || allocation.active;
+      const focused = buttons.find(b => b === documentRef.activeElement || b === e.target);
+      const currentIndex = focused ? buttons.indexOf(focused) : buttons.findIndex(b => b.dataset.allocation === activeId);
+      if (currentIndex === -1) return;
+
+      let nextIndex = -1;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        nextIndex = (currentIndex + 1) % buttons.length;
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+      } else if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        const focusedBtn = buttons.find(b => b === documentRef.activeElement || b === e.target);
+        if (focusedBtn && focusedBtn.dataset.allocation) {
+          onAllocationChange?.(focusedBtn.dataset.allocation);
+        }
+        return;
+      }
+
+      if (nextIndex !== -1) {
+        const targetBtn = buttons[nextIndex];
+        targetBtn.focus();
+        onAllocationChange?.(targetBtn.dataset.allocation);
+      }
+    });
+
+    const meaning = textNode(documentRef, 'p', 'cosmos-allocation-meaning', '');
+
+    const readout = documentRef.createElement('div');
+    readout.className = 'cosmos-allocation-readout';
+
+    const itemThroughput = documentRef.createElement('span');
+    itemThroughput.className = 'cosmos-readout-item';
+    itemThroughput.append(
+      textNode(documentRef, 'span', 'cosmos-readout-label', 'Law Throughput: '),
+      textNode(documentRef, 'strong', 'cosmos-readout-val readout-throughput', '')
+    );
+
+    const itemStabilization = documentRef.createElement('span');
+    itemStabilization.className = 'cosmos-readout-item';
+    itemStabilization.append(
+      textNode(documentRef, 'span', 'cosmos-readout-label', 'Stabilization: '),
+      textNode(documentRef, 'strong', 'cosmos-readout-val readout-stabilization', '')
+    );
+
+    const itemQuality = documentRef.createElement('span');
+    itemQuality.className = 'cosmos-readout-item';
+    itemQuality.append(
+      textNode(documentRef, 'span', 'cosmos-readout-label', 'Field Quality: '),
+      textNode(documentRef, 'strong', 'cosmos-readout-val readout-quality', '')
+    );
+
+    readout.append(itemThroughput, itemStabilization, itemQuality);
+
+    element.replaceChildren(heading, track, meaning, readout);
+    element.dataset.optionsKey = optionsKey;
+  }
+
+  element.dataset.activeAllocation = allocation.active;
+  const buttons = element.querySelectorAll('.cosmos-allocation-btn');
+  for (const btn of buttons) {
+    const isActive = btn.dataset.allocation === allocation.active;
+    btn.setAttribute('aria-checked', String(isActive));
+    btn.tabIndex = isActive ? 0 : -1;
+    btn.classList.toggle('cosmos-allocation-btn--active', isActive);
+  }
+
+  const activeOption = allocation.options.find(opt => opt.id === allocation.active);
+  setText(element.querySelector('.cosmos-allocation-meaning'), activeOption?.meaning || '');
+
+  const throughputEl = element.querySelector('.readout-throughput');
+  if (throughputEl) setText(throughputEl, `${allocation.throughputMultiplier.toFixed(1)}x`);
+
+  const stabilizationEl = element.querySelector('.readout-stabilization');
+  if (stabilizationEl) {
+    const rateVal = allocation.passiveCoherenceRate instanceof Decimal ? allocation.passiveCoherenceRate.toNumber() : Number(allocation.passiveCoherenceRate);
+    setText(stabilizationEl, `+${rateVal.toFixed(2)}%/s`);
+  }
+
+  const qualityEl = element.querySelector('.readout-quality');
+  if (qualityEl) setText(qualityEl, `${allocation.quality.toFixed(2)}x`);
 }
 
 function renderProcess(element, process, onAction) {
@@ -345,7 +489,7 @@ function renderProcess(element, process, onAction) {
   }
 }
 
-export function renderCosmosExperience(documentRef, presentation, onAction, onPostureChange) {
+export function renderCosmosExperience(documentRef, presentation, onAction, onPostureChange, onAllocationChange) {
   const root = documentRef.getElementById('tab-content-core');
   if (root) {
     root.dataset.cosmosEra = String(presentation.epoch);
@@ -353,14 +497,27 @@ export function renderCosmosExperience(documentRef, presentation, onAction, onPo
   }
   const starCoreEl = documentRef.getElementById('star-core');
   if (starCoreEl) {
-    if (presentation.epoch === 2 && presentation.visualSemantics) {
+    if (presentation.epoch === 1) {
+      delete starCoreEl.dataset.posture;
+      delete starCoreEl.dataset.thermalState;
+      delete starCoreEl.dataset.transitionReady;
+      if (presentation.allocation) {
+        starCoreEl.dataset.allocation = presentation.allocation.active;
+        starCoreEl.dataset.semanticLabel = `Vacuum Field: ${presentation.allocation.active}`;
+      } else {
+        delete starCoreEl.dataset.allocation;
+        delete starCoreEl.dataset.semanticLabel;
+      }
+    } else if (presentation.epoch === 2 && presentation.visualSemantics) {
+      delete starCoreEl.dataset.allocation;
       const vs = presentation.visualSemantics;
       starCoreEl.dataset.posture = vs.posture;
       starCoreEl.dataset.thermalState = vs.thermalCategory;
       starCoreEl.dataset.transitionReady = String(vs.recombinationReady);
       starCoreEl.dataset.semanticLabel = vs.semanticLabel;
       starCoreEl.setAttribute('aria-label', vs.ariaLabel);
-    } else if (presentation.epoch !== 2) {
+    } else {
+      delete starCoreEl.dataset.allocation;
       delete starCoreEl.dataset.posture;
       delete starCoreEl.dataset.thermalState;
       delete starCoreEl.dataset.transitionReady;
@@ -369,6 +526,20 @@ export function renderCosmosExperience(documentRef, presentation, onAction, onPo
   }
   renderPrimary(documentRef.getElementById('cosmos-primary-status'), presentation);
   renderCoreContext(documentRef.getElementById('core-context'), presentation.core, starCoreEl);
-  renderPostureController(documentRef.getElementById('cosmos-posture-controller'), presentation.posture, onPostureChange);
+  if (presentation.epoch === 1) {
+    renderAllocationController(documentRef.getElementById('cosmos-posture-controller'), presentation.allocation, onAllocationChange);
+  } else if (presentation.epoch === 2) {
+    renderPostureController(documentRef.getElementById('cosmos-posture-controller'), presentation.posture, onPostureChange);
+  } else {
+    const controllerEl = documentRef.getElementById('cosmos-posture-controller');
+    if (controllerEl) {
+      controllerEl.hidden = true;
+      controllerEl.replaceChildren();
+      delete controllerEl.dataset.optionsKey;
+      delete controllerEl.dataset.activePosture;
+      delete controllerEl.dataset.activeAllocation;
+      delete controllerEl.dataset.controllerType;
+    }
+  }
   renderProcess(documentRef.getElementById('cosmos-process-status'), presentation.process, onAction);
 }

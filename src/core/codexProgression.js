@@ -1,4 +1,5 @@
 import { CODEX_ENTRIES } from '../content/codex.js';
+import { isVacuumFieldAllocationUnlocked } from '../eras/quantum/coherence.js';
 
 export function isCodexEntryUnlocked(entry, state) {
   const condition = entry?.unlockCondition;
@@ -17,6 +18,8 @@ export function isCodexEntryUnlocked(entry, state) {
       return Boolean(state.stats?.supernovas?.gte(condition.amount));
     case 'has_remnant':
       return Boolean(state.meta?.lastSupernovaOutcome);
+    case 'vacuum_allocation_unlocked':
+      return isVacuumFieldAllocationUnlocked(state);
     default:
       return false;
   }

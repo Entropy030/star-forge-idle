@@ -190,11 +190,18 @@ describe('authoritative offline progression', () => {
     initial.cosmicConstants.c = 1;
     setPlaytestSpeedMultiplier(25);
 
+    replaceRuntimeState(cloneState(initial));
+    for (let second = 0; second < 67; second += 1) {
+      advanceGameTick(1, undefined, OFFLINE_TICK_CONTEXT);
+    }
+    advanceGameTick(0.2, undefined, OFFLINE_TICK_CONTEXT);
+    const liveEquivalent = cloneState(gameState);
+
     const { result, state } = await runOffline(initial, 60);
 
     expect(result.gameplayMultiplier).toBe(1.12);
     expect(result.simulatedSeconds).toBeCloseTo(67.2);
-    expectDecimalEqual(state.resources.quantumFluctuations.amount, '67.2');
+    expectDecimalEqual(state.resources.quantumFluctuations.amount, liveEquivalent.resources.quantumFluctuations.amount);
   });
 
   it('checkpoints once and refuses to consume the same load result twice', async () => {

@@ -3,7 +3,7 @@ import { COSMIC_REGISTRY } from '../../config/registry.js';
 import { getCardMultiplier } from '../../core/economy.js'; // Will be extracted to selectors later
 import { getQuantumUpgradeEligibility } from './eligibility.js';
 import { getInflationEligibility } from './inflation.js';
-import { getVacuumCoherence, getVacuumCoherenceRates, setVacuumCoherence } from './coherence.js';
+import { getVacuumCoherence, getVacuumCoherenceRates, setVacuumCoherence, getVacuumAllocation, isVacuumFieldAllocationUnlocked, VACUUM_ALLOCATION_MODES } from './coherence.js';
 
 export const quantumCommandHandlers = {
   CLICK_CORE: (state, cmd) => {
@@ -77,6 +77,34 @@ export const quantumCommandHandlers = {
       ok: true,
       changed: true,
       events: [{ type: 'ERA_TRANSITION', targetEra: 2 }]
+    };
+  },
+
+  SET_VACUUM_ALLOCATION: (state, cmd) => {
+    if (state.activeEpoch !== 1) return { ok: false, changed: false, events: [], error: { code: 'WRONG_EPOCH' } };
+    if (!state.era1) return { ok: false, changed: false, events: [], error: { code: 'INVALID_STATE' } };
+    if (!isVacuumFieldAllocationUnlocked(state)) {
+      return { ok: false, changed: false, events: [], error: { code: 'LOCKED' } };
+    }
+    const { allocation } = cmd.payload || {};
+    if (!VACUUM_ALLOCATION_MODES.includes(allocation)) {
+      return { ok: false, changed: false, events: [], error: { code: 'INVALID_MODE' } };
+    }
+    const previousAllocation = getVacuumAllocation(state);
+    if (previousAllocation === allocation) {
+      return { ok: true, changed: false, events: [] };
+    }
+    state.era1.vacuumAllocation = allocation;
+    return {
+      ok: true,
+      changed: true,
+      events: [
+        {
+          type: 'VACUUM_ALLOCATION_CHANGED',
+          allocation,
+          previousAllocation
+        }
+      ]
     };
   },
 

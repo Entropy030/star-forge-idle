@@ -2,7 +2,7 @@ import Decimal from 'break_infinity.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import { getCompressionHeatYield, getMilestoneMultiplier } from '../core/economy.js';
 import { getInflationEligibility } from '../eras/quantum/inflation.js';
-import { getVacuumCoherenceRates, isInflationPreparationRelevant, isVacuumCoherenceRelevant } from '../eras/quantum/coherence.js';
+import { getVacuumCoherenceRates, isInflationPreparationRelevant, isVacuumCoherenceRelevant, getVacuumAllocation, getVacuumAllocationProfile, getVacuumFieldQuality, isVacuumFieldAllocationUnlocked } from '../eras/quantum/coherence.js';
 import { computePlasmaStep } from '../eras/plasma/evaluator.js';
 import {
   getPlasmaUpgradeEligibility,
@@ -31,6 +31,35 @@ function getEraOnePresentation(state) {
   const coherenceRates = getVacuumCoherenceRates(state);
   const readyCount = eligibility.requirements.filter(requirement => requirement.met).length;
   const bottleneck = eligibility.requirements.find(requirement => !requirement.met) || null;
+  const allocationUnlocked = isVacuumFieldAllocationUnlocked(state);
+  const allocationProfile = getVacuumAllocationProfile(state);
+  const allocation = allocationUnlocked ? {
+    active: getVacuumAllocation(state),
+    quality: getVacuumFieldQuality(state),
+    throughputMultiplier: allocationProfile.throughputMultiplier,
+    passiveCoherenceMultiplier: allocationProfile.passiveCoherenceMultiplier,
+    passiveCoherenceRate: coherenceRates.passiveRate,
+    options: [
+      {
+        id: 'PROPAGATION',
+        label: 'Propagation',
+        role: 'Throughput',
+        meaning: 'Push the field outward. Fundamental Laws produce faster while stabilization slows.'
+      },
+      {
+        id: 'BALANCED',
+        label: 'Balanced',
+        role: 'Equilibrium',
+        meaning: 'Maintain neutral allocation between Law throughput and field stabilization.'
+      },
+      {
+        id: 'STABILIZATION',
+        label: 'Stabilization',
+        role: 'Coherence',
+        meaning: 'Concentrate the field. Vacuum Coherence settles faster while immediate Law throughput slows.'
+      }
+    ]
+  } : null;
 
   return {
     epoch: 1,
@@ -68,6 +97,7 @@ function getEraOnePresentation(state) {
           : 'Observe the quantum core and collect one Quantum Fluctuation.'
     },
     posture: null,
+    allocation,
     process: passiveActive && !coherenceRelevant ? {
       eyebrow: 'Current process',
       title: 'Passive law generation',

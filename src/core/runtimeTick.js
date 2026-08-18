@@ -3,7 +3,7 @@ import { gameState } from './state.js';
 import { getAmount } from './economy.js';
 import { Timeline } from './timeline.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
-import { getVacuumCoherence, getVacuumCoherenceRates, setVacuumCoherence } from '../eras/quantum/coherence.js';
+import { getVacuumCoherence, getVacuumCoherenceRates, setVacuumCoherence, isVacuumFieldAllocationUnlocked } from '../eras/quantum/coherence.js';
 import { updateObjectiveProgress } from './objectives.js';
 import { appendHistoryEntry } from '../state/history.js';
 import { getTickContext } from './tickContext.js';
@@ -49,8 +49,12 @@ export function advanceGameTick(dt, effectSink, context) {
     if (currentQF.gte(10)) recordNarrativeMilestone('qf_10', '[SYSTEM]: Energy density sufficient. Compiling Fluctuation Condenser...');
     if (currentQF.gte(100)) recordNarrativeMilestone('qf_100', '[SYSTEM]: Weak Nuclear Vector unlocked. Symmetry breaking begins.');
     if (currentQF.gte(500)) recordNarrativeMilestone('qf_500', '[SYSTEM]: Electromagnetic Tensor engaged. Photons propagating.');
-    if (currentQF.gte(2500)) recordNarrativeMilestone('qf_2500', '[SYSTEM]: Vacuum Resonance stabilized. Vacuum Coherence recovering.');
+    if (currentQF.gte(2500)) recordNarrativeMilestone('qf_2500', '[SYSTEM]: Harmonic density threshold reached. Field stabilization potential detected.');
     if (currentQF.gte(10000)) recordNarrativeMilestone('qf_10000', '[SYSTEM]: Strong Color Force bound. Baryogenesis imminent.');
+
+    if (isVacuumFieldAllocationUnlocked(gameState)) {
+      recordNarrativeMilestone('vacuum_allocation_unlocked', 'Vacuum Resonance established. Field Allocation is now available: propagate Fundamental Laws, balance the field, or accelerate stabilization.');
+    }
   }
 
   Timeline.process(dt, tickContext);

@@ -84,6 +84,25 @@ export const COSMIC_REGISTRY = {
     eraIStartingTemp: new Decimal("1e32"),
     eraIInflationTemp: new Decimal("1e27")
   },
+  eraIAllocation: {
+    defaultMode: 'BALANCED',
+    // PROVISIONAL P5.3A calibration. Final tuning belongs to P5.4.
+    qualityFeedbackStrength: 1.0,
+    modes: {
+      PROPAGATION: {
+        throughputMultiplier: 1.5,
+        passiveCoherenceMultiplier: 0.5
+      },
+      BALANCED: {
+        throughputMultiplier: 1.0,
+        passiveCoherenceMultiplier: 1.0
+      },
+      STABILIZATION: {
+        throughputMultiplier: 0.5,
+        passiveCoherenceMultiplier: 2.5
+      }
+    }
+  },
   currencies: {
     stardust: { id: "stardust", name: "Stardust", symbol: "✨" },
     pulsarShards: { id: "pulsarShards", name: "Pulsar Shards", symbol: "🌀" },

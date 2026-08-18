@@ -1,6 +1,7 @@
 /* global ResizeObserver */
 import { gameState } from '../core/state.js';
 import { getEraTwoVisualSemantics } from '../eras/plasma/semantics.js';
+import { getVacuumAllocation, getVacuumCoherence } from '../eras/quantum/coherence.js';
 
 export function dispatchEraRenderer(epoch, renderers, cx, cy) {
   switch (epoch) {
@@ -227,32 +228,73 @@ export const CanvasCore = (function () {
 
   // --- ERA 1: QUANTUM SINGULARITY & BLOOM RINGS ---
   function drawEra1(cx, cy) {
-    const pulse = 1 + Math.sin(time * 3) * 0.08;
-    const radius = 55 * pulse;
+    const isReducedMotion = isReducedMotionCached ||
+      (typeof document !== 'undefined' && document.body && document.body.classList.contains('reduced-motion')) ||
+      (typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false);
+
+    const allocation = (typeof gameState !== 'undefined') ? getVacuumAllocation(gameState) : 'BALANCED';
+    const rawCoherence = (typeof gameState !== 'undefined') ? getVacuumCoherence(gameState).toNumber() : 0;
+    const coherenceFactor = Math.max(0, Math.min(1, rawCoherence / 100));
+
+    let baseRadius = 55;
+    let pulseSpeed = 3.0;
+    let pulseAmp = 0.08;
+    let ringSpeed = 1.0;
+    let bloomSpread = 2.8;
+
+    if (allocation === 'PROPAGATION') {
+      baseRadius = 60;
+      pulseSpeed = 4.2;
+      pulseAmp = 0.12;
+      ringSpeed = 1.4;
+      bloomSpread = 3.2;
+    } else if (allocation === 'STABILIZATION') {
+      baseRadius = 50;
+      pulseSpeed = 2.0;
+      pulseAmp = 0.04;
+      ringSpeed = 0.7;
+      bloomSpread = 2.4;
+    }
+
+    let pulse = 1.0;
+    if (!isReducedMotion) {
+      pulse = 1 + Math.sin(time * pulseSpeed) * pulseAmp;
+    }
+    const radius = baseRadius * pulse;
 
     // Additive Radial Bloom
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
 
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * 2.8);
-    grad.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-    grad.addColorStop(0.25, 'rgba(0, 240, 255, 0.45)');
-    grad.addColorStop(0.6, 'rgba(108, 92, 231, 0.20)');
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius * bloomSpread);
+    const innerAlpha = 0.90 + coherenceFactor * 0.10;
+    const midAlpha = 0.35 + (allocation === 'PROPAGATION' ? 0.20 : 0.10) + coherenceFactor * 0.10;
+    const outerAlpha = 0.15 + (allocation === 'STABILIZATION' ? 0.15 : 0.05);
+
+    grad.addColorStop(0, `rgba(255, 255, 255, ${innerAlpha})`);
+    grad.addColorStop(0.25, `rgba(0, 240, 255, ${midAlpha})`);
+    grad.addColorStop(0.6, `rgba(108, 92, 231, ${outerAlpha})`);
     grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
     ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.arc(cx, cy, radius * 2.8, 0, Math.PI * 2);
+    ctx.arc(cx, cy, radius * bloomSpread, 0, Math.PI * 2);
     ctx.fill();
 
-    // Orbiting Force Rings
-    for (let i = 0; i < 3; i++) {
-      const ringRadius = radius + 20 + i * 18;
-      const angle = time * (1.2 - i * 0.3) * (i % 2 === 0 ? 1 : -1);
-      ctx.strokeStyle = i === 0 ? 'rgba(0, 236, 198, 0.4)' : 'rgba(168, 85, 247, 0.3)';
-      ctx.lineWidth = 1.5;
+    // Orbiting Force Rings (higher coherence = sharper definition and alignment)
+    const ringCount = 3;
+    for (let i = 0; i < ringCount; i++) {
+      const ringRadius = radius + 18 + i * (16 - coherenceFactor * 3);
+      const angle = isReducedMotion
+        ? (i * Math.PI / 3)
+        : time * (1.2 - i * 0.3) * ringSpeed * (i % 2 === 0 ? 1 : -1);
+      const ringAlpha = (0.3 + coherenceFactor * 0.4) * (allocation === 'STABILIZATION' ? 1.2 : 1.0);
+      ctx.strokeStyle = i === 0
+        ? `rgba(0, 236, 198, ${Math.min(1, ringAlpha)})`
+        : `rgba(168, 85, 247, ${Math.min(1, ringAlpha * 0.85)})`;
+      ctx.lineWidth = 1.5 + coherenceFactor * 0.5;
       ctx.beginPath();
-      ctx.ellipse(cx, cy, ringRadius, ringRadius * 0.45, angle, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy, ringRadius, ringRadius * (0.45 + (allocation === 'STABILIZATION' ? 0.15 : 0)), angle, 0, Math.PI * 2);
       ctx.stroke();
     }
 

@@ -1,5 +1,15 @@
 /* global Decimal */
+import Decimal from 'break_infinity.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
+
+export function getInitialEra1State() {
+  return {
+    currentAct: 1,
+    quantumFoam: 0,
+    unfoldCount: 0,
+    vacuumAllocation: 'BALANCED'
+  };
+}
 
 export function getInitialEra2State() {
   return {
@@ -102,11 +112,7 @@ export function createInitialState() {
       hasUnlocked100QF: false,
       introCompleted: false
     },
-    era1: {
-      currentAct: 1,
-      quantumFoam: 0,
-      unfoldCount: 0
-    },
+    era1: getInitialEra1State(),
     era1Collapses: 0,
     era2: getInitialEra2State(),
     era3: getInitialEra3State(),

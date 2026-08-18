@@ -53,7 +53,7 @@ export function getCurrentObjective(state) {
       epoch: obj.epoch,
       title: obj.title,
       instruction: obj.instruction,
-      explanation: obj.explanation,
+      explanation: typeof obj.explanation === 'function' ? obj.explanation(state) : obj.explanation,
       current: current,
       target: target,
       progress: progress,

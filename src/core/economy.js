@@ -8,6 +8,7 @@ import { saveGame } from './persistence.js';
 import { COSMIC_REGISTRY } from '../config/registry.js';
 import { dispatchEngineCommand } from '../engine/dispatch.js';
 import { getQuantumUpgradeEligibility } from '../eras/quantum/eligibility.js';
+import { getVacuumAllocationProfile, getVacuumFieldQuality } from '../eras/quantum/coherence.js';
 import { getEntropyBitProductionMultiplier } from '../eras/galactic/selectors.js';
 export function updateStatsData() {
   if (gameState.era3 && gameState.era3.temperature.gt(gameState.stats.maxTemp)) {
@@ -78,7 +79,9 @@ export function getQuantumFluctuationRate(state = gameState) {
   }
 
   let synergyMult = getFundamentalLawSynergy(state);
-  return rate.times(state.inflatonMultiplier || 1).times(artifactMult).times(synergyMult);
+  const allocationProfile = getVacuumAllocationProfile(state);
+  const fieldQuality = getVacuumFieldQuality(state);
+  return rate.times(state.inflatonMultiplier || 1).times(artifactMult).times(synergyMult).times(allocationProfile.throughputMultiplier).times(fieldQuality);
 }
 
 export function getEnergyDensityRate(state = gameState) {
@@ -93,7 +96,9 @@ export function getEnergyDensityRate(state = gameState) {
   }
 
   let synergyMult = getFundamentalLawSynergy(state);
-  return rate.times(synergyMult);
+  const allocationProfile = getVacuumAllocationProfile(state);
+  const fieldQuality = getVacuumFieldQuality(state);
+  return rate.times(synergyMult).times(allocationProfile.throughputMultiplier).times(fieldQuality);
 }
 
 export function getPlasmaPassiveRates() {

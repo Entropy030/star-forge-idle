@@ -1,6 +1,6 @@
 /* global Decimal */
 import { COSMIC_REGISTRY } from '../config/registry.js';
-import { createInitialState, getInitialEra2State, getInitialEra3State, getInitialEra4State, getInitialEra5State, getInitialCosmicConstants } from './createInitialState.js';
+import { createInitialState, getInitialEra1State, getInitialEra2State, getInitialEra3State, getInitialEra4State, getInitialEra5State, getInitialCosmicConstants } from './createInitialState.js';
 
 export const ensureStateShape = function(gameState) {
   const initialState = createInitialState();
@@ -29,8 +29,8 @@ export const ensureStateShape = function(gameState) {
   if (typeof gameState.unfold.hasUnlocked10QF !== 'boolean') gameState.unfold.hasUnlocked10QF = false;
   if (typeof gameState.unfold.hasUnlocked100QF !== 'boolean') gameState.unfold.hasUnlocked100QF = false;
   if (typeof gameState.unfold.introCompleted !== 'boolean') gameState.unfold.introCompleted = false;
-  if (!gameState.era1) {
-    gameState.era1 = { currentAct: 1, quantumFoam: 0, unfoldCount: 0 };
+  if (!gameState.era1 || typeof gameState.era1 !== 'object') {
+    gameState.era1 = getInitialEra1State();
   }
   
   // Migrate legacy era1.vacuumCoherence (0-1) to state.coherence (0-100)
@@ -44,6 +44,10 @@ export const ensureStateShape = function(gameState) {
   if (typeof gameState.era1.currentAct !== 'number') gameState.era1.currentAct = 1;
   if (typeof gameState.era1.quantumFoam !== 'number') gameState.era1.quantumFoam = 0;
   if (typeof gameState.era1.unfoldCount !== 'number') gameState.era1.unfoldCount = 0;
+  const validAllocations = ['PROPAGATION', 'BALANCED', 'STABILIZATION'];
+  if (!validAllocations.includes(gameState.era1.vacuumAllocation)) {
+    gameState.era1.vacuumAllocation = 'BALANCED';
+  }
   delete gameState.era1.asymmetryBias;
 
   if (!gameState.era2 || typeof gameState.era2 !== 'object') {

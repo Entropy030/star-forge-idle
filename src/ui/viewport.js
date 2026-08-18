@@ -1582,6 +1582,12 @@ export const Viewport = {
           type: 'SET_PLASMA_POSTURE',
           payload: { posture }
         });
+      },
+      (allocation) => {
+        dispatchEngineCommand({
+          type: 'SET_VACUUM_ALLOCATION',
+          payload: { allocation }
+        });
       }
     );
     document.body.dataset.cosmosTransitionReady = String(Boolean(cosmosPresentation.transition.ready));

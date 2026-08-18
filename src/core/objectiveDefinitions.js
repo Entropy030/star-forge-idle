@@ -1,5 +1,6 @@
 // Objective definitions are domain progression data shared by runtime and UI.
 import { getInflationEligibility } from '../eras/quantum/inflation.js';
+import { isVacuumFieldAllocationUnlocked } from '../eras/quantum/coherence.js';
 import { getRecombinationEligibility } from '../eras/plasma/eligibility.js';
 import { getGalacticIgnitionEligibility, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 
@@ -36,6 +37,9 @@ export const OBJECTIVE_DEFINITIONS = [
     epoch: 1,
     title: 'Trigger Cosmic Inflation',
     instruction: 'Initiate Cosmic Inflation.',
+    explanation: (state) => isVacuumFieldAllocationUnlocked(state)
+      ? 'Use Vacuum Field Allocation to trade immediate Law throughput against stabilization while preparing Inflation.'
+      : 'Prepare the vacuum and stabilize Coherence to expand the cosmos.',
     target: 1,
     getCurrent: (state) => getInflationEligibility(state).isEligible ? 1 : 0,
     isComplete: (state) => state.activeEpoch > 1

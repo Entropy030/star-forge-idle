@@ -112,8 +112,8 @@ describe('playtest bot gameplay authority', () => {
 
     playtestHarness.runGameTicks(0.1, true, 1);
 
-    // 0.1 QF from one authoritative simulation step, then 1 QF from one bot observation.
-    expect(gameState.resources.quantumFluctuations.amount.eq(1.1)).toBe(true);
+    // 0.15001 QF from one authoritative simulation step (coherence rises to 50.01%, field quality 1.5001, 1.5001 QF/s * 0.1s = 0.15001 QF), then 1 QF from one bot observation.
+    expect(gameState.resources.quantumFluctuations.amount.eq('1.15001')).toBe(true);
     expect(gameState.coherence.eq(expectedCoherence)).toBe(true);
     expect(playtestHarness.stats.ticksElapsed).toBe(1);
     expect(playtestHarness.stats.totalClicks).toBe(1);

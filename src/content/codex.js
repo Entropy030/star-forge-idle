@@ -72,6 +72,15 @@ export const CODEX_ENTRIES = [
     sortOrder: 70
   },
   {
+    id: 'vacuum-field-allocation',
+    category: 'foundations',
+    title: 'Vacuum Field Allocation',
+    body: 'Vacuum Field Allocation trades immediate Fundamental-Law throughput against vacuum stabilization. Vacuum Coherence represents system quality: higher coherence increases the productive efficiency of established Fundamental Laws. Balanced is the safe neutral default. Switching modes has no fee or cooldown.',
+    narrativeText: 'CHRONO_LOG // Vacuum Field Allocation trades immediate throughput for stabilization. Vacuum Coherence actively enhances system quality.',
+    unlockCondition: { type: 'vacuum_allocation_unlocked' },
+    sortOrder: 71
+  },
+  {
     id: 'strong-nuclear',
     category: 'foundations',
     title: 'Strong Nuclear Force',
