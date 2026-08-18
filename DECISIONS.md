@@ -272,19 +272,27 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 - `DESIGN APPROVED: YES` (Human Approved & Published).
 - `PRODUCTION IMPLEMENTED: NO` (Design synthesis complete; exact mechanics require prototyping before implementation).
 
-## D28 — Era-I Vacuum Field Allocation: Coherence as System Quality (Pre-P5.3A)
+## D28 — Era-I Vacuum Field Allocation: Coherence as System Quality (P5.3A)
 
 **Decision:**
-1. **Structural Mechanic Approval:** Vacuum Field Allocation with **Coherence as System Quality** (Variant B) is formally approved as the authoritative structural mechanic for Era I.
+1. **Structural Mechanic Approval:** Vacuum Field Allocation with **Coherence as System Quality** (Variant B) is formally approved and production-implemented as the authoritative structural mechanic for Era I.
 2. **Intertemporal Tradeoff:** Field allocation allows the player to modulate the balance between immediate Fundamental-Law / Quantum Fluctuation throughput (Propagation focus) and Vacuum Stabilization (Stabilization focus). Accumulated Vacuum Coherence actively scales the productive efficiency / quality of the already-established Fundamental-Law system, creating an intertemporal trade-off (*immediate output vs. investment in system quality*).
-3. **Robustness Validation:** Structural robustness is validated across a sustained healthy design region ($k \in [0.5, 1.5]$ under moderate tradeoff) and confirmed consistent across linear, concave, and saturating quality curves with a forgiving 60-second optimal switching window.
-4. **Low-Attention Compatibility:** Low-attention and idle play are strictly preserved; safe defaults progress reliably without risk of failure or stalling.
-5. **Anti-Exploit Guarantee:** Rapid toggling provides zero gameplay advantage over clean strategic allocation across all tested cadences ($0.1\text{s}$ to $20\text{s}$).
-6. **Deferred Calibration Details:** Exact mathematical feedback formulas, production multiplier values, unlock timings (e.g. Law 3 vs Era start), 2-mode vs 3-mode UI controls, mode names, and production pacing remain unapproved and deferred to P5.3/P5.4.
+3. **Robustness Validation:** Structural robustness is validated across a sustained healthy design region ($k \in [0.5, 1.5]$ under moderate tradeoff) and confirmed consistent across linear, concave, and saturating quality curves.
+4. **Low-Attention Compatibility:** Low-attention and idle play are strictly preserved; safe defaults (`BALANCED`) progress reliably without risk of failure or stalling.
+5. **Anti-Exploit Guarantee:** Rapid toggling provides zero gameplay advantage over clean strategic allocation across all tested cadences. Switching mode grants NO resources, NO Coherence, NO momentum, and NO switch-count bonus.
+6. **Provisional Production Calibration:** Centralized under `COSMIC_REGISTRY.eraIAllocation`:
+   - `PROPAGATION`: `throughputMultiplier: 1.5`, `passiveCoherenceMultiplier: 0.5` ($0.05\%/\text{s}$)
+   - `BALANCED`: `throughputMultiplier: 1.0`, `passiveCoherenceMultiplier: 1.0` ($0.10\%/\text{s}$)
+   - `STABILIZATION`: `throughputMultiplier: 0.5`, `passiveCoherenceMultiplier: 2.5` ($0.25\%/\text{s}$)
+   - `qualityFeedbackStrength: 1.0`
+   - Field Quality: $1 + (\text{Vacuum Coherence} / 100) \times \text{qualityFeedbackStrength}$
+   - Base passive stabilization rate: $0.10$ percentage points / second.
+   - Numerical calibration is provisional under P5.3A; P5.4 owns final numerical tuning.
 
 **Status:**
 - `DESIGN APPROVED: YES` (Structural Mechanic Human Approved & Published).
-- `PRODUCTION IMPLEMENTED: NO` (Implementation deferred to P5.3).
+- `PRODUCTION IMPLEMENTED: YES` (Implemented in P5.3A).
+- `HUMAN IMPLEMENTATION APPROVED: YES` (Human Review Approved).
 
 ## D29 — Era-III Hydrostatic Stellar Engine: Capacity / Throughput + Thermal Capability (Pre-P5.3B)
 
@@ -310,21 +318,30 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 - `DESIGN APPROVED: YES` (Structural Mechanic Human Approved & Published).
 - `PRODUCTION IMPLEMENTED: NO` (Implementation deferred to P5.3).
 
-## D30 — Era-I Vacuum Field Allocation Control Surface
+## D30 — Era-I Vacuum Field Allocation Control Surface (P5.3A)
 
 **Decision:**
-1. Production control is a discrete 3-state Field Allocation: `PROPAGATION`, `BALANCED`, `STABILIZATION`.
-2. `BALANCED` is the authoritative default for:
+1. **Control Surface Architecture:** Production control is a discrete 3-state Field Allocation: `PROPAGATION`, `BALANCED`, `STABILIZATION`.
+2. **Authoritative Default:** `BALANCED` is the authoritative default for:
    - fresh games;
    - normalized v17 saves missing the field;
    - safe low-attention behavior.
-3. The control represents field allocation / intertemporal system-quality investment, not an Era-II-style operating posture.
-4. Presentation must remain visually distinguishable from the Era-II `ACCUMULATE` / `BALANCE` / `CONDENSE` controller.
-5. Exact multipliers and final nomenclature presentation details remain calibration/content concerns where applicable.
+3. **Explicitly Retained Boundaries:**
+   - Not a continuous slider;
+   - No switching fee;
+   - No cooldown;
+   - No hysteresis;
+   - No rapid-toggle reward mechanic;
+   - Not the Era-II Plasma Posture controller;
+   - Balanced is the safe low-attention default.
+4. **Visual and Semantic Distinction:** Reuses `#cosmos-posture-controller` container with distinct single-track styling (`FIELD ALLOCATION / Vacuum Dynamic`), roving radiogroup accessibility (`role="radiogroup"`, `role="radio"`, `aria-checked`), non-color badges (`THROUGHPUT`, `EQUILIBRIUM`, `COHERENCE`), $\ge 44\text{px}$ touch targets, and live derived readouts (`Law Throughput`, `Stabilization`, `Field Quality`).
+5. **Star Core Visual Causality:** Star Core canvas reflects active allocation with wider/more expansive field geometry under Propagation and tighter/more concentrated field geometry under Stabilization, while accumulated Coherence provides sharper, more ordered field definition. Reduced-motion compliance preserves static geometric and metric distinctions without animation.
+6. **Calibration Ownership:** Numerical calibration is provisional under P5.3A; P5.4 owns final numerical tuning.
 
 **Status:**
 - `DESIGN APPROVED: YES`
-- `PRODUCTION IMPLEMENTED: NO`
+- `PRODUCTION IMPLEMENTED: YES` (Implemented in P5.3A).
+- `HUMAN IMPLEMENTATION APPROVED: YES` (Human Review Approved).
 
 ## D31 — Era-III Core Temperature as Primary Semantic State
 

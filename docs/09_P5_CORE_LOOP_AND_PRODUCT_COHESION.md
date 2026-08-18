@@ -47,18 +47,20 @@ NEEDS DEDICATED UI NORMALIZATION
 - **Candidate Normalization Surface Hierarchy:**
   $$\text{OBJECTIVE / NEXT} \longrightarrow \text{PRIMARY STATE / PRIMARY RESOURCE} \longrightarrow \text{STAR CORE} \longrightarrow \text{ERA-SPECIFIC PHYSICAL CONTROL / CONTEXT} \longrightarrow \text{CURRENT PROCESS} \longrightarrow \text{SUPPORT RESOURCES} \longrightarrow \text{CHRONO}$$
 
-### P5.2 — Progression & Mechanic Introduction (Future Scope)
-- Meaningful introduction and onboarding for newly revealed mechanics.
-- Qualitative transition presentation for Cosmic Inflation, Recombination, and Stellar Dawn.
-- Theatrical Legacy / Supernova prestige presented as a significant cosmic milestone rather than merely a new navigation tab:
-  - Transparent communication of what changes, what is sacrificed, what persists, and what is gained.
+### P5.2 — Progression & Mechanic Introduction (Complete & Human Approved)
+- Meaningful introduction and onboarding for newly revealed mechanics (Cosmic Inflation, Recombination, Stellar Dawn, Supernova).
+- Pure transition presentation layer (`src/engine/transitionPresentation.js`) with non-prestige preview for Inflation and Recombination ($250\text{ H}$ constant seed).
+- Structured first/repeat Supernova transformation preview (RESET, PERSISTS, GAIN, NEXT) with explicit distinction from permanent Galactic Ignition.
+- Durable Legacy upgrade persistence across Supernova for Stardust, Pulsar, and Singularity upgrade families (D32).
 
-### P5.3 — Incremental Economy & Agency (Future Scope)
+### P5.3 — Incremental Economy & Agency (In Progress)
 Addresses the symptom of linear upgrade clicking in Era I and early Era III:
 - Transition from simple unlock ladders to systemic operations:
   $$\text{STOCK} \longrightarrow \text{FLOW} \longrightarrow \text{CONVERSION} \longrightarrow \text{ALLOCATION / POLICY} \longrightarrow \text{TRANSFORMATION}$$
-- Deepen Era-I quantum fluctuation dynamics beyond linear upgrade acquisition.
-- Expand Era-III stellar nucleosynthesis and stellar configuration choices prior to Supernova.
+- **P5.3A Complete & Human Approved (D28, D30):** Discrete 3-state Vacuum Field Allocation (`PROPAGATION`, `BALANCED`, `STABILIZATION`) in Era I, trading immediate Fundamental Law throughput for Vacuum Stabilization, with accumulated Coherence acting as dynamic Field Quality feedback on established Fundamental Laws.
+- **P5.3B0 Next:** Stellar Authority & Automation Parity Reconciliation.
+- **P5.3B1 Future:** Era-III Hydrostatic Stellar Engine Model B1 (D29).
+- **P5.3C Future:** Cross-Era Pacing, Low-Attention Resilience, and Agency Polish.
 
 ### P5.4 — Coarse Balance & Full Run (Future Scope)
 - Verify end-to-end viability of all progression routes across orders of magnitude.
