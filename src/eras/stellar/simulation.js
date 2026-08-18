@@ -5,13 +5,7 @@ import { getCompressionHeatYield } from '../../core/economy.js';
 import {
   applyTemperatureGain,
   executeCompression,
-  getCarbonCapacity,
-  getCarbonFuelCost,
-  getFusionCapacity,
-  getFusionFuelCost,
-  getHydrogenProductionRate,
-  getIronCapacity,
-  getIronFuelCost,
+  resolveStellarFlowStep,
   rollNextFlareSpawnDelay
 } from './authority.js';
 
@@ -27,54 +21,19 @@ export function simulateStellarEra(state, dt, context = {}) {
     }
   }
 
-  // 2. Hydrogen Generation (authoritative shared formula)
-  const hydrogenRate = getHydrogenProductionRate(state);
-  if (hydrogenRate.gt(0)) {
-    state.resources.hydrogen.amount = state.resources.hydrogen.amount.plus(hydrogenRate.times(dt));
+  // 2. Continuous Stellar Reaction Flow (Hydrogen Inflow, Buffer Accretion, Fusion, Carbon & Iron Synthesis)
+  const flowResult = resolveStellarFlowStep(state, dt);
+  if (
+    !flowResult.deltas.hydrogen.eq(0) ||
+    !flowResult.deltas.helium.eq(0) ||
+    !flowResult.deltas.carbon.eq(0) ||
+    !flowResult.deltas.iron.eq(0)
+  ) {
+    state.resources.hydrogen.amount = flowResult.nextAmounts.hydrogen;
+    state.resources.helium.amount = flowResult.nextAmounts.helium;
+    state.resources.carbon.amount = flowResult.nextAmounts.carbon;
+    state.resources.iron.amount = flowResult.nextAmounts.iron;
     anyChanged = true;
-  }
-
-  // 3. Auto-Fusion (Hydrogen -> Helium)
-  if (state.era3?.fusersEnabled && state.era3?.fusionYield?.gt(0)) {
-    const costPerYield = getFusionFuelCost(state);
-    const maxPossibleFusions = state.resources.hydrogen.amount.div(costPerYield).floor();
-    const nominalCapacity = getFusionCapacity(state);
-    const targetFusions = Decimal.min(maxPossibleFusions, nominalCapacity.times(dt));
-
-    if (targetFusions.gt(0)) {
-      state.resources.hydrogen.amount = state.resources.hydrogen.amount.minus(targetFusions.times(costPerYield));
-      state.resources.helium.amount = state.resources.helium.amount.plus(targetFusions);
-      anyChanged = true;
-    }
-  }
-
-  // 4. Carbon and Iron Synthesis
-  if (state.era3?.stage === "Main Sequence Star") {
-    if (state.era3?.carbonYield?.gt(0)) {
-      const carbonCost = getCarbonFuelCost(state);
-      const maxCarbon = state.resources.helium.amount.div(carbonCost).floor();
-      const nominalCarbonCap = getCarbonCapacity(state);
-      const targetCarbon = Decimal.min(maxCarbon, nominalCarbonCap.times(dt));
-
-      if (targetCarbon.gt(0)) {
-        state.resources.helium.amount = state.resources.helium.amount.minus(targetCarbon.times(carbonCost));
-        state.resources.carbon.amount = state.resources.carbon.amount.plus(targetCarbon);
-        anyChanged = true;
-      }
-    }
-
-    if (state.era3?.ironYield?.gt(0) && state.era3?.temperature?.gte(COSMIC_REGISTRY.resources.iron.unlockTemp)) {
-      const ironCost = getIronFuelCost(state);
-      const maxIron = state.resources.carbon.amount.div(ironCost).floor();
-      const nominalIronCap = getIronCapacity(state);
-      const targetIron = Decimal.min(maxIron, nominalIronCap.times(dt));
-
-      if (targetIron.gt(0)) {
-        state.resources.carbon.amount = state.resources.carbon.amount.minus(targetIron.times(ironCost));
-        state.resources.iron.amount = state.resources.iron.amount.plus(targetIron);
-        anyChanged = true;
-      }
-    }
   }
 
   // 5. Compact Rewards (Live-only)

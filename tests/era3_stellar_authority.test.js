@@ -128,17 +128,23 @@ describe('P5.3B0: Stellar Authority & Automation Parity Reconciliation', () => {
       expect(getCarbonCapacity(state).toNumber()).toBe(0); // Locked in Protostar
 
       state.era3.stage = "Main Sequence Star";
+      state.era3.temperature = new Decimal(10000000); // 10M K < 500M K Carbon unlock
       state.upgrades.pulsar.autoSynthesize.level = 1; // +100% velocity
-      // Carbon capacity: 2 * 1.1 * 1.3 * 2.0 = 5.72
-      expect(getCarbonCapacity(state).toNumber()).toBeCloseTo(5.72, 5);
+      expect(getCarbonCapacity(state).toNumber()).toBe(0); // Locked below 500M K
+
+      state.era3.temperature = new Decimal(500000000); // 500M K
+      // Carbon capacity: 2 * 1.1 * 1.3 * 2.0 * (1 + log10(501)) = 5.72 * 3.6998377 = 21.16307
+      const expectedCarbonCap = 2 * 1.1 * 1.3 * 2.0 * (1 + Math.log10(501));
+      expect(getCarbonCapacity(state).toNumber()).toBeCloseTo(expectedCarbonCap, 4);
 
       state.era3.temperature = new Decimal(1000000000); // 1.0B K < 2.0B K unlock
       state.era3.ironYield = new Decimal(1);
       expect(getIronCapacity(state).toNumber()).toBe(0); // Locked below 2.0B K
 
       state.era3.temperature = new Decimal(2500000000); // 2.5B K >= 2.0B K unlock
-      // Iron capacity: 1 * 1.1 (speed) * 1.5 (massive iron bonus) * 1.3 (alpha) * 2.0 (autoSynth) = 4.29
-      expect(getIronCapacity(state).toNumber()).toBeCloseTo(4.29, 5);
+      // Iron capacity: 1 * 1.1 (speed) * 1.5 (massive iron bonus) * 1.3 (alpha) * 2.0 (autoSynth) * (1 + log10(2501))
+      const expectedIronCap = 1 * 1.1 * 1.5 * 1.3 * 2.0 * (1 + Math.log10(2501));
+      expect(getIronCapacity(state).toNumber()).toBeCloseTo(expectedIronCap, 4);
     });
 
     it('applies temperature gain, updates tempMultiplier and maxTemp, and promotes Protostar to Main Sequence', () => {

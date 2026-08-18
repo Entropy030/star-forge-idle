@@ -155,7 +155,7 @@ describe('Forge decision hierarchy', () => {
     replaceRuntimeState(getPresetFreshEraIII());
     Viewport.renderStellarNodeButtons();
 
-    expect(document.getElementById('compress-effect').textContent).toMatch(/^\+[\d,.]+(?:[A-Z])? K per compression$/);
+    expect(document.getElementById('compress-effect').textContent).toMatch(/^\+[\d,.]+(?:[A-Z])? K per compression/);
     expect(document.getElementById('compress-threshold').textContent).toContain('Main Sequence');
     expect(document.getElementById('era3-card-gateway').closest('#tab-content-core')).not.toBeNull();
     expect(document.querySelector('#tab-content-upgrades #era3-card-gateway')).toBeNull();

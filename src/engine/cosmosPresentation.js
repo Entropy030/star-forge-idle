@@ -10,7 +10,7 @@ import {
   getRecombinationEligibility
 } from '../eras/plasma/eligibility.js';
 import { getEraTwoVisualSemantics } from '../eras/plasma/semantics.js';
-import { getGalacticIgnitionEligibility, getSupernovaEligibility } from '../eras/stellar/selectors.js';
+import { getGalacticIgnitionEligibility, getStellarMachineSnapshot, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 
 const ZERO = new Decimal(0);
 
@@ -473,38 +473,46 @@ function getEraThreePresentation(state) {
   const supernovaEligibility = getSupernovaEligibility(state);
   const ignitionEligibility = getGalacticIgnitionEligibility(state);
   const action = getEraThreeAction(state, supernovaEligibility);
-  const carbonVisible = temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp) || state.era3.carbonYield.gt(0) || amount(state, 'carbon').gt(0);
-  const ironVisible = temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) || state.era3.ironYield.gt(0) || amount(state, 'iron').gt(0);
-  const gatewayVisible = state.era3.stage === 'Main Sequence Star' && ironVisible;
+  const carbonVisible = temperature.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp) || (state.era3?.carbonYield || ZERO).gt(0) || amount(state, 'carbon').gt(0);
+  const ironVisible = temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) || (state.era3?.ironYield || ZERO).gt(0) || amount(state, 'iron').gt(0);
+  const gatewayVisible = state.era3?.stage === 'Main Sequence Star' && ironVisible;
+
+  const snapshot = getStellarMachineSnapshot(state);
+  const bottleneck = snapshot.bottleneck;
+  const reactionCapFormatted = `${snapshot.thermalReactionMultiplier.toFixed(2)}x`;
 
   return {
     epoch: 3,
-    mode: supernovaEligibility.canTrigger ? 'supernova-ready' : state.era3.stage === 'Main Sequence Star' ? 'stellar-progression' : 'protostar',
+    mode: supernovaEligibility.canTrigger ? 'supernova-ready' : state.era3?.stage === 'Main Sequence Star' ? 'stellar-progression' : 'protostar',
     primary: {
       eyebrow: 'Primary progression',
       title: 'Core Temperature',
       value: temperature,
       unit: 'K',
       summary: nextThreshold
-        ? `Next: ${nextThreshold.label}. Temperature is stable between direct actions.`
-        : 'All known thermal thresholds have been reached.',
+        ? `Next: ${nextThreshold.label} · Reaction Capability: ${reactionCapFormatted}.`
+        : `All thermal thresholds reached · Reaction Capability: ${reactionCapFormatted}.`,
       progress: nextThreshold ? { current: temperature, target: nextThreshold.value, label: `Progress toward ${nextThreshold.label}` } : null,
       threshold: nextThreshold,
       ready: !nextThreshold
     },
     core: {
-      eyebrow: state.era3.stage,
-      title: state.era3.stage === 'Main Sequence Star' ? 'A sustained stellar object' : 'A protostar under construction',
+      eyebrow: state.era3?.stage || 'Protostar',
+      title: state.era3?.stage === 'Main Sequence Star' ? 'A sustained stellar object' : 'A protostar under construction',
       instruction: 'The Core represents stellar state, temperature, and compression response.',
       ariaLabel: `Stellar Core at ${temperature.toString()} Kelvin. Interact to add direct heat.`
     },
     posture: null,
     process: {
-      eyebrow: supernovaEligibility.canTrigger ? 'Current stellar decision' : 'Current stellar action',
-      title: action.label,
-      summary: action.effect,
+      eyebrow: supernovaEligibility.canTrigger ? 'Current stellar decision' : 'Stellar machine',
+      title: supernovaEligibility.canTrigger ? action.label : bottleneck.label,
+      summary: supernovaEligibility.canTrigger ? action.effect : bottleneck.summary,
+      bottleneck: bottleneck.label,
       nodes: [
-        { role: 'State', label: state.era3.stage, value: nextThreshold ? `Toward ${nextThreshold.label}` : 'Thermally complete', state: 'support' }
+        { role: 'Inflow', label: 'Hydrogen Inflow', value: snapshot.inflowRate, unit: '/s', state: 'active' },
+        { role: 'Demand', label: 'Fusion Demand', value: snapshot.fusionFuelDemandRate, unit: '/s', state: snapshot.fusionFuelDemandRate.gt(snapshot.inflowRate) ? 'blocked' : 'support' },
+        { role: 'Buffer', label: 'Fuel Buffer', value: `${snapshot.hydrogenStock.floor().toString()} / ${snapshot.containmentCapacity.floor().toString()}`, state: snapshot.containmentFill >= 0.9 ? 'blocked' : 'support' },
+        { role: 'Velocity', label: 'Reaction Capability', value: snapshot.thermalReactionMultiplier, unit: 'x', state: 'active' }
       ],
       action
     },

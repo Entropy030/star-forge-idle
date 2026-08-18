@@ -66,6 +66,11 @@ export function getHydrogenProductionRate(state) {
   return structuralRate.pow(darkGravityExponent).times(qStabilizerMult).times(gMult);
 }
 
+export function getContainmentCapacity(state) {
+  const inflow = getHydrogenProductionRate(state);
+  return inflow.times(10);
+}
+
 export function getFusionFuelRequirement(state) {
   const discountLvl = state?.upgrades?.stardust?.fusionDiscount?.level || 0;
   const raw = Math.max(1, 10 - 2 * discountLvl);
@@ -86,6 +91,7 @@ export function getFusionCapacity(state) {
   return state.era3.fusionYield
     .times(getStellarSpeedMultiplier(state))
     .times(getAlphaMultiplier(state))
+    .times(getTemperatureMultiplier(state))
     .times(getFusionSurgeMultiplier(state));
 }
 
@@ -96,13 +102,20 @@ export function getCarbonFuelCost(state) {
 }
 
 export function getCarbonCapacity(state) {
-  if (state?.era3?.stage !== "Main Sequence Star" || !state?.era3?.carbonYield || state.era3.carbonYield.lte(0)) {
+  if (
+    state?.era3?.stage !== "Main Sequence Star" ||
+    !state?.era3?.carbonYield ||
+    state.era3.carbonYield.lte(0) ||
+    !state?.era3?.temperature ||
+    state.era3.temperature.lt(COSMIC_REGISTRY.resources.carbon.unlockTemp)
+  ) {
     return new Decimal(0);
   }
   return state.era3.carbonYield
     .times(getStellarSpeedMultiplier(state))
     .times(getAlphaMultiplier(state))
-    .times(getAutoSynthesizeMultiplier(state));
+    .times(getAutoSynthesizeMultiplier(state))
+    .times(getTemperatureMultiplier(state));
 }
 
 export function getIronFuelCost(state) {
@@ -127,7 +140,8 @@ export function getIronCapacity(state) {
     .times(getStellarSpeedMultiplier(state))
     .times(massiveIronBonus)
     .times(getAlphaMultiplier(state))
-    .times(getAutoSynthesizeMultiplier(state));
+    .times(getAutoSynthesizeMultiplier(state))
+    .times(getTemperatureMultiplier(state));
 }
 
 export function getTemperatureMultiplier(state) {
@@ -135,6 +149,134 @@ export function getTemperatureMultiplier(state) {
   const baseDiv = temp.div(1000000).plus(1);
   const logVal = Math.log10(Math.max(1, baseDiv.toNumber()));
   return new Decimal(1.0 + logVal);
+}
+
+export function getThermalReactionMultiplier(state) {
+  return getTemperatureMultiplier(state);
+}
+
+export function resolveStellarFlowStep(state, dt) {
+  const dtDec = new Decimal(dt || 0);
+  if (dtDec.lte(0)) {
+    const h0 = state?.resources?.hydrogen?.amount ? new Decimal(state.resources.hydrogen.amount) : new Decimal(0);
+    const he0 = state?.resources?.helium?.amount ? new Decimal(state.resources.helium.amount) : new Decimal(0);
+    const c0 = state?.resources?.carbon?.amount ? new Decimal(state.resources.carbon.amount) : new Decimal(0);
+    const fe0 = state?.resources?.iron?.amount ? new Decimal(state.resources.iron.amount) : new Decimal(0);
+    return {
+      deltas: {
+        hydrogen: new Decimal(0),
+        helium: new Decimal(0),
+        carbon: new Decimal(0),
+        iron: new Decimal(0)
+      },
+      nextAmounts: {
+        hydrogen: h0,
+        helium: he0,
+        carbon: c0,
+        iron: fe0
+      },
+      flows: {
+        realizedFusion: new Decimal(0),
+        realizedCarbon: new Decimal(0),
+        realizedIron: new Decimal(0)
+      }
+    };
+  }
+
+  const inflowRate = getHydrogenProductionRate(state);
+  const incomingH = inflowRate.times(dtDec);
+  const containmentCap = getContainmentCapacity(state);
+
+  let currentH = state?.resources?.hydrogen?.amount ? new Decimal(state.resources.hydrogen.amount) : new Decimal(0);
+  let currentHe = state?.resources?.helium?.amount ? new Decimal(state.resources.helium.amount) : new Decimal(0);
+  let currentC = state?.resources?.carbon?.amount ? new Decimal(state.resources.carbon.amount) : new Decimal(0);
+  let currentFe = state?.resources?.iron?.amount ? new Decimal(state.resources.iron.amount) : new Decimal(0);
+
+  let realizedFusion = new Decimal(0);
+  let realizedCarbon = new Decimal(0);
+  let realizedIron = new Decimal(0);
+
+  // 1. Hydrogen -> Helium Fusion
+  if (state?.era3?.fusersEnabled && state?.era3?.fusionYield?.gt(0)) {
+    const costPerYield = getFusionFuelCost(state);
+    const nominalFusionCap = getFusionCapacity(state).times(dtDec);
+    const totalHAvailable = incomingH.plus(currentH);
+    const maxPossibleFusion = costPerYield.gt(0) ? totalHAvailable.div(costPerYield) : new Decimal(0);
+    realizedFusion = Decimal.min(nominalFusionCap, maxPossibleFusion);
+
+    const totalHConsumed = realizedFusion.times(costPerYield);
+    if (incomingH.gte(totalHConsumed)) {
+      const residualInflow = incomingH.minus(totalHConsumed);
+      const spaceInBuffer = Decimal.max(0, containmentCap.minus(currentH));
+      currentH = currentH.plus(Decimal.min(residualInflow, spaceInBuffer));
+    } else {
+      const drawnFromBuffer = totalHConsumed.minus(incomingH);
+      currentH = Decimal.max(0, currentH.minus(drawnFromBuffer));
+    }
+    currentHe = currentHe.plus(realizedFusion);
+  } else {
+    const spaceInBuffer = Decimal.max(0, containmentCap.minus(currentH));
+    currentH = currentH.plus(Decimal.min(incomingH, spaceInBuffer));
+  }
+
+  // 2. Helium -> Carbon Synthesis (Main Sequence Star & >= 500M K)
+  if (
+    state?.era3?.stage === "Main Sequence Star" &&
+    state?.era3?.carbonYield?.gt(0) &&
+    state?.era3?.temperature?.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp)
+  ) {
+    const carbonCost = getCarbonFuelCost(state);
+    const nominalCarbonCap = getCarbonCapacity(state).times(dtDec);
+    const maxPossibleCarbon = carbonCost.gt(0) ? currentHe.div(carbonCost) : new Decimal(0);
+    realizedCarbon = Decimal.min(nominalCarbonCap, maxPossibleCarbon);
+
+    if (realizedCarbon.gt(0)) {
+      currentHe = Decimal.max(0, currentHe.minus(realizedCarbon.times(carbonCost)));
+      currentC = currentC.plus(realizedCarbon);
+    }
+  }
+
+  // 3. Carbon -> Iron Synthesis (Main Sequence Star & >= 2.0B K)
+  if (
+    state?.era3?.stage === "Main Sequence Star" &&
+    state?.era3?.ironYield?.gt(0) &&
+    state?.era3?.temperature?.gte(COSMIC_REGISTRY.resources.iron.unlockTemp)
+  ) {
+    const ironCost = getIronFuelCost(state);
+    const nominalIronCap = getIronCapacity(state).times(dtDec);
+    const maxPossibleIron = ironCost.gt(0) ? currentC.div(ironCost) : new Decimal(0);
+    realizedIron = Decimal.min(nominalIronCap, maxPossibleIron);
+
+    if (realizedIron.gt(0)) {
+      currentC = Decimal.max(0, currentC.minus(realizedIron.times(ironCost)));
+      currentFe = currentFe.plus(realizedIron);
+    }
+  }
+
+  const prevH = state?.resources?.hydrogen?.amount ? new Decimal(state.resources.hydrogen.amount) : new Decimal(0);
+  const prevHe = state?.resources?.helium?.amount ? new Decimal(state.resources.helium.amount) : new Decimal(0);
+  const prevC = state?.resources?.carbon?.amount ? new Decimal(state.resources.carbon.amount) : new Decimal(0);
+  const prevFe = state?.resources?.iron?.amount ? new Decimal(state.resources.iron.amount) : new Decimal(0);
+
+  return {
+    deltas: {
+      hydrogen: currentH.minus(prevH),
+      helium: currentHe.minus(prevHe),
+      carbon: currentC.minus(prevC),
+      iron: currentFe.minus(prevFe)
+    },
+    nextAmounts: {
+      hydrogen: currentH,
+      helium: currentHe,
+      carbon: currentC,
+      iron: currentFe
+    },
+    flows: {
+      realizedFusion,
+      realizedCarbon,
+      realizedIron
+    }
+  };
 }
 
 export function applyTemperatureGain(state, amount) {

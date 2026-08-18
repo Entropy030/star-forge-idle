@@ -55,8 +55,9 @@ describe('Era III stellar simulation and build archetypes', () => {
       // hydrogenRate = 10 * 1.4 = 14
       expect(state.resources.hydrogen.amount.toNumber()).toBe(14);
       
-      // targetIron = 2 * 1.4 * 3.0 = 8.4
-      expect(state.resources.iron.amount.toNumber()).toBeCloseTo(8.4, 1);
+      // targetIron = 2 * 1.4 * 3.0 * (1 + log10(3001)) = 8.4 * 4.477266 = 37.609
+      const expectedIron = 2 * 1.4 * 3.0 * (1 + Math.log10(3001));
+      expect(state.resources.iron.amount.toNumber()).toBeCloseTo(expectedIron, 1);
     });
   });
 
@@ -88,7 +89,7 @@ describe('Era III stellar simulation and build archetypes', () => {
       expect(state.resources.helium.amount.toNumber()).toBe(0);
     });
     
-    it('limits production to available input resources without going negative', () => {
+    it('limits production to available input resources continuously without going negative', () => {
       state.era3.gravity = new Decimal(0);
       state.era3.fusersEnabled = true;
       state.era3.fusionYield = new Decimal(10);
@@ -96,8 +97,9 @@ describe('Era III stellar simulation and build archetypes', () => {
       
       simulateStellarEra(state, 1.0);
       
-      expect(state.resources.helium.amount.toNumber()).toBe(1);
-      expect(state.resources.hydrogen.amount.toNumber()).toBe(5);
+      // Continuous flow: 15 H / 10 = 1.5 He produced, 0 H remaining
+      expect(state.resources.helium.amount.toNumber()).toBeCloseTo(1.5, 4);
+      expect(state.resources.hydrogen.amount.toNumber()).toBe(0);
     });
   });
   

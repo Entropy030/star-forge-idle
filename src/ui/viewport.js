@@ -11,7 +11,7 @@ import { getCosmosPresentation } from '../engine/cosmosPresentation.js';
 import { getEraResourcePresentation } from '../engine/resourcePresentation.js';
 import { getInflationEligibility, getQuantumUpgradeEligibility } from '../eras/quantum/selectors.js';
 import { getVacuumCoherence } from '../eras/quantum/coherence.js';
-import { getGalacticIgnitionEligibility, getStellarRates, getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
+import { getGalacticIgnitionEligibility, getStellarMachineSnapshot, getStellarRates, getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
 import { updateSupernovaOutcome } from './stellar.js';
 import { CodexEngine } from './codex.js';
 import { renderResourceHud } from './resourceHud.js';
@@ -1152,12 +1152,13 @@ export const Viewport = {
       }
     };
 
+    const stellarSnapshot = getStellarMachineSnapshot(gameState);
     let gravityAfford = gameState.resources.hydrogen.amount.gte(gameState.era3.gravityCost);
     updateCard('era3-card-gravity', 'btn-gravity', gravityAfford);
     const gravLvl = this.getEl('gravity-lvl');
     const gravLvlVal = gameState.era3.gravity ? gameState.era3.gravity.toNumber() : 0;
     if (gravLvl) gravLvl.textContent = format(gameState.era3.gravity);
-    this.setTextContent('gravity-contribution', `Current gravity: ${format(gameState.era3.gravity)} · Hydrogen rate ${format(getStellarRates(gameState).hydrogenProduction)}/s`);
+    this.setTextContent('gravity-contribution', `Current gravity: ${format(gameState.era3.gravity)} · Inflow +${format(stellarSnapshot.inflowRate)}/s · Buffer: ${format(stellarSnapshot.containmentCapacity)} H`);
 
     const gravDesc = this.getEl('gravity-desc');
     if (gravDesc) {
@@ -1186,7 +1187,7 @@ export const Viewport = {
     updateCard('era3-card-compress', 'btn-compress', compressAfford);
     const compLvl = this.getEl('compress-lvl');
     if (compLvl) compLvl.textContent = getCompressionsCompleted();
-    this.setTextContent('compress-effect', `+${format(getCompressionHeatYield())} K per compression`);
+    this.setTextContent('compress-effect', `+${format(getCompressionHeatYield())} K per compression · Capability: ${stellarSnapshot.thermalReactionMultiplier.toFixed(2)}x`);
     let thresholdText = 'Iron threshold reached';
     if (gameState.era3.temperature.lt(COSMIC_REGISTRY.constants.mainSequenceTempThreshold)) {
       thresholdText = `Next threshold: ${format(COSMIC_REGISTRY.constants.mainSequenceTempThreshold)} K · Main Sequence`;
@@ -1213,8 +1214,8 @@ export const Viewport = {
     }
     this.setTextContent('fuser-level', gameState.era3.fusionYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.fusionYield)}`);
     this.setTextContent('fuser-contribution', gameState.era3.fusionYield.eq(0)
-      ? 'Next level: unlocks 1 Helium yield'
-      : `Current yield: ${format(gameState.era3.fusionYield)} Helium per fusion cycle`);
+      ? 'Next level: unlocks Auto-Fuser'
+      : `Throughput: +${format(stellarSnapshot.fusionNominalCapacity)} He/s · Fuel Demand: -${format(stellarSnapshot.fusionFuelDemandRate)} H/s`);
     updateCard('era3-card-fuser', 'btn-fuser', fuserAfford);
 
     const carbonCostLabel = this.getEl('carbon-cost-label');
@@ -1242,7 +1243,7 @@ export const Viewport = {
         const requirement = carbonRequirements.querySelector('li');
         updateRequirement(requirement, !carbonLocked, 'Main Sequence', gameState.era3.temperature, COSMIC_REGISTRY.resources.carbon.unlockTemp, 'K');
       }
-      this.setTextContent('carbon-level', gameState.era3.carbonYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.carbonYield)}`);
+      this.setTextContent('carbon-level', gameState.era3.carbonYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.carbonYield)} · +${format(stellarSnapshot.carbonNominalCapacity)} C/s`);
       updateCard('era3-card-carbon', 'btn-carbon', carbonAfford, { locked: carbonLocked });
     }
 
@@ -1271,7 +1272,7 @@ export const Viewport = {
         const requirement = ironRequirements.querySelector('li');
         updateRequirement(requirement, !ironLocked, 'Main Sequence', gameState.era3.temperature, COSMIC_REGISTRY.resources.iron.unlockTemp, 'K');
       }
-      this.setTextContent('iron-level', gameState.era3.ironYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.ironYield)}`);
+      this.setTextContent('iron-level', gameState.era3.ironYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.ironYield)} · +${format(stellarSnapshot.ironNominalCapacity)} Fe/s`);
       updateCard('era3-card-iron', 'btn-iron', ironAfford, { locked: ironLocked });
     }
 

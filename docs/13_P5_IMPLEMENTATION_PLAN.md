@@ -368,19 +368,19 @@ All Product Gates for P5 have been formally reviewed and approved by Human Revie
   - D29 defines Core Temperature as the active physical capability state of the Hydrostatic Stellar Engine.
   - Improves cross-era semantic-location consistency without requiring DOM restructuring.
   - Hydrogen, Helium, Carbon, and Iron remain dynamically assigned to Support and Detail roles.
-- **Status:** `HUMAN APPROVED (D31) — SEMANTIC PRIMARY SLOT IMPLEMENTED IN P5.2A (B1 Coupling & Diagnostics Scheduled for P5.3B1)`
+- **Status:** `HUMAN APPROVED (D31) — SEMANTIC PRIMARY SLOT IMPLEMENTED IN P5.2A (B1 Coupling & Diagnostics Implemented Locally in P5.3B1, Awaiting Human Review, Not Published)`
 
 ### Technical Status & Remaining Boundaries:
-1. **P5.2A Complete & Human Approved:** Semantic Progression & Resource Grammar Foundation implemented and verified across 56 test files (371 unit tests) and 27 Playwright browser tests. D31 Core Temperature Primary semantic slot active in production. Gameplay semantics unchanged; no gameplay/state/simulation authority modified.
-2. **Stellar Authority Reconciliation:** Handled strictly as a **technical investigation** in P5.3B0 before B1 coupling.
-3. **Exact Calibration Unresolved:** Exact numerical multipliers, quality curves, containment scaling, and pacing remain deliberately unresolved and belong to P5.4 coarse balancing.
-4. **P5.2B Next:** Current Transitions & First Supernova / Legacy Onboarding (Current mechanics only).
-5. **Non-Blocking Presentation Debt:** `getMetaResources()` returns `[]` to remove current-run HUD meta duplication while Legacy owns persistent currencies; dormant `#meta-resource-summary` DOM and rendering helpers remain non-disruptive cleanup debt.
+1. **P5.2A & P5.2B Complete & Human Approved:** Semantic Progression & Resource Grammar Foundation, Current Transitions & First Supernova / Legacy Onboarding implemented, verified, and published.
+2. **P5.3A Complete & Human Approved:** Era-I Vacuum Field Allocation implemented, verified, and published.
+3. **P5.3B0 Complete & Human Approved:** Stellar Authority & Automation Parity Reconciliation implemented, verified, and published.
+4. **P5.3B1 Implemented Locally (Awaiting Human Review, Not Published):** Hydrostatic Stellar Engine Model B1 implemented on reconciled authority with pure containment capacity, active thermal capability, Protostar bootstrap preservation, hard thermal gates, continuous decimal flow step, machine snapshot, and bottleneck selector. (D29 remains awaiting Human Review before publication).
+5. **Exact Calibration Unresolved:** Exact numerical multipliers, quality curves, containment scaling, and pacing remain deliberately unresolved and belong to P5.4 coarse balancing.
 
 ---
 
 ```
 P5 IMPLEMENTATION PLAN
 TARGET FILE: docs/13_P5_IMPLEMENTATION_PLAN.md
-STATUS: HUMAN APPROVED — PUBLISHED EXECUTION CONTRACT (P5.2A PUBLISHED & HUMAN APPROVED)
+STATUS: HUMAN APPROVED — PUBLISHED EXECUTION CONTRACT (P5.3B1 IMPLEMENTED LOCALLY, AWAITING HUMAN REVIEW, NOT PUBLISHED)
 ```
