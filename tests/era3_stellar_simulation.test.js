@@ -102,7 +102,7 @@ describe('Era III stellar simulation and build archetypes', () => {
   });
   
   describe('Flares', () => {
-    it('spawns a flare after timer expires', () => {
+    it('spawns a flare after timer expires and schedules next delay on expiration', () => {
       state.flares = {
         active: null,
         nextSpawnInSec: new Decimal(0.5)
@@ -111,8 +111,13 @@ describe('Era III stellar simulation and build archetypes', () => {
       simulateStellarEra(state, 1.0);
       
       expect(state.flares.active).not.toBeNull();
-      expect(state.flares.active.expiresInSec.toNumber()).toBe(10);
-      expect(state.flares.nextSpawnInSec.toNumber()).toBe(60);
+      expect(state.flares.active.expiresInSec.toNumber()).toBe(12);
+
+      // Simulate flare expiration
+      simulateStellarEra(state, 12.0);
+      expect(state.flares.active).toBeNull();
+      expect(state.flares.nextSpawnInSec.toNumber()).toBeGreaterThanOrEqual(90);
+      expect(state.flares.nextSpawnInSec.toNumber()).toBeLessThanOrEqual(240);
     });
   });
 });

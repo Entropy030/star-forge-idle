@@ -15,6 +15,7 @@ import { applyRuntimeEffect } from './ui/runtimeEffects.js';
 import { startAutoPlaytest, stopAutoPlaytest, runHeadlessSim, playtestHarness, getTelemetryHistory } from './core/playtestBot.js';
 import { CanvasCore } from './ui/canvasCore.js';
 import { engine } from './engine/instance.js';
+import { dispatchEngineCommand } from './engine/dispatch.js';
 import { getActionFailureMessage, isActionSuccessful } from './ui/actionFeedback.js';
 import { appendHistoryEntry } from './state/history.js';
 import { devSetEpoch } from './dev/epoch.js';
@@ -784,7 +785,9 @@ export function initializeDomRuntime() {
     overlay.style.display = 'flex';
     Viewport.renderTuningModal();
   });
-  bindClick('flare-button', collectFlare);
+  bindClick('flare-button', () => {
+    dispatchEngineCommand({ type: 'COLLECT_SOLAR_FLARE' });
+  });
   bindClick('btn-autobuy-hydrogen', () => {
     if (!gameState.autoBuyer) gameState.autoBuyer = { hydrogen: { active: false } };
     if (!gameState.autoBuyer.hydrogen) gameState.autoBuyer.hydrogen = { active: false };
@@ -893,7 +896,7 @@ export const runAIAction = function (cmd) {
 
 
     case "collectFlare":
-      collectFlare();
+      dispatchEngineCommand({ type: 'COLLECT_SOLAR_FLARE' });
       console.log("🤖 Action: Collected Solar Flare");
       break;
 

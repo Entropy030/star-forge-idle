@@ -89,6 +89,9 @@ export const ensureStateShape = function(gameState) {
   if (!(gameState.era3.lifetimeCarbonThisRun instanceof Decimal)) {
     gameState.era3.lifetimeCarbonThisRun = new Decimal(gameState.era3.lifetimeCarbonThisRun || 0);
   }
+  if (!(gameState.era3.autoCompressProgress instanceof Decimal)) {
+    gameState.era3.autoCompressProgress = new Decimal(gameState.era3.autoCompressProgress || 0);
+  }
   if (!gameState.era4) gameState.era4 = getInitialEra4State();
   if (!(gameState.era4.planetaryNodeCost instanceof Decimal)) {
     gameState.era4.planetaryNodeCost = new Decimal(gameState.era4.planetaryNodeCost || 1000);
@@ -116,6 +119,7 @@ export const ensureStateShape = function(gameState) {
   delete gameState.resources.annihilationEnergy;
   delete gameState.resources.survivingMatter;
 
+  if (!gameState.currencies) gameState.currencies = {};
   for (let curKey in initialState.currencies) {
     if (!gameState.currencies[curKey]) {
       gameState.currencies[curKey] = { amount: new Decimal(0) };
@@ -142,6 +146,7 @@ export const ensureStateShape = function(gameState) {
 
   // Ensure every upgrade category and key from the registry exists in state
   // (covers both brand-new categories and new keys added to existing categories)
+  if (!gameState.upgrades) gameState.upgrades = {};
   for (let category in COSMIC_REGISTRY.upgrades) {
     if (!gameState.upgrades[category]) gameState.upgrades[category] = {};
     for (let key in COSMIC_REGISTRY.upgrades[category]) {

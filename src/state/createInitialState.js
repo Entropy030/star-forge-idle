@@ -33,6 +33,7 @@ export function getInitialEra3State() {
     compressCost: new Decimal(10),
     tempMultiplier: new Decimal(1.0),
     stage: "Protostar",
+    autoCompressProgress: new Decimal(0),
     lifetimeCarbonThisRun: new Decimal(0),
     carbonYield: new Decimal(0),
     carbonCostHelium: new Decimal(500),

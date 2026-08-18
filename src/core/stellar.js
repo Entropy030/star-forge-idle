@@ -76,31 +76,10 @@ export function expireFlare() {
   gameState.flares.nextSpawnInSec = rollNextSpawnDelay();
 }
 
+import { stellarCommandHandlers } from '../eras/stellar/commands.js';
+
 export function collectFlare() {
-  if (!gameState.flares.active) return;
-
-  let rewardKey = rollFlareType();
-  if (!rewardKey) return;
-  
-  let rewardDef = COSMIC_REGISTRY.solarEvents.flare.rewards[rewardKey];
-
-  if (rewardKey === 'hydrogenSurge') {
-    let currentRate = getHydrogenGenRate();
-    let instantGain = currentRate.times(rewardDef.secondsOfProduction || 180);
-    gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.plus(instantGain);
-  }
-  else if (rewardKey === 'magneticSurge') {
-    gameState.buffs.fusionSurge.remainingSec = new Decimal(rewardDef.buff.durationSec || 60);
-  }
-
-  gameState.stats.flaresCollected = (gameState.stats.flaresCollected || new Decimal(0)).plus(1);
-  
-  window.dispatchEvent(new CustomEvent('solarFlareCollected', {
-    detail: { message: rewardDef.log || "Flare stabilisiert!" }
-  }));
-
-  gameState.flares.active = null;
-  gameState.flares.nextSpawnInSec = rollNextSpawnDelay();
+  return stellarCommandHandlers.COLLECT_SOLAR_FLARE(gameState, { type: 'COLLECT_SOLAR_FLARE' });
 }
 
 

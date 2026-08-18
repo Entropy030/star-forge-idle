@@ -1,28 +1,79 @@
 /* global Decimal */
 import { COSMIC_REGISTRY } from '../../config/registry.js';
-import { getCompressionHeatYield, getCompressionScaling, getGravityCostMultiplier } from '../../core/economy.js';
+import { getCompressionScaling, getGravityCostMultiplier } from '../../core/economy.js';
 import { createInitialState } from '../../state/createInitialState.js';
 import { getGalacticIgnitionEligibility, getSupernovaEligibility, getSupernovaOutcome } from './selectors.js';
 import { appendHistoryEntry } from '../../state/history.js';
+import { applyTemperatureGain, executeCompression, getHydrogenProductionRate, rollNextFlareSpawnDelay } from './authority.js';
 
 export const stellarCommandHandlers = {
   CLICK_CORE_ERA3: (state, cmd) => {
     if (state.activeEpoch !== 3) return { ok: false, changed: false, events: [], error: { code: 'UNHANDLED_EPOCH' } };
 
-    state.era3.temperature = state.era3.temperature.plus(10000);
-    // Recalculating temp multiplier directly inline for now, later use a selector/system
-    let baseDiv = state.era3.temperature.div(1000000).plus(1);
-    let logPrimitive = Math.log10(baseDiv.toNumber());
-    state.era3.tempMultiplier = new Decimal(1.0 + logPrimitive);
-
-    if (state.era3.temperature.gt(state.stats.maxTemp)) {
-      state.stats.maxTemp = state.era3.temperature;
-    }
+    applyTemperatureGain(state, 10000);
 
     return {
       ok: true,
       changed: true,
       events: [{ type: 'CORE_CLICKED', epoch: 3, tempGain: 10000 }]
+    };
+  },
+
+  COLLECT_SOLAR_FLARE: (state, cmd) => {
+    if (state.activeEpoch !== 3) return { ok: false, changed: false, events: [], error: { code: 'UNHANDLED_EPOCH' } };
+    if (!state.flares || !state.flares.active) {
+      return { ok: false, changed: false, events: [], error: { code: 'NO_ACTIVE_FLARE' } };
+    }
+
+    const rewards = COSMIC_REGISTRY.solarEvents.flare.rewards;
+    let validRewards = [];
+    let totalWeight = 0;
+    for (let key in rewards) {
+      if (rewards[key].unlocked(state)) {
+        validRewards.push({ key, weight: rewards[key].weight });
+        totalWeight += rewards[key].weight;
+      }
+    }
+    if (validRewards.length === 0) {
+      state.flares.active = null;
+      state.flares.nextSpawnInSec = rollNextFlareSpawnDelay(state);
+      return { ok: false, changed: true, events: [] };
+    }
+
+    let roll = Math.random() * totalWeight, cumulative = 0;
+    let chosenKey = validRewards[validRewards.length - 1].key;
+    for (let reward of validRewards) {
+      cumulative += reward.weight;
+      if (roll < cumulative) {
+        chosenKey = reward.key;
+        break;
+      }
+    }
+
+    const rewardDef = rewards[chosenKey];
+    let rewardDetail = {};
+    if (chosenKey === 'hydrogenSurge') {
+      const hRate = getHydrogenProductionRate(state);
+      const instantGain = hRate.times(rewardDef.secondsOfProduction || 180);
+      state.resources.hydrogen.amount = state.resources.hydrogen.amount.plus(instantGain);
+      rewardDetail = { type: 'hydrogenSurge', gain: instantGain };
+    } else if (chosenKey === 'magneticSurge') {
+      if (!state.buffs) state.buffs = {};
+      if (!state.buffs.fusionSurge) state.buffs.fusionSurge = { remainingSec: new Decimal(0) };
+      state.buffs.fusionSurge.remainingSec = new Decimal(rewardDef.buff?.durationSec || 60);
+      rewardDetail = { type: 'magneticSurge', durationSec: 60 };
+    }
+
+    if (!state.stats) state.stats = {};
+    state.stats.flaresCollected = (state.stats.flaresCollected || new Decimal(0)).plus(1);
+
+    state.flares.active = null;
+    state.flares.nextSpawnInSec = rollNextFlareSpawnDelay(state);
+
+    return {
+      ok: true,
+      changed: true,
+      events: [{ type: 'SOLAR_FLARE_COLLECTED', rewardKey: chosenKey, rewardDetail, message: rewardDef.log }]
     };
   },
 
@@ -126,19 +177,8 @@ export const stellarCommandHandlers = {
       } else if (key === 'compress') {
         attemptedCurrency = 'helium';
         attemptedCost = era3.compressCost;
-        if (resources.helium.amount.lt(attemptedCost)) return false;
-        resources.helium.amount = resources.helium.amount.minus(attemptedCost);
-        era3.temperature = era3.temperature.plus(getCompressionHeatYield(state));
-        era3.compressCost = era3.compressCost.times(getCompressionScaling(state)).floor();
-        let baseDiv = era3.temperature.div(1000000).plus(1);
-        era3.tempMultiplier = new Decimal(1.0 + Math.log10(baseDiv.toNumber()));
-        
-        if (era3.temperature.gte(COSMIC_REGISTRY.constants.mainSequenceTempThreshold) && era3.stage === "Protostar") {
-          era3.stage = "Main Sequence Star";
-        }
-        if (era3.temperature.gt(state.stats.maxTemp)) {
-          state.stats.maxTemp = era3.temperature;
-        }
+        const compRes = executeCompression(state);
+        if (!compRes.success) return false;
       } else if (key === 'carbon') {
         const isHelium = era3.carbonYield.eq(0);
         attemptedCurrency = isHelium ? 'helium' : 'carbon';

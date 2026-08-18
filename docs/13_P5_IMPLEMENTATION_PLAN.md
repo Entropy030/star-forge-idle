@@ -217,6 +217,7 @@ graph TD
 
 | Contract Dimension | Specification |
 | :--- | :--- |
+| **Status** | **COMPLETE — LOCAL COMMIT PENDING HUMAN REVIEW** |
 | **Purpose** | Reconcile current Era-III runtime simulation, economy helpers, presentation selectors, and automation to be internally truthful and consistent **before** implementing Model B1. |
 | **In Scope** | - Resolve confirmed simulation/presentation drift identified in the Authority Matrix.<br>- Consolidate `tempMultiplier` calculation behind single authoritative helper `recalcTempMultiplier(state)`.<br>- **AutoCompress Parity:** Connect AutoCompress to `getCompressionHeatYield(state)`, update `tempMultiplier`, `stats.maxTemp`, and stage promotion identically to manual compression.<br>- Reconcile AutoCompress execution cadence (probabilistic vs. deterministic rate).<br>- Reconcile Hydrogen rate presentation (`getStellarRates` vs `getHydrogenGenRate`) to eliminate false displayed rates.<br>- Connect active declared modifiers (Gravity milestones, first-Supernova achievement, Singularity upgrades) where verified active.<br>- Clean up dead / unapplied legacy references (e.g. `autoSynthesize` or `fusionDiscount`). |
 | **Out of Scope** | - **NO** new B1 containment capacity.<br>- **NO** new B1 Temperature reaction coupling.<br>- **NO** new bottleneck selector.<br>- **NO** balance tuning. |

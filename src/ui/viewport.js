@@ -1158,7 +1158,7 @@ export const Viewport = {
     const gravLvl = this.getEl('gravity-lvl');
     const gravLvlVal = gameState.era3.gravity ? gameState.era3.gravity.toNumber() : 0;
     if (gravLvl) gravLvl.textContent = format(gameState.era3.gravity);
-    this.setTextContent('gravity-contribution', `Current gravity: ${format(gameState.era3.gravity)} · Hydrogen rate ${format(getHydrogenGenRate())}/s`);
+    this.setTextContent('gravity-contribution', `Current gravity: ${format(gameState.era3.gravity)} · Hydrogen rate ${format(getStellarRates(gameState).hydrogenProduction)}/s`);
 
     const gravDesc = this.getEl('gravity-desc');
     if (gravDesc) {
@@ -1808,16 +1808,15 @@ export const Viewport = {
       this.setTextContent('label-hydrogen', t('label_hydrogen'));
       this.setTextContent('label-helium', t('label_helium'));
 
+      const stellarRates = getStellarRates(gameState);
+
       this.setTextContent('count', format(gameState.resources.hydrogen.amount));
-      this.updateResourceDelta('hydrogen', getHydrogenGenRate());
+      this.updateResourceDelta('hydrogen', stellarRates.hydrogenProduction);
       this.setTextContent('cost', format(gameState.era3.gravityCost));
       this.setTextContent('helium-count', format(gameState.resources.helium.amount));
 
-      const stardustBoost = gameState.currencies.stardust.amount.times(0.25).plus(1);
-      const baseYieldPerFusion = gameState.era3.fusionYield.times(getFusionSurgeMultiplier());
-      const effectiveYieldPerFusion = baseYieldPerFusion.times(stardustBoost);
-      this.updateResourceDelta('helium', new Decimal(0));
-      this.setTextContent('label-helium', t('label_helium') + ` (Yield: ${format(effectiveYieldPerFusion)}/f)`);
+      this.updateResourceDelta('helium', stellarRates.heliumProduction);
+      this.setTextContent('label-helium', t('label_helium') + (gameState.era3.fusersEnabled && gameState.era3.fusionYield.gt(0) ? ` (Yield: ${format(stellarRates.heliumProduction)}/s)` : ''));
 
       this.setTextContent('temp', format(gameState.era3.temperature));
       this.setTextContent('multiplier', format(gameState.era3.tempMultiplier) + "x");
@@ -1826,17 +1825,16 @@ export const Viewport = {
       const cBox = this.getEl('carbon-box');
       if (cBox) cBox.style.opacity = gameState.era3.stage === "Main Sequence Star" ? "1" : "0.3";
 
-      const carbonMult = getCarbonGravityMultiplier();
-      this.updateResourceDelta('carbon', new Decimal(0));
-      this.setTextContent('label-carbon', t('label_carbon') + ` (Grav: +${format(carbonMult.minus(1).times(100))}%)`);
+      this.updateResourceDelta('carbon', stellarRates.carbonProduction);
+      this.setTextContent('label-carbon', t('label_carbon') + (gameState.era3.stage === "Main Sequence Star" && gameState.era3.carbonYield.gt(0) ? ` (Yield: ${format(stellarRates.carbonProduction)}/s)` : ''));
 
       let ironMultiplier = gameState.resources.iron.amount.times(COSMIC_REGISTRY.constants.ironHeatCoefficient).plus(1);
       this.setTextContent('iron-count', format(gameState.resources.iron.amount));
       const iBox = this.getEl('iron-box');
       if (iBox) iBox.style.opacity = gameState.era3.temperature.gte(COSMIC_REGISTRY.resources.iron.unlockTemp) ? "1" : "0.3";
 
-      this.updateResourceDelta('iron', new Decimal(0));
-      this.setTextContent('label-iron', t('label_iron') + ` (Heat: +${format(ironMultiplier.minus(1).times(100))}%)`);
+      this.updateResourceDelta('iron', stellarRates.ironProduction);
+      this.setTextContent('label-iron', t('label_iron') + (gameState.era3.stage === "Main Sequence Star" && gameState.era3.ironYield.gt(0) ? ` (Yield: ${format(stellarRates.ironProduction)}/s)` : '') + ` (Heat: +${format(ironMultiplier.minus(1).times(100))}%)`);
 
       this.updateStardustDisplays();
       this.renderStellarNodeButtons();

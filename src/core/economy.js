@@ -10,6 +10,13 @@ import { dispatchEngineCommand } from '../engine/dispatch.js';
 import { getQuantumUpgradeEligibility } from '../eras/quantum/eligibility.js';
 import { getVacuumAllocationProfile, getVacuumFieldQuality } from '../eras/quantum/coherence.js';
 import { getEntropyBitProductionMultiplier } from '../eras/galactic/selectors.js';
+import {
+  getCompressionHeatYield as getStellarCompressionHeatYield,
+  getCompressionScaling as getStellarCompressionScaling,
+  getCompressionsCompleted as getStellarCompressionsCompleted,
+  getHydrogenProductionRate as getStellarHydrogenProductionRate,
+  getFusionFuelCost as getStellarFusionFuelCost
+} from '../eras/stellar/authority.js';
 export function updateStatsData() {
   if (gameState.era3 && gameState.era3.temperature.gt(gameState.stats.maxTemp)) {
     gameState.stats.maxTemp = gameState.era3.temperature;
@@ -195,44 +202,24 @@ export function deduct(key, amount) {
   }
 }
 
-export function getHydrogenGenRate() {
-  let gMod = 1.0 + (0.20 * (gameState.cosmicConstants?.G || 0));
-  let achBaseMult = gameState.achievements.firstSupernova.unlocked ? COSMIC_REGISTRY.achievements.firstSupernova.multiplier : 1.0;
-  let stardustMult = gameState.currencies.stardust.amount.times(0.5).plus(1);
-  let carbonBoost = getCarbonGravityMultiplier();
-  let gravityLevel = gameState.era3.gravity ? gameState.era3.gravity.toNumber() : 1;
-  let milestoneMult = getMilestoneMultiplier(gravityLevel);
-  let baseGen = gameState.era3.gravity.times(milestoneMult).times(carbonBoost).times(gameState.era3.tempMultiplier).times(stardustMult).times(achBaseMult).times(COSMIC_REGISTRY.resources.hydrogen.baseGen);
-  let exponent = new Decimal(1).plus(new Decimal(0.05).times(gameState.upgrades.singularity.darkGravity.level));
-  return baseGen.pow(exponent).times(getCardMultiplier("hydrogenGen")).times(gMod).round();
+export function getHydrogenGenRate(state = gameState) {
+  return getStellarHydrogenProductionRate(state);
 }
 
-export function getFusionCost() {
-  return new Decimal(COSMIC_REGISTRY.resources.helium.fusionCost - ((gameState.upgrades.stardust.fusionDiscount?.level ?? 0) * 2));
+export function getFusionCost(state = gameState) {
+  return getStellarFusionFuelCost(state);
 }
 
 export function getCompressionScaling(state = gameState) {
-  let alpha = state.cosmicConstants?.alpha || 0;
-  return 1.75 + (0.03 * alpha);
+  return getStellarCompressionScaling(state);
 }
 
 export function getCompressionsCompleted(state = gameState) {
-  let logPrimitive = state.era3.compressCost.div(10).log10();
-  let exponent = logPrimitive / Math.log10(getCompressionScaling(state));
-  return Math.max(0, Math.round(exponent));
+  return getStellarCompressionsCompleted(state);
 }
 
 export function getCompressionHeatYield(state = gameState) {
-  let gMod = 1.0 + (0.20 * (state.cosmicConstants?.G || 0));
-  let compressLevel = getCompressionsCompleted(state);
-  let milestoneMult = getMilestoneMultiplier(compressLevel);
-  let shopMultiplier = new Decimal(1.0 + ((state.upgrades.stardust.thermalInsulation?.level ?? 0) * 0.20));
-  let ironMultiplier = state.resources.iron.amount.times(COSMIC_REGISTRY.constants.ironHeatCoefficient).plus(1);
-  let runGrowth = new Decimal(COSMIC_REGISTRY.constants.compressionScaling).pow(compressLevel);
-  let baseHeat = new Decimal(COSMIC_REGISTRY.constants.baseCompressionHeat).times(milestoneMult).times(shopMultiplier).times(ironMultiplier).times(runGrowth);
-  let exponent = new Decimal(1).plus(new Decimal(0.05).times(state.upgrades.singularity.stellarIgnition.level));
-  let finalHeat = baseHeat.pow(exponent).times(getCardMultiplier("compressionHeat", state)).times(gMod).round();
-  return finalHeat;
+  return getStellarCompressionHeatYield(state);
 }
 
 export function getGravityCostMultiplier(state = gameState) {
