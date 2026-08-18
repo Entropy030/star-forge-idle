@@ -392,3 +392,34 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 - `DESIGN APPROVED: YES`
 - `PRODUCTION IMPLEMENTED: YES`
 - `HUMAN APPROVED: YES`
+
+## D33 — Current Era-III Stellar Authority & Automation Parity (P5.3B0)
+
+**Decision:**
+1. **Single State-Explicit Domain Authority:** Era-III mathematical rules and narrow domain mutations are consolidated in `src/eras/stellar/authority.js`. Simulation and presentation selectors consume this module and do not own competing formulas.
+2. **Provisional Hydrogen Base Rate:** Base Hydrogen generation is set to 10 H/s per Gravity level in shared authority. P5.4 owns final numerical calibration.
+3. **Fusion Discount Minimum Fuel Cost:** Stardust Fusion Discount evaluates $\text{rawFuelRequirement} = \max(1, 10 - 2 \times \text{level})$, applied BEFORE Efficient Build fuel efficiency scaling. This prevents zero-cost fusion while preserving upgrade value.
+4. **Active Purchased / Earned Modifiers:**
+   - Constant $\alpha$: Multiplicative reaction throughput modifier $(1 + 0.30 \times \alpha)$ across He, C, Fe nominal capacities.
+   - AutoSynthesize: Multiplicative processing velocity modifier $(1 + 1.00 \times \text{level})$ for Carbon and Iron nominal capacities.
+   - First Supernova Achievement: $+10\%$ passive Stellar processing speed applied through shared stellar speed multiplier.
+   - Constant $\hbar$: $+20\%$ Supernova Stardust yield per level in `getSupernovaOutcome()`.
+   - Dark Gravity ($^{1.05/\text{lvl}}$), Quantum Stabilizer ($+10\%/\text{lvl}$), Constant G ($+20\%/\text{lvl}$) wired into authoritative Hydrogen rate.
+5. **AutoCompress Automation Parity:**
+   - Evaluates authoritative `executeCompression(state)` with exact manual parity for heat yield, scaling, `temperature`, `tempMultiplier`, `stats.maxTemp`, and stage promotion.
+   - Uses deterministic foreground accumulator ($1\text{ compression/sec/level}$) with `state.era3.autoCompressProgress`.
+   - Discards unaffordable integer attempts without indefinite debt banking; preserves fractional remainder.
+   - Suppressed during offline simulation.
+6. **Single Solar Flare Live Authority:**
+   - Authoritative `COLLECT_SOLAR_FLARE` engine command resolves rewards: Hydrogen Surge ($180\text{s}$ authoritative H yield) and Magnetic Surge ($60\text{s}$ $2\times$ nominal H->He capacity).
+   - Registry-driven timing ($90\text{–}240\text{s}$ delay scaled by Flare Forecasting, $12\text{s}$ active window).
+   - Live miss applies $25\%$ compression heat.
+   - Offline catch-up does not spawn flares or apply miss penalties; existing active flare window is preserved into foreground; active Fusion Surge counts down its duration during offline ticks.
+7. **Thermal State Index:** The former Thermal Multiplier is labeled "Thermal State Index" in UI and derived as a physical capability metric. It does not actively multiply current production.
+8. **Second-Run Stability Deferred:** `secondRunStabilityMult` remains stored in state, unconsumed by runtime simulation, and not presented as an active player benefit.
+9. **Save Version Invariance:** Save version remains `17`.
+
+**Status:**
+- `TECHNICAL RECONCILIATION APPROVED: YES`
+- `PRODUCTION IMPLEMENTED: YES` (Implemented and Hardened in P5.3B0)
+- `HUMAN REVIEW APPROVED: YES` (Human Review Approved)

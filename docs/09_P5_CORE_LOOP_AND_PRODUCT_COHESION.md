@@ -114,5 +114,8 @@ To inform P5.2 and P5.3 design without cloning features or destabilizing scope, 
 | **P5 Implementation Plan** | Execution Architecture, Authority Matrix, Phase Contracts (D30, D31) | **Complete (Human Approved)** | **Published to `star/main`** |
 | **P5.2A** | Semantic Progression & Resource Grammar Foundation (D31 Core Temp) | **Complete (Human Approved)** | **Published to `star/main`** |
 | **P5.2B** | Current Transitions & First Supernova / Legacy Onboarding (D32) | **Complete (Human Approved)** | **Published to `star/main`** |
-| **P5.3** | Incremental Systems & Agency (Vertical Slices P5.3A, P5.3B0, P5.3B1, P5.3C) | *Not Started* | *Pending* |
+| **P5.3A** | Era-I Vacuum Field Allocation Vertical Slice (D28, D30) | **Complete (Human Approved)** | **Published to `star/main`** |
+| **P5.3B0** | Stellar Authority & Automation Parity Reconciliation (D33) | **Complete (Human Approved)** | **Published to `star/main`** |
+| **P5.3B1** | Era-III Hydrostatic Stellar Engine Model B1 Vertical Slice (D29) | *Not Started* | *Pending* |
+| **P5.3C** | Cross-Era Integration & Full Journey Regression | *Not Started* | *Pending* |
 | **P5.4** | Coarse Balancing & Playable Full Run Validation (Calibration-Only) | *Not Started* | *Pending* |
