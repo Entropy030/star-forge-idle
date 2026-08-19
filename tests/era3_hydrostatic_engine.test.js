@@ -19,6 +19,11 @@ import {
   getStellarBottleneck,
   getStellarMachineSnapshot
 } from '../src/eras/stellar/selectors.js';
+import {
+  formatHudFlowRate,
+  formatHudValue,
+  formatThermalCapability
+} from '../src/ui/resourceFormatters.js';
 
 describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
   let state;
@@ -552,6 +557,31 @@ describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
       simulateStellarEra(state, 30);
 
       expect(state.resources.helium.amount.toNumber()).toBeGreaterThan(500);
+    });
+  });
+
+  describe('7. Reaction Capability & Rate Formatting Display Truth', () => {
+    it('formats thermal reaction capability consistently (1.00×, 2.71×, 4.54×) with no truncation or duplicated suffixes', () => {
+      expect(formatThermalCapability(1.0)).toBe('1.00×');
+      expect(formatThermalCapability(2.707)).toBe('2.71×');
+      expect(formatThermalCapability(4.5432)).toBe('4.54×');
+
+      expect(formatHudValue(1.0, '×')).toBe('1.00×');
+      expect(formatHudValue(2.707, 'x')).toBe('2.71×');
+      expect(formatHudValue(4.5432, '×')).toBe('4.54×');
+    });
+
+    it('formats flow rates with precision to distinguish close Inflow vs Demand rates (e.g. 10 /s vs 10.01 /s)', () => {
+      // Inflow = 10.00
+      expect(formatHudFlowRate(10.0)).toBe('10 /s');
+      // Demand = 10.0087 -> 10.01 /s
+      expect(formatHudFlowRate(10.0087)).toBe('10.01 /s');
+
+      // formatHudValue with /s
+      expect(formatHudValue(10, '/s')).toBe('10 /s');
+      expect(formatHudValue(10.0087, '/s')).toBe('10.01 /s');
+      expect(formatHudValue(105, '/s')).toBe('105 /s');
+      expect(formatHudValue(135, '/s')).toBe('135 /s');
     });
   });
 });

@@ -28,10 +28,45 @@ export function formatHudNumber(value) {
 }
 
 /**
+ * Formats thermal reaction capability multiplier uniformly (e.g. 1.00×, 2.71×, 4.54×).
+ */
+export function formatThermalCapability(value) {
+  const decimal = asDecimal(value);
+  const num = decimal.toNumber();
+  return `${num.toFixed(2)}×`;
+}
+
+/**
+ * Formats process network flow rates with sufficient decimal precision for close rates.
+ */
+export function formatHudFlowRate(value) {
+  const decimal = asDecimal(value);
+  const num = decimal.toNumber();
+  if (num === 0) return '0 /s';
+  if (num < 100) {
+    const formatted = Number.isInteger(num)
+      ? num.toString()
+      : num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return `${formatted} /s`;
+  }
+  if (num < 1000) {
+    const formatted = Math.floor(num).toLocaleString('en-US');
+    return `${formatted} /s`;
+  }
+  return `${formatHudNumber(decimal)} /s`;
+}
+
+/**
  * Formats a value with an optional unit.
- * Percentages retain meaningful decimal precision (e.g. 9.9%, 99.9%).
+ * Percentages and thermal multipliers retain meaningful decimal precision.
  */
 export function formatHudValue(value, unit = '') {
+  if (unit === '×' || unit === 'x') {
+    return formatThermalCapability(value);
+  }
+  if (unit === '/s') {
+    return formatHudFlowRate(value);
+  }
   if (unit === '%') {
     const decimal = asDecimal(value);
     const num = decimal.toNumber();

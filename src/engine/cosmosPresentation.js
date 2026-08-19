@@ -11,6 +11,7 @@ import {
 } from '../eras/plasma/eligibility.js';
 import { getEraTwoVisualSemantics } from '../eras/plasma/semantics.js';
 import { getGalacticIgnitionEligibility, getStellarMachineSnapshot, getSupernovaEligibility } from '../eras/stellar/selectors.js';
+import { formatThermalCapability } from '../ui/resourceFormatters.js';
 
 const ZERO = new Decimal(0);
 
@@ -479,7 +480,7 @@ function getEraThreePresentation(state) {
 
   const snapshot = getStellarMachineSnapshot(state);
   const bottleneck = snapshot.bottleneck;
-  const reactionCapFormatted = `${snapshot.thermalReactionMultiplier.toFixed(2)}x`;
+  const reactionCapFormatted = formatThermalCapability(snapshot.thermalReactionMultiplier);
 
   return {
     epoch: 3,
@@ -512,7 +513,7 @@ function getEraThreePresentation(state) {
         { role: 'Inflow', label: 'Hydrogen Inflow', value: snapshot.inflowRate, unit: '/s', state: 'active' },
         { role: 'Demand', label: 'Fusion Demand', value: snapshot.fusionFuelDemandRate, unit: '/s', state: snapshot.fusionFuelDemandRate.gt(snapshot.inflowRate) ? 'blocked' : 'support' },
         { role: 'Buffer', label: 'Fuel Buffer', value: `${snapshot.hydrogenStock.floor().toString()} / ${snapshot.containmentCapacity.floor().toString()}`, state: snapshot.containmentFill >= 0.9 ? 'blocked' : 'support' },
-        { role: 'Velocity', label: 'Reaction Capability', value: snapshot.thermalReactionMultiplier, unit: 'x', state: 'active' }
+        { role: 'Velocity', label: 'Reaction Capability', value: snapshot.thermalReactionMultiplier, unit: '×', state: 'active' }
       ],
       action
     },

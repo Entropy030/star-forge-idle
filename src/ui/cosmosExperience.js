@@ -434,7 +434,9 @@ function renderProcess(element, process, onAction) {
       }
       element.append(network);
     }
-    if (process.bottleneck) element.append(textNode(documentRef, 'p', 'cosmos-bottleneck', `Bottleneck · ${process.bottleneck}`));
+    if (process.bottleneck && process.bottleneck !== process.title) {
+      element.append(textNode(documentRef, 'p', 'cosmos-bottleneck', `Bottleneck · ${process.bottleneck}`));
+    }
     if (process.action) {
       const button = documentRef.createElement('button');
       button.type = 'button';

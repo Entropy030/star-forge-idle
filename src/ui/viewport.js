@@ -12,11 +12,12 @@ import { getEraResourcePresentation } from '../engine/resourcePresentation.js';
 import { getInflationEligibility, getQuantumUpgradeEligibility } from '../eras/quantum/selectors.js';
 import { getVacuumCoherence } from '../eras/quantum/coherence.js';
 import { getGalacticIgnitionEligibility, getStellarMachineSnapshot, getStellarRates, getSupernovaOutcome, getSupernovaEligibility } from '../eras/stellar/selectors.js';
+import { getThermalReactionMultiplier } from '../eras/stellar/authority.js';
 import { updateSupernovaOutcome } from './stellar.js';
 import { CodexEngine } from './codex.js';
 import { renderResourceHud } from './resourceHud.js';
 import { renderCosmosExperience } from './cosmosExperience.js';
-import { formatHudNumber } from './resourceFormatters.js';
+import { formatHudNumber, formatThermalCapability } from './resourceFormatters.js';
 import { getActionFailureMessage, isActionSuccessful } from './actionFeedback.js';
 import { getCosmicTuningEligibility } from '../core/tuning.js';
 import { buyCelestialCardAction as buyCelestialCard } from '../core/actions.js';
@@ -706,6 +707,10 @@ export const Viewport = {
     gameState.activeTab = targetTabId;
     document.body.setAttribute('data-tab', targetTabId);
 
+    if (typeof window !== 'undefined' && typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+
     document.querySelectorAll('.tab-btn, .rail-btn').forEach(el => el.classList.remove('active'));
 
     const targetNav = document.getElementById(`nav-${targetTabId}`);
@@ -1187,7 +1192,7 @@ export const Viewport = {
     updateCard('era3-card-compress', 'btn-compress', compressAfford);
     const compLvl = this.getEl('compress-lvl');
     if (compLvl) compLvl.textContent = getCompressionsCompleted();
-    this.setTextContent('compress-effect', `+${format(getCompressionHeatYield())} K per compression · Capability: ${stellarSnapshot.thermalReactionMultiplier.toFixed(2)}x`);
+    this.setTextContent('compress-effect', `+${format(getCompressionHeatYield())} K per compression · Capability: ${formatThermalCapability(stellarSnapshot.thermalReactionMultiplier)}`);
     let thresholdText = 'Iron threshold reached';
     if (gameState.era3.temperature.lt(COSMIC_REGISTRY.constants.mainSequenceTempThreshold)) {
       thresholdText = `Next threshold: ${format(COSMIC_REGISTRY.constants.mainSequenceTempThreshold)} K · Main Sequence`;
@@ -1819,7 +1824,7 @@ export const Viewport = {
       this.setTextContent('label-helium', t('label_helium') + (gameState.era3.fusersEnabled && gameState.era3.fusionYield.gt(0) ? ` (Yield: ${format(stellarRates.heliumProduction)}/s)` : ''));
 
       this.setTextContent('temp', format(gameState.era3.temperature));
-      this.setTextContent('multiplier', format(gameState.era3.tempMultiplier) + "x");
+      this.setTextContent('multiplier', formatThermalCapability(getThermalReactionMultiplier(gameState)));
       this.setTextContent('compress-cost', format(gameState.era3.compressCost));
       this.setTextContent('carbon-count', format(gameState.resources.carbon.amount));
       const cBox = this.getEl('carbon-box');
