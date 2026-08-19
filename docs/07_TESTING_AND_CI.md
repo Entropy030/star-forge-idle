@@ -79,6 +79,7 @@ Test count is not a quality target. Every durable test must protect an observabl
 - **UI:** Cosmos, Forge, resources, navigation, state truth, stable live-value nodes, responsive/mobile, reduced motion and semantic controls.
 - **Persistence/offline:** serialization, migration, structured elapsed metadata, import anchors, playtest isolation, corrupt-save quarantine, authoritative tick parity, transition/automation suppression, checkpoint behavior, storage denial and ephemeral briefing.
 - **Bot:** legality and exactly-once tick authority in FAST; bounded reset/Legacy smoke in FAST; long-run strategy and pacing in TELEMETRY.
+- **P5.4 Balance Characterization (`tests/p5_natural_run.test.js`):** Separates three evidence lanes: (A) Bounded natural fresh-state observation across playstyle profiles (Informed, Low-Attention, Simple) from Era I through Main Sequence (~10M K); (B) Exact deterministic authority sequence for zero-meta compression crossings (10M K, 500M K, 2.0B K), cumulative Helium demand, and fuel/inflow authority; (C) Prepared-state Supernova transformation preview and 300s second-run legacy acceleration.
 
 Known high-value boundaries intentionally have overlapping protection: state replacement, Inflation, Recombination, Supernova reward parity, Galactic Ignition, and stable live-value DOM identity. The tests cover different command, runtime, presentation, or historical-regression contracts and were not merged merely because they touch the same feature.
 
