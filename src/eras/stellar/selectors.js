@@ -30,14 +30,14 @@ export function getStellarBottleneck(state) {
     return {
       id: 'IRON_SYNTHESIS_AVAILABLE',
       label: 'Iron Synthesizer Available',
-      summary: 'Core temperature reached 2.0B K. Unlock Iron Synthesizer in Forge.'
+      summary: 'Core temperature reached 2.0B K. Iron synthesis layer unlocked in Forge.'
     };
   }
   if (temp.gte(COSMIC_REGISTRY.resources.carbon.unlockTemp) && (!state?.era3?.carbonYield || state.era3.carbonYield.eq(0))) {
     return {
       id: 'CARBON_SYNTHESIS_AVAILABLE',
       label: 'Carbon Synthesizer Available',
-      summary: 'Core temperature reached 500M K. Unlock Carbon Synthesizer in Forge.'
+      summary: 'Core temperature reached 500M K. Carbon synthesis layer unlocked in Forge.'
     };
   }
 
@@ -54,7 +54,7 @@ export function getStellarBottleneck(state) {
       id: 'FUEL_INFLOW_LIMITED',
       label: 'Fuel Inflow Constrained',
       summary: hStock.gt(0)
-        ? 'Hydrogen inflow is below fuser demand; fuel buffer is currently draining.'
+        ? 'Hydrogen inflow is below fuser demand; fuel buffer is draining.'
         : 'Hydrogen inflow is below active fusion demand.'
     };
   }
@@ -67,29 +67,39 @@ export function getStellarBottleneck(state) {
     };
   }
 
-  // 4. Heavy Layer Processing Limits
-  if (state?.era3?.carbonYield?.gt(0)) {
-    const carbonNominal = getCarbonCapacity(state);
-    const carbonCost = getCarbonFuelCost(state);
-    if (fusionNominal.gt(carbonNominal.times(carbonCost))) {
-      return {
-        id: 'CARBON_PROCESSING_LIMITED',
-        label: 'Carbon Processing Constrained',
-        summary: 'Helium production exceeds active Carbon synthesizer throughput.'
-      };
-    }
+  // 4. Heavy Layer Processing Limits using Sustainable Upstream Flow Chain
+  const fusionSustainableRate = Decimal.min(
+    fusionNominal,
+    fusionCost.gt(0) ? inflowRate.div(fusionCost) : new Decimal(0)
+  );
+
+  const carbonNominal = getCarbonCapacity(state);
+  const carbonCost = getCarbonFuelCost(state);
+  const carbonDemandRate = carbonNominal.times(carbonCost);
+
+  if (state?.era3?.carbonYield?.gt(0) && fusionSustainableRate.gt(carbonDemandRate)) {
+    return {
+      id: 'CARBON_PROCESSING_LIMITED',
+      label: 'Carbon Processing Constrained',
+      summary: 'Sustainable Helium production exceeds active Carbon synthesizer throughput.'
+    };
   }
-  if (state?.era3?.ironYield?.gt(0)) {
-    const ironNominal = getIronCapacity(state);
-    const ironCost = getIronFuelCost(state);
-    const carbonNominal = getCarbonCapacity(state);
-    if (carbonNominal.gt(ironNominal.times(ironCost))) {
-      return {
-        id: 'IRON_PROCESSING_LIMITED',
-        label: 'Iron Processing Constrained',
-        summary: 'Carbon production exceeds active Iron synthesizer throughput.'
-      };
-    }
+
+  const carbonSustainableRate = Decimal.min(
+    carbonNominal,
+    carbonCost.gt(0) ? fusionSustainableRate.div(carbonCost) : new Decimal(0)
+  );
+
+  const ironNominal = getIronCapacity(state);
+  const ironCost = getIronFuelCost(state);
+  const ironDemandRate = ironNominal.times(ironCost);
+
+  if (state?.era3?.ironYield?.gt(0) && carbonSustainableRate.gt(ironDemandRate)) {
+    return {
+      id: 'IRON_PROCESSING_LIMITED',
+      label: 'Iron Processing Constrained',
+      summary: 'Sustainable Carbon production exceeds active Iron synthesizer throughput.'
+    };
   }
 
   // 5. Thermal Core Densification
@@ -97,9 +107,9 @@ export function getStellarBottleneck(state) {
   const heStock = state?.resources?.helium?.amount || new Decimal(0);
   if (heStock.gte(compressCost)) {
     return {
-      id: 'CORE_DENSIFICATION_LIMITED',
+      id: 'CORE_DENSIFICATION_READY',
       label: 'Core Compression Ready',
-      summary: 'Helium reserves ready for discrete core compression in Forge.'
+      summary: 'Helium reserves are sufficient for discrete core compression in Forge.'
     };
   }
 
@@ -128,6 +138,7 @@ export function getStellarMachineSnapshot(state) {
 
   const carbonNominalCapacity = getCarbonCapacity(state);
   const carbonFuelCost = getCarbonFuelCost(state);
+  const carbonFuelDemandRate = carbonNominalCapacity.times(carbonFuelCost);
   const carbonSustainableRate = Decimal.min(
     carbonNominalCapacity,
     carbonFuelCost.gt(0) ? fusionSustainableRate.div(carbonFuelCost) : new Decimal(0)
@@ -135,6 +146,7 @@ export function getStellarMachineSnapshot(state) {
 
   const ironNominalCapacity = getIronCapacity(state);
   const ironFuelCost = getIronFuelCost(state);
+  const ironFuelDemandRate = ironNominalCapacity.times(ironFuelCost);
   const ironSustainableRate = Decimal.min(
     ironNominalCapacity,
     ironFuelCost.gt(0) ? carbonSustainableRate.div(ironFuelCost) : new Decimal(0)
@@ -162,9 +174,11 @@ export function getStellarMachineSnapshot(state) {
     fusionSustainableRate,
     carbonNominalCapacity,
     carbonFuelCost,
+    carbonFuelDemandRate,
     carbonSustainableRate,
     ironNominalCapacity,
     ironFuelCost,
+    ironFuelDemandRate,
     ironSustainableRate,
     thermalReactionMultiplier,
     bottleneck

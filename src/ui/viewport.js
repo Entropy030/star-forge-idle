@@ -1215,7 +1215,7 @@ export const Viewport = {
     this.setTextContent('fuser-level', gameState.era3.fusionYield.eq(0) ? 'Locked' : `Yield ${format(gameState.era3.fusionYield)}`);
     this.setTextContent('fuser-contribution', gameState.era3.fusionYield.eq(0)
       ? 'Next level: unlocks Auto-Fuser'
-      : `Throughput: +${format(stellarSnapshot.fusionNominalCapacity)} He/s · Fuel Demand: -${format(stellarSnapshot.fusionFuelDemandRate)} H/s`);
+      : `Fusion Capacity: +${format(stellarSnapshot.fusionNominalCapacity)} He/s · Fuel Demand: -${format(stellarSnapshot.fusionFuelDemandRate)} H/s`);
     updateCard('era3-card-fuser', 'btn-fuser', fuserAfford);
 
     const carbonCostLabel = this.getEl('carbon-cost-label');

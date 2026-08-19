@@ -4,10 +4,13 @@ import { createInitialState } from '../src/state/createInitialState.js';
 import {
   executeCompression,
   getCarbonCapacity,
+  getCarbonFuelCost,
   getContainmentCapacity,
   getFusionCapacity,
+  getFusionFuelCost,
   getHydrogenProductionRate,
   getIronCapacity,
+  getIronFuelCost,
   getThermalReactionMultiplier,
   resolveStellarFlowStep
 } from '../src/eras/stellar/authority.js';
@@ -203,7 +206,7 @@ describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
     });
   });
 
-  describe('4. Continuous Decimal Flow & Conservation / Partition Invariance', () => {
+  describe('4. Continuous Decimal Flow & Conservation / Partition Invariance Matrix', () => {
     it('supports continuous fractional output from fractional fuel availability without floor truncation', () => {
       state.era3.gravity = new Decimal(0); // Zero inflow
       state.era3.fusersEnabled = true;
@@ -211,7 +214,6 @@ describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
       state.resources.hydrogen.amount = new Decimal(5); // Half cost of 1 fusion
 
       const step = resolveStellarFlowStep(state, 1.0);
-      // 5 H / 10 = 0.5 He output
       expect(step.flows.realizedFusion.toNumber()).toBeCloseTo(0.5, 5);
       expect(step.nextAmounts.hydrogen.toNumber()).toBe(0);
       expect(step.nextAmounts.helium.toNumber()).toBeCloseTo(0.5, 5);
@@ -229,19 +231,62 @@ describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
       expect(hConsumed.toNumber()).toBeCloseTo(heProduced.times(10).toNumber(), 5);
     });
 
-    it('proves partition invariance: 1 x 1.0s step == 10 x 0.1s steps', () => {
+    it('proves partition invariance across Regime A: Fuel-Limited / Buffer-Draining (1x1.0s vs 10x0.1s)', () => {
+      const stateA = createInitialState();
+      stateA.activeEpoch = 3;
+      stateA.era3.gravity = new Decimal(1); // 10 H/s
+      stateA.era3.fusersEnabled = true;
+      stateA.era3.fusionYield = new Decimal(3); // Demand 30 H/s
+      stateA.resources.hydrogen.amount = new Decimal(100);
+
+      const stateB = createInitialState();
+      stateB.activeEpoch = 3;
+      stateB.era3.gravity = new Decimal(1);
+      stateB.era3.fusersEnabled = true;
+      stateB.era3.fusionYield = new Decimal(3);
+      stateB.resources.hydrogen.amount = new Decimal(100);
+
+      simulateStellarEra(stateA, 1.0);
+      for (let i = 0; i < 10; i++) simulateStellarEra(stateB, 0.1);
+
+      expect(stateA.resources.hydrogen.amount.toNumber()).toBeCloseTo(stateB.resources.hydrogen.amount.toNumber(), 4);
+      expect(stateA.resources.helium.amount.toNumber()).toBeCloseTo(stateB.resources.helium.amount.toNumber(), 4);
+    });
+
+    it('proves partition invariance across Regime B: Capacity-Limited / Buffer-Filling (1x1.0s vs 10x0.1s)', () => {
+      const stateA = createInitialState();
+      stateA.activeEpoch = 3;
+      stateA.era3.gravity = new Decimal(5); // Inflow 50 H/s, Cap 500 H
+      stateA.era3.fusersEnabled = true;
+      stateA.era3.fusionYield = new Decimal(1); // Demand 10 H/s
+      stateA.resources.hydrogen.amount = new Decimal(480); // Fills to 500 cap
+
+      const stateB = createInitialState();
+      stateB.activeEpoch = 3;
+      stateB.era3.gravity = new Decimal(5);
+      stateB.era3.fusersEnabled = true;
+      stateB.era3.fusionYield = new Decimal(1);
+      stateB.resources.hydrogen.amount = new Decimal(480);
+
+      simulateStellarEra(stateA, 1.0);
+      for (let i = 0; i < 10; i++) simulateStellarEra(stateB, 0.1);
+
+      expect(stateA.resources.hydrogen.amount.toNumber()).toBeCloseTo(stateB.resources.hydrogen.amount.toNumber(), 4);
+      expect(stateA.resources.helium.amount.toNumber()).toBeCloseTo(stateB.resources.helium.amount.toNumber(), 4);
+    });
+
+    it('proves partition invariance across Regime C: Carbon Active (1x1.0s vs 10x0.1s)', () => {
       const stateA = createInitialState();
       stateA.activeEpoch = 3;
       stateA.era3.stage = 'Main Sequence Star';
       stateA.era3.temperature = new Decimal(600000000); // 600M K
-      stateA.era3.gravity = new Decimal(5); // Inflow = 50 H/s
+      stateA.era3.gravity = new Decimal(5);
       stateA.era3.fusersEnabled = true;
-      stateA.era3.fusionYield = new Decimal(3);
-      stateA.era3.carbonYield = new Decimal(1);
-      stateA.resources.hydrogen.amount = new Decimal(100);
-      stateA.resources.helium.amount = new Decimal(200);
+      stateA.era3.fusionYield = new Decimal(4);
+      stateA.era3.carbonYield = new Decimal(2);
+      stateA.resources.hydrogen.amount = new Decimal(200);
+      stateA.resources.helium.amount = new Decimal(300);
       stateA.resources.carbon.amount = new Decimal(50);
-      stateA.resources.iron.amount = new Decimal(0);
 
       const stateB = createInitialState();
       stateB.activeEpoch = 3;
@@ -249,26 +294,60 @@ describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
       stateB.era3.temperature = new Decimal(600000000);
       stateB.era3.gravity = new Decimal(5);
       stateB.era3.fusersEnabled = true;
-      stateB.era3.fusionYield = new Decimal(3);
-      stateB.era3.carbonYield = new Decimal(1);
-      stateB.resources.hydrogen.amount = new Decimal(100);
-      stateB.resources.helium.amount = new Decimal(200);
+      stateB.era3.fusionYield = new Decimal(4);
+      stateB.era3.carbonYield = new Decimal(2);
+      stateB.resources.hydrogen.amount = new Decimal(200);
+      stateB.resources.helium.amount = new Decimal(300);
       stateB.resources.carbon.amount = new Decimal(50);
-      stateB.resources.iron.amount = new Decimal(0);
 
       simulateStellarEra(stateA, 1.0);
-
-      for (let i = 0; i < 10; i++) {
-        simulateStellarEra(stateB, 0.1);
-      }
+      for (let i = 0; i < 10; i++) simulateStellarEra(stateB, 0.1);
 
       expect(stateA.resources.hydrogen.amount.toNumber()).toBeCloseTo(stateB.resources.hydrogen.amount.toNumber(), 3);
       expect(stateA.resources.helium.amount.toNumber()).toBeCloseTo(stateB.resources.helium.amount.toNumber(), 3);
       expect(stateA.resources.carbon.amount.toNumber()).toBeCloseTo(stateB.resources.carbon.amount.toNumber(), 3);
     });
+
+    it('proves partition invariance across Regime D: Iron Active (1x1.0s vs 10x0.1s)', () => {
+      const stateA = createInitialState();
+      stateA.activeEpoch = 3;
+      stateA.era3.stage = 'Main Sequence Star';
+      stateA.era3.temperature = new Decimal(2500000000); // 2.5B K
+      stateA.era3.gravity = new Decimal(5);
+      stateA.era3.fusersEnabled = true;
+      stateA.era3.fusionYield = new Decimal(4);
+      stateA.era3.carbonYield = new Decimal(2);
+      stateA.era3.ironYield = new Decimal(1);
+      stateA.resources.hydrogen.amount = new Decimal(200);
+      stateA.resources.helium.amount = new Decimal(300);
+      stateA.resources.carbon.amount = new Decimal(100);
+      stateA.resources.iron.amount = new Decimal(20);
+
+      const stateB = createInitialState();
+      stateB.activeEpoch = 3;
+      stateB.era3.stage = 'Main Sequence Star';
+      stateB.era3.temperature = new Decimal(2500000000);
+      stateB.era3.gravity = new Decimal(5);
+      stateB.era3.fusersEnabled = true;
+      stateB.era3.fusionYield = new Decimal(4);
+      stateB.era3.carbonYield = new Decimal(2);
+      stateB.era3.ironYield = new Decimal(1);
+      stateB.resources.hydrogen.amount = new Decimal(200);
+      stateB.resources.helium.amount = new Decimal(300);
+      stateB.resources.carbon.amount = new Decimal(100);
+      stateB.resources.iron.amount = new Decimal(20);
+
+      simulateStellarEra(stateA, 1.0);
+      for (let i = 0; i < 10; i++) simulateStellarEra(stateB, 0.1);
+
+      expect(stateA.resources.hydrogen.amount.toNumber()).toBeCloseTo(stateB.resources.hydrogen.amount.toNumber(), 3);
+      expect(stateA.resources.helium.amount.toNumber()).toBeCloseTo(stateB.resources.helium.amount.toNumber(), 3);
+      expect(stateA.resources.carbon.amount.toNumber()).toBeCloseTo(stateB.resources.carbon.amount.toNumber(), 3);
+      expect(stateA.resources.iron.amount.toNumber()).toBeCloseTo(stateB.resources.iron.amount.toNumber(), 3);
+    });
   });
 
-  describe('5. Machine Snapshot & Bottleneck Classification', () => {
+  describe('5. Complete Bottleneck Test Matrix & Sustainable Flow Verification', () => {
     it('generates a dimensionally correct time-independent machine snapshot', () => {
       state.era3.gravity = new Decimal(2); // Inflow = 20 H/s, Cap = 200 H
       state.era3.fusersEnabled = true;
@@ -286,7 +365,7 @@ describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
       expect(snapshot.hydrogenBufferTrend).toBe('FILLING');
     });
 
-    it('classifies FUEL_INFLOW_LIMITED when demand exceeds inflow', () => {
+    it('classifies FUEL_INFLOW_LIMITED when demand exceeds inflow (visible while buffer is draining)', () => {
       state.era3.gravity = new Decimal(1); // Inflow = 10 H/s
       state.era3.fusersEnabled = true;
       state.era3.fusionYield = new Decimal(3); // Demand = 30 H/s
@@ -294,7 +373,7 @@ describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
 
       const bottleneck = getStellarBottleneck(state);
       expect(bottleneck.id).toBe('FUEL_INFLOW_LIMITED');
-      expect(bottleneck.summary).toContain('fuel buffer is currently draining');
+      expect(bottleneck.summary).toContain('fuel buffer is draining');
     });
 
     it('classifies FUSION_CAPACITY_LIMITED when inflow exceeds demand and buffer is saturated', () => {
@@ -307,6 +386,20 @@ describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
       expect(bottleneck.id).toBe('FUSION_CAPACITY_LIMITED');
     });
 
+    it('classifies CORE_DENSIFICATION_READY when Helium reserves can afford compression', () => {
+      state.era3.stage = 'Protostar';
+      state.era3.temperature = new Decimal(2000);
+      state.era3.gravity = new Decimal(5); // Inflow 50 H/s > Demand 20 H/s
+      state.era3.fusersEnabled = true;
+      state.era3.fusionYield = new Decimal(2);
+      state.resources.hydrogen.amount = new Decimal(100);
+      state.resources.helium.amount = new Decimal(25); // >= compressCost (10)
+
+      const bottleneck = getStellarBottleneck(state);
+      expect(bottleneck.id).toBe('CORE_DENSIFICATION_READY');
+      expect(bottleneck.label).toBe('Core Compression Ready');
+    });
+
     it('classifies CARBON_SYNTHESIS_AVAILABLE at 500M K before purchase', () => {
       state.era3.stage = 'Main Sequence Star';
       state.era3.temperature = new Decimal(500000000);
@@ -314,6 +407,18 @@ describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
 
       const bottleneck = getStellarBottleneck(state);
       expect(bottleneck.id).toBe('CARBON_SYNTHESIS_AVAILABLE');
+    });
+
+    it('classifies CARBON_PROCESSING_LIMITED when sustainable upstream Helium exceeds Carbon throughput', () => {
+      state.era3.stage = 'Main Sequence Star';
+      state.era3.temperature = new Decimal(600000000); // 600M K (M(T) ~ 3.78x)
+      state.era3.gravity = new Decimal(200); // Inflow 4000 H/s
+      state.era3.fusersEnabled = true;
+      state.era3.fusionYield = new Decimal(60); // Fusion demand 2267 H/s <= inflow 4000 H/s -> sustainable He ~ 226.7 He/s
+      state.era3.carbonYield = new Decimal(1); // Carbon nominal cap ~ 3.78 C/s -> Demand ~ 188.9 He/s < 226.7 He/s
+
+      const bottleneck = getStellarBottleneck(state);
+      expect(bottleneck.id).toBe('CARBON_PROCESSING_LIMITED');
     });
 
     it('classifies IRON_SYNTHESIS_AVAILABLE at 2.0B K before purchase', () => {
@@ -325,6 +430,19 @@ describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
       expect(bottleneck.id).toBe('IRON_SYNTHESIS_AVAILABLE');
     });
 
+    it('classifies IRON_PROCESSING_LIMITED when sustainable upstream Carbon exceeds Iron throughput', () => {
+      state.era3.stage = 'Main Sequence Star';
+      state.era3.temperature = new Decimal(2500000000); // 2.5B K (M(T) ~ 4.40x)
+      state.era3.gravity = new Decimal(20000); // Inflow > demand
+      state.era3.fusersEnabled = true;
+      state.era3.fusionYield = new Decimal(20000); // High sustainable fusion
+      state.era3.carbonYield = new Decimal(500); // Sustainable carbon ~ 1759 C/s
+      state.era3.ironYield = new Decimal(1); // Iron throughput ~ 4.4 Fe/s (demand 1099.5 C/s < 1759 C/s)
+
+      const bottleneck = getStellarBottleneck(state);
+      expect(bottleneck.id).toBe('IRON_PROCESSING_LIMITED');
+    });
+
     it('classifies SUPERNOVA_READY when 1,000 Iron and 100M K are met', () => {
       state.era3.stage = 'Main Sequence Star';
       state.era3.temperature = new Decimal(2000000000);
@@ -333,38 +451,107 @@ describe('P5.3B1: Hydrostatic Stellar Engine Model B1 Implementation', () => {
       const bottleneck = getStellarBottleneck(state);
       expect(bottleneck.id).toBe('SUPERNOVA_READY');
     });
+
+    it('classifies BALANCED_OPERATION in sustainable balanced equilibrium', () => {
+      state.era3.stage = 'Main Sequence Star';
+      state.era3.temperature = new Decimal(15000000);
+      state.era3.gravity = new Decimal(3); // Inflow 30 H/s > 20.4 H/s, but buffer not yet saturated (100 < 300)
+      state.era3.fusersEnabled = true;
+      state.era3.fusionYield = new Decimal(1); // Nominal fusion cap ~ 2.04 He/s -> demand ~ 20.4 H/s
+      state.resources.hydrogen.amount = new Decimal(100);
+      state.resources.helium.amount = new Decimal(0);
+
+      const bottleneck = getStellarBottleneck(state);
+      expect(bottleneck.id).toBe('BALANCED_OPERATION');
+    });
+
+    it('adversarial check: high upstream nominal capacity with low sustainable rate does NOT falsely report downstream bottleneck', () => {
+      state.era3.stage = 'Main Sequence Star';
+      state.era3.temperature = new Decimal(600000000);
+      state.era3.gravity = new Decimal(1); // Inflow = 10 H/s (LOW sustainable rate = 1 He/s)
+      state.era3.fusersEnabled = true;
+      state.era3.fusionYield = new Decimal(100); // Nominal fusion cap is HUGE (100+ He/s)
+      state.era3.carbonYield = new Decimal(2); // Carbon nominal demand is 20 He/s
+      state.resources.hydrogen.amount = new Decimal(0);
+
+      const bottleneck = getStellarBottleneck(state);
+      // True bottleneck is FUEL_INFLOW_LIMITED (demand 1000 H/s >> inflow 10 H/s), NOT CARBON_PROCESSING_LIMITED
+      expect(bottleneck.id).toBe('FUEL_INFLOW_LIMITED');
+      expect(bottleneck.id).not.toBe('CARBON_PROCESSING_LIMITED');
+    });
   });
 
-  describe('6. Low-Attention & Unattended Flow Verification', () => {
-    it('proves unattended 2-minute and 5-minute intervals continuously convert fuel without hard stalls', () => {
+  describe('6. Low-Attention & Unattended Progression Sweeps', () => {
+    it('proves balanced representative configuration advances cleanly over 120 seconds', () => {
       state.era3.stage = 'Main Sequence Star';
-      state.era3.temperature = new Decimal(12000000);
-      state.era3.gravity = new Decimal(2); // 20 H/s
+      state.era3.temperature = new Decimal(15000000);
+      state.era3.gravity = new Decimal(3); // Inflow 30 H/s
       state.era3.fusersEnabled = true;
-      state.era3.fusionYield = new Decimal(2); // 2 He/s * 2.04x = ~4.08 He/s
+      state.era3.fusionYield = new Decimal(2);
       state.resources.hydrogen.amount = new Decimal(100);
 
-      // Simulate 300 seconds (5 minutes) unattended
+      simulateStellarEra(state, 120);
+
+      expect(state.resources.helium.amount.toNumber()).toBeGreaterThan(200);
+      expect(state.resources.hydrogen.amount.toNumber()).toBeGreaterThanOrEqual(0);
+    });
+
+    it('proves balanced representative configuration advances cleanly over 300 seconds (5 minutes)', () => {
+      state.era3.stage = 'Main Sequence Star';
+      state.era3.temperature = new Decimal(15000000);
+      state.era3.gravity = new Decimal(3); // Inflow 30 H/s
+      state.era3.fusersEnabled = true;
+      state.era3.fusionYield = new Decimal(2);
+      state.resources.hydrogen.amount = new Decimal(100);
+
       simulateStellarEra(state, 300);
 
       expect(state.resources.helium.amount.toNumber()).toBeGreaterThan(500);
       expect(state.resources.hydrogen.amount.toNumber()).toBeGreaterThanOrEqual(0);
     });
 
-    it('proves unbalanced investment (Gravity-heavy) does not permanently brick', () => {
+    it('proves gravity-heavy imbalance does not brick over 120s/300s and recovers with subsequent fuser investment', () => {
       state.era3.gravity = new Decimal(50); // Massive inflow 625 H/s, Cap 6250 H
-      state.era3.fusersEnabled = false; // Zero fusers initially
+      state.era3.fusersEnabled = false; // Zero fusers
 
-      // Simulate 120s
+      // 120s unattended
       simulateStellarEra(state, 120);
-      expect(state.resources.hydrogen.amount.toNumber()).toBe(6250); // Saturated at cap
+      expect(state.resources.hydrogen.amount.toNumber()).toBe(6250); // Saturated at cap, zero loss
 
-      // Player unlocks fuser later
+      // Further 180s unattended (300s total)
+      simulateStellarEra(state, 180);
+      expect(state.resources.hydrogen.amount.toNumber()).toBe(6250);
+
+      // Player recovers by investing in Fusers
       state.era3.fusersEnabled = true;
       state.era3.fusionYield = new Decimal(10);
-      simulateStellarEra(state, 10);
+      simulateStellarEra(state, 30);
 
-      expect(state.resources.helium.amount.toNumber()).toBeGreaterThan(0);
+      expect(state.resources.helium.amount.toNumber()).toBeGreaterThan(100);
+      expect(state.resources.hydrogen.amount.toNumber()).toBeGreaterThan(0);
+    });
+
+    it('proves fuser-heavy imbalance does not brick over 120s/300s and recovers with subsequent gravity investment', () => {
+      state.era3.gravity = new Decimal(1); // Low inflow 10 H/s
+      state.era3.fusersEnabled = true;
+      state.era3.fusionYield = new Decimal(50); // Massive fusers (Demand 500 H/s)
+      state.resources.hydrogen.amount = new Decimal(10);
+
+      // 120s unattended: drains buffer, converts incoming 10 H/s into 1 He/s without stalling or going negative
+      simulateStellarEra(state, 120);
+      expect(state.resources.helium.amount.toNumber()).toBeGreaterThanOrEqual(120);
+      expect(state.resources.hydrogen.amount.toNumber()).toBe(0);
+
+      // Further 180s unattended (300s total)
+      simulateStellarEra(state, 180);
+      expect(state.resources.helium.amount.toNumber()).toBeGreaterThanOrEqual(300);
+      expect(state.resources.hydrogen.amount.toNumber()).toBe(0);
+
+      // Player recovers by investing in Gravity
+      state.era3.gravity = new Decimal(50);
+      simulateStellarEra(state, 30);
+
+      expect(state.resources.helium.amount.toNumber()).toBeGreaterThan(500);
     });
   });
 });
