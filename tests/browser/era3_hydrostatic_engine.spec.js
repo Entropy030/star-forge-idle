@@ -1,7 +1,12 @@
 import { expect, test } from '@playwright/test';
 import { loadPlaytestPreset, observeBrowserErrors, openApp } from './helpers.js';
 
-const ARTIFACT_DIR = '/Users/franziska/.gemini/antigravity/brain/0a5a51c0-c34a-4cd0-97e6-266ff5a61e7a';
+function getScreenshotPath(testInfo, filename) {
+  if (process.env.B1_ARTIFACT_DIR) {
+    return `${process.env.B1_ARTIFACT_DIR}/${filename}`;
+  }
+  return testInfo.outputPath(filename);
+}
 
 async function hidePlaytestOverlay(page) {
   await page.evaluate(() => {
@@ -11,7 +16,7 @@ async function hidePlaytestOverlay(page) {
 }
 
 test.describe('Era-III Hydrostatic Stellar Engine Model B1 (Phase 5.3B1)', () => {
-  test('Desktop 1440x1000: Protostar with Fuser active and B1 Flow card visible', async ({ page }) => {
+  test('Desktop 1440x1000: Protostar with Fuser active and B1 Flow card visible', async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     const errors = observeBrowserErrors(page);
     await openApp(page, '?playtest=1');
@@ -50,7 +55,7 @@ test.describe('Era-III Hydrostatic Stellar Engine Model B1 (Phase 5.3B1)', () =>
 
     // Hide playtest overlay for unobstructed visual review screenshot
     await hidePlaytestOverlay(page);
-    await page.screenshot({ path: `${ARTIFACT_DIR}/b1_desktop_protostar.png`, fullPage: false });
+    await page.screenshot({ path: getScreenshotPath(testInfo, 'b1_desktop_protostar.png'), fullPage: false });
 
     // Check Forge Card anchors
     await page.locator('#nav-upgrades').click();
@@ -67,7 +72,7 @@ test.describe('Era-III Hydrostatic Stellar Engine Model B1 (Phase 5.3B1)', () =>
     expect(errors).toEqual([]);
   });
 
-  test('Desktop 1440x1000: Fuel-Inflow-Limited diagnostic state', async ({ page }) => {
+  test('Desktop 1440x1000: Fuel-Inflow-Limited diagnostic state', async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     const errors = observeBrowserErrors(page);
     await openApp(page, '?playtest=1');
@@ -91,11 +96,11 @@ test.describe('Era-III Hydrostatic Stellar Engine Model B1 (Phase 5.3B1)', () =>
     await expect(processCard.locator('.cosmos-process-summary')).toContainText('Hydrogen inflow is below fuser demand');
 
     await hidePlaytestOverlay(page);
-    await page.screenshot({ path: `${ARTIFACT_DIR}/b1_desktop_fuel_inflow_limited.png`, fullPage: false });
+    await page.screenshot({ path: getScreenshotPath(testInfo, 'b1_desktop_fuel_inflow_limited.png'), fullPage: false });
     expect(errors).toEqual([]);
   });
 
-  test('Desktop 1440x1000: Conversion-Throughput-Constrained saturated-buffer state', async ({ page }) => {
+  test('Desktop 1440x1000: Conversion-Throughput-Constrained saturated-buffer state', async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     const errors = observeBrowserErrors(page);
     await openApp(page, '?playtest=1');
@@ -122,11 +127,11 @@ test.describe('Era-III Hydrostatic Stellar Engine Model B1 (Phase 5.3B1)', () =>
     await expect(reactionNode).toHaveText('2.71×');
 
     await hidePlaytestOverlay(page);
-    await page.screenshot({ path: `${ARTIFACT_DIR}/b1_desktop_conversion_throughput_limited.png`, fullPage: false });
+    await page.screenshot({ path: getScreenshotPath(testInfo, 'b1_desktop_conversion_throughput_limited.png'), fullPage: false });
     expect(errors).toEqual([]);
   });
 
-  test('Desktop 1440x1000: Heavy Synthesis (Carbon/Iron) thermal capability in Forge', async ({ page }) => {
+  test('Desktop 1440x1000: Heavy Synthesis (Carbon/Iron) thermal capability in Forge', async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     const errors = observeBrowserErrors(page);
     await openApp(page, '?playtest=1');
@@ -153,11 +158,11 @@ test.describe('Era-III Hydrostatic Stellar Engine Model B1 (Phase 5.3B1)', () =>
     await expect(page.locator('#multiplier')).toHaveText('4.54×');
 
     await hidePlaytestOverlay(page);
-    await page.screenshot({ path: `${ARTIFACT_DIR}/b1_desktop_heavy_synthesis_forge.png`, fullPage: false });
+    await page.screenshot({ path: getScreenshotPath(testInfo, 'b1_desktop_heavy_synthesis_forge.png'), fullPage: false });
     expect(errors).toEqual([]);
   });
 
-  test('Mobile 390x844: Representative B1 mid-era layout, geometry & scrollability', async ({ page }) => {
+  test('Mobile 390x844: Representative B1 mid-era layout, geometry & scrollability', async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const errors = observeBrowserErrors(page);
     await openApp(page, '?playtest=1');
@@ -184,7 +189,7 @@ test.describe('Era-III Hydrostatic Stellar Engine Model B1 (Phase 5.3B1)', () =>
 
     // Capture Screenshot 5: Mobile 390x844 top of Cosmos state
     await hidePlaytestOverlay(page);
-    await page.screenshot({ path: `${ARTIFACT_DIR}/b1_mobile_390x844_top_cosmos.png`, fullPage: false });
+    await page.screenshot({ path: getScreenshotPath(testInfo, 'b1_mobile_390x844_top_cosmos.png'), fullPage: false });
 
     // Scroll down to center Stellar Machine Process Card and support resources
     const processCard = page.locator('#cosmos-process-status');
@@ -192,7 +197,7 @@ test.describe('Era-III Hydrostatic Stellar Engine Model B1 (Phase 5.3B1)', () =>
     await expect(processCard).toBeVisible();
 
     // Capture Screenshot 6: Mobile 390x844 Stellar Machine after normal vertical scroll
-    await page.screenshot({ path: `${ARTIFACT_DIR}/b1_mobile_390x844_process_scrolled.png`, fullPage: false });
+    await page.screenshot({ path: getScreenshotPath(testInfo, 'b1_mobile_390x844_process_scrolled.png'), fullPage: false });
 
     // Scroll down to Support Resources
     const supportRegion = page.locator('#resource-support-region');
