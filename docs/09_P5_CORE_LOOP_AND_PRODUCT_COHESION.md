@@ -58,9 +58,9 @@ Addresses the symptom of linear upgrade clicking in Era I and early Era III:
 - Transition from simple unlock ladders to systemic operations:
   $$\text{STOCK} \longrightarrow \text{FLOW} \longrightarrow \text{CONVERSION} \longrightarrow \text{ALLOCATION / POLICY} \longrightarrow \text{TRANSFORMATION}$$
 - **P5.3A Complete & Human Approved (D28, D30):** Discrete 3-state Vacuum Field Allocation (`PROPAGATION`, `BALANCED`, `STABILIZATION`) in Era I, trading immediate Fundamental Law throughput for Vacuum Stabilization, with accumulated Coherence acting as dynamic Field Quality feedback on established Fundamental Laws.
-- **P5.3B0 Next:** Stellar Authority & Automation Parity Reconciliation.
-- **P5.3B1 Future:** Era-III Hydrostatic Stellar Engine Model B1 (D29).
-- **P5.3C Future:** Cross-Era Pacing, Low-Attention Resilience, and Agency Polish.
+- **P5.3B0 Complete & Human Approved (D33):** Stellar Authority & Automation Parity Reconciliation.
+- **P5.3B1 Complete & Human Approved (D29):** Era-III Hydrostatic Stellar Engine Model B1 (Capacity / Throughput + Thermal Capability).
+- **P5.3C Next (Not Started):** Cross-Era Integration & Regression.
 
 ### P5.4 — Coarse Balance & Full Run (Future Scope)
 - Verify end-to-end viability of all progression routes across orders of magnitude.

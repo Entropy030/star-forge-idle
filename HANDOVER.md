@@ -1,22 +1,42 @@
 # Star Forge Idle — Handover
 
-Last verified during P3 Stabilization S6 (2026-08-15).
+Last verified during P5.3B1 (2026-08-19).
 
 ## Project and status
 
 Star Forge Idle is a browser incremental game in which the player observes and shapes a universe from quantum fluctuations through plasma, recombination, and stellar evolution.
 
-Current milestone: **P3 STABLE WITH ACCEPTED DEBT**.
+Current milestone: **P5.3B1 COMPLETE (PUBLISHED + HUMAN APPROVED)**.
+
+### P5 Progress Overview
+
+- **P5.1 Interaction & UI Integrity:** `COMPLETE (PUBLISHED + HUMAN APPROVED)`
+- **P5.2 Progression & Semantic Grammar:** `COMPLETE (PUBLISHED + HUMAN APPROVED)` (P5.2A + P5.2B)
+- **P5.3A Era-I Vacuum Field Allocation:** `COMPLETE (PUBLISHED + HUMAN APPROVED)`
+- **P5.3B0 Stellar Authority & Automation Parity:** `COMPLETE (PUBLISHED + HUMAN APPROVED)`
+- **P5.3B1 Era-III Hydrostatic Stellar Engine Model B1:** `COMPLETE (PUBLISHED + HUMAN APPROVED)`
+- **P5.3C Cross-Era Integration & Regression:** `NEXT (NOT STARTED)`
+- **P5.4 Coarse Balance & Full Run Calibration:** `NOT STARTED`
+
+### Current Physical Agency Models
+
+- **Era I — Quantum Genesis:** Discrete 3-State **Vacuum Field Allocation** (`PROPAGATION`, `BALANCED`, `STABILIZATION`) with Coherence as dynamic System Quality scaling established Fundamental Laws.
+- **Era II — Primordial Plasma:** Coupled hadron flows and 3 **Operating Postures** (`ACCUMULATE`, `BALANCE`, `CONDENSE`) driving thermal stabilization, baryon harvest, and Recombination (constant 250 H seed).
+- **Era III — Hydrostatic Stellar Engine (Model B1):** Coupled hydrostatic engine:
+  - **Gravity:** Controls Hydrogen inflow rate and fuel containment buffer capacity ($C = 10 \times \text{inflowRate}$).
+  - **Fusers:** Control Hydrogen $\to$ Helium conversion throughput.
+  - **Compression:** Converts accumulated Helium into Core Temperature via authoritative heat yield.
+  - **Core Temperature:** Active physical capability state continuously scaling reaction velocities across active burning layers while retaining hard threshold gates ($10\text{M K}$, $500\text{M K}$, $2.0\text{B K}$, $100\text{M K}$).
+  - **Carbon / Iron:** Heavy nucleosynthesis consuming sustainable upstream flows.
+  - **Stellar Configuration:** Efficient, Massive, and Compact identities shaping remnant outcomes.
 
 Supported player journey:
 
-- Era I — Quantum Genesis and Cosmic Inflation
-- Era II — Particle/Plasma evolution and Recombination
-- Era III — Stellar evolution, repeatable Supernova, and the Galactic Ignition gate
+- Era I — Quantum Genesis, Vacuum Field Allocation, and Cosmic Inflation
+- Era II — Particle/Plasma evolution, Postures, and Recombination
+- Era III — Stellar Dawn, Hydrostatic Stellar Engine, repeatable Supernova, and the Galactic Ignition gate
 
-Era IV/V source and selected command tests exist as prototype/future scaffolding. They are not a supported P3 experience and are not permission to begin P4.
-
-The final live-metric jitter defect is closed. Its permanent engineering contract is documented below and in [the audit](docs/P3_STABILIZATION_AUDIT.md#resolved-live-data-layout-contract). S6 also reproduced and closed a release-blocking console exception in the repeatable Supernova UI wrapper; the reset itself, remnant rewards, second-run state, and Chrono continuity now complete together without an exception.
+Save Schema: Strictly **Save Version 17** (zero new stored state fields). All 60 fast-test suites (463 vitest tests) and 41 Playwright browser specs passing.
 
 ## P3 freeze baseline
 
@@ -207,6 +227,6 @@ Future maintenance:
 23. **P5.2B Current Transitions & First Supernova / Legacy Onboarding complete & human approved (D32):** Implemented pure transition presentation layer (`src/engine/transitionPresentation.js`), shared constant `RECOMBINATION_STARTING_HYDROGEN = 250` between commands and presentation, structured first/repeat Supernova transformation preview (RESET, PERSISTS, GAIN, NEXT) with explicit distinction from permanent Galactic Ignition, compact Era I / II transition cards in Cosmos, and refined Codex entries with Cooling-route unlock support; fixed `TRIGGER_SUPERNOVA` command to preserve Legacy upgrade families (`state.upgrades.stardust`, `state.upgrades.pulsar`, `state.upgrades.singularity`) including level and cost state per human decision (D32) while ensuring run-local construction and stellar upgrades reset; updated Legacy shop visibility to keep owned upgrade categories discoverable even at zero currency balance; verified across 57 test files (387 vitest tests) and 32 Playwright browser tests. **P5.2 Milestone Complete:** Cross-era resource grammar normalized and transition onboarding fully aligned.
 24. **P5.3A Era-I Vacuum Field Allocation Vertical Slice complete & human approved (D28, D30):** Implemented approved D28 structural gameplay: discrete 3-state physical field control (`PROPAGATION`, `BALANCED`, `STABILIZATION`) in Era I; additive state field `state.era1.vacuumAllocation` normalized to `BALANCED` in schema (save version strictly 17); authoritative engine command `SET_VACUUM_ALLOCATION`; Fundamental Law rate coupling ($ \text{rate} = \text{base} \times \text{allocationThroughput} \times \text{fieldQuality} $ where $\text{fieldQuality} = 1 + (\text{Coherence}/100) \times 1.0$); passive coherence rate coupling ($0.05\%/\text{s}$, $0.10\%/\text{s}$, $0.25\%/\text{s}$); Cosmos roving radiogroup controller in `#cosmos-posture-controller` with $\ge 44\text{px}$ touch targets; Star Core canvas dynamic field geometry and coherence definition; Chrono milestone and Codex entry unlocked when Vacuum Resonance becomes available; non-blocking objective guidance in `obj_era1_complete`. Provisional calibration: `PROPAGATION: 1.5/0.5`, `BALANCED: 1.0/1.0`, `STABILIZATION: 0.5/2.5`, `qualityFeedbackStrength: 1.0` (final numerical calibration in P5.4). Human visual review confirmed controller is hidden before unlock, Balanced is neutral center/default, Propagation and Stabilization communicate throughput vs coherence priorities, live readouts make tradeoffs legible, Star Core provides visible causal feedback, Era I is distinct from Era II, mobile 390x844 passed, and reduced-motion semantics remain legible. Rapid toggling provides no advantage across tested cadences. Verified across 58 test files (405 vitest tests) and 36 Playwright browser tests. **P5.3A Milestone Complete & Human Approved.** Next activity: P5.3B0 Stellar Authority & Automation Parity Reconciliation.
 25. **P5.3B0 Stellar Authority & Automation Parity Reconciliation complete, human approved, and published:** Established single state-explicit domain authority (`src/eras/stellar/authority.js`) reconciling Hydrogen base pacing ($10\text{ H/s}$), Stardust Fusion Discount ($\max(1, 10 - 2 \times \text{lvl})$ before Efficient scaling), constant $\alpha$ throughput modifier ($+30\%/\text{lvl}$ across He, C, Fe), AutoSynthesize velocity modifier ($+100\%/\text{lvl}$ for C and Fe), deterministic AutoCompress accumulator ($1\text{ compression/sec/level}$ with full heat yield, maxTemp, and stage promotion parity), live Solar Flare lifecycle and authoritative `COLLECT_SOLAR_FLARE` engine command (Hydrogen Surge $180\text{s}$, Magnetic Surge $60\text{s}$ $2\times$ nominal capacity, $25\%$ compression heat on live miss), constant $\hbar$ Supernova Stardust multiplier ($+20\%/\text{lvl}$), and HUD rate precision; schema normalized with `era3.autoCompressProgress` (Save Version 17 strictly preserved); verified across 59 fast-test files (429 tests), 36 Playwright browser specs, lint clean, build clean, and diff clean. **P5.3B0 Milestone Complete & Human Approved.**
-26. **P5.3B1 Era-III Hydrostatic Stellar Engine Model B1 Implementation (IMPLEMENTED LOCALLY, AWAITING HUMAN REVIEW, NOT PUBLISHED):** Implemented approved D29 Hydrostatic Engine architecture on top of reconciled D33 stellar authority without modifying save schema (Save Version 17 strictly preserved, zero new stored state fields). Added pure containment capacity authority $C = 10 \times \text{inflowRate}$ with non-destructive buffer semantics (direct inflow feeding, residual buffer accretion, existing stock above cap untouched); promoted thermal multiplier $M(T) = 1 + \log_{10}(T / 10^6 + 1)$ to active reaction velocity capability scaling nominal capacities across H->He, Carbon, and Iron; preserved early Protostar H->He bootstrap below 10M K; strictly enforced 500M K thermal gate on Carbon and 2.0B K gate on Iron; implemented pure continuous Decimal flow step `resolveStellarFlowStep(state, dt)` guaranteeing exact mass conservation and tick partition invariance ($1 \times 1.0\text{s} \equiv 10 \times 0.1\text{s}$); added pure selectors `getStellarMachineSnapshot(state)` and flow-based `getStellarBottleneck(state)`; updated Cosmos process diagnostics and Forge card readouts; verified across 60 fast-test files (451 vitest tests) and 36 Playwright browser tests. Local commit created, awaiting human review.
+26. **P5.3B1 Era-III Hydrostatic Stellar Engine Model B1 Implementation complete, human approved, and published (D29):** Implemented approved D29 Hydrostatic Engine architecture on top of reconciled D33 stellar authority without modifying save schema (Save Version 17 strictly preserved, zero new stored state fields). Added pure containment capacity authority $C = 10 \times \text{inflowRate}$ with non-destructive buffer semantics (direct inflow feeding, residual buffer accretion, existing stock above cap untouched); promoted thermal multiplier $M(T) = 1 + \log_{10}(T / 10^6 + 1)$ to active reaction velocity capability scaling nominal capacities across H->He, Carbon, and Iron; preserved early Protostar H->He bootstrap below 10M K; strictly enforced 500M K thermal gate on Carbon and 2.0B K gate on Iron; implemented pure continuous Decimal flow step `resolveStellarFlowStep(state, dt)` guaranteeing exact mass conservation and tick partition invariance ($1 \times 1.0\text{s} \equiv 10 \times 0.1\text{s}$); added pure selectors `getStellarMachineSnapshot(state)` and sustainable-flow `getStellarBottleneck(state)`; unified player-facing Reaction Capability display truth via `formatThermalCapability(getThermalReactionMultiplier(state))` (`1.00×`, `2.71×`, `4.54×`); implemented adaptive flow rate formatting explaining constraints; verified mobile 390x844 layout geometry and scrollability; verified across 60 fast-test files (463 vitest tests) and 41 Playwright browser tests. **P5.3B1 Milestone Complete, Human Approved, and Published.** Next activity: P5.3C Cross-Era Integration & Regression.
 
 Full evidence and follow-up boundaries are in [docs/P3_STABILIZATION_AUDIT.md](docs/P3_STABILIZATION_AUDIT.md), [docs/09_P5_CORE_LOOP_AND_PRODUCT_COHESION.md](docs/09_P5_CORE_LOOP_AND_PRODUCT_COHESION.md), [docs/10_P5_DESIGN_SYNTHESIS.md](docs/10_P5_DESIGN_SYNTHESIS.md), [docs/11_PRE_P5_3_ERA1_MACHINE_PROTOTYPE.md](docs/11_PRE_P5_3_ERA1_MACHINE_PROTOTYPE.md), [docs/12_PRE_P5_3_ERA3_MACHINE_PROTOTYPE.md](docs/12_PRE_P5_3_ERA3_MACHINE_PROTOTYPE.md), and [docs/13_P5_IMPLEMENTATION_PLAN.md](docs/13_P5_IMPLEMENTATION_PLAN.md).
