@@ -5,7 +5,7 @@ const APP_PATH = '/star-forge-idle/';
 export default defineConfig({
   testDir: './tests/browser',
   fullyParallel: false,
-  workers: 1,
+  workers: process.env.CI ? 4 : 2,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['line'], ['html', { open: 'never' }]] : 'line',
   outputDir: 'test-results/browser',

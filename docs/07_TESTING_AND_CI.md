@@ -55,7 +55,7 @@ npm run test:browser:install
 npm run test:browser
 ```
 
-The one-time install command downloads Playwright Chromium; browser binaries are not committed. `test:browser` builds the Vite production bundle, starts the local preview at `/star-forge-idle/`, and runs Playwright with one worker. It covers real Web Storage and clipboard paths, playtest isolation, corrupt-save recovery, keyboard/focus/ARIA behavior, reduced motion, 1440 × 1000 and 390 × 844 geometry, CLS/overflow, manifest/service-worker scope, same-origin caches, and offline shell boot.
+The one-time install command downloads Playwright Chromium; browser binaries are not committed. `test:browser` builds the Vite production bundle, starts the local preview at `/star-forge-idle/`, and runs Playwright with safe file-level parallelism (`workers: process.env.CI ? 4 : 2`, with `fullyParallel: false` preserving sequential test execution within each spec). It covers real Web Storage and clipboard paths, playtest isolation, corrupt-save recovery, keyboard/focus/ARIA behavior, reduced motion, 1440 × 1000 and 390 × 844 geometry, CLS/overflow, manifest/service-worker scope, same-origin caches, and offline shell boot.
 
 Browser acceptance complements unit/jsdom contracts; it does not replace their faster domain and DOM feedback. Automated browser semantics and keyboard contracts are covered. Manual screen-reader validation remains a release smoke activity.
 
