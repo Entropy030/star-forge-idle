@@ -16,7 +16,7 @@ import { engine } from '../src/engine/instance.js';
 import { advanceGameTick } from '../src/core/runtimeTick.js';
 import { getInflationEligibility } from '../src/eras/quantum/inflation.js';
 import { getQuantumUpgradeEligibility } from '../src/eras/quantum/eligibility.js';
-import { getSupernovaEligibility, getSupernovaOutcome } from '../src/eras/stellar/selectors.js';
+import { getSupernovaEligibility, getSupernovaOutcome, getStellarMachineSnapshot } from '../src/eras/stellar/selectors.js';
 import { computePlasmaStep } from '../src/eras/plasma/evaluator.js';
 import { getPlasmaUpgradePurchaseDetails, getRecombinationEligibility } from '../src/eras/plasma/eligibility.js';
 import { plasmaCommandHandlers } from '../src/eras/plasma/commands.js';
@@ -733,12 +733,24 @@ describe('P5.4B: Calibration Surface & Route Viability Suite', () => {
           if (temp >= 2000000000 && era3.carbonYield.eq(0) && gameState.resources.helium.amount.gte(era3.carbonCostHelium)) {
             engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'carbon' } });
             telemetry.routinePurchases++;
+          } else if (temp >= 2000000000 && era3.carbonYield.gt(0) && era3.carbonYield.lt(5) && gameState.resources.carbon.amount.gte(era3.carbonCostCarbon)) {
+            engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'carbon' } });
+            telemetry.routinePurchases++;
           }
 
           // Iron Node (unlocked at >= 2.0B K)
           if (temp >= 2000000000 && era3.ironYield.eq(0) && gameState.resources.carbon.amount.gte(era3.ironCostCarbon)) {
             engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'iron' } });
             telemetry.routinePurchases++;
+          } else if (temp >= 2000000000 && era3.ironYield.gt(0) && era3.ironYield.lt(5) && gameState.resources.iron.amount.gte(era3.ironCostIron)) {
+            engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'iron' } });
+            telemetry.routinePurchases++;
+          }
+
+          // Stellar Architecture Upgrades (e.g. Efficient to reduce fuel costs)
+          if (gameState.upgrades.stellar?.efficient && gameState.upgrades.stellar.efficient.level < 5 && gameState.resources.helium.amount.gte(gameState.upgrades.stellar.efficient.cost)) {
+            const res = engine.dispatch({ type: 'BUY_UPGRADE_STELLAR', payload: { category: 'stellar', upgradeId: 'efficient' } });
+            if (res?.ok) telemetry.routinePurchases++;
           }
 
           if (temp >= 10000000 && !telemetry.hit10M) {
@@ -753,7 +765,18 @@ describe('P5.4B: Calibration Surface & Route Viability Suite', () => {
 
           if (temp >= 2000000000 && !telemetry.hit2B) {
             telemetry.hit2B = sec;
-            hit('2B_K', '2.0B K Iron Threshold', sec, { comp: compressions, grav: era3.gravity.toNumber(), fuser: era3.fusionYield.toNumber() });
+            const snap = getStellarMachineSnapshot(gameState);
+            hit('2B_K', '2.0B K Iron Threshold', sec, {
+              comp: compressions,
+              grav: era3.gravity.toNumber(),
+              fuser: era3.fusionYield.toNumber(),
+              h: gameState.resources.hydrogen.amount.toNumber(),
+              he: gameState.resources.helium.amount.toNumber(),
+              c: gameState.resources.carbon.amount.toNumber(),
+              fe: gameState.resources.iron.amount.toNumber(),
+              reactionCapability: snap.thermalReactionMultiplier.toNumber(),
+              dominantLimitingFlow: snap.bottleneck.label
+            });
           }
 
           if (gameState.resources.carbon?.amount?.gt(0) && !telemetry.firstCarbon) {
@@ -763,32 +786,135 @@ describe('P5.4B: Calibration Surface & Route Viability Suite', () => {
 
           if (gameState.resources.iron?.amount?.gt(0) && !telemetry.firstIron) {
             telemetry.firstIron = sec;
-            hit('first_iron', 'First Iron Synthesized', sec);
+            const snap = getStellarMachineSnapshot(gameState);
+            hit('first_iron', 'First Iron Synthesized', sec, {
+              h: gameState.resources.hydrogen.amount.toNumber(),
+              he: gameState.resources.helium.amount.toNumber(),
+              c: gameState.resources.carbon.amount.toNumber(),
+              fe: gameState.resources.iron.amount.toNumber(),
+              grav: era3.gravity.toNumber(),
+              fuser: era3.fusionYield.toNumber(),
+              eff: gameState.upgrades.stellar?.efficient?.level || 0,
+              mass: gameState.upgrades.stellar?.massive?.level || 0,
+              comp: gameState.upgrades.stellar?.compact?.level || 0,
+              cYld: era3.carbonYield.toNumber(),
+              feYld: era3.ironYield.toNumber(),
+              reactionCapability: snap.thermalReactionMultiplier.toNumber(),
+              dominantLimitingFlow: snap.bottleneck.label
+            });
+          }
+
+          if (gameState.resources.iron?.amount?.gte(10) && !telemetry.hit10Fe) {
+            telemetry.hit10Fe = sec;
+            const snap = getStellarMachineSnapshot(gameState);
+            hit('10_Fe', 'First 10 Iron Reached', sec, {
+              elapsedSince2B: sec - telemetry.hit2B,
+              h: gameState.resources.hydrogen.amount.toNumber(),
+              he: gameState.resources.helium.amount.toNumber(),
+              c: gameState.resources.carbon.amount.toNumber(),
+              fe: gameState.resources.iron.amount.toNumber(),
+              grav: era3.gravity.toNumber(),
+              fuser: era3.fusionYield.toNumber(),
+              eff: gameState.upgrades.stellar?.efficient?.level || 0,
+              mass: gameState.upgrades.stellar?.massive?.level || 0,
+              comp: gameState.upgrades.stellar?.compact?.level || 0,
+              cYld: era3.carbonYield.toNumber(),
+              feYld: era3.ironYield.toNumber(),
+              reactionCapability: snap.thermalReactionMultiplier.toNumber(),
+              dominantLimitingFlow: snap.bottleneck.label
+            });
+          }
+
+          if (gameState.resources.iron?.amount?.gte(100) && !telemetry.hit100Fe) {
+            telemetry.hit100Fe = sec;
+            const snap = getStellarMachineSnapshot(gameState);
+            hit('100_Fe', 'First 100 Iron Reached', sec, {
+              elapsedSince2B: sec - telemetry.hit2B,
+              h: gameState.resources.hydrogen.amount.toNumber(),
+              he: gameState.resources.helium.amount.toNumber(),
+              c: gameState.resources.carbon.amount.toNumber(),
+              fe: gameState.resources.iron.amount.toNumber(),
+              grav: era3.gravity.toNumber(),
+              fuser: era3.fusionYield.toNumber(),
+              eff: gameState.upgrades.stellar?.efficient?.level || 0,
+              mass: gameState.upgrades.stellar?.massive?.level || 0,
+              comp: gameState.upgrades.stellar?.compact?.level || 0,
+              cYld: era3.carbonYield.toNumber(),
+              feYld: era3.ironYield.toNumber(),
+              reactionCapability: snap.thermalReactionMultiplier.toNumber(),
+              dominantLimitingFlow: snap.bottleneck.label
+            });
+          }
+
+          if (gameState.resources.iron?.amount?.gte(500) && !telemetry.hit500Fe) {
+            telemetry.hit500Fe = sec;
+            const snap = getStellarMachineSnapshot(gameState);
+            hit('500_Fe', 'First 500 Iron Reached', sec, {
+              elapsedSince2B: sec - telemetry.hit2B,
+              h: gameState.resources.hydrogen.amount.toNumber(),
+              he: gameState.resources.helium.amount.toNumber(),
+              c: gameState.resources.carbon.amount.toNumber(),
+              fe: gameState.resources.iron.amount.toNumber(),
+              grav: era3.gravity.toNumber(),
+              fuser: era3.fusionYield.toNumber(),
+              eff: gameState.upgrades.stellar?.efficient?.level || 0,
+              mass: gameState.upgrades.stellar?.massive?.level || 0,
+              comp: gameState.upgrades.stellar?.compact?.level || 0,
+              cYld: era3.carbonYield.toNumber(),
+              feYld: era3.ironYield.toNumber(),
+              reactionCapability: snap.thermalReactionMultiplier.toNumber(),
+              dominantLimitingFlow: snap.bottleneck.label
+            });
           }
 
           if (gameState.resources.iron?.amount?.gte(1000) && !telemetry.hit1000Fe) {
             telemetry.hit1000Fe = sec;
-            hit('1000_Fe', '1,000 Iron Reached', sec);
+            const snap = getStellarMachineSnapshot(gameState);
+            hit('1000_Fe', '1,000 Iron Reached', sec, {
+              elapsedSince2B: sec - telemetry.hit2B,
+              h: gameState.resources.hydrogen.amount.toNumber(),
+              he: gameState.resources.helium.amount.toNumber(),
+              c: gameState.resources.carbon.amount.toNumber(),
+              fe: gameState.resources.iron.amount.toNumber(),
+              grav: era3.gravity.toNumber(),
+              fuser: era3.fusionYield.toNumber(),
+              eff: gameState.upgrades.stellar?.efficient?.level || 0,
+              mass: gameState.upgrades.stellar?.massive?.level || 0,
+              comp: gameState.upgrades.stellar?.compact?.level || 0,
+              cYld: era3.carbonYield.toNumber(),
+              feYld: era3.ironYield.toNumber(),
+              reactionCapability: snap.thermalReactionMultiplier.toNumber(),
+              dominantLimitingFlow: snap.bottleneck.label
+            });
           }
 
           const sReady = getSupernovaEligibility(gameState);
           if (sReady.canTrigger && !telemetry.firstSupernova) {
-            const outcome = getSupernovaOutcome(gameState);
+            const previewOutcome = getSupernovaOutcome(gameState);
+            const snap = getStellarMachineSnapshot(gameState);
+
+            // Execute authoritative Supernova
+            const snRes = engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
+
             telemetry.firstSupernova = {
               time: sec,
               era3Time: sec - telemetry.era3Entry,
-              stardust: outcome.rewards.stardust.toNumber(),
-              pulsar: outcome.rewards.pulsarShards.toNumber(),
-              singularity: outcome.rewards.singularityMass.toNumber(),
-              remnant: outcome.outcome,
+              since2B: sec - telemetry.hit2B,
+              stardust: previewOutcome.rewards.stardust.toNumber(),
+              pulsar: previewOutcome.rewards.pulsarShards.toNumber(),
+              singularity: previewOutcome.rewards.singularityMass.toNumber(),
+              remnant: previewOutcome.outcome,
               finalComp: compressions,
               finalGrav: era3.gravity.toNumber(),
               finalFuser: era3.fusionYield.toNumber(),
               clicks: telemetry.clicks,
               totalPurchases: telemetry.routinePurchases,
-              totalCompressions: telemetry.compressions
+              totalCompressions: telemetry.compressions,
+              dominantLimitingFlow: snap.bottleneck.label,
+              reactionCapability: snap.thermalReactionMultiplier.toNumber(),
+              postSupernovaState: gameState
             };
-            hit('supernova_ready', 'Supernova Ready', sec, telemetry.firstSupernova);
+            hit('supernova_executed', 'Supernova Executed!', sec, telemetry.firstSupernova);
             break;
           }
         }
@@ -800,19 +926,26 @@ describe('P5.4B: Calibration Surface & Route Viability Suite', () => {
     }
 
     it('characterizes INFORMED profile through full natural First Supernova', () => {
-      const run = executeNaturalRun('INFORMED', 30000);
+      const run = executeNaturalRun('INFORMED', 600000);
       console.log('\n================================================================================');
-      console.log('P5.4B INFORMED NATURAL FULL RUN TIMELINE & TELEMETRY');
+      console.log('P5.4B INFORMED NATURAL FULL RUN TIMELINE & TELEMETRY (TO SUPERNOVA)');
       console.log('================================================================================');
       for (const cp of run.telemetry.checkpoints) {
-        console.log(`- [t=${cp.sec}s / ${(cp.sec / 60).toFixed(1)}m]: ${cp.name}`);
+        console.log(`- [t=${cp.sec}s / ${(cp.sec / 60).toFixed(1)}m / ${(cp.sec / 3600).toFixed(2)}h]: ${cp.name}`);
+        if (cp.fe !== undefined) {
+          console.log(`  H: ${cp.h.toFixed(1)} | He: ${cp.he.toFixed(1)} | C: ${cp.c.toFixed(1)} | Fe: ${cp.fe.toFixed(1)}`);
+          console.log(`  Grav: Lvl ${cp.grav} | Fuser: Lvl ${cp.fuser} | Eff: Lvl ${cp.eff || 0} | Mass: Lvl ${cp.mass || 0} | Comp: Lvl ${cp.comp || 0}`);
+          console.log(`  CYld: ${cp.cYld} | FeYld: ${cp.feYld} | Reaction Cap: ${cp.reactionCapability.toFixed(2)}x | Bottleneck: ${cp.dominantLimitingFlow}`);
+          if (cp.elapsedSince2B) console.log(`  Elapsed Since 2.0B K: ${cp.elapsedSince2B}s (${(cp.elapsedSince2B / 3600).toFixed(2)}h)`);
+        }
       }
 
       const sn = run.telemetry.firstSupernova;
       if (sn) {
-        console.log('\nINFORMED FIRST SUPERNOVA STATS:');
+        console.log('\nNATURAL INFORMED FIRST SUPERNOVA STATS:');
         console.log(`- Total Duration: ${sn.time}s (${(sn.time / 60).toFixed(1)}m, ${(sn.time / 3600).toFixed(2)}h)`);
         console.log(`- Era III Duration: ${sn.era3Time}s (${(sn.era3Time / 60).toFixed(1)}m, ${(sn.era3Time / 3600).toFixed(2)}h)`);
+        console.log(`- 2.0B K -> Supernova: ${sn.since2B}s (${(sn.since2B / 60).toFixed(1)}m, ${(sn.since2B / 3600).toFixed(2)}h)`);
         console.log(`- Rewards: ${sn.stardust} Stardust, ${sn.pulsar} Pulsar Shards, ${sn.singularity} Singularity Mass`);
         console.log(`- Remnant: ${sn.remnant}`);
         console.log(`- Final Compressions: #${sn.finalComp}, Final Gravity: Lvl ${sn.finalGrav}, Final Fusers: Lvl ${sn.finalFuser}`);
@@ -827,6 +960,8 @@ describe('P5.4B: Calibration Surface & Route Viability Suite', () => {
 
       expect(run.telemetry.checkpoints.some(c => c.id === '10M_K')).toBe(true);
       expect(run.telemetry.checkpoints.some(c => c.id === '500M_K')).toBe(true);
+      expect(run.telemetry.checkpoints.some(c => c.id === '2B_K')).toBe(true);
+      expect(run.telemetry.checkpoints.some(c => c.id === '10_Fe')).toBe(true);
     });
 
     it('characterizes LOW_ATTENTION profile through full natural First Supernova', () => {
