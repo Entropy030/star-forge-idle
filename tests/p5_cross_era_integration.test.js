@@ -7,11 +7,12 @@ import { advanceGameTick } from '../src/core/runtimeTick.js';
 import { getCosmosPresentation } from '../src/engine/cosmosPresentation.js';
 import { getEraResourcePresentation } from '../src/engine/resourcePresentation.js';
 import { getInflationEligibility } from '../src/eras/quantum/inflation.js';
+import { getVacuumAllocationProfile, getVacuumCoherenceRates } from '../src/eras/quantum/coherence.js';
 import { getRecombinationEligibility } from '../src/eras/plasma/eligibility.js';
 import { getSupernovaEligibility, getGalacticIgnitionEligibility, getStellarBottleneck, getStellarMachineSnapshot } from '../src/eras/stellar/selectors.js';
 import { getThermalReactionMultiplier, getContainmentCapacity } from '../src/eras/stellar/authority.js';
 import { RECOMBINATION_STARTING_HYDROGEN } from '../src/eras/plasma/constants.js';
-import { getPresetMidEraIII, getPresetEraIIISupernovaReady } from '../src/dev/playtestPresets.js';
+import { getPresetMidEraIII, getPresetEraIIISupernovaReady, getPresetFreshEraIII } from '../src/dev/playtestPresets.js';
 import { serializeState, deserializeState } from '../src/state/serialization.js';
 import { ensureStateShape } from '../src/state/schema.js';
 
@@ -106,6 +107,13 @@ describe('P5.3C: Cross-Era Integration & Regression Suite', () => {
       expect(gameState.resources.hydrogen.amount.toNumber()).toBe(RECOMBINATION_STARTING_HYDROGEN);
       expect(gameState.resources.hydrogen.amount.toNumber()).toBe(250);
 
+      // Real Recombination entry initial temperature is untouched 0 K, stage Protostar
+      expect(gameState.era3.temperature.toNumber()).toBe(0);
+      expect(gameState.era3.stage).toBe('Protostar');
+
+      // Antimatter residue compatibility accumulation
+      expect(gameState.resources.antimatterResidue.amount.toNumber()).toBeGreaterThan(0);
+
       // Verify Era II posture UI is cleaned up, Stellar Machine is active
       cosmos = getCosmosPresentation(gameState);
       expect(Boolean(cosmos.allocation)).toBe(false);
@@ -121,7 +129,7 @@ describe('P5.3C: Cross-Era Integration & Regression Suite', () => {
       expect(resPres.primary[0].id).toBe('coreTemperature');
       expect(resPres.primary[0].label).toBe('Core Temperature');
 
-      // Set baseline Protostar temperature
+      // Set baseline Protostar temperature for fusion demonstration
       gameState.era3.temperature = new Decimal(2000);
 
       // Unlock Fusers (Protostar bootstrap allows H->He conversion below 10M K)
@@ -175,7 +183,7 @@ describe('P5.3C: Cross-Era Integration & Regression Suite', () => {
       expect(gameState.upgrades.pulsar.autoCompress.level).toBe(1);
       expect(gameState.currencies.stardust.amount.toNumber()).toBeGreaterThan(0);
 
-      // 2. Run-local stellar state reset to Protostar
+      // 2. Run-local stellar state reset to Protostar with 0 K temperature
       expect(gameState.era3.stage).toBe('Protostar');
       expect(gameState.era3.temperature.toNumber()).toBe(0);
       expect(gameState.resources.hydrogen.amount.toNumber()).toBe(0);
@@ -183,8 +191,9 @@ describe('P5.3C: Cross-Era Integration & Regression Suite', () => {
       expect(gameState.resources.carbon.amount.toNumber()).toBe(0);
       expect(gameState.resources.iron.amount.toNumber()).toBe(0);
 
-      // 3. No Quantum or Plasma upgrades resurrected
+      // 3. Quantum/Plasma upgrade slices are fresh default level 0 records
       expect(gameState.upgrades.quantum.gravityForce.level).toBe(0);
+      expect(gameState.upgrades.plasma.quarkCondenser.level).toBe(0);
       expect(gameState.upgrades.stellar.efficient.level).toBe(0); // Stellar config reset
 
       // 4. First Supernova achievement (+10% stellar speed) is active
@@ -192,7 +201,38 @@ describe('P5.3C: Cross-Era Integration & Regression Suite', () => {
     });
   });
 
-  describe('2. Cross-Era Control & Presentation Isolation', () => {
+  describe('2. Era-I Allocation Profiles & Authority Rates', () => {
+    it('accurately derives published throughput and passive coherence multipliers across all three allocation profiles', () => {
+      const state = createInitialState();
+      state.upgrades.quantum.vacuumResonance.level = 1;
+
+      // 1. BALANCED profile
+      state.era1.vacuumAllocation = 'BALANCED';
+      const balancedProfile = getVacuumAllocationProfile(state);
+      expect(balancedProfile.throughputMultiplier).toBe(1.00);
+      expect(balancedProfile.passiveCoherenceMultiplier).toBe(1.00);
+      const balancedRates = getVacuumCoherenceRates(state);
+      expect(balancedRates.passiveRate.toNumber()).toBeCloseTo(0.10, 5);
+
+      // 2. PROPAGATION profile
+      state.era1.vacuumAllocation = 'PROPAGATION';
+      const propProfile = getVacuumAllocationProfile(state);
+      expect(propProfile.throughputMultiplier).toBe(1.50);
+      expect(propProfile.passiveCoherenceMultiplier).toBe(0.50);
+      const propRates = getVacuumCoherenceRates(state);
+      expect(propRates.passiveRate.toNumber()).toBeCloseTo(0.05, 5);
+
+      // 3. STABILIZATION profile
+      state.era1.vacuumAllocation = 'STABILIZATION';
+      const stabProfile = getVacuumAllocationProfile(state);
+      expect(stabProfile.throughputMultiplier).toBe(0.50);
+      expect(stabProfile.passiveCoherenceMultiplier).toBe(2.50);
+      const stabRates = getVacuumCoherenceRates(state);
+      expect(stabRates.passiveRate.toNumber()).toBeCloseTo(0.25, 5);
+    });
+  });
+
+  describe('3. Cross-Era Control & Presentation Isolation', () => {
     it('strictly isolates Era I Allocation, Era II Posture, and Era III Stellar Machine', () => {
       // Era I
       const state1 = createInitialState();
@@ -220,7 +260,7 @@ describe('P5.3C: Cross-Era Integration & Regression Suite', () => {
     });
   });
 
-  describe('3. Resource Grammar across the Full Journey', () => {
+  describe('4. Resource Grammar across the Full Journey', () => {
     it('maintains D31 / P5.2A resource slot assignments across Eras I, II, III and Legacy', () => {
       // Era I
       const state1 = createInitialState();
@@ -252,7 +292,7 @@ describe('P5.3C: Cross-Era Integration & Regression Suite', () => {
     });
   });
 
-  describe('4. Offline Catch-Up & Denial of Unsupervised Major Decisions', () => {
+  describe('5. Offline Catch-Up & Denial of Unsupervised Major Decisions', () => {
     it('advances passive simulation offline without triggering major transformations', () => {
       // Era I: Offline catch-up advances fluctuation and coherence, never triggers Inflation
       const state1 = createInitialState();
@@ -293,7 +333,7 @@ describe('P5.3C: Cross-Era Integration & Regression Suite', () => {
     });
   });
 
-  describe('5. Save / Load Persistence across All Eras (Save Version 17)', () => {
+  describe('6. Save / Load Persistence across All Eras (Save Version 17)', () => {
     it('roundtrips non-default states across Eras I, II, III, and second-run Legacy', () => {
       // Era I non-default allocation
       const state1 = createInitialState();
@@ -340,28 +380,41 @@ describe('P5.3C: Cross-Era Integration & Regression Suite', () => {
     });
   });
 
-  describe('6. Galactic Ignition vs Supernova Distinct Boundary', () => {
-    it('verifies Supernova and Galactic Ignition remain distinct in eligibility and command dispatch', () => {
-      const state = getPresetMidEraIII();
-      replaceRuntimeState(state);
+  describe('7. Galactic Ignition Era-III Gateway Contract & Supernova Distinction', () => {
+    it('verifies Galactic Ignition eligibility is checked in Era III and is strictly distinct from Supernova', () => {
+      // 1. Wrong Epoch check (Era I and Era II return WRONG_EPOCH)
+      const era1State = createInitialState();
+      expect(getGalacticIgnitionEligibility(era1State).isEligible).toBe(false);
+      expect(getGalacticIgnitionEligibility(era1State).errorCode).toBe('WRONG_EPOCH');
 
-      // Mid Era III: neither Supernova nor Galactic Ignition is ready
-      expect(getSupernovaEligibility(gameState).canTrigger).toBe(false);
-      expect(getGalacticIgnitionEligibility(gameState).isEligible).toBe(false);
+      const era2State = createInitialState();
+      era2State.activeEpoch = 2;
+      expect(getGalacticIgnitionEligibility(era2State).isEligible).toBe(false);
+      expect(getGalacticIgnitionEligibility(era2State).errorCode).toBe('WRONG_EPOCH');
 
-      // Ready Supernova state
+      // 2. Era III below gate (temp < 2.0B K or iron < 1000)
+      const midState = getPresetMidEraIII();
+      replaceRuntimeState(midState);
+      const belowGateElig = getGalacticIgnitionEligibility(gameState);
+      expect(belowGateElig.isEligible).toBe(false);
+      expect(belowGateElig.errorCode).toBe('PREREQUISITES_NOT_MET');
+      expect(belowGateElig.correctEpoch).toBe(true);
+
+      // 3. Era III gate-ready (temp >= 2.0B K and iron >= 1000)
       const snState = getPresetEraIIISupernovaReady();
       replaceRuntimeState(snState);
-      expect(getSupernovaEligibility(gameState).canTrigger).toBe(true);
+      const readyElig = getGalacticIgnitionEligibility(gameState);
+      expect(readyElig.isEligible).toBe(true);
+      expect(readyElig.errorCode).toBeNull();
 
-      // Executing Supernova resets stellar state and leaves activeEpoch strictly at 3
-      const result = engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
-      expect(result.ok).toBe(true);
+      // 4. Supernova execution does NOT trigger Galactic Ignition and keeps activeEpoch at 3
+      const snResult = engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
+      expect(snResult.ok).toBe(true);
       expect(gameState.activeEpoch).toBe(3);
     });
   });
 
-  describe('7. Hydrostatic Machine Coupled Diagnostics & Sustainability', () => {
+  describe('8. Hydrostatic Machine Coupled Diagnostics & Sustainability', () => {
     it('accurately derives bottlenecks and guarantees mass conservation across tick step partitions', () => {
       const state = createInitialState();
       state.activeEpoch = 3;
@@ -383,6 +436,32 @@ describe('P5.3C: Cross-Era Integration & Regression Suite', () => {
 
       const snapshot2 = getStellarMachineSnapshot(state);
       expect(snapshot2.bottleneck.id).toBe('FUSION_CAPACITY_LIMITED');
+    });
+  });
+
+  describe('9. Real Recombination Entry vs Fresh Era-III Preset Fixture', () => {
+    it('proves actual Recombination enters at 0 K while Fresh Era III preset fixture provides 2000 K', () => {
+      // Direct Recombination execution from Era II
+      const state = createInitialState();
+      state.activeEpoch = 2;
+      state.plasmaTemperature = new Decimal(2800);
+      state.resources.protons.amount = new Decimal(5000);
+      state.resources.electrons.amount = new Decimal(5000);
+      replaceRuntimeState(state);
+
+      const res = engine.dispatch({ type: 'TRIGGER_RECOMBINATION' });
+      expect(res.ok).toBe(true);
+      expect(gameState.activeEpoch).toBe(3);
+      expect(gameState.resources.hydrogen.amount.toNumber()).toBe(250);
+      expect(gameState.era3.temperature.toNumber()).toBe(0); // Real entry is 0 K
+      expect(gameState.era3.stage).toBe('Protostar');
+      expect(gameState.resources.antimatterResidue.amount.toNumber()).toBeGreaterThan(0);
+
+      // Contrast with preset fixture
+      const preset = getPresetFreshEraIII();
+      expect(preset.activeEpoch).toBe(3);
+      expect(preset.resources.hydrogen.amount.toNumber()).toBe(250);
+      expect(preset.era3.temperature.toNumber()).toBe(2000); // Preset provides 2000 K
     });
   });
 });
