@@ -2,7 +2,7 @@
 import { createInitialState } from './createInitialState.js';
 import { deserializeState, serializeState } from './serialization.js';
 
-export const SAVE_VERSION = 17;
+export const SAVE_VERSION = 18;
 
 export function deepMergeMissing(target, source) {
   for (let key in source) {
@@ -60,6 +60,29 @@ export const MIGRATIONS = {
     if (!migrated.stats.maxQF) migrated.stats.maxQF = new Decimal(0);
     
     migrated.version = 17;
+    return migrated;
+  },
+  17: (legacyState) => {
+    let migrated = deserializeState(serializeState(legacyState));
+    deepMergeMissing(migrated, createInitialState());
+
+    if (migrated.era3 && migrated.era3.compressCost) {
+      const alpha = migrated.cosmicConstants?.alpha || 0;
+      const oldScaling = 1.75 + (0.03 * alpha);
+      const newScaling = 1.35 + (0.03 * alpha);
+
+      const logPrimitive = new Decimal(migrated.era3.compressCost).div(10).log10();
+      const exponent = logPrimitive / Math.log10(oldScaling);
+      const compressCount = Math.max(0, Math.round(exponent));
+
+      let nextCost = new Decimal(10);
+      for (let i = 0; i < compressCount; i++) {
+        nextCost = nextCost.times(newScaling).floor();
+      }
+      migrated.era3.compressCost = nextCost;
+    }
+
+    migrated.version = 18;
     return migrated;
   }
 };

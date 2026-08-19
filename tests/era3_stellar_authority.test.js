@@ -169,7 +169,7 @@ describe('P5.3B0: Stellar Authority & Automation Parity Reconciliation', () => {
       expect(result.success).toBe(true);
       expect(state.resources.helium.amount.toNumber()).toBe(90);
       expect(state.era3.temperature.toNumber()).toBe(COSMIC_REGISTRY.constants.baseCompressionHeat);
-      expect(state.era3.compressCost.toNumber()).toBe(17); // 10 * 1.75 = 17.5 floor = 17
+      expect(state.era3.compressCost.toNumber()).toBe(13); // 10 * 1.35 = 13.5 floor = 13
     });
 
     it('rolls flare spawn delays adhering to registry window and Flare Forecasting reduction', () => {

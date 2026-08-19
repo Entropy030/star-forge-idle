@@ -117,7 +117,7 @@ export function getPlaytestSpeedMultiplier() {
 }
 
 export function getActiveSaveKey() {
-  return isPlaytestMode ? 'starForgePlaytestSave_v17' : 'starForgeSave_v17';
+  return isPlaytestMode ? `starForgePlaytestSave_v${SAVE_VERSION}` : `starForgeSave_v${SAVE_VERSION}`;
 }
 
 export function saveGame() {
@@ -151,7 +151,7 @@ export function loadGame(options = {}) {
     
     // Fallbacks only apply to the normal save slot
     if (!isPlaytestMode && rawData === null) {
-      for (const legacyKey of ['starForgeSave_v16', 'starForgeSave_v15', 'starForgeSave_v14', 'starForgeSave_v13', 'starForgeSave']) {
+      for (const legacyKey of ['starForgeSave_v17', 'starForgeSave_v16', 'starForgeSave_v15', 'starForgeSave_v14', 'starForgeSave_v13', 'starForgeSave']) {
         const legacyData = localStorage.getItem(legacyKey);
         if (legacyData !== null) {
           rawData = legacyData;
@@ -262,8 +262,10 @@ export function wipeSave() {
     if (overlay) delete overlay.dataset.initialized;
     
     if (isPlaytestMode) {
+      localStorage.removeItem('starForgePlaytestSave_v18');
       localStorage.removeItem('starForgePlaytestSave_v17');
     } else {
+      localStorage.removeItem('starForgeSave_v18');
       localStorage.removeItem('starForgeSave_v17');
       localStorage.removeItem('starForgeSave_v16');
       localStorage.removeItem('starForgeSave_v15');

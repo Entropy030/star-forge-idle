@@ -9,10 +9,10 @@ describe('Playtest save isolation', () => {
 
   it('uses isolated save key in playtest mode', () => {
     setPlaytestMode(false);
-    expect(getActiveSaveKey()).toBe('starForgeSave_v17');
+    expect(getActiveSaveKey()).toBe('starForgeSave_v18');
     
     setPlaytestMode(true);
-    expect(getActiveSaveKey()).toBe('starForgePlaytestSave_v17');
+    expect(getActiveSaveKey()).toBe('starForgePlaytestSave_v18');
   });
 
   it('presets generate valid structural state', () => {

@@ -10,7 +10,7 @@ import { simulateQuantumEra } from '../src/eras/quantum/simulation.js';
 import { getQuarkGluonImbalanceMultiplier } from '../src/eras/plasma/imbalance.js';
 import { createInitialState } from '../src/state/createInitialState.js';
 import { gameState, replaceRuntimeState, serializeState } from '../src/core/state.js';
-import { importSave, saveGame, setPlaytestMode } from '../src/core/persistence.js';
+import { importSave, saveGame, setPlaytestMode, getActiveSaveKey } from '../src/core/persistence.js';
 import { SAVE_VERSION } from '../src/state/migrations.js';
 
 describe('pre-P4 Era I phantom baryon cleanup', () => {
@@ -93,7 +93,7 @@ describe('pre-P4 Era I phantom baryon cleanup', () => {
     expect(gameState.resources.antimatterResidue.amount.eq(7)).toBe(true);
 
     expect(saveGame().success).toBe(true);
-    const nextSave = JSON.parse(localStorage.getItem('starForgeSave_v17'));
+    const nextSave = JSON.parse(localStorage.getItem(getActiveSaveKey()));
     expect(nextSave.version).toBe(SAVE_VERSION);
     expect(nextSave.gameState.era1).not.toHaveProperty('asymmetryBias');
     expect(nextSave.gameState.resources).not.toHaveProperty('annihilationEnergy');

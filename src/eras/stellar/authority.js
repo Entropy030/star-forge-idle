@@ -299,14 +299,31 @@ export function applyTemperatureGain(state, amount) {
 
 export function getCompressionScaling(state) {
   const alpha = state?.cosmicConstants?.alpha || 0;
-  return 1.75 + (0.03 * alpha);
+  const baseCostScaling = COSMIC_REGISTRY.constants.compressionCostScaling ?? 1.35;
+  return baseCostScaling + (0.03 * alpha);
 }
 
 export function getCompressionsCompleted(state) {
   if (!state?.era3?.compressCost) return 0;
-  const logPrimitive = state.era3.compressCost.div(10).log10();
-  const exponent = logPrimitive / Math.log10(getCompressionScaling(state));
-  return Math.max(0, Math.round(exponent));
+  const targetCost = state.era3.compressCost.toNumber();
+  if (targetCost <= 10) return 0;
+
+  const scaling = getCompressionScaling(state);
+  let cost = 10;
+  let count = 0;
+  while (cost < targetCost && count < 1000) {
+    const nextCost = Math.floor(cost * scaling);
+    if (nextCost > targetCost) {
+      if (Math.abs(targetCost - nextCost) < Math.abs(targetCost - cost)) {
+        count++;
+      }
+      break;
+    }
+    cost = nextCost;
+    count++;
+    if (cost === targetCost) break;
+  }
+  return count;
 }
 
 export function getCompressionHeatYield(state) {

@@ -45,18 +45,18 @@ describe('Persistence corruption recovery', () => {
   it('3. A direct ?playtest=1 session does not corrupt the normal save', () => {
     replaceRuntimeState(getInitialGameState());
     saveGame();
-    const normalSave = localStorage.getItem('starForgeSave_v17');
+    const normalSave = localStorage.getItem('starForgeSave_v18');
     
     enablePlaytestMode();
     gameState.activeEpoch = 5;
     saveGame(); // saves to playtest key
     
-    const newNormalSave = localStorage.getItem('starForgeSave_v17');
+    const newNormalSave = localStorage.getItem('starForgeSave_v18');
     expect(newNormalSave).toBe(normalSave);
   });
 
   it('4 & 5. A normal save whose gameState is "[object Object]" does not crash boot, is quarantined and fresh state is initialized', () => {
-    localStorage.setItem('starForgeSave_v17', '[object Object]');
+    localStorage.setItem('starForgeSave_v18', '[object Object]');
     expect(() => loadGame()).not.toThrow();
     
     // Check quarantine
@@ -64,7 +64,7 @@ describe('Persistence corruption recovery', () => {
     const quarantineKey = keys.find(k => k.startsWith('starForgeCorruptSave_'));
     expect(quarantineKey).toBeDefined();
     expect(localStorage.getItem(quarantineKey)).toBe('[object Object]');
-    expect(localStorage.getItem('starForgeSave_v17')).toBeNull(); // active save key removed
+    expect(localStorage.getItem('starForgeSave_v18')).toBeNull(); // active save key removed
   });
 
   it('6 & 7. Runtime state replacement rejects strings, numbers, null, and arrays', () => {
@@ -93,17 +93,17 @@ describe('Persistence corruption recovery', () => {
     ]) {
       replaceRuntimeState(getInitialGameState());
       gameState.activeEpoch = 3;
-      localStorage.setItem('starForgeSave_v17', payload);
+      localStorage.setItem('starForgeSave_v18', payload);
 
       expect(() => loadGame()).not.toThrow();
       expect(gameState.activeEpoch).toBe(1);
-      expect(localStorage.getItem('starForgeSave_v17')).toBeNull();
+      expect(localStorage.getItem('starForgeSave_v18')).toBeNull();
     }
   });
 
   it('retains at most three corrupt-save quarantine entries', () => {
     for (let attempt = 0; attempt < 5; attempt += 1) {
-      localStorage.setItem('starForgeSave_v17', `{invalid-${attempt}`);
+      localStorage.setItem('starForgeSave_v18', `{invalid-${attempt}`);
       loadGame();
     }
 
@@ -114,7 +114,7 @@ describe('Persistence corruption recovery', () => {
   it('storage quota failure during import preserves the active runtime state', () => {
     const imported = getInitialGameState();
     imported.activeEpoch = 3;
-    const encoded = btoa(JSON.stringify({ version: 17, gameState: serializeState(imported) }));
+    const encoded = btoa(JSON.stringify({ version: 18, gameState: serializeState(imported) }));
     const originalSetItem = Storage.prototype.setItem;
     Storage.prototype.setItem = () => { throw new DOMException('quota', 'QuotaExceededError'); };
 
@@ -132,10 +132,10 @@ describe('Persistence corruption recovery', () => {
     sessionStorage.setItem('starForgeRealSaveBackup', '{invalid');
 
     expect(disablePlaytestMode()).toBe(false);
-    expect(getActiveSaveKey()).toBe('starForgePlaytestSave_v17');
+    expect(getActiveSaveKey()).toBe('starForgePlaytestSave_v18');
 
     sessionStorage.setItem('starForgeRealSaveBackup', JSON.stringify(serializeState(getInitialGameState())));
     expect(disablePlaytestMode()).toBe(true);
-    expect(getActiveSaveKey()).toBe('starForgeSave_v17');
+    expect(getActiveSaveKey()).toBe('starForgeSave_v18');
   });
 });

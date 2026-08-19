@@ -12,9 +12,9 @@ import { disablePlaytestMode, preparePlaytestBoot } from '../src/dev/playtestMod
 import { gameState, getInitialGameState, replaceRuntimeState } from '../src/core/state.js';
 import { serializeState } from '../src/state/serialization.js';
 
-function installSave({ state = getInitialGameState(), savedAt, key = 'starForgeSave_v17' }) {
+function installSave({ state = getInitialGameState(), savedAt, key = 'starForgeSave_v18' }) {
   localStorage.setItem(key, JSON.stringify({
-    version: 17,
+    version: 18,
     gameState: serializeState(state),
     lastSavedTime: savedAt
   }));
@@ -93,7 +93,7 @@ describe('structured offline load metadata', () => {
   });
 
   it('gives rejected data no offline credit', () => {
-    localStorage.setItem('starForgeSave_v17', '{invalid');
+    localStorage.setItem('starForgeSave_v18', '{invalid');
 
     const metadata = loadGame({ now: 100_000 });
 
@@ -109,7 +109,7 @@ describe('structured offline load metadata', () => {
     const imported = getInitialGameState();
     imported.resources.quantumFluctuations.amount = new Decimal(99);
     const encoded = btoa(JSON.stringify({
-      version: 17,
+      version: 18,
       gameState: serializeState(imported),
       lastSavedTime: 1_000
     }));
@@ -130,12 +130,12 @@ describe('structured offline load metadata', () => {
     const playtest = getInitialGameState();
     playtest.activeEpoch = 3;
     installSave({ state: normal, savedAt: 1_000 });
-    installSave({ state: playtest, savedAt: 1_000, key: 'starForgePlaytestSave_v17' });
+    installSave({ state: playtest, savedAt: 1_000, key: 'starForgePlaytestSave_v18' });
 
     expect(preparePlaytestBoot('?playtest=1')).toBe(true);
     const metadata = loadGame({ now: 100_000 });
 
-    expect(getActiveSaveKey()).toBe('starForgePlaytestSave_v17');
+    expect(getActiveSaveKey()).toBe('starForgePlaytestSave_v18');
     expect(metadata).toMatchObject({
       loaded: true,
       source: 'playtest-save',
@@ -143,6 +143,6 @@ describe('structured offline load metadata', () => {
       creditedElapsedSeconds: 0
     });
     expect(gameState.activeEpoch).toBe(3);
-    expect(localStorage.getItem('starForgeSave_v17')).not.toBeNull();
+    expect(localStorage.getItem('starForgeSave_v18')).not.toBeNull();
   });
 });

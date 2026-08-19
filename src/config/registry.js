@@ -76,6 +76,7 @@ export const COSMIC_REGISTRY = {
   constants: {
     baseCompressionHeat: 3500000,
     compressionScaling: 1.15,
+    compressionCostScaling: 1.35,
     inflationThreshold: 100000,
     recombinationProtonThreshold: 1000000,
     supernovaTempThreshold: 100000000,
