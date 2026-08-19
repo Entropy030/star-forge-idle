@@ -53,16 +53,16 @@ NEEDS DEDICATED UI NORMALIZATION
 - Structured first/repeat Supernova transformation preview (RESET, PERSISTS, GAIN, NEXT) with explicit distinction from permanent Galactic Ignition.
 - Durable Legacy upgrade persistence across Supernova for Stardust, Pulsar, and Singularity upgrade families (D32).
 
-### P5.3 — Incremental Economy & Agency (In Progress)
+### P5.3 — Incremental Economy & Agency (Complete & Human Approved)
 Addresses the symptom of linear upgrade clicking in Era I and early Era III:
 - Transition from simple unlock ladders to systemic operations:
   $$\text{STOCK} \longrightarrow \text{FLOW} \longrightarrow \text{CONVERSION} \longrightarrow \text{ALLOCATION / POLICY} \longrightarrow \text{TRANSFORMATION}$$
 - **P5.3A Complete & Human Approved (D28, D30):** Discrete 3-state Vacuum Field Allocation (`PROPAGATION`, `BALANCED`, `STABILIZATION`) in Era I, trading immediate Fundamental Law throughput for Vacuum Stabilization, with accumulated Coherence acting as dynamic Field Quality feedback on established Fundamental Laws.
 - **P5.3B0 Complete & Human Approved (D33):** Stellar Authority & Automation Parity Reconciliation.
 - **P5.3B1 Complete & Human Approved (D29):** Era-III Hydrostatic Stellar Engine Model B1 (Capacity / Throughput + Thermal Capability).
-- **P5.3C Next (Not Started):** Cross-Era Integration & Regression.
+- **P5.3C Complete & Human Approved (D34):** Cross-Era Integration & Regression. Reconciles physical systems, boundaries, offline rules, save v17, and responsive surfaces.
 
-### P5.4 — Coarse Balance & Full Run (Future Scope)
+### P5.4 — Coarse Balance & Full Run (Next Scope)
 - Verify end-to-end viability of all progression routes across orders of magnitude.
 - Validate balance between Era-II cooling and matter synthesis pathways.
 - Ensure human playtest full runs can smoothly navigate Era I through Supernova reset without artificial bottlenecks.

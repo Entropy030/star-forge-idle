@@ -381,12 +381,12 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 6. **Prior Era Upgrades:** Quantum and Plasma upgrade families are not restored into the fresh post-Supernova Era-III run.
 7. **Shop Discoverability:** Owning a Legacy upgrade keeps its corresponding Legacy shop section discoverable in the UI even when the associated currency balance is zero.
 8. **Automation Mastery Protection:** Automation acquired through persistent Legacy progression remains owned across Supernova (specifically including Pulsar Auto-Compressor ownership).
-9. **Scope Boundary:** This decision defines **persistence ownership only**. It does NOT approve or alter:
-   - AutoCompress execution cadence semantics
-   - AutoCompress heat parity
-   - Inactive modifier wiring
-   - Stellar B1 formulas
-   Those remain technical work for P5.3B0 / later approved phases.
+9. **Scope Boundary — Cosmic Constants Clarification:**
+   - Cosmic Constants (`state.cosmicConstants.G`, `c`, `alpha`, `hbar`) are **NOT** included in current repeatable-Supernova Legacy persistence under D32.
+   - Repeatable Supernova creates a fresh initial state and therefore resets these values to their baseline defaults ($G=0, c=0, \alpha=0, \hbar=0$).
+   - Current reset-to-default behavior is **HUMAN APPROVED**.
+   - D33 defines the active gameplay modifier effects when non-zero constant levels exist, but does NOT grant persistence across Supernova.
+   - Future later-era / deep future ownership and persistence semantics are **DEFERRED** until Cosmic Tuning scope is formally implemented.
 10. **Save Version Invariance:** Save version remains `17`. No schema migration is required.
 
 **Status:**
@@ -424,3 +424,36 @@ This is a lightweight record of settled current contracts. Proposed work belongs
 - `TECHNICAL RECONCILIATION APPROVED: YES`
 - `PRODUCTION IMPLEMENTED: YES` (Implemented and Hardened in P5.3B0)
 - `HUMAN REVIEW APPROVED: YES` (Human Review Approved)
+
+## D34 — Cross-Era Integration & Product Cohesion (P5.3C)
+
+**Decision:**
+1. **Unified Multi-System Product Architecture:** Eras I, II, and III function as distinct physical systems inside one coherent incremental game:
+   - **Era I (Vacuum Field Allocation):** Intertemporal trade-off between immediate Fundamental Law throughput (`PROPAGATION` 1.50 / `BALANCED` 1.00 / `STABILIZATION` 0.50) and Vacuum Coherence stabilization (`PROPAGATION` 0.50 / `BALANCED` 1.00 / `STABILIZATION` 2.50; yielding 0.05, 0.10, and 0.25 pp/s passive coherence). Accumulated Coherence provides dynamic Field Quality feedback on established laws.
+   - **Era II (Plasma Operating Postures):** Hadron balance trade-offs (`ACCUMULATE` 1.50 flux / 0.50 cooling / 0.70 binding, `BALANCE` 1.00 / 1.00 / 1.00, `CONDENSE` 0.50 flux / 1.50 cooling / 1.30 binding).
+   - **Era III (Hydrostatic Stellar Engine Model B1):** Coupled hydrostatic engine with Gravity inflow & containment ($C = 10 \times \text{inflowRate}$), Fusers H $\to$ He conversion, Compression discrete core densification, and Core Temperature reaction capability scaling ($M(T) = 1 + \log_{10}(T / 1{,}000{,}000 + 1)$) across Main Sequence, Carbon (500M K), and Iron (2.0B K) nucleosynthesis layers.
+2. **Recombination Handoff Boundary:**
+   - Player-facing P5 handoff seed is strictly and deterministically $250\text{ Hydrogen}$.
+   - Authoritative `TRIGGER_RECOMBINATION` command transitions state to `activeEpoch = 3`, `era3.temperature = 0 K`, and `era3.stage = 'Protostar'`.
+   - `getPresetFreshEraIII()` is an isolated development fixture initializing at $2000\text{ K}$ for bootstrap testing, not the authoritative transition result.
+   - Vacuum Coherence and Era-II Posture do not become active Era-III physical mechanics.
+   - `antimatterResidue` accumulation during Recombination is preserved as dormant compatibility state.
+3. **Supernova Reset vs Galactic Ignition Gateway Boundary:**
+   - **Supernova Collapse:** Repeatable Era-III Legacy reset. Resets stellar core to $0\text{ K}$ and Protostar stage, clears run-local stockpiles (H, He, C, Fe), resets run-local stellar upgrades, awards Stardust, Pulsar Shards, and Singularity Mass, and unlocks second-run modifiers while remaining in Era III (`activeEpoch = 3`). Prior-era Quantum and Plasma upgrade families are not restored.
+   - **Galactic Ignition:** Forward progression gateway into Era IV. Evaluated strictly in Era III (`activeEpoch === 3`, $T \ge 2{,}000{,}000{,}000\text{ K}$, $\text{Fe} \ge 1{,}000$). Successful execution transitions `activeEpoch` to 4. Supernova never alters `activeEpoch` to 4.
+4. **Deterministic Offline Simulation Boundary:**
+   - All eras share `advanceGameTick()` for deterministic offline catch-up in bounded steps.
+   - Offline simulation advances passive physical accumulation and cooling, but never triggers major player transformations (`TRIGGER_INFLATION`, `TRIGGER_RECOMBINATION`, `TRIGGER_SUPERNOVA`, `TRIGGER_GALACTIC_IGNITION`).
+   - Era-III offline ticks strictly suppress AutoBuyer, AutoCompress, and new Flare spawns. Readiness is not consent.
+5. **Presentation & Controller Surface Isolation:**
+   - Era-I Vacuum Allocation controller is visible only when relevant in Era I.
+   - Era-II Posture controller is visible only in Era II.
+   - Era-III Stellar Machine process and diagnostic presentation are visible only in Era III and clean after Supernova.
+   - No cross-era DOM collision, orphaned modal overlays, or duplicate dispatches.
+6. **Save Schema Invariance:** Save version remains `17` with full multi-era roundtrip serialization.
+7. **P5.4 Scope Boundary:** Exact numerical tuning, pacing curves, and route calibration belong exclusively to P5.4.
+
+**Status:**
+- `DESIGN APPROVED: YES`
+- `PRODUCTION VERIFIED: YES` (Verified via 61 Fast Suites / 44 Playwright Specs)
+- `HUMAN REVIEW APPROVED: YES` (P5.3C Human Approved)

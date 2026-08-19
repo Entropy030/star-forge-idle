@@ -369,19 +369,20 @@ All Product Gates for P5 have been formally reviewed and approved by Human Revie
   - D29 defines Core Temperature as the active physical capability state of the Hydrostatic Stellar Engine.
   - Improves cross-era semantic-location consistency without requiring DOM restructuring.
   - Hydrogen, Helium, Carbon, and Iron remain dynamically assigned to Support and Detail roles.
-- **Status:** `HUMAN APPROVED (D31) — SEMANTIC PRIMARY SLOT IMPLEMENTED IN P5.2A (B1 Coupling & Diagnostics Implemented Locally in P5.3B1, Awaiting Human Review, Not Published)`
+- **Status:** `HUMAN APPROVED (D31) — SEMANTIC PRIMARY SLOT IMPLEMENTED IN P5.2A (B1 Coupling & Diagnostics Implemented & Published in P5.3B1)`
 
 ### Technical Status & Remaining Boundaries:
 1. **P5.2A & P5.2B Complete & Human Approved:** Semantic Progression & Resource Grammar Foundation, Current Transitions & First Supernova / Legacy Onboarding implemented, verified, and published.
 2. **P5.3A Complete & Human Approved:** Era-I Vacuum Field Allocation implemented, verified, and published.
 3. **P5.3B0 Complete & Human Approved:** Stellar Authority & Automation Parity Reconciliation implemented, verified, and published.
-4. **P5.3B1 Implemented Locally (Awaiting Human Review, Not Published):** Hydrostatic Stellar Engine Model B1 implemented on reconciled authority with pure containment capacity, active thermal capability, Protostar bootstrap preservation, hard thermal gates, continuous decimal flow step, machine snapshot, and bottleneck selector. (D29 remains awaiting Human Review before publication).
-5. **Exact Calibration Unresolved:** Exact numerical multipliers, quality curves, containment scaling, and pacing remain deliberately unresolved and belong to P5.4 coarse balancing.
+4. **P5.3B1 Complete & Human Approved (D29):** Hydrostatic Stellar Engine Model B1 implemented, verified, approved, and published.
+5. **P5.3C Complete & Human Approved (D34):** Cross-Era Integration & Regression Suite verified, evidence reconciled, human approved, and published.
+6. **Exact Calibration Unresolved:** Exact numerical multipliers, quality curves, containment scaling, and pacing remain deliberately unresolved and belong to P5.4 coarse balancing.
 
 ---
 
 ```
 P5 IMPLEMENTATION PLAN
 TARGET FILE: docs/13_P5_IMPLEMENTATION_PLAN.md
-STATUS: HUMAN APPROVED — PUBLISHED EXECUTION CONTRACT (P5.3B1 IMPLEMENTED LOCALLY, AWAITING HUMAN REVIEW, NOT PUBLISHED)
+STATUS: HUMAN APPROVED — PUBLISHED EXECUTION CONTRACT (P5.3C COMPLETE, P5.4 NEXT)
 ```
