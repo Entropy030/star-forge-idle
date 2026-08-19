@@ -6,10 +6,17 @@ import { engine } from '../src/engine/instance.js';
 import { advanceGameTick } from '../src/core/runtimeTick.js';
 import { getInflationEligibility } from '../src/eras/quantum/inflation.js';
 import { getQuantumUpgradeEligibility } from '../src/eras/quantum/eligibility.js';
-import { getVacuumAllocationProfile, getVacuumCoherenceRates } from '../src/eras/quantum/coherence.js';
 import { getPlasmaUpgradeEligibility, getPlasmaUpgradePurchaseDetails, getRecombinationEligibility } from '../src/eras/plasma/eligibility.js';
-import { getSupernovaEligibility, getSupernovaOutcome, getGalacticIgnitionEligibility, getStellarBottleneck, getStellarMachineSnapshot } from '../src/eras/stellar/selectors.js';
-import { getThermalReactionMultiplier, getContainmentCapacity, getCompressionsCompleted } from '../src/eras/stellar/authority.js';
+import { getSupernovaEligibility, getSupernovaOutcome, getGalacticIgnitionEligibility } from '../src/eras/stellar/selectors.js';
+import {
+  getFusionFuelRequirement,
+  getFusionFuelCost,
+  getHydrogenProductionRate,
+  getCompressionScaling,
+  getCompressionHeatYield,
+  executeCompression,
+  getCompressionsCompleted
+} from '../src/eras/stellar/authority.js';
 import { COSMIC_REGISTRY } from '../src/config/registry.js';
 
 class TelemetryCollector {
@@ -21,30 +28,17 @@ class TelemetryCollector {
     this.strategicChanges = 0;
     this.majorTransformations = 0;
     this.elapsedSeconds = 0;
-    this.eraMetrics = {
-      1: { elapsedSec: 0, clicks: 0, routinePurchases: 0, strategicChanges: 0, maxNoDecisionSec: 0 },
-      2: { elapsedSec: 0, clicks: 0, routinePurchases: 0, strategicChanges: 0, maxNoDecisionSec: 0 },
-      3: { elapsedSec: 0, clicks: 0, routinePurchases: 0, strategicChanges: 0, maxNoDecisionSec: 0 },
-      secondRun: { elapsedSec: 0, clicks: 0, routinePurchases: 0, strategicChanges: 0, maxNoDecisionSec: 0 }
-    };
-    this.lastDecisionTime = 0;
+    this.longestCheckpointGapSec = 0;
+    this.lastCheckpointTime = 0;
     this.currentEra = 1;
-  }
-
-  recordDecision(timeSec, era) {
-    const eraKey = this.currentEra === 3 && gameState.meta?.stellarRunsCompleted > 0 ? 'secondRun' : era;
-    const gap = timeSec - this.lastDecisionTime;
-    if (this.eraMetrics[eraKey]) {
-      if (gap > this.eraMetrics[eraKey].maxNoDecisionSec) {
-        this.eraMetrics[eraKey].maxNoDecisionSec = gap;
-      }
-    }
-    this.lastDecisionTime = timeSec;
   }
 
   checkpoint(label, primaryBottleneck, playerDecision, attentionReq) {
     const prevTime = this.checkpoints.length > 0 ? this.checkpoints[this.checkpoints.length - 1].elapsedSec : 0;
     const deltaSec = this.elapsedSeconds - prevTime;
+    if (deltaSec > this.longestCheckpointGapSec) {
+      this.longestCheckpointGapSec = deltaSec;
+    }
     const cp = {
       label,
       era: this.currentEra,
@@ -58,7 +52,7 @@ class TelemetryCollector {
       attentionReq
     };
     this.checkpoints.push(cp);
-    this.recordDecision(this.elapsedSeconds, this.currentEra);
+    this.lastCheckpointTime = this.elapsedSeconds;
     return cp;
   }
 }
@@ -69,9 +63,9 @@ export function runNaturalSimulation(profileName, strategyOptions = {}) {
   const telemetry = new TelemetryCollector(profileName);
 
   const dt = 0.1;
-  let maxGameSeconds = strategyOptions.maxSeconds || 14400;
+  const maxGameSeconds = strategyOptions.maxSeconds || 14400;
 
-  let checkpointsHit = new Set();
+  const checkpointsHit = new Set();
 
   function hitCheckpoint(id, label, bottleneck, decision, attention) {
     if (!checkpointsHit.has(id)) {
@@ -85,17 +79,12 @@ export function runNaturalSimulation(profileName, strategyOptions = {}) {
   let lastAllocationChangeTime = 0;
   let manualCompressionCount = 0;
   let compressionsBefore10M = 0;
-  let compressionsBefore500M = 0;
-  let compressionsBefore2B = 0;
 
-  let chosenArchitecture = strategyOptions.architecture || 'efficient';
-  let secondRunStarted = false;
-  let secondRunStartSec = 0;
+  const chosenArchitecture = strategyOptions.architecture || 'efficient';
 
   for (let sec = 0; sec < maxGameSeconds; sec += dt) {
     telemetry.elapsedSeconds = sec;
     telemetry.currentEra = gameState.activeEpoch;
-    const isSecondRun = (gameState.meta?.stellarRunsCompleted || 0) > 0;
 
     // Advance 1 simulation tick
     advanceGameTick(dt, null, { mode: 'live' });
@@ -105,7 +94,7 @@ export function runNaturalSimulation(profileName, strategyOptions = {}) {
     const canInteract = (sec - lastActionTime) >= interactionCadenceSec;
 
     // ==========================================
-    // ERA 1
+    // ERA 1: QUANTUM FOAM
     // ==========================================
     if (gameState.activeEpoch === 1) {
       if (gameState.resources.quantumFluctuations.amount.gt(0)) {
@@ -192,7 +181,7 @@ export function runNaturalSimulation(profileName, strategyOptions = {}) {
     }
 
     // ==========================================
-    // ERA 2
+    // ERA 2: PRIMORDIAL SOUP
     // ==========================================
     else if (gameState.activeEpoch === 2) {
       if (canInteract && gameState.upgrades.plasma.quarkCondenser.level === 0 && gameState.resources.quarks.amount.lt(20)) {
@@ -258,10 +247,10 @@ export function runNaturalSimulation(profileName, strategyOptions = {}) {
         }
       }
 
-      // Recombination eligibility check
+      // Recombination eligibility check (OR condition: Protons >= 1M OR Temp <= 3000K)
       const recombElig = getRecombinationEligibility(gameState);
       if (recombElig.isEligible) {
-        hitCheckpoint('e2_recomb_ready', 'Recombination ready (<=3000K & 1000 Protons)', 'None', 'Trigger Recombination', 'High');
+        hitCheckpoint('e2_recomb_ready', 'Recombination ready (<=3000K or 1M Protons)', 'None', 'Trigger Recombination', 'High');
         if (canInteract) {
           const res = engine.dispatch({ type: 'TRIGGER_RECOMBINATION' });
           if (res?.ok) {
@@ -274,14 +263,9 @@ export function runNaturalSimulation(profileName, strategyOptions = {}) {
     }
 
     // ==========================================
-    // ERA 3
+    // ERA 3: STELLAR DAWN (Protostar -> Main Sequence)
     // ==========================================
     else if (gameState.activeEpoch === 3) {
-      if (isSecondRun && !secondRunStarted) {
-        secondRunStarted = true;
-        secondRunStartSec = sec;
-      }
-
       // Flares collection
       if (gameState.flares && gameState.flares.active) {
         if (canInteract) {
@@ -291,9 +275,8 @@ export function runNaturalSimulation(profileName, strategyOptions = {}) {
       }
 
       // Architecture purchase
-      if (canInteract && !isSecondRun) {
+      if (canInteract) {
         const archState = gameState.upgrades.stellar[chosenArchitecture];
-        const archDef = COSMIC_REGISTRY.upgrades.stellar[chosenArchitecture];
         if (archState && archState.level < 5 && gameState.resources.helium.amount.gte(archState.cost)) {
           const res = engine.dispatch({ type: 'BUY_UPGRADE_STELLAR', payload: { category: 'stellar', upgradeId: chosenArchitecture } });
           if (res?.ok) {
@@ -337,8 +320,6 @@ export function runNaturalSimulation(profileName, strategyOptions = {}) {
             manualCompressionCount++;
             const t = gameState.era3.temperature.toNumber();
             if (t < 10000000) compressionsBefore10M++;
-            if (t < 500000000) compressionsBefore500M++;
-            if (t < 2000000000) compressionsBefore2B++;
 
             hitCheckpoint('e3_first_compress', 'First Compression', 'Helium stock', 'Increase Core Temperature', 'High');
             lastActionTime = sec;
@@ -350,99 +331,6 @@ export function runNaturalSimulation(profileName, strategyOptions = {}) {
         if (temp >= 10000000) {
           hitCheckpoint('e3_10m_main_seq', '10M K Main Sequence reached', 'Helium / Compression', 'Stage promotion', 'Medium');
         }
-
-        // 4. Carbon Node (Unlocked at 500M K)
-        if (temp >= 500000000 && era3.stage === 'Main Sequence Star') {
-          hitCheckpoint('e3_500m_carbon', '500M K Carbon synthesis available', 'Temperature gate', 'Unlock Carbon nucleosynthesis', 'Medium');
-          const carbonCost = era3.carbonYield.eq(0) ? era3.carbonCostHelium : era3.carbonCostCarbon;
-          const carbonCur = era3.carbonYield.eq(0) ? gameState.resources.helium.amount : gameState.resources.carbon.amount;
-          if (carbonCur.gte(carbonCost)) {
-            const res = engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'carbon' } });
-            if (res?.ok) {
-              telemetry.routinePurchases++;
-              lastActionTime = sec;
-            }
-          }
-        }
-
-        // 5. Iron Node (Unlocked at 2.0B K)
-        if (temp >= 2000000000 && era3.stage === 'Main Sequence Star') {
-          hitCheckpoint('e3_2b_iron', '2.0B K Iron synthesis available', 'Temperature gate', 'Unlock Iron nucleosynthesis', 'Medium');
-          const ironCost = era3.ironYield.eq(0) ? era3.ironCostCarbon : era3.ironCostIron;
-          const ironCur = era3.ironYield.eq(0) ? gameState.resources.carbon.amount : gameState.resources.iron.amount;
-          if (ironCur.gte(ironCost)) {
-            const res = engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'iron' } });
-            if (res?.ok) {
-              telemetry.routinePurchases++;
-              lastActionTime = sec;
-            }
-          }
-        }
-
-        // Iron stockpile checkpoint
-        if (gameState.resources.iron.amount.gte(1000)) {
-          hitCheckpoint('e3_1000_fe', '1,000 Fe accumulated', 'Iron production rate', 'Meet Supernova/Galactic Ignition Iron requirement', 'Low');
-        }
-
-        // Second run Legacy purchase logic
-        if (isSecondRun) {
-          hitCheckpoint('sr_checkpoint', 'Representative Second-Run active', 'Legacy acceleration', 'Accelerate stellar run with Stardust/Pulsar upgrades', 'Medium');
-
-          // Buy Stardust upgrades if affordable
-          const stardustUpgrades = ['fusionDiscount', 'thermalInsulation', 'gravityDiscount'];
-          for (const sKey of stardustUpgrades) {
-            const up = gameState.upgrades.stardust[sKey];
-            const def = COSMIC_REGISTRY.upgrades.stardust[sKey];
-            if (up && def && (def.max === undefined || up.level < def.max) && gameState.currencies.stardust.amount.gte(up.cost)) {
-              const res = engine.dispatch({ type: 'BUY_UPGRADE_STELLAR', payload: { category: 'stardust', upgradeId: sKey } });
-              if (res?.ok) {
-                telemetry.routinePurchases++;
-                hitCheckpoint('sr_first_legacy_buy', 'First meaningful Legacy purchase', 'Stardust currency', 'Persistent fusion / thermal efficiency', 'High');
-              }
-            }
-          }
-
-          // Buy Pulsar upgrade
-          const pulsarUp = gameState.upgrades.pulsar.autoCompress;
-          if (pulsarUp && pulsarUp.level < 10 && gameState.currencies.pulsarShards.amount.gte(pulsarUp.cost)) {
-            const res = engine.dispatch({ type: 'BUY_UPGRADE_STELLAR', payload: { category: 'pulsar', upgradeId: 'autoCompress' } });
-            if (res?.ok) {
-              telemetry.routinePurchases++;
-              hitCheckpoint('sr_first_legacy_buy', 'First meaningful Legacy purchase', 'Pulsar Shard currency', 'Pulsar Auto-Compressor', 'High');
-            }
-          }
-
-          if (sec - secondRunStartSec >= 300) {
-            hitCheckpoint('sr_noticeable_accel', 'Noticeable Second-Run acceleration (5 min mark)', 'Stardust / Pulsar mastery', 'Faster compression and fusion pacing', 'Medium');
-          }
-        }
-      }
-
-      // Check Supernova readiness
-      const snElig = getSupernovaEligibility(gameState);
-      if (snElig.canTrigger) {
-        if (!isSecondRun) {
-          hitCheckpoint('e3_sn_ready', 'Supernova ready', 'None', 'Trigger Supernova Collapse', 'High');
-          if (canInteract) {
-            const snRes = engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
-            if (snRes?.ok) {
-              telemetry.majorTransformations++;
-              hitCheckpoint('e3_sn_exec', 'Supernova executed (First Prestige Reset)', 'None', 'Start Second Stellar Run with Legacy Currencies', 'High');
-              lastActionTime = sec;
-            }
-          }
-        } else {
-          hitCheckpoint('sr_sn_ready', 'Second Run Supernova ready', 'None', 'Repeatable Prestige Reset', 'Medium');
-        }
-      }
-
-      // Check Galactic Ignition readiness
-      const giElig = getGalacticIgnitionEligibility(gameState);
-      if (giElig.isEligible) {
-        hitCheckpoint('gi_ready', 'Galactic Ignition (Era IV Gateway) ready', 'None', 'Gateway to Era IV', 'High');
-        if (strategyOptions.stopAtGalacticIgnition) {
-          break;
-        }
       }
     }
   }
@@ -451,145 +339,269 @@ export function runNaturalSimulation(profileName, strategyOptions = {}) {
     profileName,
     telemetry,
     checkpoints: telemetry.checkpoints,
+    longestCheckpointGapSec: telemetry.longestCheckpointGapSec,
     manualCompressionCount,
     compressionsBefore10M,
-    compressionsBefore500M,
-    compressionsBefore2B,
     finalState: {
       activeEpoch: gameState.activeEpoch,
       temperature: gameState.era3?.temperature?.toNumber() || 0,
       stage: gameState.era3?.stage || '',
-      supernovas: gameState.stats?.supernovas?.toNumber() || 0,
-      stardust: gameState.currencies?.stardust?.amount?.toNumber() || 0,
-      pulsarShards: gameState.currencies?.pulsarShards?.amount?.toNumber() || 0,
-      singularityMass: gameState.currencies?.singularityMass?.amount?.toNumber() || 0,
-      iron: gameState.resources?.iron?.amount?.toNumber() || 0
+      supernovas: gameState.stats?.supernovas?.toNumber() || 0
     }
   };
 }
 
-describe('P5.4A: Natural Full-Run Characterization Suite', () => {
-  it('characterizes Profile A (Informed), Profile B (Low Attention), and Profile C (Simple)', () => {
-    const profiles = [
-      { name: 'INFORMED', options: { checkIntervalSec: 1.0, allocCooldownSec: 10, postureCooldownSec: 15, architecture: 'efficient', maxSeconds: 5000 } },
-      { name: 'LOW_ATTENTION', options: { checkIntervalSec: 10.0, allocCooldownSec: 60, postureCooldownSec: 60, architecture: 'compact', maxSeconds: 6000 } },
-      { name: 'SIMPLE', options: { checkIntervalSec: 3.0, allocCooldownSec: 30, postureCooldownSec: 30, architecture: 'massive', maxSeconds: 5500 } }
-    ];
+describe('P5.4A: Natural-Run Evidence Reconciliation Suite', () => {
 
-    const results = {};
+  // ============================================================================
+  // LANE A: NATURAL FRESH-STATE OBSERVATION (Bounded Simulation)
+  // ============================================================================
+  describe('Lane A: Natural Fresh-State Observation (Bounded Simulation)', () => {
+    it('characterizes Profile A (Informed), Profile B (Low Attention), and Profile C (Simple) to Main Sequence', () => {
+      const profiles = [
+        { name: 'INFORMED', options: { checkIntervalSec: 1.0, allocCooldownSec: 10, postureCooldownSec: 15, architecture: 'efficient', maxSeconds: 5000 } },
+        { name: 'LOW_ATTENTION', options: { checkIntervalSec: 10.0, allocCooldownSec: 60, postureCooldownSec: 60, architecture: 'compact', maxSeconds: 6000 } },
+        { name: 'SIMPLE', options: { checkIntervalSec: 3.0, allocCooldownSec: 30, postureCooldownSec: 30, architecture: 'massive', maxSeconds: 5500 } }
+      ];
 
-    for (const p of profiles) {
+      for (const p of profiles) {
+        console.log(`\n================================================================================`);
+        console.log(`>>> LANE A: NATURAL OBSERVATION PROFILE: ${p.name}`);
+        console.log(`================================================================================`);
+        const res = runNaturalSimulation(p.name, p.options);
+
+        console.log(`Checkpoints hit: ${res.checkpoints.length}`);
+        console.log(`Longest Checkpoint Gap: ${res.longestCheckpointGapSec.toFixed(1)}s`);
+        console.log(`Manual Compressions: Total=${res.manualCompressionCount} (Before 10M: ${res.compressionsBefore10M})`);
+        console.log(`Final State: ActiveEpoch=${res.finalState.activeEpoch}, Stage=${res.finalState.stage}, Temp=${res.finalState.temperature} K`);
+
+        console.log(`\nCHECKPOINT LOG (${p.name}):`);
+        console.log(`-------------------------------------------------------------------------------------------------------------------------`);
+        console.log(`Checkpoint                                | Elapsed (s) | Delta (s) | Clicks | Routine Buy | Strat Changes | Primary Bottleneck`);
+        console.log(`-------------------------------------------------------------------------------------------------------------------------`);
+        let prevBuys = 0;
+        for (const cp of res.checkpoints) {
+          const label = cp.label.padEnd(41, ' ');
+          const elapsed = (cp.elapsedSec.toFixed(1) + 's').padStart(11, ' ');
+          const delta = (cp.deltaSec.toFixed(1) + 's').padStart(9, ' ');
+          const clicks = String(cp.totalClicks).padStart(6, ' ');
+          const buys = String(cp.routinePurchases).padStart(11, ' ');
+          const strat = String(cp.strategicChanges).padStart(13, ' ');
+          const bneck = cp.primaryBottleneck;
+          console.log(`${label} | ${elapsed} | ${delta} | ${clicks} | ${buys} | ${strat} | ${bneck}`);
+
+          // Sanity assertion: cumulative buys must never decrease
+          expect(cp.routinePurchases).toBeGreaterThanOrEqual(prevBuys);
+          prevBuys = cp.routinePurchases;
+        }
+
+        expect(res.checkpoints.some(c => c.label.includes('Inflation executed'))).toBe(true);
+        expect(res.checkpoints.some(c => c.label.includes('Recombination executed'))).toBe(true);
+        expect(res.checkpoints.some(c => c.label.includes('10M K Main Sequence reached'))).toBe(true);
+      }
+    });
+  });
+
+  // ============================================================================
+  // LANE B: EXACT AUTHORITY & MATHEMATICAL PROJECTION (Zero-Meta Baseline)
+  // ============================================================================
+  describe('Lane B: Exact Authority & Mathematical Projection (Zero-Meta Baseline)', () => {
+    it('verifies exact H->He fuel cost authority: baseline is 10 H, NOT 50 H', () => {
+      const state = createInitialState();
+
+      // 1. Baseline: 0 fusionDiscount, 0 Efficient => 10 H / He
+      expect(getFusionFuelRequirement(state).toNumber()).toBe(10);
+      expect(getFusionFuelCost(state).toNumber()).toBe(10);
+
+      // 2. Fusion Discount L1 => 8 H / He
+      state.upgrades.stardust.fusionDiscount.level = 1;
+      expect(getFusionFuelRequirement(state).toNumber()).toBe(8);
+      expect(getFusionFuelCost(state).toNumber()).toBe(8);
+
+      // 3. Efficient L5, 0 Fusion Discount => 10 / 1.5 = 6.6667 H / He
+      state.upgrades.stardust.fusionDiscount.level = 0;
+      state.upgrades.stellar.efficient.level = 5;
+      expect(getFusionFuelRequirement(state).toNumber()).toBe(10);
+      expect(getFusionFuelCost(state).toNumber()).toBeCloseTo(10 / 1.5, 4);
+
+      // 4. Efficient L5 + Fusion Discount L1 => 8 / 1.5 = 5.3333 H / He
+      state.upgrades.stardust.fusionDiscount.level = 1;
+      state.upgrades.stellar.efficient.level = 5;
+      expect(getFusionFuelRequirement(state).toNumber()).toBe(8);
+      expect(getFusionFuelCost(state).toNumber()).toBeCloseTo(8 / 1.5, 4);
+    });
+
+    it('verifies Gravity-20 inflow authority with milestone multiplier: 220 H/s baseline', () => {
+      const state = createInitialState();
+      state.activeEpoch = 3;
+      state.era3.gravity = new Decimal(20);
+
+      // Gravity 20 gives +10% milestone multiplier (1.0 + 0.05 * 2)
+      // Rate = 20 * 10 (baseGen) * 1.10 = 220 H/s
+      const rate = getHydrogenProductionRate(state);
+      expect(rate.toNumber()).toBe(220);
+    });
+
+    it('executes the exact sequential compression curve and records exact crossings for 10M, 500M, and 2.0B K', () => {
+      const state = createInitialState();
+      state.activeEpoch = 3;
+      state.era3.stage = 'Protostar';
+      state.era3.temperature = new Decimal(0);
+      state.era3.compressCost = new Decimal(10);
+
+      let cumulativeHe = new Decimal(0);
+      const sequence = [];
+
+      let crossing10M = null;
+      let crossing500M = null;
+      let crossing2B = null;
+
+      for (let comp = 1; comp <= 35; comp++) {
+        const cost = new Decimal(state.era3.compressCost);
+        state.resources.helium.amount = cost; // Provide exact required Helium
+        cumulativeHe = cumulativeHe.plus(cost);
+
+        const res = executeCompression(state);
+        expect(res.success).toBe(true);
+
+        const temp = state.era3.temperature.toNumber();
+        sequence.push({
+          compressionNumber: comp,
+          cost: cost.toNumber(),
+          heatGain: res.heatGain.toNumber(),
+          tempAfter: temp,
+          cumulativeHe: cumulativeHe.toNumber()
+        });
+
+        if (temp >= 10000000 && !crossing10M) {
+          crossing10M = { comp, cumulativeHe: cumulativeHe.toNumber(), tempAfter: temp };
+        }
+        if (temp >= 500000000 && !crossing500M) {
+          crossing500M = { comp, cumulativeHe: cumulativeHe.toNumber(), tempAfter: temp };
+        }
+        if (temp >= 2000000000 && !crossing2B) {
+          crossing2B = { comp, cumulativeHe: cumulativeHe.toNumber(), tempAfter: temp };
+        }
+      }
+
       console.log(`\n================================================================================`);
-      console.log(`>>> Running Natural Simulation Profile: ${p.name}`);
+      console.log(`LANE B: EXACT DETERMINISTIC COMPRESSION SEQUENCE (Zero-Meta Baseline)`);
       console.log(`================================================================================`);
-      const res = runNaturalSimulation(p.name, p.options);
-      results[p.name] = res;
-
-      console.log(`Checkpoints hit: ${res.checkpoints.length}`);
-      console.log(`Manual Compressions: Total=${res.manualCompressionCount} (Before 10M: ${res.compressionsBefore10M}, Before 500M: ${res.compressionsBefore500M}, Before 2B: ${res.compressionsBefore2B})`);
-      console.log(`Final State: ActiveEpoch=${res.finalState.activeEpoch}, Supernovas=${res.finalState.supernovas}, Temp=${res.finalState.temperature} K, Stardust=${res.finalState.stardust}, PulsarShards=${res.finalState.pulsarShards}, SingularityMass=${res.finalState.singularityMass}`);
-
-      console.log(`\nCHECKPOINT LOG (${p.name}):`);
-      console.log(`-------------------------------------------------------------------------------------------------------------------------`);
-      console.log(`Checkpoint                                | Elapsed (s) | Delta (s) | Clicks | Routine Buy | Strat Changes | Primary Bottleneck`);
-      console.log(`-------------------------------------------------------------------------------------------------------------------------`);
-      for (const cp of res.checkpoints) {
-        const label = cp.label.padEnd(41, ' ');
-        const elapsed = (cp.elapsedSec.toFixed(1) + 's').padStart(11, ' ');
-        const delta = (cp.deltaSec.toFixed(1) + 's').padStart(9, ' ');
-        const clicks = String(cp.totalClicks).padStart(6, ' ');
-        const buys = String(cp.routinePurchases).padStart(11, ' ');
-        const strat = String(cp.strategicChanges).padStart(13, ' ');
-        const bneck = cp.primaryBottleneck;
-        console.log(`${label} | ${elapsed} | ${delta} | ${clicks} | ${buys} | ${strat} | ${bneck}`);
+      console.log(`Comp # | Cost (He)        | Heat Gain (K)    | Temp After (K)   | Cumulative He`);
+      console.log(`--------------------------------------------------------------------------------`);
+      for (const s of sequence.slice(0, 25)) {
+        const cNum = String(s.compressionNumber).padStart(6, ' ');
+        const cost = String(s.cost).padStart(16, ' ');
+        const gain = String(s.heatGain).padStart(16, ' ');
+        const temp = String(s.tempAfter).padStart(16, ' ');
+        const cumHe = String(s.cumulativeHe).padStart(14, ' ');
+        console.log(`${cNum} | ${cost} | ${gain} | ${temp} | ${cumHe}`);
+      }
+      console.log(`...`);
+      for (const s of sequence.slice(25)) {
+        const cNum = String(s.compressionNumber).padStart(6, ' ');
+        const cost = String(s.cost).padStart(16, ' ');
+        const gain = String(s.heatGain).padStart(16, ' ');
+        const temp = String(s.tempAfter).padStart(16, ' ');
+        const cumHe = String(s.cumulativeHe).padStart(14, ' ');
+        console.log(`${cNum} | ${cost} | ${gain} | ${temp} | ${cumHe}`);
       }
 
-      expect(res.checkpoints.some(c => c.label.includes('Inflation executed'))).toBe(true);
-      expect(res.checkpoints.some(c => c.label.includes('Recombination executed'))).toBe(true);
-      expect(res.checkpoints.some(c => c.label.includes('10M K Main Sequence reached'))).toBe(true);
-    }
-  }, 120000);
+      console.log(`\nEXACT CROSSINGS CONFIRMED BY EXECUTION:`);
+      console.log(`- 10M K (Main Sequence): Compression #${crossing10M.comp} | Cumulative He: ${crossing10M.cumulativeHe.toLocaleString()} | Temp: ${crossing10M.tempAfter.toLocaleString()} K`);
+      console.log(`- 500M K (Carbon synthesis): Compression #${crossing500M.comp} | Cumulative He: ${crossing500M.cumulativeHe.toLocaleString()} | Temp: ${crossing500M.tempAfter.toLocaleString()} K`);
+      console.log(`- 2.0B K (Iron synthesis): Compression #${crossing2B.comp} | Cumulative He: ${crossing2B.cumulativeHe.toLocaleString()} | Temp: ${crossing2B.tempAfter.toLocaleString()} K`);
 
-  it('characterizes First Supernova rewards, reset/persist boundaries, and second-run acceleration', () => {
-    const state = createInitialState();
-    replaceRuntimeState(state);
+      // Verify exact crossings
+      expect(crossing10M.comp).toBe(3);
+      expect(crossing500M.comp).toBe(22);
+      expect(crossing2B.comp).toBe(32);
+    });
+  });
 
-    state.activeEpoch = 3;
-    state.era3.stage = 'Main Sequence Star';
-    state.era3.temperature = new Decimal(2050000000); // 2.05B K
-    state.era3.gravity = new Decimal(20);
-    state.era3.fusionYield = new Decimal(10);
-    state.era3.carbonYield = new Decimal(5);
-    state.era3.ironYield = new Decimal(2);
-    state.resources.hydrogen.amount = new Decimal(100000);
-    state.resources.helium.amount = new Decimal(50000);
-    state.resources.carbon.amount = new Decimal(10000);
-    state.resources.iron.amount = new Decimal(1500);
+  // ============================================================================
+  // LANE C: PREPARED-STATE PRESTIGE & SECOND-RUN CHARACTERIZATION
+  // ============================================================================
+  describe('Lane C: Prepared-State Prestige & Second-Run Characterization', () => {
+    it('characterizes First Supernova rewards, reset/persist boundaries, and second-run acceleration on prepared state', () => {
+      const state = createInitialState();
+      replaceRuntimeState(state);
 
-    const snElig = getSupernovaEligibility(state);
-    expect(snElig.canTrigger).toBe(true);
+      // Prepared state fixture for Supernova verification
+      state.activeEpoch = 3;
+      state.era3.stage = 'Main Sequence Star';
+      state.era3.temperature = new Decimal(2050000000); // 2.05B K
+      state.era3.gravity = new Decimal(20);
+      state.era3.fusionYield = new Decimal(10);
+      state.era3.carbonYield = new Decimal(5);
+      state.era3.ironYield = new Decimal(2);
+      state.resources.hydrogen.amount = new Decimal(100000);
+      state.resources.helium.amount = new Decimal(50000);
+      state.resources.carbon.amount = new Decimal(10000);
+      state.resources.iron.amount = new Decimal(1500);
 
-    const outcome = getSupernovaOutcome(state);
-    console.log(`\n================================================================================`);
-    console.log(`FIRST SUPERNOVA TRANSFORMATION PREVIEW:`);
-    console.log(`================================================================================`);
-    console.log(`Outcome Remnant: ${outcome.displayName} (${outcome.outcome})`);
-    console.log(`Predicted Stardust: ${outcome.rewards.stardust.toFixed(0)} ✨`);
-    console.log(`Predicted Pulsar Shards: ${outcome.rewards.pulsarShards.toFixed(0)} 🌀`);
-    console.log(`Predicted Singularity Mass: ${outcome.rewards.singularityMass.toFixed(0)} 🌌`);
+      const snElig = getSupernovaEligibility(state);
+      expect(snElig.canTrigger).toBe(true);
 
-    const snRes = engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
-    expect(snRes.ok).toBe(true);
+      const outcome = getSupernovaOutcome(state);
+      console.log(`\n================================================================================`);
+      console.log(`LANE C: PREPARED-STATE SUPERNOVA TRANSFORMATION PREVIEW:`);
+      console.log(`================================================================================`);
+      console.log(`Outcome Remnant: ${outcome.displayName} (${outcome.outcome})`);
+      console.log(`Predicted Stardust: ${outcome.rewards.stardust.toFixed(0)} ✨`);
+      console.log(`Predicted Pulsar Shards: ${outcome.rewards.pulsarShards.toFixed(0)} 🌀`);
+      console.log(`Predicted Singularity Mass: ${outcome.rewards.singularityMass.toFixed(0)} 🌌`);
 
-    console.log(`\nPOST-SUPERNOVA RESET STATE:`);
-    console.log(`Active Epoch: ${gameState.activeEpoch} (Stellar Dawn)`);
-    console.log(`Core Temperature: ${gameState.era3.temperature.toFixed(0)} K`);
-    console.log(`Stage: ${gameState.era3.stage} (Protostar)`);
-    console.log(`Hydrogen: ${gameState.resources.hydrogen.amount.toFixed(0)} H`);
-    console.log(`Helium: ${gameState.resources.helium.amount.toFixed(0)} He`);
-    console.log(`Carbon: ${gameState.resources.carbon.amount.toFixed(0)} C`);
-    console.log(`Iron: ${gameState.resources.iron.amount.toFixed(0)} Fe`);
-    console.log(`Stardust Balance: ${gameState.currencies.stardust.amount.toFixed(0)} ✨`);
-    console.log(`Pulsar Shards Balance: ${gameState.currencies.pulsarShards.amount.toFixed(0)} 🌀`);
-    console.log(`Singularity Mass Balance: ${gameState.currencies.singularityMass.amount.toFixed(0)} 🌌`);
-    console.log(`Stellar Runs Completed: ${gameState.meta.stellarRunsCompleted}`);
+      const snRes = engine.dispatch({ type: 'TRIGGER_SUPERNOVA' });
+      expect(snRes.ok).toBe(true);
 
-    if (gameState.currencies.stardust.amount.gte(1)) {
-      engine.dispatch({ type: 'BUY_UPGRADE_STELLAR', payload: { category: 'stardust', upgradeId: 'fusionDiscount' } });
-      engine.dispatch({ type: 'BUY_UPGRADE_STELLAR', payload: { category: 'stardust', upgradeId: 'thermalInsulation' } });
-    }
-    if (gameState.currencies.pulsarShards.amount.gte(1)) {
-      engine.dispatch({ type: 'BUY_UPGRADE_STELLAR', payload: { category: 'pulsar', upgradeId: 'autoCompress' } });
-    }
+      console.log(`\nPOST-SUPERNOVA RESET STATE (LANE C FIXTURE):`);
+      console.log(`Active Epoch: ${gameState.activeEpoch} (Stellar Dawn)`);
+      console.log(`Core Temperature: ${gameState.era3.temperature.toFixed(0)} K`);
+      console.log(`Stage: ${gameState.era3.stage} (Protostar)`);
+      console.log(`Hydrogen: ${gameState.resources.hydrogen.amount.toFixed(0)} H`);
+      console.log(`Helium: ${gameState.resources.helium.amount.toFixed(0)} He`);
+      console.log(`Stardust Balance: ${gameState.currencies.stardust.amount.toFixed(0)} ✨`);
+      console.log(`Pulsar Shards Balance: ${gameState.currencies.pulsarShards.amount.toFixed(0)} 🌀`);
 
-    console.log(`\nPURCHASED LEGACY UPGRADES:`);
-    console.log(`Fusion Discount Level: ${gameState.upgrades.stardust.fusionDiscount.level} (Fuel cost: 50 -> ${50 - 2 * gameState.upgrades.stardust.fusionDiscount.level} H)`);
-    console.log(`Thermal Insulation Level: ${gameState.upgrades.stardust.thermalInsulation.level} (Heat multiplier: +${20 * gameState.upgrades.stardust.thermalInsulation.level}%)`);
-    console.log(`Auto-Compressor Level: ${gameState.upgrades.pulsar.autoCompress.level} (${gameState.upgrades.pulsar.autoCompress.level} auto-compression/sec)`);
-
-    const dt = 0.1;
-    for (let s = 0; s < 300; s += dt) {
-      advanceGameTick(dt, null, { mode: 'live' });
-      if (gameState.resources.hydrogen.amount.gte(gameState.era3.gravityCost)) {
-        engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'gravity' } });
+      // Buy legacy upgrades with granted rewards
+      if (gameState.currencies.stardust.amount.gte(1)) {
+        engine.dispatch({ type: 'BUY_UPGRADE_STELLAR', payload: { category: 'stardust', upgradeId: 'fusionDiscount' } });
+        engine.dispatch({ type: 'BUY_UPGRADE_STELLAR', payload: { category: 'stardust', upgradeId: 'thermalInsulation' } });
       }
-      const fuserCost = gameState.era3.fusionYield.eq(0) ? gameState.era3.fuserCostHydrogen : gameState.era3.fuserCostHelium;
-      const fuserCur = gameState.era3.fusionYield.eq(0) ? gameState.resources.hydrogen.amount : gameState.resources.helium.amount;
-      if (fuserCur.gte(fuserCost)) {
-        engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'fuser' } });
+      if (gameState.currencies.pulsarShards.amount.gte(1)) {
+        engine.dispatch({ type: 'BUY_UPGRADE_STELLAR', payload: { category: 'pulsar', upgradeId: 'autoCompress' } });
       }
-      if (gameState.resources.helium.amount.gte(gameState.era3.compressCost) && gameState.upgrades.pulsar.autoCompress.level === 0) {
-        engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'compress' } });
+
+      console.log(`\nPURCHASED LEGACY UPGRADES (LANE C):`);
+      console.log(`Fusion Discount Level: ${gameState.upgrades.stardust.fusionDiscount.level} (Fuel cost: 10 -> ${getFusionFuelCost(gameState).toFixed(0)} H / He)`);
+      console.log(`Thermal Insulation Level: ${gameState.upgrades.stardust.thermalInsulation.level} (Heat multiplier: +${20 * gameState.upgrades.stardust.thermalInsulation.level}%)`);
+      console.log(`Auto-Compressor Level: ${gameState.upgrades.pulsar.autoCompress.level} (${gameState.upgrades.pulsar.autoCompress.level} auto-compression/sec)`);
+
+      const dt = 0.1;
+      for (let s = 0; s < 300; s += dt) {
+        advanceGameTick(dt, null, { mode: 'live' });
+        if (gameState.resources.hydrogen.amount.gte(gameState.era3.gravityCost)) {
+          engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'gravity' } });
+        }
+        const fuserCost = gameState.era3.fusionYield.eq(0) ? gameState.era3.fuserCostHydrogen : gameState.era3.fuserCostHelium;
+        const fuserCur = gameState.era3.fusionYield.eq(0) ? gameState.resources.hydrogen.amount : gameState.resources.helium.amount;
+        if (fuserCur.gte(fuserCost)) {
+          engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'fuser' } });
+        }
+        if (gameState.resources.helium.amount.gte(gameState.era3.compressCost) && gameState.upgrades.pulsar.autoCompress.level === 0) {
+          engine.dispatch({ type: 'BUY_CORE_NODE', payload: { key: 'compress' } });
+        }
       }
-    }
 
-    console.log(`\nSECOND RUN AT t=300s:`);
-    console.log(`Core Temperature: ${gameState.era3.temperature.toFixed(0)} K`);
-    console.log(`Stage: ${gameState.era3.stage}`);
-    console.log(`Hydrogen Inflow: ${gameState.era3.gravity.times(10).toFixed(0)} H/s`);
-    console.log(`Helium: ${gameState.resources.helium.amount.toFixed(0)} He`);
-    console.log(`Compressions Completed: ${getCompressionsCompleted(gameState)}`);
+      console.log(`\nSECOND RUN AT t=300s (LANE C BOUNDED FIXTURE):`);
+      console.log(`Core Temperature: ${gameState.era3.temperature.toFixed(0)} K`);
+      console.log(`Stage: ${gameState.era3.stage}`);
+      console.log(`Hydrogen Inflow: ${getHydrogenProductionRate(gameState).toFixed(0)} H/s`);
+      console.log(`Helium: ${gameState.resources.helium.amount.toFixed(0)} He`);
+      console.log(`Compressions Completed: ${getCompressionsCompleted(gameState)}`);
 
-    expect(gameState.era3.temperature.toNumber()).toBeGreaterThan(10000000);
+      expect(gameState.era3.temperature.toNumber()).toBeGreaterThan(10000000);
+    });
   });
 });
