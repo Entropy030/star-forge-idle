@@ -17,7 +17,8 @@ export function getStellarBottleneck(state) {
   const ironAmount = state?.resources?.iron?.amount || new Decimal(0);
 
   // 1. Supernova Ready Gate
-  if (ironAmount.gte(1000) && temp.gte(COSMIC_REGISTRY.constants.supernovaTempThreshold)) {
+  const supernovaIron = COSMIC_REGISTRY.constants.supernovaIronThreshold || 100;
+  if (ironAmount.gte(supernovaIron) && temp.gte(COSMIC_REGISTRY.constants.supernovaTempThreshold)) {
     return {
       id: 'SUPERNOVA_READY',
       label: 'Supernova Collapse Ready',
@@ -246,7 +247,8 @@ export function getSupernovaEligibility(state) {
   if (state.era3 && state.era3.stage === 'Main Sequence Star') checks.stellarStateComplete = true;
   if (state.era3 && state.era3.temperature && state.era3.temperature.gte(COSMIC_REGISTRY.constants.supernovaTempThreshold)) checks.temperatureReached = true;
   if (state.era3 && state.era3.ironYield && state.era3.ironYield.gt(0)) checks.ironFusionUnlocked = true;
-  if (state.resources && state.resources.iron && state.resources.iron.amount.gte(1000)) checks.ironReached = true;
+  const supernovaIronReq = COSMIC_REGISTRY.constants.supernovaIronThreshold || 100;
+  if (state.resources && state.resources.iron && state.resources.iron.amount.gte(supernovaIronReq)) checks.ironReached = true;
 
   if (!checks.correctEpoch) errorCode = 'WRONG_EPOCH';
   else if (!checks.stellarStateComplete) errorCode = 'INCOMPLETE_STELLAR_STATE';
@@ -260,7 +262,7 @@ export function getSupernovaEligibility(state) {
 
 export function getGalacticIgnitionEligibility(state) {
   const temperatureThreshold = COSMIC_REGISTRY.resources.iron.unlockTemp;
-  const ironThreshold = new Decimal(1000);
+  const ironThreshold = new Decimal(COSMIC_REGISTRY.constants.galacticIgnitionIronThreshold || 1000);
   const correctEpoch = state.activeEpoch === 3;
   const temperature = state.era3?.temperature || new Decimal(0);
   const iron = state.resources?.iron?.amount || new Decimal(0);

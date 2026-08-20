@@ -31,7 +31,7 @@ describe('TRIGGER_SUPERNOVA command', () => {
   });
 
   it('fails if iron is insufficient', () => {
-    state.resources.iron.amount = new Decimal(500);
+    state.resources.iron.amount = new Decimal(50);
     const res = stellarCommandHandlers.TRIGGER_SUPERNOVA(state, {});
     expect(res.ok).toBe(false);
     expect(res.error.code).toBe('INSUFFICIENT_IRON');

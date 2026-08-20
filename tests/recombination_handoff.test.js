@@ -31,8 +31,8 @@ describe('P4 Phase 4: Recombination Handoff A (Constant 250 H Starting Hydrogen)
     const state = createInitialState();
     state.activeEpoch = 2;
     state.plasmaTemperature = new Decimal(8000000); // hot plasma
-    state.resources.protons.amount = new Decimal(1000000); // >= 1M threshold
-    state.resources.electrons.amount = new Decimal(1000000);
+    state.resources.protons.amount = new Decimal(25000); // >= 25k threshold
+    state.resources.electrons.amount = new Decimal(25000);
     state.resources.hydrogen.amount = new Decimal(0);
     replaceRuntimeState(state);
 

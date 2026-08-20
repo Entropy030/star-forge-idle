@@ -308,13 +308,13 @@ describe('P5.4B: Calibration Surface & Route Viability Suite', () => {
         const elig = getRecombinationEligibility(state);
         if (elig.isEligible && !recombEligibleAt) {
           recombEligibleAt = elapsed;
-          eligibilityReason = elig.temperatureReady ? 'TEMPERATURE_LTE_3000K' : 'PROTONS_GTE_1M';
+          eligibilityReason = elig.temperatureReady ? 'TEMPERATURE_LTE_3000K' : 'PROTONS_GTE_25K';
           if (strategyName === 'COOLING') break;
         }
 
-        if (state.resources.protons.amount.gte(1000000)) {
+        if (state.resources.protons.amount.gte(COSMIC_REGISTRY.constants.recombinationProtonThreshold || 25000)) {
           recombEligibleAt = elapsed;
-          eligibilityReason = 'PROTONS_GTE_1M';
+          eligibilityReason = 'PROTONS_GTE_25K';
           break;
         }
       }
@@ -355,9 +355,9 @@ describe('P5.4B: Calibration Surface & Route Viability Suite', () => {
       console.log(`- Upgrades: QC Lvl ${coolingRes.upgrades.quarkCondenser}, Gluon Lvl ${coolingRes.upgrades.gluonBinding}, Synth Lvl ${coolingRes.upgrades.plasmaAutomation}, Radiator Lvl ${coolingRes.upgrades.baryoRadiator}`);
 
       console.log('\nSTRATEGY B (PROTON ACCUMULATION):');
-      console.log(`- Time simulated: ${protonRes.elapsed}s (${(protonRes.elapsed / 60).toFixed(1)} min)`);
-      console.log(`- Recombination Reached?: ${protonRes.recombEligibleAt ? `${protonRes.recombEligibleAt}s` : 'NOT REACHED'}`);
-      console.log(`- Protons at end: ${protonRes.finalProtons.toLocaleString()} / 1,000,000 (${((protonRes.finalProtons / 1000000) * 100).toFixed(2)}%)`);
+      console.log(`- Time to Recombination: ${protonRes.recombEligibleAt}s (${(protonRes.recombEligibleAt / 60).toFixed(1)} min)`);
+      console.log(`- Eligibility Reason: ${protonRes.eligibilityReason}`);
+      console.log(`- Protons at end: ${protonRes.finalProtons.toLocaleString()} / 25,000 (${((protonRes.finalProtons / 25000) * 100).toFixed(2)}%)`);
       console.log(`- Peak Proton Rate: ${protonRes.peakProtonRate.toFixed(2)} Protons/s`);
       console.log(`- Final Quarks: ${protonRes.finalQuarks.toLocaleString()}, Final Gluons: ${protonRes.finalGluons.toLocaleString()}`);
       console.log(`- Upgrades: QC Lvl ${protonRes.upgrades.quarkCondenser}, Gluon Lvl ${protonRes.upgrades.gluonBinding}, Synth Lvl ${protonRes.upgrades.plasmaAutomation}`);

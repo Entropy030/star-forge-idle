@@ -43,8 +43,8 @@ describe('playtest bot gameplay authority', () => {
   });
 
   it.each([
-    ['below both boundaries', 999999, 3001, false],
-    ['at proton boundary', 1000000, 3001, true],
+    ['below both boundaries', 24999, 3001, false],
+    ['at proton boundary', 25000, 3001, true],
     ['at temperature boundary', 0, 3000, true]
   ])('matches Recombination eligibility when %s', (_label, protons, temperature, expected) => {
     installState(state => {

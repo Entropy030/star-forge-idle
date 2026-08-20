@@ -337,7 +337,7 @@ describe('Cosmos Posture Controls & Model-C Contextual Actions (Phase 2)', () =>
       state.upgrades.plasma.leptonHarvest.level = 1;
       state.upgrades.plasma.plasmaAutomation.level = 1;
       state.upgrades.plasma.baryoRadiator.level = 0; // unconstructed
-      state.resources.protons.amount = new Decimal(1000000); // Recombination threshold met (1M protons)
+      state.resources.protons.amount = new Decimal(25000); // Recombination threshold met (25k protons)
 
       const pres = getCosmosPresentation(state);
       expect(pres.primary.ready).toBe(true);
