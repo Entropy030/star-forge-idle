@@ -2,6 +2,12 @@ import { expect } from '@playwright/test';
 
 export const APP_PATH = '/star-forge-idle/';
 
+// Centralized active save identity — update when production SAVE_VERSION changes.
+// Source of truth: src/state/migrations.js SAVE_VERSION
+export const ACTIVE_SAVE_VERSION = 18;
+export const ACTIVE_SAVE_KEY = `starForgeSave_v${ACTIVE_SAVE_VERSION}`;
+export const ACTIVE_PLAYTEST_SAVE_KEY = `starForgePlaytestSave_v${ACTIVE_SAVE_VERSION}`;
+
 export function observeBrowserErrors(page) {
   const errors = [];
   page.on('pageerror', error => errors.push(`pageerror: ${error.message}`));

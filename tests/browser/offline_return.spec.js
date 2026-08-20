@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { APP_PATH, observeBrowserErrors } from './helpers.js';
+import { ACTIVE_SAVE_KEY, APP_PATH, observeBrowserErrors } from './helpers.js';
 
 test('cold return renders an accessible one-time briefing at 390px without auto-transition', async ({ page }) => {
   const errors = observeBrowserErrors(page);
@@ -8,14 +8,14 @@ test('cold return renders an accessible one-time briefing at 390px without auto-
   await page.locator('html.app-ready').waitFor({ state: 'attached' });
   await page.waitForTimeout(5200);
 
-  await page.evaluate(() => {
-    const initialSave = JSON.parse(localStorage.getItem('starForgeSave_v17'));
+  await page.evaluate(key => {
+    const initialSave = JSON.parse(localStorage.getItem(key));
     initialSave.gameState.unfold.introCompleted = true;
     initialSave.gameState.upgrades.quantum.gravityForce.level = 1;
     initialSave.gameState.upgrades.quantum.gravityForce.cost = { __type: 'Decimal', value: '10' };
     initialSave.lastSavedTime = Date.now() - 60_000;
-    localStorage.setItem('starForgeSave_v17', JSON.stringify(initialSave));
-  });
+    localStorage.setItem(key, JSON.stringify(initialSave));
+  }, ACTIVE_SAVE_KEY);
 
   await page.reload();
   await page.locator('html.app-ready').waitFor({ state: 'attached' });
@@ -27,14 +27,14 @@ test('cold return renders an accessible one-time briefing at 390px without auto-
   await expect(briefing).toContainText('Quantum Fluctuations');
   await expect(page.locator('#active-epoch-name')).toContainText('Era I');
 
-  const stateContract = await page.evaluate(() => {
-    const stored = JSON.parse(localStorage.getItem('starForgeSave_v17'));
+  const stateContract = await page.evaluate(key => {
+    const stored = JSON.parse(localStorage.getItem(key));
     return {
       activeId: document.activeElement?.id || null,
       overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       summaryPersisted: Object.hasOwn(stored.gameState, 'offlineSummary')
     };
-  });
+  }, ACTIVE_SAVE_KEY);
   expect(stateContract.activeId).not.toBe('offline-return-briefing');
   expect(stateContract.overflow).toBeLessThanOrEqual(0);
   expect(stateContract.summaryPersisted).toBe(false);

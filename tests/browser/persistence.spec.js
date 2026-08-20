@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { APP_PATH, loadPlaytestPreset, observeBrowserErrors, openApp } from './helpers.js';
+import { ACTIVE_SAVE_KEY, ACTIVE_SAVE_VERSION, APP_PATH, loadPlaytestPreset, observeBrowserErrors, openApp } from './helpers.js';
 
 test.describe('real-browser persistence and failure recovery', () => {
   test('normal autosave survives reload with typed state serialization', async ({ page }) => {
@@ -11,11 +11,11 @@ test.describe('real-browser persistence and failure recovery', () => {
     for (let count = 0; count < 10; count += 1) await page.keyboard.press('Enter');
     await page.waitForTimeout(5200);
 
-    const saved = await page.evaluate(() => localStorage.getItem('starForgeSave_v17'));
+    const saved = await page.evaluate(key => localStorage.getItem(key), ACTIVE_SAVE_KEY);
     expect(saved).toBeTruthy();
     expect(saved).not.toBe('[object Object]');
     const parsed = JSON.parse(saved);
-    expect(parsed.version).toBe(17);
+    expect(parsed.version).toBe(ACTIVE_SAVE_VERSION);
     expect(parsed.gameState.resources.quantumFluctuations.amount.__type).toBe('Decimal');
     expect(parsed.gameState.discoveries.__type).toBe('Set');
 
@@ -35,7 +35,7 @@ test.describe('real-browser persistence and failure recovery', () => {
     await core.focus();
     for (let count = 0; count < 10; count += 1) await page.keyboard.press('Enter');
     await page.waitForTimeout(5200);
-    const normalSaveBefore = await page.evaluate(() => localStorage.getItem('starForgeSave_v17'));
+    const normalSaveBefore = await page.evaluate(key => localStorage.getItem(key), ACTIVE_SAVE_KEY);
 
     await openApp(page, '?playtest=1');
     await loadPlaytestPreset(page, 'Mid Era III');
@@ -43,7 +43,7 @@ test.describe('real-browser persistence and failure recovery', () => {
     await expect(page.locator('#playtest-inline-status')).toContainText('clipboard');
     const exported = await page.evaluate(() => navigator.clipboard.readText());
     expect(exported.length).toBeGreaterThan(100);
-    expect(await page.evaluate(() => localStorage.getItem('starForgeSave_v17'))).toBe(normalSaveBefore);
+    expect(await page.evaluate(key => localStorage.getItem(key), ACTIVE_SAVE_KEY)).toBe(normalSaveBefore);
 
     await page.locator('#pt-restore').click();
     await expect(page.locator('#playtest-mode-ui')).toHaveCount(0);
@@ -77,16 +77,16 @@ test.describe('real-browser persistence and failure recovery', () => {
       '[object Object]',
       '{invalid-json',
       '',
-      JSON.stringify({ version: 17, gameState: null }),
+      JSON.stringify({ version: ACTIVE_SAVE_VERSION, gameState: null }),
       JSON.stringify({ version: 999, gameState: { activeEpoch: 3 } }),
     ];
 
     for (const payload of corruptPayloads) {
-      await page.evaluate(value => localStorage.setItem('starForgeSave_v17', value), payload);
+      await page.evaluate(([key, value]) => localStorage.setItem(key, value), [ACTIVE_SAVE_KEY, payload]);
       await page.reload();
       await page.locator('html.app-ready').waitFor({ state: 'attached' });
       await expect(page.locator('#active-epoch-name')).toContainText('Era I');
-      expect(await page.evaluate(() => localStorage.getItem('starForgeSave_v17'))).toBeNull();
+      expect(await page.evaluate(key => localStorage.getItem(key), ACTIVE_SAVE_KEY)).toBeNull();
     }
 
     const quarantineKeys = await page.evaluate(() => Object.keys(localStorage).filter(key => key.startsWith('starForgeCorruptSave_')));
