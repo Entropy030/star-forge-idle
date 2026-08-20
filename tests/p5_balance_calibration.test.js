@@ -997,50 +997,117 @@ describe('P5.4B: Calibration Surface & Route Viability Suite', () => {
   // =========================================================================
   // SECTION 7: Bounded Second Run Early Acceleration
   // =========================================================================
-  describe('Section 7: Bounded Second Run Early Acceleration', () => {
-    it('compares early Stellar progression (60s, 180s, 300s) between Zero-Meta Run 1 and Legacy Run 2', () => {
+  // =========================================================================
+  // SECTION 7: Bounded Second Run Early Acceleration & Currency Authority
+  // =========================================================================
+  describe('Section 7: Bounded Second Run Early Acceleration & Currency Authority', () => {
+    it('verifies White Dwarf legacy currency boundaries, legal Stardust loadout, and early acceleration', () => {
       console.log('\n================================================================================');
-      console.log('P5.4B SECTION 7: BOUNDED SECOND RUN EARLY ACCELERATION');
+      console.log('P5.4B SECTION 7: BOUNDED SECOND RUN EARLY ACCELERATION (LEGAL LOADOUT)');
       console.log('================================================================================');
 
-      function runBoundedStellar(legacyPurchases = {}, duration = 300) {
-        replaceRuntimeState(createInitialState());
-        engine.loadState(gameState);
-        const st = gameState;
-        st.activeEpoch = 3;
-        st.unfold.introCompleted = true;
-        st.era3.stage = 'Protostar';
-        st.era3.temperature = new Decimal(0);
-        st.era3.compressCost = new Decimal(10);
-        st.resources.hydrogen.amount = new Decimal(0);
-        st.resources.helium.amount = new Decimal(0);
+      // 1. Verify Natural White Dwarf Prestige State
+      const state = createInitialState();
+      state.activeEpoch = 3;
+      state.currencies.stardust.amount = new Decimal(30);
+      state.currencies.pulsarShards.amount = new Decimal(0);
+      state.currencies.singularityMass.amount = new Decimal(0);
+      replaceRuntimeState(state);
 
-        for (const [k, lvl] of Object.entries(legacyPurchases)) {
-          if (st.upgrades.stardust[k]) st.upgrades.stardust[k].level = lvl;
+      expect(state.currencies.stardust.amount.toNumber()).toBe(30);
+      expect(state.currencies.pulsarShards.amount.toNumber()).toBe(0);
+      expect(state.currencies.singularityMass.amount.toNumber()).toBe(0);
+
+      // 2. Assert AutoCompress cannot be bought with 0 Pulsar Shards (even with 30 Stardust)
+      const autoCompressAttempt = engine.dispatch({
+        type: 'BUY_UPGRADE_STELLAR',
+        payload: { category: 'pulsar', upgradeId: 'autoCompress' }
+      });
+      expect(autoCompressAttempt.ok).toBe(false);
+      expect(autoCompressAttempt.error.code).toBe('INSUFFICIENT_FUNDS');
+      expect(state.upgrades.pulsar.autoCompress.level).toBe(0);
+
+      // 3. Purchase Legal Stardust Loadout through authoritative command dispatch
+      // Buy thermalInsulation up to L4 (cost: 1 + 2 + 4 + 8 = 15 Stardust)
+      for (let i = 0; i < 4; i++) {
+        const res = engine.dispatch({
+          type: 'BUY_UPGRADE_STELLAR',
+          payload: { category: 'stardust', upgradeId: 'thermalInsulation' }
+        });
+        expect(res.ok).toBe(true);
+      }
+      expect(state.upgrades.stardust.thermalInsulation.level).toBe(4);
+
+      // Buy fusionDiscount up to L4 (cost: 1 + 2 + 4 + 8 = 15 Stardust)
+      for (let i = 0; i < 4; i++) {
+        const res = engine.dispatch({
+          type: 'BUY_UPGRADE_STELLAR',
+          payload: { category: 'stardust', upgradeId: 'fusionDiscount' }
+        });
+        expect(res.ok).toBe(true);
+      }
+      expect(state.upgrades.stardust.fusionDiscount.level).toBe(4);
+
+      // Total spent: 15 + 15 = 30 Stardust. Remaining: 0 Stardust.
+      expect(state.currencies.stardust.amount.toNumber()).toBe(0);
+      expect(state.currencies.pulsarShards.amount.toNumber()).toBe(0);
+      expect(state.upgrades.pulsar.autoCompress.level).toBe(0);
+
+      console.log('LEGAL WHITE DWARF LEGACY LOADOUT:');
+      console.log(`- Stardust Spent: 30 / Remaining: ${state.currencies.stardust.amount.toNumber()}`);
+      console.log(`- Pulsar Shards: ${state.currencies.pulsarShards.amount.toNumber()}`);
+      console.log(`- Singularity Mass: ${state.currencies.singularityMass.amount.toNumber()}`);
+      console.log(`- thermalInsulation: Level ${state.upgrades.stardust.thermalInsulation.level} (+80% Heating)`);
+      console.log(`- fusionDiscount: Level ${state.upgrades.stardust.fusionDiscount.level} (Fuel cost: 10 -> 2 H / He)`);
+      console.log(`- autoCompress: Level ${state.upgrades.pulsar.autoCompress.level} (UNPURCHASABLE — 0 Pulsar Shards)`);
+
+      // 4. Run Bounded Early Stellar Simulation (Zero-Meta vs Legal Legacy)
+      function runBoundedStellar(legacyUpgrades = {}, duration = 300) {
+        const runState = createInitialState();
+        runState.activeEpoch = 3;
+        runState.unfold.introCompleted = true;
+        runState.era3.stage = 'Protostar';
+        runState.era3.temperature = new Decimal(0);
+        runState.era3.compressCost = new Decimal(10);
+        runState.resources.hydrogen.amount = new Decimal(0);
+        runState.resources.helium.amount = new Decimal(0);
+
+        if (legacyUpgrades.stardust) {
+          for (const [k, obj] of Object.entries(legacyUpgrades.stardust)) {
+            if (runState.upgrades.stardust[k]) runState.upgrades.stardust[k].level = obj.level;
+          }
         }
+        if (legacyUpgrades.pulsar) {
+          for (const [k, obj] of Object.entries(legacyUpgrades.pulsar)) {
+            if (runState.upgrades.pulsar[k]) runState.upgrades.pulsar[k].level = obj.level;
+          }
+        }
+
+        replaceRuntimeState(runState);
+        engine.loadState(gameState);
 
         const checkpoints = {};
         for (let s = 1; s <= duration; s++) {
-          if (st.resources.helium.amount.gte(st.era3.compressCost)) {
-            executeCompression(st);
+          if (gameState.resources.helium.amount.gte(gameState.era3.compressCost)) {
+            executeCompression(gameState);
           }
 
-          if (st.resources.hydrogen.amount.gte(st.era3.gravityCost)) {
-            st.resources.hydrogen.amount = st.resources.hydrogen.amount.minus(st.era3.gravityCost);
-            st.era3.gravity = st.era3.gravity.plus(1);
-            st.era3.gravityCost = st.era3.gravityCost.times(1.5).floor();
+          if (gameState.resources.hydrogen.amount.gte(gameState.era3.gravityCost)) {
+            gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.minus(gameState.era3.gravityCost);
+            gameState.era3.gravity = gameState.era3.gravity.plus(1);
+            gameState.era3.gravityCost = gameState.era3.gravityCost.times(1.5).floor();
           }
 
-          const fuserCost = st.era3.fusionYield.eq(0) ? st.era3.fuserCostHydrogen : st.era3.fuserCostHelium;
-          const fuserCur = st.era3.fusionYield.eq(0) ? st.resources.hydrogen.amount : st.resources.helium.amount;
+          const fuserCost = gameState.era3.fusionYield.eq(0) ? gameState.era3.fuserCostHydrogen : gameState.era3.fuserCostHelium;
+          const fuserCur = gameState.era3.fusionYield.eq(0) ? gameState.resources.hydrogen.amount : gameState.resources.helium.amount;
           if (fuserCur.gte(fuserCost)) {
-            if (st.era3.fusionYield.eq(0)) {
-              st.resources.hydrogen.amount = st.resources.hydrogen.amount.minus(fuserCost);
-              st.era3.fusionYield = new Decimal(1);
-            } else if (st.era3.fusionYield.lt(10)) {
-              st.resources.helium.amount = st.resources.helium.amount.minus(fuserCost);
-              st.era3.fusionYield = st.era3.fusionYield.plus(1);
-              st.era3.fuserCostHelium = st.era3.fuserCostHelium.times(2.5).round();
+            if (gameState.era3.fusionYield.eq(0)) {
+              gameState.resources.hydrogen.amount = gameState.resources.hydrogen.amount.minus(fuserCost);
+              gameState.era3.fusionYield = new Decimal(1);
+            } else if (gameState.era3.fusionYield.lt(10)) {
+              gameState.resources.helium.amount = gameState.resources.helium.amount.minus(fuserCost);
+              gameState.era3.fusionYield = gameState.era3.fusionYield.plus(1);
+              gameState.era3.fuserCostHelium = gameState.era3.fuserCostHelium.times(2.5).round();
             }
           }
 
@@ -1048,10 +1115,11 @@ describe('P5.4B: Calibration Surface & Route Viability Suite', () => {
 
           if (s === 60 || s === 180 || s === 300) {
             checkpoints[s] = {
-              temp: st.era3.temperature.toNumber(),
-              comp: getCompressionsCompleted(st),
-              hInflow: getHydrogenProductionRate(st).toNumber(),
-              heStock: st.resources.helium.amount.toNumber()
+              temp: gameState.era3.temperature.toNumber(),
+              comp: getCompressionsCompleted(gameState),
+              hInflow: getHydrogenProductionRate(gameState).toNumber(),
+              fusionCost: getFusionFuelCost(gameState).toNumber(),
+              heStock: gameState.resources.helium.amount.toNumber()
             };
           }
         }
@@ -1061,23 +1129,23 @@ describe('P5.4B: Calibration Surface & Route Viability Suite', () => {
 
       const run1 = runBoundedStellar({}, 300);
       const run2 = runBoundedStellar({
-        thermalInsulation: 1,
-        fusionDiscount: 1,
-        autoCompressor: 1
+        stardust: state.upgrades.stardust,
+        pulsar: state.upgrades.pulsar
       }, 300);
 
-      console.log('EARLY STELLAR RUN ACCELERATION COMPARISON:');
-      console.log('Time | Run 1 (Zero-Meta) Temp / Comp / Inflow | Run 2 (Legacy L1) Temp / Comp / Inflow | Acceleration Ratio');
-      console.log('--------------------------------------------------------------------------------------------------------');
+      console.log('\nEARLY STELLAR RUN ACCELERATION COMPARISON (ZERO-META vs LEGAL WHITE DWARF):');
+      console.log('Time | Run 1 (Zero-Meta) Temp / Comp / Inflow | Run 2 (Legal Legacy) Temp / Comp / Inflow | Fuel Cost (R1->R2) | Acceleration');
+      console.log('-------------------------------------------------------------------------------------------------------------------------------');
       for (const t of [60, 180, 300]) {
         const r1 = run1[t];
         const r2 = run2[t];
         const tempRatio = (r2.temp / r1.temp).toFixed(2);
-        console.log(`${String(t).padStart(4, ' ')}s | ${(r1.temp / 1e6).toFixed(1)}M K / #${r1.comp} / ${r1.hInflow} H/s        | ${(r2.temp / 1e6).toFixed(1)}M K / #${r2.comp} / ${r2.hInflow} H/s        | ${tempRatio}x Temp gain`);
+        console.log(`${String(t).padStart(4, ' ')}s | ${(r1.temp / 1e6).toFixed(1)}M K / #${r1.comp} / ${r1.hInflow} H/s        | ${(r2.temp / 1e6).toFixed(1)}M K / #${r2.comp} / ${r2.hInflow} H/s        | ${r1.fusionCost} -> ${r2.fusionCost} H/He    | ${tempRatio}x Temp gain`);
       }
 
       expect(run2[300].temp).toBeGreaterThan(run1[300].temp);
       expect(run2[300].comp).toBeGreaterThanOrEqual(run1[300].comp);
+      expect(run2[300].fusionCost).toBe(2); // 10 - (4 * 2) = 2 H / He
     });
   });
 });
