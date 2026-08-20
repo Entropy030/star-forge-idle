@@ -1,12 +1,12 @@
 # Star Forge Idle — Handover
 
-Last verified during P5.3C (2026-08-19).
+Last verified during P5.4 (2026-08-20).
 
 ## Project and status
 
 Star Forge Idle is a browser incremental game in which the player observes and shapes a universe from quantum fluctuations through plasma, recombination, and stellar evolution.
 
-Current milestone: **P5.4A COMPLETE (PUBLISHED + HUMAN APPROVED)**.
+Current milestone: **P5.4 COMPLETE (PUBLISHED + HUMAN APPROVED)**.
 
 ### P5 Progress Overview
 
@@ -16,28 +16,28 @@ Current milestone: **P5.4A COMPLETE (PUBLISHED + HUMAN APPROVED)**.
 - **P5.3B0 Stellar Authority & Automation Parity:** `COMPLETE (PUBLISHED + HUMAN APPROVED)`
 - **P5.3B1 Era-III Hydrostatic Stellar Engine Model B1:** `COMPLETE (PUBLISHED + HUMAN APPROVED)`
 - **P5.3C Cross-Era Integration & Regression:** `COMPLETE (PUBLISHED + HUMAN APPROVED)`
-- **P5.4A Natural Full-Run Characterization:** `COMPLETE (PUBLISHED + HUMAN APPROVED)`
-- **P5.4B Calibration Modeling & Parameter Sweep:** `NEXT (NOT STARTED)`
+- **P5.4 Balance Calibration & Natural Characterization:** `COMPLETE (PUBLISHED + HUMAN APPROVED)`
+- **Visual Polish:** `NEXT (NOT STARTED)`
 
 ### Current Physical Agency Models
 
 - **Era I — Quantum Genesis:** Discrete 3-State **Vacuum Field Allocation** (`PROPAGATION`, `BALANCED`, `STABILIZATION`) with Coherence as dynamic System Quality scaling established Fundamental Laws.
-- **Era II — Primordial Plasma:** Coupled hadron flows and 3 **Operating Postures** (`ACCUMULATE`, `BALANCE`, `CONDENSE`) driving thermal stabilization, baryon harvest, and Recombination (constant 250 H seed).
+- **Era II — Primordial Plasma:** Coupled hadron flows and 3 **Operating Postures** (`ACCUMULATE`, `BALANCE`, `CONDENSE`) driving thermal stabilization, baryon harvest, and Recombination ($\le 3{,}000\text{ K}$ or $\ge 25{,}000\text{ Protons}$, constant 250 H seed).
 - **Era III — Hydrostatic Stellar Engine (Model B1):** Coupled hydrostatic engine:
   - **Gravity:** Controls Hydrogen inflow rate and fuel containment buffer capacity ($C = 10 \times \text{inflowRate}$).
   - **Fusers:** Control Hydrogen $\to$ Helium conversion throughput.
-  - **Compression:** Converts accumulated Helium into Core Temperature via authoritative heat yield.
+  - **Compression:** Converts accumulated Helium into Core Temperature via authoritative heat yield (1.35 cost scale, 1.15 heat scale).
   - **Core Temperature:** Active physical capability state continuously scaling reaction velocities across active burning layers while retaining hard threshold gates ($10\text{M K}$, $500\text{M K}$, $2.0\text{B K}$, $100\text{M K}$).
-  - **Carbon / Iron:** Heavy nucleosynthesis consuming sustainable upstream flows.
+  - **Carbon / Iron:** Heavy nucleosynthesis consuming sustainable upstream flows; Supernova available at $100\text{ Fe}$; Galactic Ignition gateway at $1{,}000\text{ Fe}$.
   - **Stellar Configuration:** Efficient, Massive, and Compact identities shaping remnant outcomes.
 
 Supported player journey:
 
 - Era I — Quantum Genesis, Vacuum Field Allocation, and Cosmic Inflation
 - Era II — Particle/Plasma evolution, Postures, and Recombination
-- Era III — Stellar Dawn, Hydrostatic Stellar Engine, repeatable Supernova, and the Galactic Ignition gate
+- Era III — Stellar Dawn, Hydrostatic Stellar Engine, repeatable Supernova ($100\text{ Fe}$), and the Galactic Ignition gate ($1{,}000\text{ Fe}$)
 
-Save Schema: Strictly **Save Version 17** (zero new stored state fields). All 61 fast-test suites (472 vitest tests) and 44 Playwright browser specs passing.
+Save Schema: **Save Version 18** (compression progress preserved and mapped to 1.35 scaling curve). All 63 fast-test suites (488 vitest tests) passing.
 
 ## P3 freeze baseline
 

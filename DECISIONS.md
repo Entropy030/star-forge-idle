@@ -451,9 +451,45 @@ This is a lightweight record of settled current contracts. Proposed work belongs
    - Era-III Stellar Machine process and diagnostic presentation are visible only in Era III and clean after Supernova.
    - No cross-era DOM collision, orphaned modal overlays, or duplicate dispatches.
 6. **Save Schema Invariance:** Save version remains `17` with full multi-era roundtrip serialization.
-7. **P5.4 Scope Boundary:** Exact numerical tuning, pacing curves, and route calibration belong exclusively to P5.4.
+7. **P5.4 Scope Boundary:** Exact numerical tuning, pacing curves, and route calibration belong exclusively to P5.4
 
 **Status:**
 - `DESIGN APPROVED: YES`
 - `PRODUCTION VERIFIED: YES` (Verified via 61 Fast Suites / 44 Playwright Specs)
 - `HUMAN REVIEW APPROVED: YES` (P5.3C Human Approved)
+
+## D35 — P5.4 Balance Calibration & Final Progression Policy (P5.4)
+
+**Decision:**
+1. **Era-I Quantum Genesis:**
+   - Baseline allocation and Coherence mechanics preserved without numerical modification.
+2. **Era-II Plasma Operating Postures & Recombination:**
+   - Recombination retains dual OR-semantics: Cooling ($\le 3{,}000\text{ K}$) OR Proton threshold ($\ge 25{,}000\text{ Protons}$).
+   - Cooling route ($\le 3{,}000\text{ K}$) remains the faster, active thermal-control route ($501\text{s} \approx 8.3\text{ min}$).
+   - Proton route ($25{,}000\text{ Protons}$) is calibrated as a credible, slower matter-retention / low-attention alternative ($1{,}658\text{s} \approx 27.6\text{ min}$, $3.31\times$ cooling time) requiring zero thermal posture cycling.
+3. **Era-III Hydrostatic Stellar Engine & Thresholds:**
+   - Compression cost scaling is set to **`1.35`** using discrete iterative floor recurrence.
+   - Compression heat scaling remains **`1.15`** with base heat $3{,}500{,}000\text{ K}$.
+   - Supernova Iron threshold is calibrated to **`100 Fe`** (`supernovaIronThreshold: 100`).
+   - Galactic Ignition Iron threshold is preserved at **`1,000 Fe`** (`galacticIgnitionIronThreshold: 1000`) for deep Stellar / Era IV progression.
+   - Fundamental conversion ratios ($10\text{ H/He}, 50\text{ He/C}, 250\text{ C/Fe}$) remain unchanged.
+4. **Save Schema Migration (Version 18):**
+   - Save version bumped to **`18`**.
+   - Migration `17 -> 18` preserves completed Compression count and rebuilds next `compressCost` under the 1.35 recurrence curve, with full fallback discoverability for `v17` storage keys.
+5. **Evidence Categorization & Legacy Authority:**
+   - Evidence is strictly categorized across **MODEL** (analytical formulas), **NATURAL** (full simulated journeys), and **PREPARED / CONTROLLED** (isolated fixture states).
+   - Historical fixture evidence (e.g. Lane C prepared state: $14\text{ Stardust} / 1\text{ Pulsar} / \text{Neutron Star}$) is explicitly identified as prepared prototype fixture evidence, not natural run output.
+   - Natural Informed run with Efficient archetype yields **White Dwarf** ($30\text{ Stardust} / 0\text{ Pulsar} / 0\text{ Singularity}$).
+   - White Dwarf prestige cannot purchase Pulsar Auto-Compressor ($0\text{ Pulsar Shards}$).
+   - Authoritative legal 30-Stardust loadout (`thermalInsulation` L4 + `fusionDiscount` L4) produces a measured **$2.46\times$ core temperature acceleration** at 5 minutes, confirming Legacy progression is **CLEARLY MEANINGFUL**.
+   - Natural characterization achieves First Supernova at $\approx 9.95\text{h}$ in the characterized informed strategy (measured characterization, not a mandatory pacing target).
+6. **CI Browser Acceptance Policy:**
+   - Playwright browser install uses `npx playwright install chromium --only-shell` with a 3-minute timeout.
+   - Removing `--with-deps` prevents Playwright from invoking apt dependency installation during this workflow.
+   - Runner library availability will be validated by GitHub Actions.
+   - Fallback if libraries are missing: version-matched official Playwright container (deferred; not proactively implemented).
+
+**Status:**
+- `P5.4: DESIGN APPROVED`
+- `PRODUCTION IMPLEMENTED: YES`
+- `HUMAN APPROVED: YES`

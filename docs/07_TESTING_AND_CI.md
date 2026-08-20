@@ -95,11 +95,13 @@ Real-browser storage, clipboard, accessibility interaction, service-worker and g
 
 `.github/workflows/deploy-pages.yml` provides:
 
-- pull requests to `main`: validation runs repository hygiene, lint, FAST and build; the parallel browser job explicitly installs Chromium and runs BROWSER; never deploy;
+- pull requests to `main`: validation runs repository hygiene, lint, FAST and build; the parallel browser job installs Chromium headless shell (`npx playwright install chromium --only-shell`) and runs BROWSER; never deploy;
 - pushes to `main`: validation runs lint, FULL, build and Pages artifact while the browser job runs BROWSER;
 - manual dispatch: the same FULL-gated build and deployment path.
 
 Deployment depends on both validation and browser jobs. A browser failure therefore blocks Pages deployment. Chromium installation stays out of the local FAST/FULL and TELEMETRY lanes.
+
+Removing `--with-deps` prevents Playwright from invoking apt dependency installation during this workflow. Runner library availability will be validated by GitHub Actions. Fallback if libraries are missing: version-matched official Playwright container (deferred; not implemented proactively).
 
 Validation has `contents: read`. Only the deploy job receives `pages: write` and `id-token: write`.
 
